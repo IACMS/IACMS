@@ -1,0 +1,427 @@
+// Prisma Schema for IACMS
+// Inter-Agency Case Management Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Core Tables
+// ============================================
+
+model Tenant {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  code        String   @unique
+  description String?  @db.Text
+  config      Json?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users           User[]
+  roles           Role[]
+  workflows       Workflow[]
+  cases           Case[]           @relation("CaseTenant")
+  casesOriginated Case[]           @relation("CaseOriginatingTenant")
+  casesCurrent    Case[]           @relation("CaseCurrentTenant")
+  referralsFrom   CaseReferral[]   @relation("ReferralFrom")
+  referralsTo     CaseReferral[]   @relation("ReferralTo")
+  attachments     CaseAttachment[]
+  auditLogs       AuditLog[]
+  webhooks        Webhook[]
+  integrations    Integration[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("tenants")
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  email           String
+  username        String
+  passwordHash    String    @map("password_hash")
+  firstName       String    @map("first_name")
+  lastName        String    @map("last_name")
+  phone           String?
+  nationalId      String?   @map("national_id")
+  isActive        Boolean   @default(true) @map("is_active")
+  isEmailVerified Boolean   @default(false) @map("is_email_verified")
+  lastLogin       DateTime? @map("last_login")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  casesCreated          Case[]           @relation("CaseCreator")
+  casesAssigned         Case[]           @relation("CaseAssignee")
+  assignmentsAssignedTo Assignment[]     @relation("AssignmentAssignedTo")
+  assignmentsAssignedBy Assignment[]     @relation("AssignmentAssignedBy")
+  workflowStates        WorkflowState[]
+  referralsMade         CaseReferral[]   @relation("ReferralMadeBy")
+  referralsAccepted     CaseReferral[]   @relation("ReferralAcceptedBy")
+  referralsRejected     CaseReferral[]   @relation("ReferralRejectedBy")
+  attachments           CaseAttachment[]
+  auditLogs             AuditLog[]
+  userRoles             UserRole[]
+  rolesCreated          Role[]
+  workflowsCreated      Workflow[]
+  webhooksCreated       Webhook[]
+  integrationsCreated   Integration[]
+  userRolesAssigned     UserRole[]       @relation("RoleAssigner")
+
+  @@unique([tenantId, email])
+  @@unique([tenantId, username])
+  @@index([tenantId])
+  @@index([email])
+  @@index([username])
+  @@map("users")
+}
+
+// ============================================
+// RBAC Tables
+// ============================================
+
+model Role {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String?  @map("tenant_id") @db.Uuid
+  name         String
+  description  String?  @db.Text
+  isSystemRole Boolean  @default(false) @map("is_system_role")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  tenant          Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+  user            User?            @relation(fields: [userId], references: [id])
+  userId          String?          @db.Uuid
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([name])
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  resource    String
+  action      String
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@unique([resource, action])
+  @@index([resource])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String   @id @default(uuid()) @db.Uuid
+  roleId       String   @map("role_id") @db.Uuid
+  permissionId String   @map("permission_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  roleId     String    @map("role_id") @db.Uuid
+  assignedBy String?   @map("assigned_by") @db.Uuid
+  assignedAt DateTime  @default(now()) @map("assigned_at")
+  expiresAt  DateTime? @map("expires_at")
+
+  // Relations
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assigner User? @relation("RoleAssigner", fields: [assignedBy], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+// ============================================
+// Case Management Tables
+// ============================================
+
+model Workflow {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  name        String
+  description String?  @db.Text
+  definition  Json
+  version     Int      @default(1)
+  isActive    Boolean  @default(true) @map("is_active")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator        User?           @relation(fields: [createdBy], references: [id])
+  cases          Case[]
+  workflowStates WorkflowState[]
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@index([tenantId, isDefault])
+  @@map("workflows")
+}
+
+model Case {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  originatingTenantId String?   @map("originating_tenant_id") @db.Uuid
+  currentTenantId     String?   @map("current_tenant_id") @db.Uuid
+  referralStatus      String    @default("none") @map("referral_status")
+  caseNumber          String    @unique @map("case_number")
+  title               String
+  description         String?   @db.Text
+  type                String
+  priority            String    @default("normal")
+  status              String    @default("open")
+  workflowId          String?   @map("workflow_id") @db.Uuid
+  assignedTo          String?   @map("assigned_to") @db.Uuid
+  createdBy           String    @map("created_by") @db.Uuid
+  metadata            Json?
+  dueDate             DateTime? @map("due_date")
+  resolvedAt          DateTime? @map("resolved_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
+
+  // Relations
+  tenant            Tenant           @relation("CaseTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  originatingTenant Tenant?          @relation("CaseOriginatingTenant", fields: [originatingTenantId], references: [id])
+  currentTenant     Tenant?          @relation("CaseCurrentTenant", fields: [currentTenantId], references: [id])
+  workflow          Workflow?        @relation(fields: [workflowId], references: [id])
+  assignee          User?            @relation("CaseAssignee", fields: [assignedTo], references: [id])
+  creator           User             @relation("CaseCreator", fields: [createdBy], references: [id])
+  workflowStates    WorkflowState[]
+  assignments       Assignment[]
+  referrals         CaseReferral[]
+  attachments       CaseAttachment[]
+
+  @@index([tenantId])
+  @@index([caseNumber])
+  @@index([tenantId, status])
+  @@index([tenantId, type])
+  @@index([tenantId, assignedTo])
+  @@index([dueDate])
+  @@index([createdAt])
+  @@index([originatingTenantId])
+  @@index([currentTenantId])
+  @@index([referralStatus])
+  @@index([currentTenantId, referralStatus])
+  @@map("cases")
+}
+
+model WorkflowState {
+  id              String   @id @default(uuid()) @db.Uuid
+  caseId          String   @map("case_id") @db.Uuid
+  workflowId      String   @map("workflow_id") @db.Uuid
+  currentState    String   @map("current_state")
+  previousState   String?  @map("previous_state")
+  transitionedBy  String?  @map("transitioned_by") @db.Uuid
+  transitionNotes String?  @map("transition_notes") @db.Text
+  stateData       Json?    @map("state_data")
+  transitionedAt  DateTime @default(now()) @map("transitioned_at")
+
+  // Relations
+  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  transitioner User?    @relation(fields: [transitionedBy], references: [id])
+
+  @@index([caseId])
+  @@index([workflowId])
+  @@index([currentState])
+  @@index([transitionedAt])
+  @@map("workflow_states")
+}
+
+model Assignment {
+  id             String    @id @default(uuid()) @db.Uuid
+  caseId         String    @map("case_id") @db.Uuid
+  assignedTo     String    @map("assigned_to") @db.Uuid
+  assignedBy     String    @map("assigned_by") @db.Uuid
+  assignmentType String    @default("manual") @map("assignment_type")
+  notes          String?   @db.Text
+  assignedAt     DateTime  @default(now()) @map("assigned_at")
+  unassignedAt   DateTime? @map("unassigned_at")
+  isActive       Boolean   @default(true) @map("is_active")
+
+  // Relations
+  case     Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  assignee User @relation("AssignmentAssignedTo", fields: [assignedTo], references: [id])
+  assigner User @relation("AssignmentAssignedBy", fields: [assignedBy], references: [id])
+
+  @@index([caseId])
+  @@index([assignedTo])
+  @@index([assignedTo, isActive])
+  @@index([assignedAt])
+  @@map("assignments")
+}
+
+model CaseReferral {
+  id             String    @id @default(uuid()) @db.Uuid
+  caseId         String    @map("case_id") @db.Uuid
+  fromTenantId   String    @map("from_tenant_id") @db.Uuid
+  toTenantId     String    @map("to_tenant_id") @db.Uuid
+  referralReason String?   @map("referral_reason") @db.Text
+  notes          String?   @db.Text
+  status         String    @default("pending")
+  referredBy     String    @map("referred_by") @db.Uuid
+  acceptedBy     String?   @map("accepted_by") @db.Uuid
+  rejectedBy     String?   @map("rejected_by") @db.Uuid
+  referredAt     DateTime  @default(now()) @map("referred_at")
+  acceptedAt     DateTime? @map("accepted_at")
+  rejectedAt     DateTime? @map("rejected_at")
+  completedAt    DateTime? @map("completed_at")
+  metadata       Json?
+
+  // Relations
+  case       Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fromTenant Tenant @relation("ReferralFrom", fields: [fromTenantId], references: [id])
+  toTenant   Tenant @relation("ReferralTo", fields: [toTenantId], references: [id])
+  referrer   User   @relation("ReferralMadeBy", fields: [referredBy], references: [id])
+  accepter   User?  @relation("ReferralAcceptedBy", fields: [acceptedBy], references: [id])
+  rejecter   User?  @relation("ReferralRejectedBy", fields: [rejectedBy], references: [id])
+
+  @@index([caseId])
+  @@index([fromTenantId])
+  @@index([toTenantId])
+  @@index([status])
+  @@index([fromTenantId, status])
+  @@index([toTenantId, status])
+  @@index([referredAt])
+  @@map("case_referrals")
+}
+
+model CaseAttachment {
+  id               String    @id @default(uuid()) @db.Uuid
+  caseId           String    @map("case_id") @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  filename         String
+  originalFilename String    @map("original_filename")
+  mimeType         String    @map("mime_type")
+  fileSize         Int       @map("file_size")
+  filePath         String    @map("file_path") @db.Text
+  description      String?   @db.Text
+  uploadedBy       String    @map("uploaded_by") @db.Uuid
+  uploadedAt       DateTime  @default(now()) @map("uploaded_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  // Relations
+  case     Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploader User   @relation(fields: [uploadedBy], references: [id])
+
+  @@index([caseId])
+  @@index([tenantId])
+  @@index([uploadedBy])
+  @@map("case_attachments")
+}
+
+// ============================================
+// Audit & Integration Tables
+// ============================================
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id") @db.Uuid
+  action     String
+  userId     String?  @map("user_id") @db.Uuid
+  oldValues  Json?    @map("old_values")
+  newValues  Json?    @map("new_values")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+}
+
+model Webhook {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String?  @map("tenant_id") @db.Uuid
+  name       String
+  url        String   @db.Text
+  secret     String?
+  events     Json
+  isActive   Boolean  @default(true) @map("is_active")
+  retryCount Int      @default(3) @map("retry_count")
+  timeoutMs  Int      @default(30000) @map("timeout_ms")
+  createdBy  String?  @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  tenant  Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator User?   @relation(fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("webhooks")
+}
+
+model Integration {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String?   @map("tenant_id") @db.Uuid
+  name        String
+  type        String
+  endpointUrl String?   @map("endpoint_url") @db.Text
+  config      Json
+  apiKey      String?   @map("api_key")
+  apiSecret   String?   @map("api_secret")
+  isActive    Boolean   @default(true) @map("is_active")
+  lastSyncAt  DateTime? @map("last_sync_at")
+  syncStatus  Json?     @map("sync_status")
+  createdBy   String?   @map("created_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tenant  Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator User?   @relation(fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([isActive])
+  @@map("integrations")
+}
