@@ -1,0 +1,84 @@
+// Workflow Service Prisma Schema
+// Contains: workflows, workflow_states
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+  code String @unique
+
+  workflows Workflow[]
+
+  @@map("tenants")
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+
+  workflowsCreated Workflow[]
+  workflowStates    WorkflowState[]
+
+  @@map("users")
+}
+
+model Case {
+  id String @id @default(uuid()) @db.Uuid
+
+  workflowStates WorkflowState[]
+
+  @@map("cases")
+}
+
+model Workflow {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  name        String
+  description String?  @db.Text
+  definition  Json
+  version     Int      @default(1)
+  isActive    Boolean  @default(true) @map("is_active")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator        User?           @relation(fields: [createdBy], references: [id])
+  workflowStates WorkflowState[]
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@index([tenantId, isDefault])
+  @@map("workflows")
+}
+
+model WorkflowState {
+  id              String   @id @default(uuid()) @db.Uuid
+  caseId          String   @map("case_id") @db.Uuid
+  workflowId      String   @map("workflow_id") @db.Uuid
+  currentState    String   @map("current_state")
+  previousState   String?  @map("previous_state")
+  transitionedBy  String?  @map("transitioned_by") @db.Uuid
+  transitionNotes String?  @map("transition_notes") @db.Text
+  stateData       Json?    @map("state_data")
+  transitionedAt  DateTime @default(now()) @map("transitioned_at")
+
+  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  transitioner User?    @relation(fields: [transitionedBy], references: [id])
+
+  @@index([caseId])
+  @@index([workflowId])
+  @@index([currentState])
+  @@index([transitionedAt])
+  @@map("workflow_states")
+}
+

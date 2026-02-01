@@ -1,0 +1,21 @@
+{
+  "name": "rbac-service",
+  "version": "1.0.0",
+  "description": "IACMS RBAC Service - Role-based access control",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "@prisma/client": "^6.0.0",
+    "prisma": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "ioredis": "^5.3.2"
+  }
+}
+

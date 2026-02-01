@@ -1,0 +1,75 @@
+// Referral Service Prisma Schema
+// Contains: case_referrals
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+  code String @unique
+
+  referralsFrom CaseReferral[] @relation("ReferralFrom")
+  referralsTo   CaseReferral[] @relation("ReferralTo")
+
+  @@map("tenants")
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+
+  referralsMade     CaseReferral[] @relation("ReferralMadeBy")
+  referralsAccepted CaseReferral[] @relation("ReferralAcceptedBy")
+  referralsRejected CaseReferral[] @relation("ReferralRejectedBy")
+
+  @@map("users")
+}
+
+model Case {
+  id String @id @default(uuid()) @db.Uuid
+
+  referrals CaseReferral[]
+
+  @@map("cases")
+}
+
+model CaseReferral {
+  id             String    @id @default(uuid()) @db.Uuid
+  caseId         String    @map("case_id") @db.Uuid
+  fromTenantId   String    @map("from_tenant_id") @db.Uuid
+  toTenantId     String    @map("to_tenant_id") @db.Uuid
+  referralReason String?   @map("referral_reason") @db.Text
+  notes          String?   @db.Text
+  status         String    @default("pending")
+  referredBy     String    @map("referred_by") @db.Uuid
+  acceptedBy     String?   @map("accepted_by") @db.Uuid
+  rejectedBy     String?   @map("rejected_by") @db.Uuid
+  referredAt     DateTime  @default(now()) @map("referred_at")
+  acceptedAt     DateTime? @map("accepted_at")
+  rejectedAt     DateTime? @map("rejected_at")
+  completedAt    DateTime? @map("completed_at")
+  metadata       Json?
+
+  case       Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fromTenant Tenant @relation("ReferralFrom", fields: [fromTenantId], references: [id])
+  toTenant   Tenant @relation("ReferralTo", fields: [toTenantId], references: [id])
+  referrer   User   @relation("ReferralMadeBy", fields: [referredBy], references: [id])
+  accepter   User?  @relation("ReferralAcceptedBy", fields: [acceptedBy], references: [id])
+  rejecter   User?  @relation("ReferralRejectedBy", fields: [rejectedBy], references: [id])
+
+  @@index([caseId])
+  @@index([fromTenantId])
+  @@index([toTenantId])
+  @@index([status])
+  @@index([fromTenantId, status])
+  @@index([toTenantId, status])
+  @@index([referredAt])
+  @@map("case_referrals")
+}
+

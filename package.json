@@ -1,47 +1,40 @@
 {
   "name": "iacms",
   "version": "1.0.0",
-  "description": "Inter-Agency Case Management Platform - Backend API",
-  "main": "src/server.js",
+  "description": "Inter-Agency Case Management Platform - Microservices Architecture",
+  "private": true,
   "type": "module",
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "lint": "eslint src/**/*.js",
-    "lint:fix": "eslint src/**/*.js --fix",
-    "format": "prettier --write \"src/**/*.js\"",
-    "format:check": "prettier --check \"src/**/*.js\"",
-    "prisma:generate": "prisma generate",
-    "migrate": "prisma migrate dev",
-    "migrate:deploy": "prisma migrate deploy",
-    "migrate:status": "prisma migrate status",
-    "studio": "prisma studio",
-    "prisma:format": "prisma format",
-    "prisma:validate": "prisma validate",
-    "prisma:db:pull": "prisma db pull"
-  },
   "keywords": [
     "case-management",
     "government",
     "multi-tenant",
     "workflow",
-    "api"
+    "api",
+    "microservices"
   ],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@prisma/client": "^6.0.0",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "pg": "^8.16.3",
-    "prisma": "^6.0.0"
+  "workspaces": [
+    "services/*"
+  ],
+  "scripts": {
+    "docker:up": "cd infrastructure && docker-compose up -d postgres redis",
+    "docker:down": "cd infrastructure && docker-compose down",
+    "docker:all": "cd infrastructure && docker-compose up -d",
+    "docker:logs": "cd infrastructure && docker-compose logs -f",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate deploy",
+    "prisma:migrate:dev": "npx prisma migrate dev",
+    "prisma:studio": "npx prisma studio",
+    "db:seed": "node prisma/seed.js",
+    "db:reset": "npx prisma migrate reset --force",
+    "setup": "npm run docker:up && timeout /t 5 && npm run prisma:migrate && npm run db:seed"
   },
   "devDependencies": {
-    "eslint": "^9.39.2",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "prettier": "^3.7.4"
+    "prisma": "^6.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "bcryptjs": "^2.4.3"
   }
 }

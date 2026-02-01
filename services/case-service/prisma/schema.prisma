@@ -1,0 +1,115 @@
+// Case Service Prisma Schema
+// Contains: cases, assignments, case_attachments
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+  code String @unique
+
+  cases           Case[]           @relation("CaseTenant")
+  casesOriginated Case[]           @relation("CaseOriginatingTenant")
+  casesCurrent    Case[]           @relation("CaseCurrentTenant")
+  attachments     CaseAttachment[]
+
+  @@map("tenants")
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+
+  casesCreated  Case[]       @relation("CaseCreator")
+  casesAssigned Case[]       @relation("CaseAssignee")
+  assignments   Assignment[]
+  attachments   CaseAttachment[]
+
+  @@map("users")
+}
+
+model Case {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  originatingTenantId String?   @map("originating_tenant_id") @db.Uuid
+  currentTenantId      String?   @map("current_tenant_id") @db.Uuid
+  referralStatus      String    @default("none") @map("referral_status")
+  caseNumber          String    @unique @map("case_number")
+  title               String
+  description         String?   @db.Text
+  type                String
+  priority            String    @default("normal")
+  status              String    @default("open")
+  workflowId          String?   @map("workflow_id") @db.Uuid
+  assignedTo          String?   @map("assigned_to") @db.Uuid
+  createdBy           String    @map("created_by") @db.Uuid
+  metadata            Json?
+  dueDate             DateTime? @map("due_date")
+  resolvedAt          DateTime? @map("resolved_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
+
+  tenant            Tenant           @relation("CaseTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  originatingTenant Tenant?          @relation("CaseOriginatingTenant", fields: [originatingTenantId], references: [id])
+  currentTenant     Tenant?          @relation("CaseCurrentTenant", fields: [currentTenantId], references: [id])
+  assignee          User?            @relation("CaseAssignee", fields: [assignedTo], references: [id])
+  creator           User             @relation("CaseCreator", fields: [createdBy], references: [id])
+  assignments       Assignment[]
+  attachments       CaseAttachment[]
+
+  @@index([tenantId])
+  @@index([caseNumber])
+  @@index([tenantId, status])
+  @@map("cases")
+}
+
+model Assignment {
+  id             String    @id @default(uuid()) @db.Uuid
+  caseId         String    @map("case_id") @db.Uuid
+  assignedTo     String    @map("assigned_to") @db.Uuid
+  assignedBy     String    @map("assigned_by") @db.Uuid
+  assignmentType String    @default("manual") @map("assignment_type")
+  notes          String?   @db.Text
+  assignedAt     DateTime  @default(now()) @map("assigned_at")
+  unassignedAt   DateTime? @map("unassigned_at")
+  isActive       Boolean   @default(true) @map("is_active")
+
+  case     Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  assignee User @relation(fields: [assignedTo], references: [id])
+  assigner User @relation(fields: [assignedBy], references: [id])
+
+  @@index([caseId])
+  @@index([assignedTo])
+  @@map("assignments")
+}
+
+model CaseAttachment {
+  id               String    @id @default(uuid()) @db.Uuid
+  caseId           String    @map("case_id") @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  filename         String
+  originalFilename String    @map("original_filename")
+  mimeType         String    @map("mime_type")
+  fileSize         Int       @map("file_size")
+  filePath         String    @map("file_path") @db.Text
+  description      String?   @db.Text
+  uploadedBy       String    @map("uploaded_by") @db.Uuid
+  uploadedAt       DateTime  @default(now()) @map("uploaded_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  case     Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploader User   @relation(fields: [uploadedBy], references: [id])
+
+  @@index([caseId])
+  @@index([tenantId])
+  @@map("case_attachments")
+}
+

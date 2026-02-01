@@ -1,0 +1,224 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: iacms-postgres
+    environment:
+      POSTGRES_DB: iacms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: iacms-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: iacms-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      AUTH_SERVICE_URL: http://auth-service:3001
+      RBAC_SERVICE_URL: http://rbac-service:3002
+      CASE_SERVICE_URL: http://case-service:3003
+      WORKFLOW_SERVICE_URL: http://workflow-service:3004
+      REFERRAL_SERVICE_URL: http://referral-service:3005
+      AUDIT_SERVICE_URL: http://audit-service:3006
+      INTEGRATION_SERVICE_URL: http://integration-service:3007
+      NOTIFICATION_SERVICE_URL: http://notification-service:3008
+    depends_on:
+      - auth-service
+      - case-service
+    networks:
+      - iacms-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ..
+      dockerfile: services/auth-service/Dockerfile
+    container_name: iacms-auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: change-this-secret-key
+      JWT_EXPIRES_IN: 24h
+      JWT_REFRESH_EXPIRES_IN: 7d
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # RBAC Service
+  rbac-service:
+    build:
+      context: ..
+      dockerfile: services/rbac-service/Dockerfile
+    container_name: iacms-rbac-service
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Case Service
+  case-service:
+    build:
+      context: ..
+      dockerfile: services/case-service/Dockerfile
+    container_name: iacms-case-service
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Workflow Service
+  workflow-service:
+    build:
+      context: ..
+      dockerfile: services/workflow-service/Dockerfile
+    container_name: iacms-workflow-service
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Referral Service
+  referral-service:
+    build:
+      context: ..
+      dockerfile: services/referral-service/Dockerfile
+    container_name: iacms-referral-service
+    ports:
+      - "3005:3005"
+    environment:
+      PORT: 3005
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Audit Service
+  audit-service:
+    build:
+      context: ..
+      dockerfile: services/audit-service/Dockerfile
+    container_name: iacms-audit-service
+    ports:
+      - "3006:3006"
+    environment:
+      PORT: 3006
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Integration Service
+  integration-service:
+    build:
+      context: ..
+      dockerfile: services/integration-service/Dockerfile
+    container_name: iacms-integration-service
+    ports:
+      - "3007:3007"
+    environment:
+      PORT: 3007
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ..
+      dockerfile: services/notification-service/Dockerfile
+    container_name: iacms-notification-service
+    ports:
+      - "3008:3008"
+    environment:
+      PORT: 3008
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+volumes:
+  postgres_data:
+
+networks:
+  iacms-network:
+    driver: bridge
+

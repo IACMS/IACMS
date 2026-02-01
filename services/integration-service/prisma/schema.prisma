@@ -1,0 +1,79 @@
+// Integration Service Prisma Schema
+// Contains: webhooks, integrations
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+  code String @unique
+
+  webhooks    Webhook[]
+  integrations Integration[]
+
+  @@map("tenants")
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+
+  webhooksCreated    Webhook[]
+  integrationsCreated Integration[]
+
+  @@map("users")
+}
+
+model Webhook {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String?  @map("tenant_id") @db.Uuid
+  name       String
+  url        String   @db.Text
+  secret     String?
+  events     Json
+  isActive   Boolean  @default(true) @map("is_active")
+  retryCount Int      @default(3) @map("retry_count")
+  timeoutMs  Int      @default(30000) @map("timeout_ms")
+  createdBy  String?  @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  tenant  Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator User?   @relation(fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("webhooks")
+}
+
+model Integration {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String?   @map("tenant_id") @db.Uuid
+  name        String
+  type        String
+  endpointUrl String?   @map("endpoint_url") @db.Text
+  config      Json
+  apiKey      String?   @map("api_key")
+  apiSecret   String?   @map("api_secret")
+  isActive    Boolean   @default(true) @map("is_active")
+  lastSyncAt  DateTime? @map("last_sync_at")
+  syncStatus  Json?     @map("sync_status")
+  createdBy   String?   @map("created_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  tenant  Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator User?   @relation(fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([type])
+  @@index([isActive])
+  @@map("integrations")
+}
+
