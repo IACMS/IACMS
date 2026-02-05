@@ -4,14 +4,302 @@
 ---
 
 ## Table of Contents
-1. [Overview](#overview)
-2. [Core Tables](#core-tables)
-3. [RBAC Tables](#rbac-tables)
-4. [Case Management Tables](#case-management-tables)
-5. [Audit & Integration Tables](#audit--integration-tables)
-6. [Relationships Diagram](#relationships-diagram)
-7. [Real-World Examples](#real-world-examples)
-8. [Common Queries](#common-queries)
+1. [Simple Overview (Beginner-Friendly)](#simple-overview-beginner-friendly)
+2. [Overview](#overview)
+3. [Core Tables](#core-tables)
+4. [RBAC Tables](#rbac-tables)
+5. [Case Management Tables](#case-management-tables)
+6. [Audit & Integration Tables](#audit--integration-tables)
+7. [Relationships Diagram](#relationships-diagram)
+8. [Real-World Examples](#real-world-examples)
+9. [Common Queries](#common-queries)
+
+---
+
+## Simple Overview (Beginner-Friendly)
+
+### What is a Database?
+
+Think of a database like a **digital filing cabinet**. Each drawer in the cabinet is called a **table**, and each table stores a specific type of information.
+
+### The 15 Tables Explained Simply
+
+Our system has 15 "drawers" (tables) organized into 4 groups:
+
+---
+
+### 🏢 Group 1: Core Tables (The Foundation)
+
+These tables answer: **"Who uses the system?"**
+
+| Table | Simple Explanation | Real-World Analogy |
+|-------|-------------------|-------------------|
+| **tenants** | List of organizations using the system | Like a list of companies renting office space in a building |
+| **users** | People who log into the system | Like employee ID cards for each organization |
+
+**Example:**
+- `tenants`: Police Department, Court System, Health Services
+- `users`: John Doe (works at Police), Judge Brown (works at Courts)
+
+**Why separate tables?**
+- One organization can have many employees
+- Each employee belongs to exactly one organization
+- Keeps data organized and secure
+
+---
+
+### 🔐 Group 2: RBAC Tables (Security & Permissions)
+
+These tables answer: **"Who can do what?"**
+
+RBAC = **R**ole-**B**ased **A**ccess **C**ontrol
+
+| Table | Simple Explanation | Real-World Analogy |
+|-------|-------------------|-------------------|
+| **roles** | Job titles/positions | Like "Manager", "Officer", "Intern" |
+| **permissions** | Specific actions someone can do | Like keys to different rooms |
+| **role_permissions** | Which roles have which permissions | Like a chart showing which job title gets which keys |
+| **user_roles** | Which users have which roles | Like assigning job titles to employees |
+
+**Example Flow:**
+```
+John Doe (user) 
+    → has role "Case Officer" (user_roles)
+    → "Case Officer" role has permissions (role_permissions)
+    → Permissions: "create case", "read case", "update case"
+    → John can create, read, and update cases!
+```
+
+**Why 4 separate tables instead of 1?**
+- **Flexibility**: One person can have multiple roles
+- **Reusability**: Same role can be given to many people
+- **Easy changes**: Update a role once, affects everyone with that role
+
+---
+
+### 📁 Group 3: Case Management Tables (The Main Work)
+
+These tables answer: **"What work is being done?"**
+
+| Table | Simple Explanation | Real-World Analogy |
+|-------|-------------------|-------------------|
+| **cases** | The actual case files | Like folders in a filing cabinet |
+| **workflows** | Rules for how cases move through stages | Like a flowchart showing steps to complete a task |
+| **workflow_states** | History of a case moving through stages | Like stamps showing when a package passed each checkpoint |
+| **assignments** | Who is working on which case | Like a task assignment board |
+| **case_referrals** | Sending cases to other organizations | Like forwarding a letter to another department |
+| **case_attachments** | Files attached to cases | Like documents stapled to a case folder |
+
+**Example - Case Lifecycle:**
+```
+1. Case Created (cases table)
+   → Status: "Open"
+   → Assigned to: Officer John
+
+2. Officer works on it (workflow_states)
+   → Status changes: "Open" → "Investigation" → "Review"
+
+3. Case needs Court (case_referrals)
+   → Referred to: Court System
+   → Status: "Pending acceptance"
+
+4. Court accepts and continues work
+   → New assignment in Courts
+
+5. Case closed (workflow_states)
+   → Final status: "Closed"
+```
+
+---
+
+### 📊 Group 4: Audit & Integration Tables (Record Keeping)
+
+These tables answer: **"What happened and how do we connect to other systems?"**
+
+| Table | Simple Explanation | Real-World Analogy |
+|-------|-------------------|-------------------|
+| **audit_logs** | Record of every action taken | Like security camera footage - records everything |
+| **webhooks** | Automatic notifications to other systems | Like automatic email alerts |
+| **integrations** | Connections to external systems | Like bridges connecting to other buildings |
+
+**Why Audit Logs?**
+- **Accountability**: Know who did what and when
+- **Compliance**: Government systems require complete records
+- **Investigation**: If something goes wrong, can trace back
+
+---
+
+### How Tables Connect (Relationships)
+
+Think of relationships like connections between tables:
+
+```
+                    ┌─────────────────┐
+                    │    TENANTS      │
+                    │  (Organizations)│
+                    └────────┬────────┘
+                             │
+            ┌────────────────┼────────────────┐
+            │                │                │
+            ▼                ▼                ▼
+    ┌───────────┐    ┌───────────┐    ┌───────────┐
+    │   USERS   │    │   CASES   │    │ WORKFLOWS │
+    │ (People)  │    │  (Work)   │    │  (Rules)  │
+    └─────┬─────┘    └─────┬─────┘    └───────────┘
+          │                │
+          ▼                ▼
+    ┌───────────┐    ┌───────────────────────────┐
+    │USER_ROLES │    │ WORKFLOW_STATES           │
+    │           │    │ ASSIGNMENTS               │
+    └─────┬─────┘    │ CASE_REFERRALS            │
+          │          │ CASE_ATTACHMENTS          │
+          ▼          └───────────────────────────┘
+    ┌───────────┐
+    │   ROLES   │
+    └─────┬─────┘
+          │
+          ▼
+    ┌─────────────────┐
+    │ROLE_PERMISSIONS │
+    └─────┬───────────┘
+          │
+          ▼
+    ┌───────────┐
+    │PERMISSIONS│
+    └───────────┘
+```
+
+---
+
+### Key Concepts Explained Simply
+
+#### 1. Multi-Tenancy (Data Isolation)
+**Problem:** Police and Courts both use the same system, but Police shouldn't see Court's private data.
+
+**Solution:** Every record has a `tenant_id` tag:
+```
+Case #1: tenant_id = "Police"    → Only Police users can see this
+Case #2: tenant_id = "Courts"    → Only Courts users can see this
+```
+
+It's like having separate folders for each organization in the same cabinet.
+
+#### 2. UUID (Unique Identifiers)
+Instead of simple numbers (1, 2, 3), we use long random codes like:
+```
+550e8400-e29b-41d4-a716-446655440000
+```
+
+**Why?**
+- Works across multiple servers
+- Can't guess other IDs (security)
+- No conflicts when merging data
+
+#### 3. Junction Tables (Many-to-Many)
+**Problem:** One user can have many roles, AND one role can belong to many users.
+
+**Solution:** Create a middle table (`user_roles`) that links them:
+```
+USERS table          USER_ROLES table       ROLES table
+┌─────────┐         ┌────────────────┐     ┌─────────┐
+│ John    │─────────│ John → Admin   │─────│ Admin   │
+│ Jane    │─────────│ John → Officer │     │ Officer │
+│ Bob     │         │ Jane → Admin   │─────│ Viewer  │
+└─────────┘         │ Jane → Viewer  │     └─────────┘
+                    │ Bob  → Viewer  │
+                    └────────────────┘
+```
+
+#### 4. Foreign Keys (Connections)
+When one table references another, we use a "foreign key":
+```
+CASES table
+┌──────────────────────────────────┐
+│ id: "case-001"                   │
+│ title: "Theft Case"              │
+│ tenant_id: "police-123"  ←───────│── Points to TENANTS table
+│ created_by: "user-456"   ←───────│── Points to USERS table
+│ workflow_id: "wf-789"    ←───────│── Points to WORKFLOWS table
+└──────────────────────────────────┘
+```
+
+#### 5. Soft Delete vs Hard Delete
+**Hard Delete:** Record is permanently removed (gone forever)
+**Soft Delete:** Record gets a `deleted_at` timestamp (hidden but recoverable)
+
+```
+-- Hard Delete (dangerous)
+DELETE FROM cases WHERE id = 'case-001';  -- Gone forever!
+
+-- Soft Delete (safe)
+UPDATE cases SET deleted_at = NOW() WHERE id = 'case-001';  -- Hidden but can be restored
+```
+
+---
+
+### Visual Summary: All 15 Tables
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     IACMS DATABASE                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  🏢 CORE (Foundation)                                           │
+│  ┌──────────┐  ┌──────────┐                                     │
+│  │ tenants  │  │  users   │                                     │
+│  │(1 record │  │(1 record │                                     │
+│  │ per org) │  │per person│                                     │
+│  └──────────┘  └──────────┘                                     │
+│                                                                 │
+│  🔐 RBAC (Security)                                             │
+│  ┌──────────┐  ┌────────────┐  ┌──────────────────┐  ┌────────┐│
+│  │  roles   │  │permissions │  │role_permissions  │  │user_   ││
+│  │(job      │  │(actions    │  │(role→permission) │  │roles   ││
+│  │ titles)  │  │ allowed)   │  │                  │  │        ││
+│  └──────────┘  └────────────┘  └──────────────────┘  └────────┘│
+│                                                                 │
+│  📁 CASE MANAGEMENT (Main Work)                                 │
+│  ┌──────────┐  ┌───────────┐  ┌─────────────────┐              │
+│  │  cases   │  │ workflows │  │ workflow_states │              │
+│  │(the work)│  │(the rules)│  │(history)        │              │
+│  └──────────┘  └───────────┘  └─────────────────┘              │
+│  ┌────────────┐  ┌────────────────┐  ┌──────────────────┐      │
+│  │assignments │  │case_referrals  │  │case_attachments  │      │
+│  │(who works) │  │(share between  │  │(files)           │      │
+│  │            │  │ organizations) │  │                  │      │
+│  └────────────┘  └────────────────┘  └──────────────────┘      │
+│                                                                 │
+│  📊 AUDIT & INTEGRATION (Record Keeping)                        │
+│  ┌────────────┐  ┌──────────┐  ┌──────────────┐                │
+│  │ audit_logs │  │ webhooks │  │ integrations │                │
+│  │(who did    │  │(auto     │  │(connections  │                │
+│  │ what when) │  │ alerts)  │  │ to others)   │                │
+│  └────────────┘  └──────────┘  └──────────────┘                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Quick Reference: What Each Table Stores
+
+| # | Table Name | Stores | Example Record |
+|---|------------|--------|----------------|
+| 1 | `tenants` | Organizations | Police Department, code: POLICE |
+| 2 | `users` | People/accounts | John Doe, email: john@police.gov |
+| 3 | `roles` | Job titles | "Admin", "Case Manager", "Viewer" |
+| 4 | `permissions` | Allowed actions | "cases:create", "users:delete" |
+| 5 | `role_permissions` | Role→Permission links | Admin role has all permissions |
+| 6 | `user_roles` | User→Role links | John has Admin role |
+| 7 | `workflows` | Process definitions | 5 steps: open→review→closed |
+| 8 | `cases` | Case records | Theft Case #123, priority: high |
+| 9 | `workflow_states` | State change history | Case moved from "open" to "review" |
+| 10 | `assignments` | Who works on what | Case #123 assigned to John |
+| 11 | `case_referrals` | Cross-org sharing | Police sent case to Courts |
+| 12 | `case_attachments` | Uploaded files | evidence_photo.jpg |
+| 13 | `audit_logs` | Action history | John created case at 10:00 AM |
+| 14 | `webhooks` | Auto-notifications | Send alert when case created |
+| 15 | `integrations` | External connections | Link to legacy police system |
 
 ---
 
