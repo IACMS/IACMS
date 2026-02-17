@@ -1,6 +1,10 @@
 /**
  * Authentication Middleware for API Gateway
- * Validates JWT tokens and extracts user information
+ * Supports dual authentication: Session-based (cookies) and JWT (tokens)
+ * 
+ * Priority:
+ * 1. Session authentication (for web browsers)
+ * 2. JWT authentication (for API clients)
  */
 
 import jwt from 'jsonwebtoken';
@@ -12,9 +16,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'iacms-dev-secret-key-change-in-pro
  * Note: Paths are relative to the /api/v1 mount point
  */
 const PUBLIC_ROUTES = [
+  // Auth service routes
   { method: 'POST', path: '/auth/login' },
   { method: 'POST', path: '/auth/register' },
   { method: 'POST', path: '/auth/refresh' },
+  // Session routes (handled at gateway level)
+  { method: 'POST', path: '/session/login' },
+  // Tenant validation
   { method: 'GET', path: '/tenants/validate' },
 ];
 
@@ -30,8 +38,44 @@ function isPublicRoute(method, path) {
 }
 
 /**
+ * Extract Bearer token from Authorization header
+ */
+function extractBearerToken(req) {
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+  return null;
+}
+
+/**
+ * Set user context headers for downstream services
+ */
+function setUserHeaders(req, user) {
+  req.headers['x-user-id'] = user.id;
+  req.headers['x-tenant-id'] = user.tenantId;
+  req.headers['x-user-email'] = user.email;
+  if (user.firstName) req.headers['x-user-firstname'] = user.firstName;
+  if (user.lastName) req.headers['x-user-lastname'] = user.lastName;
+}
+
+/**
+ * Validate JWT token and return decoded payload
+ */
+function validateJwtToken(token) {
+  try {
+    return { valid: true, payload: jwt.verify(token, JWT_SECRET) };
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return { valid: false, error: 'TOKEN_EXPIRED', message: 'Authentication token has expired' };
+    }
+    return { valid: false, error: 'INVALID_TOKEN', message: 'Invalid authentication token' };
+  }
+}
+
+/**
  * Authentication middleware
- * Validates JWT token and attaches user info to request
+ * Checks session first, then falls back to JWT
  */
 export function authenticate(req, res, next) {
   // Skip authentication for public routes
@@ -39,82 +83,126 @@ export function authenticate(req, res, next) {
     return next();
   }
 
-  // Get token from Authorization header
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-  if (!token) {
-    return res.status(401).json({
-      error: {
-        code: 'UNAUTHORIZED',
-        message: 'Authentication token required',
-      },
-    });
-  }
-
-  try {
-    // Verify and decode token
-    const decoded = jwt.verify(token, JWT_SECRET);
+  // Strategy 1: Check for valid session (web browser authentication)
+  if (req.session && req.session.user) {
+    const sessionUser = req.session.user;
     
-    // Attach user info to request
+    // Attach user to request
     req.user = {
-      id: decoded.id,
-      tenantId: decoded.tenantId,
-      email: decoded.email,
+      id: sessionUser.id,
+      tenantId: sessionUser.tenantId,
+      email: sessionUser.email,
+      firstName: sessionUser.firstName,
+      lastName: sessionUser.lastName,
     };
+    req.authMethod = 'session';
+    
+    // Set headers for downstream services
+    setUserHeaders(req, req.user);
+    
+    // Touch session to extend expiry (rolling session)
+    req.session.lastAccessed = new Date().toISOString();
+    
+    return next();
+  }
 
-    // Forward user info to downstream services via headers
-    req.headers['x-user-id'] = decoded.id;
-    req.headers['x-tenant-id'] = decoded.tenantId;
-    req.headers['x-user-email'] = decoded.email;
-
-    next();
-  } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        error: {
-          code: 'TOKEN_EXPIRED',
-          message: 'Authentication token has expired',
-        },
-      });
+  // Strategy 2: Fall back to JWT token (API client authentication)
+  const token = extractBearerToken(req);
+  
+  if (token) {
+    const result = validateJwtToken(token);
+    
+    if (result.valid) {
+      const decoded = result.payload;
+      
+      // Attach user to request
+      req.user = {
+        id: decoded.id,
+        tenantId: decoded.tenantId,
+        email: decoded.email,
+      };
+      req.authMethod = 'jwt';
+      
+      // Set headers for downstream services
+      setUserHeaders(req, req.user);
+      
+      return next();
     }
-
+    
+    // Token provided but invalid
     return res.status(401).json({
       error: {
-        code: 'INVALID_TOKEN',
-        message: 'Invalid authentication token',
+        code: result.error,
+        message: result.message,
       },
     });
   }
+
+  // No authentication provided
+  return res.status(401).json({
+    error: {
+      code: 'UNAUTHORIZED',
+      message: 'Authentication required. Provide a valid session cookie or Bearer token.',
+    },
+  });
 }
 
 /**
  * Optional authentication middleware
- * Validates token if present, but doesn't require it
+ * Validates session/token if present, but doesn't require it
  */
 export function optionalAuth(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
+  // Try session first
+  if (req.session && req.session.user) {
+    const sessionUser = req.session.user;
+    req.user = {
+      id: sessionUser.id,
+      tenantId: sessionUser.tenantId,
+      email: sessionUser.email,
+      firstName: sessionUser.firstName,
+      lastName: sessionUser.lastName,
+    };
+    req.authMethod = 'session';
+    setUserHeaders(req, req.user);
     return next();
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = {
-      id: decoded.id,
-      tenantId: decoded.tenantId,
-      email: decoded.email,
-    };
-    req.headers['x-user-id'] = decoded.id;
-    req.headers['x-tenant-id'] = decoded.tenantId;
-    req.headers['x-user-email'] = decoded.email;
-  } catch (error) {
-    // Token invalid but optional, continue without user
+  // Try JWT
+  const token = extractBearerToken(req);
+  if (token) {
+    const result = validateJwtToken(token);
+    if (result.valid) {
+      const decoded = result.payload;
+      req.user = {
+        id: decoded.id,
+        tenantId: decoded.tenantId,
+        email: decoded.email,
+      };
+      req.authMethod = 'jwt';
+      setUserHeaders(req, req.user);
+    }
   }
 
+  // Continue regardless of authentication status
   next();
+}
+
+/**
+ * Require specific authentication method
+ * Use when you need to enforce session-only or JWT-only auth
+ */
+export function requireAuthMethod(method) {
+  return (req, res, next) => {
+    if (req.authMethod !== method) {
+      return res.status(401).json({
+        error: {
+          code: 'INVALID_AUTH_METHOD',
+          message: `This endpoint requires ${method} authentication`,
+        },
+      });
+    }
+    next();
+  };
 }
 
 export default authenticate;

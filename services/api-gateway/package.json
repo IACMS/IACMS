@@ -9,11 +9,14 @@
     "dev": "node --watch src/server.js"
   },
   "dependencies": {
-    "express": "^5.2.1",
-    "http-proxy-middleware": "^3.0.3",
-    "dotenv": "^17.2.3",
+    "connect-pg-simple": "^10.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "jsonwebtoken": "^9.0.2"
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "http-proxy-middleware": "^3.0.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.18.0"
   }
 }
-
