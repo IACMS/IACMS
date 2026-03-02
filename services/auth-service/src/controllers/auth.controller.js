@@ -148,13 +148,20 @@ export async function login(req, res, next) {
  */
 export async function register(req, res, next) {
   try {
-    // Validate input
-    const { email, password, firstName, lastName, tenantId, username } = validateRegisterRequest(req.body);
+    // Validate input - accepts either tenantCode or tenantId
+    const { email, password, firstName, lastName, tenantId, tenantCode, username } = validateRegisterRequest(req.body);
 
-    // Check if tenant exists and is active
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId },
-    });
+    // Find tenant by code or ID
+    let tenant;
+    if (tenantCode) {
+      tenant = await prisma.tenant.findUnique({
+        where: { code: tenantCode },
+      });
+    } else if (tenantId) {
+      tenant = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+      });
+    }
 
     if (!tenant) {
       throw new NotFoundError('Tenant');
@@ -167,7 +174,7 @@ export async function register(req, res, next) {
     // Check if user exists (by email)
     const existingUser = await prisma.user.findFirst({
       where: {
-        tenantId,
+        tenantId: tenant.id,
         OR: [
           { email },
           ...(username ? [{ username }] : []),
@@ -195,7 +202,7 @@ export async function register(req, res, next) {
         passwordHash,
         firstName,
         lastName,
-        tenantId,
+        tenantId: tenant.id,
       },
       include: {
         tenant: true,

@@ -172,16 +172,23 @@ export function validateLoginRequest(body) {
 
 /**
  * Validate registration request
+ * Accepts either tenantCode (preferred) or tenantId (UUID)
  */
 export function validateRegisterRequest(body) {
-  const { email, password, firstName, lastName, tenantId, username } = body || {};
+  const { email, password, firstName, lastName, tenantId, tenantCode, username } = body || {};
+  
+  // Must provide either tenantCode or tenantId
+  if (!tenantCode && !tenantId) {
+    throw new ValidationError('Tenant code is required');
+  }
   
   return {
     email: validateEmail(email),
     password: validatePassword(password),
     firstName: validateName(firstName, 'First name'),
     lastName: validateName(lastName, 'Last name'),
-    tenantId: validateUUID(tenantId, 'Tenant ID'),
+    tenantCode: tenantCode ? validateTenantCode(tenantCode) : null,
+    tenantId: tenantId ? validateUUID(tenantId, 'Tenant ID') : null,
     username: validateUsername(username),
   };
 }

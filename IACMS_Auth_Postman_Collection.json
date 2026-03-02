@@ -1,0 +1,688 @@
+{
+  "info": {
+    "_postman_id": "iacms-auth-collection",
+    "name": "IACMS Authentication",
+    "description": "Complete authentication testing collection for IACMS.\n\nIncludes:\n- Health Check\n- JWT Authentication (for API clients)\n- Session Authentication (for web browsers)\n\n**Test Order:**\n1. Health Check\n2. JWT Login → JWT Protected Route\n3. Session Login → Session Status → Session Protected Route → Session Logout",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health & Setup",
+      "description": "Verify services are running",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if API Gateway is running and session auth is enabled.\n\n**Expected Response:**\n```json\n{\n  \"status\": \"ok\",\n  \"features\": {\n    \"sessionAuth\": true,\n    \"jwtAuth\": true\n  }\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Auth Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/health",
+              "host": ["http://localhost:3001"],
+              "path": ["health"]
+            },
+            "description": "Check if Auth Service is running directly."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. JWT Authentication (API Clients)",
+      "description": "Traditional token-based authentication for mobile apps and API clients.\n\nFlow:\n1. Login → Get tokens\n2. Use Bearer token in Authorization header\n3. Refresh token when expired",
+      "item": [
+        {
+          "name": "JWT Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse response",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "// Save tokens to collection variables",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "    console.log('Access token saved!');",
+                  "}",
+                  "",
+                  "if (jsonData.refreshToken) {",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "    console.log('Refresh token saved!');",
+                  "}",
+                  "",
+                  "// Tests",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has accessToken', function () {",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "});",
+                  "",
+                  "pm.test('Response has user data', function () {",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    pm.expect(jsonData.user).to.have.property('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login with email/password to get JWT tokens.\n\n**Request Body:**\n```json\n{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"TEST-ORG\"\n}\n```\n\n**Expected Response:**\n- `accessToken`: JWT for API requests (24h expiry)\n- `refreshToken`: JWT for refreshing access token (7d expiry)\n- `user`: User profile data\n\n**Auto-saves tokens** to collection variables for use in subsequent requests."
+          },
+          "response": []
+        },
+        {
+          "name": "JWT Protected Route (Profile)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has user data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT token from login"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Access a protected route using JWT Bearer token.\n\n**Authorization Header:**\n```\nAuthorization: Bearer <accessToken>\n```\n\nThe `{{accessToken}}` variable is automatically set after JWT Login."
+          },
+          "response": []
+        },
+        {
+          "name": "JWT Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "    console.log('New access token saved!');",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has new accessToken', function () {",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Get a new access token using the refresh token.\n\nUse this when your access token has expired."
+          },
+          "response": []
+        },
+        {
+          "name": "JWT Without Token (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Error code is UNAUTHORIZED', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error.code).to.equal('UNAUTHORIZED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Try to access protected route without any authentication.\n\n**Expected:** 401 Unauthorized error"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Session Authentication (Web Browsers)",
+      "description": "Cookie-based authentication for web browsers.\n\nFlow:\n1. Session Login → Cookie set automatically\n2. All subsequent requests use cookie (no header needed)\n3. Session Logout → Cookie cleared",
+      "item": [
+        {
+          "name": "Session Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Auth method is session', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.authMethod).to.equal('session');",
+                  "});",
+                  "",
+                  "pm.test('Response has user data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    pm.expect(jsonData.user).to.have.property('email');",
+                  "});",
+                  "",
+                  "pm.test('Cookie was set', function () {",
+                  "    pm.expect(pm.cookies.has('iacms.sid')).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "session", "login"]
+            },
+            "description": "Login and create a session stored in PostgreSQL.\n\n**Request Body:**\n```json\n{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"TEST-ORG\"\n}\n```\n\n**Expected Response:**\n- `authMethod`: \"session\"\n- `user`: User profile\n- `tokens`: JWT tokens (also provided for flexibility)\n\n**Cookie Set:**\n```\nSet-Cookie: iacms.sid=...; HttpOnly; SameSite=Lax\n```\n\nCheck the **Cookies** tab to see the `iacms.sid` cookie!"
+          },
+          "response": []
+        },
+        {
+          "name": "Session Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User is authenticated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.authenticated).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Auth method is session', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.authMethod).to.equal('session');",
+                  "});",
+                  "",
+                  "pm.test('Session has timestamps', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.session).to.have.property('createdAt');",
+                  "    pm.expect(jsonData.session).to.have.property('lastAccessed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "session", "status"]
+            },
+            "description": "Check current authentication status.\n\n**No Authorization header needed!** The cookie is sent automatically by Postman.\n\n**Expected Response (when logged in):**\n```json\n{\n  \"authenticated\": true,\n  \"authMethod\": \"session\",\n  \"user\": { ... },\n  \"session\": {\n    \"createdAt\": \"...\",\n    \"lastAccessed\": \"...\"\n  }\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Session Protected Route (Profile)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has user data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Access a protected route using session cookie.\n\n**No Authorization header needed!** Authentication happens via the `iacms.sid` cookie.\n\nThis demonstrates that after session login, you can access any protected route without managing tokens."
+          },
+          "response": []
+        },
+        {
+          "name": "Session Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Session was refreshed', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.equal('Session refreshed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "session", "refresh"]
+            },
+            "description": "Explicitly extend the session expiry time.\n\nUseful for:\n- Keep-alive pings\n- \"Stay logged in\" feature\n- Before long operations"
+          },
+          "response": []
+        },
+        {
+          "name": "Session Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Logout successful', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.equal('Logged out successfully');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "session", "logout"]
+            },
+            "description": "Destroy the current session.\n\n**What happens:**\n1. Session deleted from PostgreSQL\n2. Cookie cleared from browser/Postman\n\nAfter this, you'll need to login again."
+          },
+          "response": []
+        },
+        {
+          "name": "Session Status After Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User is NOT authenticated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.authenticated).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test('Auth method is null', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.authMethod).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "session", "status"]
+            },
+            "description": "Verify that logout worked.\n\n**Expected Response:**\n```json\n{\n  \"authenticated\": false,\n  \"authMethod\": null,\n  \"user\": null\n}\n```"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. User Registration",
+      "description": "Create new user accounts",
+      "item": [
+        {
+          "name": "Register New User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has user data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    pm.expect(jsonData.user).to.have.property('id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@test-org.com\",\n  \"password\": \"Password123\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Register a new user account.\n\n**Request Body:**\n```json\n{\n  \"email\": \"newuser@test-org.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\",\n  \"tenantCode\": \"TEST-ORG\"\n}\n```\n\n**Note:** Change the email for each test - duplicate emails will fail."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Error Cases",
+      "description": "Test authentication error handling",
+      "item": [
+        {
+          "name": "Login - Wrong Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Error is INVALID_CREDENTIALS', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error.code).to.equal('INVALID_CREDENTIALS');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"wrongpassword\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "session", "login"]
+            },
+            "description": "Test login with incorrect password.\n\n**Expected:** 401 Unauthorized with INVALID_CREDENTIALS error"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Invalid Tenant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"INVALID-TENANT\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "session", "login"]
+            },
+            "description": "Test login with non-existent tenant code.\n\n**Expected:** 404 Not Found"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Missing Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error is VALIDATION_ERROR', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error.code).to.equal('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test-org.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "session", "login"]
+            },
+            "description": "Test login without password.\n\n**Expected:** 400 Bad Request with VALIDATION_ERROR"
+          },
+          "response": []
+        },
+        {
+          "name": "JWT - Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Error is INVALID_TOKEN', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error.code).to.equal('INVALID_TOKEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid.token.here"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Test with an invalid JWT token.\n\n**Expected:** 401 Unauthorized with INVALID_TOKEN error"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
