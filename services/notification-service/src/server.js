@@ -18,7 +18,7 @@ app.get('/health', (req, res) => {
 });
 
 // Subscribe to notification events
-const eventBus = new EventBus(process.env.REDIS_URL || 'redis://localhost:6379');
+const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'notification-service');
 eventBus.subscribe('user.created', (data) => {
   logger.info('Sending welcome email', data);
 });

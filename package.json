@@ -18,7 +18,7 @@
     "services/*"
   ],
   "scripts": {
-    "docker:up": "cd infrastructure && docker-compose up -d postgres redis",
+    "docker:up": "cd infrastructure && docker-compose up -d postgres redis kafka zookeeper",
     "docker:down": "cd infrastructure && docker-compose down",
     "docker:all": "cd infrastructure && docker-compose up -d",
     "docker:logs": "cd infrastructure && docker-compose logs -f",
@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "kafkajs": "^2.2.4"
   }
 }

@@ -2,7 +2,7 @@ import prisma from '../config/database.js';
 import { NotFoundError, ValidationError } from '../../../shared/common/errors.js';
 import EventBus from '../../../shared/utils/eventBus.js';
 
-const eventBus = new EventBus(process.env.REDIS_URL || 'redis://localhost:6379');
+const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'integration-service');
 
 export async function getWebhooks(req, res, next) {
   try {

@@ -9,13 +9,13 @@ import { validateLoginRequest, validateRegisterRequest } from '../utils/validato
 const logger = new Logger('auth-service');
 let eventBus = null;
 
-// Initialize event bus lazily (allows service to start without Redis)
+// Initialize event bus lazily (allows service to start if Kafka is not yet ready)
 function getEventBus() {
   if (!eventBus) {
     try {
-      eventBus = new EventBus(process.env.REDIS_URL || 'redis://localhost:6379');
+      eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'auth-service');
     } catch (error) {
-      logger.warn('Failed to connect to Redis event bus', { error: error.message });
+      logger.warn('Failed to connect to Kafka event bus', { error: error.message });
     }
   }
   return eventBus;

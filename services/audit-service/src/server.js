@@ -19,7 +19,7 @@ app.get('/health', (req, res) => {
 });
 
 // Subscribe to audit events
-const eventBus = new EventBus(process.env.REDIS_URL || 'redis://localhost:6379');
+const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'audit-service');
 eventBus.subscribe('audit.log', async (data) => {
   // Handle audit log creation
   logger.info('Audit event received', data);

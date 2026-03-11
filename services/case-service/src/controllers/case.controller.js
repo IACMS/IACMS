@@ -2,7 +2,7 @@ import prisma from '../config/database.js';
 import { NotFoundError, ValidationError } from '../../../shared/common/errors.js';
 import EventBus from '../../../shared/utils/eventBus.js';
 
-const eventBus = new EventBus(process.env.REDIS_URL || 'redis://localhost:6379');
+const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
 
 export async function getCases(req, res, next) {
   try {

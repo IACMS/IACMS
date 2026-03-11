@@ -19,7 +19,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis
+  # Redis (used for session storage)
   redis:
     image: redis:7-alpine
     container_name: iacms-redis
@@ -30,6 +30,45 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Kafka (used for inter-service event streaming)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: iacms-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 | grep imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: iacms-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 
   # API Gateway
   api-gateway:
@@ -67,6 +106,7 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
       JWT_SECRET: change-this-secret-key
       JWT_EXPIRES_IN: 24h
       JWT_REFRESH_EXPIRES_IN: 7d
@@ -74,6 +114,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - iacms-network
@@ -90,10 +132,13 @@ services:
       PORT: 3002
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - iacms-network
@@ -110,10 +155,13 @@ services:
       PORT: 3003
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - iacms-network
@@ -130,10 +178,13 @@ services:
       PORT: 3004
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - iacms-network
@@ -150,10 +201,13 @@ services:
       PORT: 3005
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - iacms-network
@@ -170,10 +224,13 @@ services:
       PORT: 3006
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - iacms-network
@@ -190,10 +247,13 @@ services:
       PORT: 3007
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - iacms-network
@@ -209,14 +269,18 @@ services:
     environment:
       PORT: 3008
       REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
     depends_on:
       redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - iacms-network
 
 volumes:
   postgres_data:
+  kafka_data:
 
 networks:
   iacms-network:
