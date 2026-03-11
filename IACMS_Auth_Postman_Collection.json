@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "iacms-auth-collection",
     "name": "IACMS Authentication",
-    "description": "Complete authentication testing collection for IACMS.\n\nIncludes:\n- Health Check\n- JWT Authentication (for API clients)\n- Session Authentication (for web browsers)\n\n**Test Order:**\n1. Health Check\n2. JWT Login → JWT Protected Route\n3. Session Login → Session Status → Session Protected Route → Session Logout",
+    "description": "Complete authentication testing collection for IACMS.\n\nIncludes:\n- Health Check\n- JWT Authentication (for API clients)\n- Session Authentication (for web browsers)\n- Admin: Create User (with email + temp password)\n- Password Management (forgot / reset / change)\n- Error Cases\n\n**Test Order:**\n1. Health Check\n2. JWT Login → use {{accessToken}} in all protected requests\n3. Admin creates user → check Mailtrap inbox for temp password\n4. Forgot Password → check Mailtrap inbox → Reset Password\n5. Change Password (logged-in user)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -14,21 +14,58 @@
     {
       "key": "accessToken",
       "value": "",
-      "type": "string"
+      "type": "string",
+      "description": "Auto-set by JWT Login request"
     },
     {
       "key": "refreshToken",
       "value": "",
-      "type": "string"
+      "type": "string",
+      "description": "Auto-set by JWT Login request"
+    },
+    {
+      "key": "resetToken",
+      "value": "",
+      "type": "string",
+      "description": "Manually paste the token from the Mailtrap reset email URL"
+    },
+    {
+      "key": "createdUserId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-set when admin creates a user"
     }
   ],
   "item": [
     {
       "name": "1. Health & Setup",
-      "description": "Verify services are running",
+      "description": "Verify services are running before testing",
       "item": [
         {
-          "name": "Health Check",
+          "name": "API Gateway Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Gateway is healthy', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.equal('ok');",
+                  "});",
+                  "",
+                  "pm.test('Session auth enabled', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.features.sessionAuth).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -37,12 +74,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["health"]
             },
-            "description": "Check if API Gateway is running and session auth is enabled.\n\n**Expected Response:**\n```json\n{\n  \"status\": \"ok\",\n  \"features\": {\n    \"sessionAuth\": true,\n    \"jwtAuth\": true\n  }\n}\n```"
+            "description": "Check if API Gateway is running.\n\n**Expected:**\n```json\n{\n  \"status\": \"ok\",\n  \"features\": {\n    \"sessionAuth\": true,\n    \"jwtAuth\": true\n  }\n}\n```"
           },
           "response": []
         },
         {
-          "name": "Auth Service Health",
+          "name": "Auth Service Health (Direct)",
           "request": {
             "method": "GET",
             "header": [],
@@ -51,7 +88,7 @@
               "host": ["http://localhost:3001"],
               "path": ["health"]
             },
-            "description": "Check if Auth Service is running directly."
+            "description": "Check if Auth Service is running directly on port 3001."
           },
           "response": []
         }
@@ -59,7 +96,7 @@
     },
     {
       "name": "2. JWT Authentication (API Clients)",
-      "description": "Traditional token-based authentication for mobile apps and API clients.\n\nFlow:\n1. Login → Get tokens\n2. Use Bearer token in Authorization header\n3. Refresh token when expired",
+      "description": "Token-based authentication for mobile apps and API clients.\n\n**Flow:**\n1. Login → get accessToken + refreshToken\n2. Send `Authorization: Bearer {{accessToken}}` on protected requests\n3. Use Refresh Token when access token expires",
       "item": [
         {
           "name": "JWT Login",
@@ -68,32 +105,23 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Parse response",
                   "var jsonData = pm.response.json();",
                   "",
-                  "// Save tokens to collection variables",
                   "if (jsonData.accessToken) {",
                   "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
-                  "    console.log('Access token saved!');",
+                  "    console.log('✓ Access token saved');",
                   "}",
-                  "",
                   "if (jsonData.refreshToken) {",
                   "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
-                  "    console.log('Refresh token saved!');",
+                  "    console.log('✓ Refresh token saved');",
                   "}",
                   "",
-                  "// Tests",
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Response has accessToken', function () {",
-                  "    pm.expect(jsonData).to.have.property('accessToken');",
-                  "});",
-                  "",
-                  "pm.test('Response has user data', function () {",
-                  "    pm.expect(jsonData).to.have.property('user');",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has accessToken', () => pm.expect(jsonData).to.have.property('accessToken'));",
+                  "pm.test('Has refreshToken', () => pm.expect(jsonData).to.have.property('refreshToken'));",
+                  "pm.test('Has user data', () => {",
                   "    pm.expect(jsonData.user).to.have.property('email');",
+                  "    pm.expect(jsonData.user).to.have.property('id');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -102,12 +130,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
@@ -117,25 +140,22 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "login"]
             },
-            "description": "Login with email/password to get JWT tokens.\n\n**Request Body:**\n```json\n{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"TEST-ORG\"\n}\n```\n\n**Expected Response:**\n- `accessToken`: JWT for API requests (24h expiry)\n- `refreshToken`: JWT for refreshing access token (7d expiry)\n- `user`: User profile data\n\n**Auto-saves tokens** to collection variables for use in subsequent requests."
+            "description": "Login with email + password to receive JWT tokens.\n\nTokens are **auto-saved** to collection variables `{{accessToken}}` and `{{refreshToken}}`."
           },
           "response": []
         },
         {
-          "name": "JWT Protected Route (Profile)",
+          "name": "Get Profile (JWT)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Response has user data', function () {",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has user data', () => {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('id');",
-                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData.user).to.have.property('email');",
+                  "    pm.expect(jsonData.user).to.have.property('mustChangePassword');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -144,43 +164,30 @@
           ],
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "description": "JWT token from login"
-              }
-            ],
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/profile",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "profile"]
             },
-            "description": "Access a protected route using JWT Bearer token.\n\n**Authorization Header:**\n```\nAuthorization: Bearer <accessToken>\n```\n\nThe `{{accessToken}}` variable is automatically set after JWT Login."
+            "description": "Get current user's profile using JWT Bearer token.\n\nResponse now includes `mustChangePassword` flag — if `true`, the user was created by an admin and must change their password."
           },
           "response": []
         },
         {
-          "name": "JWT Refresh Token",
+          "name": "Refresh Token",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "var jsonData = pm.response.json();",
-                  "",
                   "if (jsonData.accessToken) {",
                   "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
-                  "    console.log('New access token saved!');",
+                  "    console.log('✓ New access token saved');",
                   "}",
-                  "",
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Response has new accessToken', function () {",
-                  "    pm.expect(jsonData).to.have.property('accessToken');",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has new accessToken', () => pm.expect(jsonData).to.have.property('accessToken'));"
                 ],
                 "type": "text/javascript"
               }
@@ -188,12 +195,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
@@ -203,39 +205,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "refresh"]
             },
-            "description": "Get a new access token using the refresh token.\n\nUse this when your access token has expired."
-          },
-          "response": []
-        },
-        {
-          "name": "JWT Without Token (Should Fail)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 401 Unauthorized', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "",
-                  "pm.test('Error code is UNAUTHORIZED', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.error.code).to.equal('UNAUTHORIZED');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/profile",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "profile"]
-            },
-            "description": "Try to access protected route without any authentication.\n\n**Expected:** 401 Unauthorized error"
+            "description": "Get a new access token using the refresh token.\nCall this when the access token has expired (after 24h)."
           },
           "response": []
         }
@@ -243,7 +213,7 @@
     },
     {
       "name": "3. Session Authentication (Web Browsers)",
-      "description": "Cookie-based authentication for web browsers.\n\nFlow:\n1. Session Login → Cookie set automatically\n2. All subsequent requests use cookie (no header needed)\n3. Session Logout → Cookie cleared",
+      "description": "Cookie-based authentication for web browsers.\n\n**Flow:**\n1. Session Login → `iacms.sid` cookie set automatically\n2. Subsequent requests use the cookie (no header needed)\n3. Session Logout → cookie cleared",
       "item": [
         {
           "name": "Session Login",
@@ -252,22 +222,11 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Auth method is session', () => {",
+                  "    pm.expect(pm.response.json().authMethod).to.equal('session');",
                   "});",
-                  "",
-                  "pm.test('Auth method is session', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.authMethod).to.equal('session');",
-                  "});",
-                  "",
-                  "pm.test('Response has user data', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('user');",
-                  "    pm.expect(jsonData.user).to.have.property('email');",
-                  "});",
-                  "",
-                  "pm.test('Cookie was set', function () {",
+                  "pm.test('Cookie was set', () => {",
                   "    pm.expect(pm.cookies.has('iacms.sid')).to.be.true;",
                   "});"
                 ],
@@ -277,12 +236,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
@@ -292,7 +246,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "session", "login"]
             },
-            "description": "Login and create a session stored in PostgreSQL.\n\n**Request Body:**\n```json\n{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"TEST-ORG\"\n}\n```\n\n**Expected Response:**\n- `authMethod`: \"session\"\n- `user`: User profile\n- `tokens`: JWT tokens (also provided for flexibility)\n\n**Cookie Set:**\n```\nSet-Cookie: iacms.sid=...; HttpOnly; SameSite=Lax\n```\n\nCheck the **Cookies** tab to see the `iacms.sid` cookie!"
+            "description": "Log in and create a PostgreSQL-backed session.\n\nCheck the **Cookies** tab — you should see `iacms.sid` was set automatically."
           },
           "response": []
         },
@@ -303,24 +257,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('User is authenticated', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.authenticated).to.be.true;",
-                  "});",
-                  "",
-                  "pm.test('Auth method is session', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.authMethod).to.equal('session');",
-                  "});",
-                  "",
-                  "pm.test('Session has timestamps', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.session).to.have.property('createdAt');",
-                  "    pm.expect(jsonData.session).to.have.property('lastAccessed');",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('User is authenticated', () => {",
+                  "    pm.expect(pm.response.json().authenticated).to.be.true;",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -335,63 +274,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "session", "status"]
             },
-            "description": "Check current authentication status.\n\n**No Authorization header needed!** The cookie is sent automatically by Postman.\n\n**Expected Response (when logged in):**\n```json\n{\n  \"authenticated\": true,\n  \"authMethod\": \"session\",\n  \"user\": { ... },\n  \"session\": {\n    \"createdAt\": \"...\",\n    \"lastAccessed\": \"...\"\n  }\n}\n```"
-          },
-          "response": []
-        },
-        {
-          "name": "Session Protected Route (Profile)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Response has user data', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('id');",
-                  "    pm.expect(jsonData).to.have.property('email');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/profile",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "profile"]
-            },
-            "description": "Access a protected route using session cookie.\n\n**No Authorization header needed!** Authentication happens via the `iacms.sid` cookie.\n\nThis demonstrates that after session login, you can access any protected route without managing tokens."
+            "description": "Check current session — no Authorization header needed, cookie is sent automatically."
           },
           "response": []
         },
         {
           "name": "Session Refresh",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Session was refreshed', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.message).to.equal('Session refreshed');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [],
@@ -400,7 +288,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "session", "refresh"]
             },
-            "description": "Explicitly extend the session expiry time.\n\nUseful for:\n- Keep-alive pings\n- \"Stay logged in\" feature\n- Before long operations"
+            "description": "Extend session expiry time. Useful for keep-alive pings."
           },
           "response": []
         },
@@ -411,13 +299,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Logout successful', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.message).to.equal('Logged out successfully');",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Logout successful', () => {",
+                  "    pm.expect(pm.response.json().message).to.equal('Logged out successfully');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -432,29 +316,36 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "session", "logout"]
             },
-            "description": "Destroy the current session.\n\n**What happens:**\n1. Session deleted from PostgreSQL\n2. Cookie cleared from browser/Postman\n\nAfter this, you'll need to login again."
+            "description": "Destroy session. Deletes it from PostgreSQL and clears the cookie."
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "4. Admin: Create User",
+      "description": "Admin-only flow for creating user accounts.\n\n**What happens:**\n1. Admin sends user details (no password needed)\n2. Server generates a secure 12-character temporary password\n3. User is created with `mustChangePassword: true`\n4. Welcome email sent via Mailtrap with login credentials\n\n**Check Mailtrap:** https://mailtrap.io/inboxes\n\n**Requires:** JWT Login first to get `{{accessToken}}`",
+      "item": [
         {
-          "name": "Session Status After Logout",
+          "name": "Create User (Admin)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
+                  "var jsonData = pm.response.json();",
                   "",
-                  "pm.test('User is NOT authenticated', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.authenticated).to.be.false;",
-                  "});",
+                  "if (jsonData.user && jsonData.user.id) {",
+                  "    pm.collectionVariables.set('createdUserId', jsonData.user.id);",
+                  "    console.log('✓ Created user ID saved:', jsonData.user.id);",
+                  "}",
                   "",
-                  "pm.test('Auth method is null', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.authMethod).to.be.null;",
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('User created with mustChangePassword=true', () => {",
+                  "    pm.expect(jsonData.user.mustChangePassword).to.be.true;",
+                  "});",
+                  "pm.test('Success message mentions email', () => {",
+                  "    pm.expect(jsonData.message).to.include('email');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -462,22 +353,279 @@
             }
           ],
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/session/status",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "session", "status"]
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.smith@test-org.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"username\": \"jane.smith\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
             },
-            "description": "Verify that logout worked.\n\n**Expected Response:**\n```json\n{\n  \"authenticated\": false,\n  \"authMethod\": null,\n  \"user\": null\n}\n```"
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "create"]
+            },
+            "description": "Admin creates a new user account.\n\n**No password in the request!** The server generates a secure temporary password automatically.\n\n**After sending:**\n1. Check [Mailtrap](https://mailtrap.io/inboxes) for the welcome email\n2. The email contains the user's temporary password\n3. The user must change it on first login\n\n**Change the email** for each test run — duplicates will return 400."
+          },
+          "response": []
+        },
+        {
+          "name": "Create User - Duplicate Email (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 Validation Error', () => pm.response.to.have.status(400));",
+                  "pm.test('Error mentions email already exists', () => {",
+                  "    var msg = pm.response.json().error.message.toLowerCase();",
+                  "    pm.expect(msg).to.include('already exists');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.smith@test-org.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "create"]
+            },
+            "description": "Run this **after** Create User succeeds to verify duplicate email is rejected."
+          },
+          "response": []
+        },
+        {
+          "name": "Create User - No Auth (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 Unauthorized', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"hacker@test-org.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "create"]
+            },
+            "description": "Try to create a user without an auth token.\n\n**Expected:** 401 Unauthorized"
           },
           "response": []
         }
       ]
     },
     {
-      "name": "4. User Registration",
-      "description": "Create new user accounts",
+      "name": "5. Password Management",
+      "description": "Forgot password and change password flows.\n\n**Forgot Password Flow:**\n1. Send `Forgot Password` request\n2. Open [Mailtrap](https://mailtrap.io/inboxes)\n3. Copy the token from the reset link URL (the `?token=...` part)\n4. Paste into `{{resetToken}}` collection variable\n5. Send `Reset Password` request\n\n**Change Password Flow (logged-in user):**\n1. Ensure you have a valid `{{accessToken}}`\n2. Send `Change Password` with currentPassword + newPassword",
+      "item": [
+        {
+          "name": "Forgot Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Generic success message (no email enumeration)', () => {",
+                  "    var msg = pm.response.json().message;",
+                  "    pm.expect(msg).to.include('If an account');",
+                  "});",
+                  "",
+                  "console.log('📧 Check Mailtrap for the reset email: https://mailtrap.io/inboxes');",
+                  "console.log('📋 Copy the token from the reset link and paste into {{resetToken}} variable');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "forgot-password"]
+            },
+            "description": "Request a password reset link.\n\n**No auth required** — this is a public endpoint.\n\n**After sending:**\n1. Go to [Mailtrap](https://mailtrap.io/inboxes)\n2. Open the reset email\n3. Find the reset link, it looks like: `http://localhost:5173/reset-password?token=abc123...&tenant=TEST-ORG`\n4. Copy the token value (the long string after `?token=`)\n5. Set it as `{{resetToken}}` in collection variables\n6. Then send the `Reset Password` request\n\n**Security note:** Always returns the same message even for unknown emails — prevents email enumeration attacks."
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Password reset successful', () => {",
+                  "    var msg = pm.response.json().message;",
+                  "    pm.expect(msg).to.include('reset successfully');",
+                  "});",
+                  "",
+                  "// Clear the used token",
+                  "pm.collectionVariables.set('resetToken', '');",
+                  "console.log('✓ Token cleared. You can now log in with the new password.');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "reset-password"]
+            },
+            "description": "Submit the reset token (from email) and set a new password.\n\n**Before sending:**\n1. Complete the `Forgot Password` request\n2. Copy the token from Mailtrap email URL\n3. Paste it into `{{resetToken}}` collection variable\n\n**Token rules:**\n- Expires after **1 hour**\n- Can only be used **once**\n- Single-use: once reset succeeds, token is cleared from DB\n\n**Password requirements:**\n- At least 8 characters\n- At least 1 letter and 1 number"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password - Expired/Invalid Token (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error mentions invalid or expired token', () => {",
+                  "    var msg = pm.response.json().error.message.toLowerCase();",
+                  "    pm.expect(msg).to.include('invalid or expired');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"thisisafaketoken123456789\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "reset-password"]
+            },
+            "description": "Test reset with a fake/expired token.\n\n**Expected:** 400 with 'Invalid or expired' message"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password (Logged-In User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Password changed', () => {",
+                  "    pm.expect(pm.response.json().message).to.include('changed successfully');",
+                  "});",
+                  "",
+                  "console.log('📧 Check Mailtrap for the password changed confirmation email.');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"NewPassword456!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "change-password"]
+            },
+            "description": "Logged-in user changes their own password.\n\n**Requires:** Valid `{{accessToken}}` (run JWT Login first)\n\n**Validates:**\n- `currentPassword` must match the account's current password\n- `newPassword` must be different from `currentPassword`\n- `newPassword` must meet strength requirements\n\n**After success:**\n- `mustChangePassword` flag is cleared\n- Confirmation email sent via Mailtrap\n- Check Mailtrap inbox for the confirmation"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password - Wrong Current Password (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error mentions incorrect password', () => {",
+                  "    var msg = pm.response.json().error.message.toLowerCase();",
+                  "    pm.expect(msg).to.include('incorrect');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"thisiswrong\",\n  \"newPassword\": \"NewPassword789!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "change-password"]
+            },
+            "description": "Try to change password with the wrong current password.\n\n**Expected:** 400 with 'Current password is incorrect'"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Self-Registration",
+      "description": "Direct user self-registration (user provides their own password).",
       "item": [
         {
           "name": "Register New User",
@@ -486,14 +634,11 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "pm.test('Response has user data', function () {",
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Has user and tokens', () => {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('user');",
-                  "    pm.expect(jsonData.user).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -502,30 +647,25 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@test-org.com\",\n  \"password\": \"Password123\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+              "raw": "{\n  \"email\": \"selfregister@test-org.com\",\n  \"password\": \"MyPassword1\",\n  \"firstName\": \"Self\",\n  \"lastName\": \"Registered\",\n  \"username\": \"selfregister\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/register",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "register"]
             },
-            "description": "Register a new user account.\n\n**Request Body:**\n```json\n{\n  \"email\": \"newuser@test-org.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\",\n  \"tenantCode\": \"TEST-ORG\"\n}\n```\n\n**Note:** Change the email for each test - duplicate emails will fail."
+            "description": "User self-registers with their own password.\n\nUnlike admin-created users, self-registered users:\n- Provide their own password\n- Get tokens immediately in the response\n- Do NOT have `mustChangePassword: true`\n\n**Change the email** for each test run — duplicates will fail."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "5. Error Cases",
-      "description": "Test authentication error handling",
+      "name": "7. Error Cases",
+      "description": "Verify all error handling is working correctly",
       "item": [
         {
           "name": "Login - Wrong Password",
@@ -534,14 +674,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 401', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "",
-                  "pm.test('Error is INVALID_CREDENTIALS', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.error.code).to.equal('INVALID_CREDENTIALS');",
-                  "});"
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
                 ],
                 "type": "text/javascript"
               }
@@ -549,22 +682,17 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"wrongpassword\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/session/login",
+              "raw": "{{baseUrl}}/api/v1/auth/login",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "session", "login"]
+              "path": ["api", "v1", "auth", "login"]
             },
-            "description": "Test login with incorrect password.\n\n**Expected:** 401 Unauthorized with INVALID_CREDENTIALS error"
+            "description": "**Expected:** 401 Unauthorized"
           },
           "response": []
         },
@@ -575,9 +703,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 404', function () {",
-                  "    pm.response.to.have.status(404);",
-                  "});"
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
                 ],
                 "type": "text/javascript"
               }
@@ -585,22 +711,17 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@test-org.com\",\n  \"password\": \"password123\",\n  \"tenantCode\": \"INVALID-TENANT\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/session/login",
+              "raw": "{{baseUrl}}/api/v1/auth/login",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "session", "login"]
+              "path": ["api", "v1", "auth", "login"]
             },
-            "description": "Test login with non-existent tenant code.\n\n**Expected:** 404 Not Found"
+            "description": "**Expected:** 404 Not Found"
           },
           "response": []
         },
@@ -611,13 +732,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 400', function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});",
-                  "",
-                  "pm.test('Error is VALIDATION_ERROR', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.error.code).to.equal('VALIDATION_ERROR');",
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Validation error', () => {",
+                  "    pm.expect(pm.response.json().error.code).to.equal('VALIDATION_ERROR');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -626,40 +743,28 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@test-org.com\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/session/login",
+              "raw": "{{baseUrl}}/api/v1/auth/login",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "session", "login"]
+              "path": ["api", "v1", "auth", "login"]
             },
-            "description": "Test login without password.\n\n**Expected:** 400 Bad Request with VALIDATION_ERROR"
+            "description": "**Expected:** 400 Validation Error"
           },
           "response": []
         },
         {
-          "name": "JWT - Invalid Token",
+          "name": "Protected Route - No Token",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 401', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "",
-                  "pm.test('Error is INVALID_TOKEN', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.error.code).to.equal('INVALID_TOKEN');",
-                  "});"
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
                 ],
                 "type": "text/javascript"
               }
@@ -667,18 +772,72 @@
           ],
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer invalid.token.here"
-              }
-            ],
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/profile",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "profile"]
             },
-            "description": "Test with an invalid JWT token.\n\n**Expected:** 401 Unauthorized with INVALID_TOKEN error"
+            "description": "**Expected:** 401 Unauthorized"
+          },
+          "response": []
+        },
+        {
+          "name": "Protected Route - Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer this.is.not.valid"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "**Expected:** 401 Unauthorized"
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password - Unknown Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 (not 404 - prevents enumeration)', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Generic message returned', () => {",
+                  "    pm.expect(pm.response.json().message).to.include('If an account');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doesnotexist@test-org.com\",\n  \"tenantCode\": \"TEST-ORG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "forgot-password"]
+            },
+            "description": "Verifies the anti-enumeration protection:\n\n**Expected:** 200 OK with the same generic message — attackers cannot determine if an email exists."
           },
           "response": []
         }

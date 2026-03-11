@@ -1,26 +1,44 @@
-# IACMS - Inter-Agency Case Management Platform
+# IACMS — Inter-Agency Case Management System
 
-**Microservices Architecture** - Backend API for the Inter-Agency Case Management Platform, a multi-tenant system for managing cases across government organizations.
+A **multi-tenant microservices** backend for managing cases across government organizations.
 
-## 🏗️ Architecture
+---
 
-This project uses a **microservices architecture** with 9 independent services:
+## Technology Stack
 
-- **API Gateway** - Single entry point for all requests
-- **Auth Service** - Authentication and authorization
-- **RBAC Service** - Role-based access control
-- **Case Service** - Case management
-- **Workflow Service** - Workflow engine
-- **Referral Service** - Inter-organization referrals
-- **Audit Service** - Audit logging
-- **Integration Service** - External integrations and webhooks
-- **Notification Service** - Event-driven notifications
+| Layer | Technology |
+|-------|-----------|
+| Runtime | Node.js 20+ |
+| Framework | Express.js 5.x |
+| Database | PostgreSQL 15 |
+| ORM | Prisma 6.x |
+| Sessions | PostgreSQL (`user_sessions` table) |
+| Events | Apache Kafka |
+| Containerization | Docker & Docker Compose |
 
-## 📁 Project Structure
+---
+
+## Services
+
+| Service | Port | Responsibility |
+|---------|------|---------------|
+| API Gateway | 3000 | Single entry point, auth, routing |
+| Auth Service | 3001 | Login, register, JWT tokens |
+| RBAC Service | 3002 | Roles, permissions |
+| Case Service | 3003 | Case CRUD, assignments |
+| Workflow Service | 3004 | Workflow definitions, state transitions |
+| Referral Service | 3005 | Inter-organization referrals |
+| Audit Service | 3006 | Immutable audit logging |
+| Integration Service | 3007 | Webhooks, external integrations |
+| Notification Service | 3008 | Event-driven notifications |
+
+---
+
+## Project Structure
 
 ```
 IACMS/
-├── services/              # Microservices
+├── services/                  # All microservices
 │   ├── api-gateway/
 │   ├── auth-service/
 │   ├── rbac-service/
@@ -30,248 +48,251 @@ IACMS/
 │   ├── audit-service/
 │   ├── integration-service/
 │   └── notification-service/
-├── shared/                 # Shared utilities
-│   ├── common/            # Logger, errors
-│   ├── middleware/        # Error handler
-│   └── utils/             # HTTP client, event bus
-├── infrastructure/         # Infrastructure configs
-│   └── docker-compose.yml
-├── prisma/                # Original schema (reference documentation)
-└── docs/                  # Documentation
+├── shared/                    # Code shared across services
+│   ├── common/                # Logger, error classes
+│   ├── middleware/            # Error handler
+│   └── utils/                 # EventBus (Kafka), HTTP client
+├── infrastructure/
+│   └── docker-compose.yml     # All Docker services
+├── prisma/                    # Database schema & migrations
+├── docs/                      # Technical documentation
+│   ├── DOCUMENTATION.md       # Full technical reference
+│   ├── SESSION_AUTHENTICATION.md
+│   ├── KAFKA_INTEGRATION.md
+│   └── session-auth-flow.png
+└── IACMS_Auth_Postman_Collection.json
 ```
-
-## 🚀 Quick Start
-
-### Using Docker Compose (Recommended)
-
-```bash
-# Start all services
-cd infrastructure
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop all services
-docker-compose down
-```
-
-### Local Development
-
-1. **Start infrastructure:**
-   ```bash
-   cd infrastructure
-   docker-compose up -d postgres redis
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   cd services/auth-service && npm install && cd ../..
-   cd services/case-service && npm install && cd ../..
-   # ... repeat for each service
-   ```
-
-3. **Run migrations:**
-   ```bash
-   cd services/auth-service && npm run migrate
-   ```
-
-4. **Start services:**
-   ```bash
-   # Terminal 1 - API Gateway
-   cd services/api-gateway && npm run dev
-
-   # Terminal 2 - Auth Service
-   cd services/auth-service && npm run dev
-
-   # Terminal 3 - Case Service
-   cd services/case-service && npm run dev
-   ```
-
-## 📡 API Endpoints
-
-All requests go through the API Gateway at `http://localhost:3000`:
-
-### Authentication
-- `POST /api/v1/auth/login` - User login
-- `POST /api/v1/auth/register` - User registration
-- `GET /api/v1/auth/profile` - Get user profile
-
-### Cases
-- `GET /api/v1/cases` - List cases
-- `POST /api/v1/cases` - Create case
-- `GET /api/v1/cases/:id` - Get case
-
-### RBAC
-- `GET /api/v1/rbac/roles` - List roles
-- `POST /api/v1/rbac/user-roles/assign` - Assign role
-
-### Other Services
-- `GET /api/v1/workflows` - List workflows
-- `GET /api/v1/referrals` - List referrals
-- `GET /api/v1/audit` - Get audit logs
-
-## 🔧 Technology Stack
-
-- **Runtime**: Node.js 20+
-- **Framework**: Express.js 5.x
-- **Database**: PostgreSQL 15
-- **ORM**: Prisma 6.0
-- **Cache/Events**: Redis
-- **Containerization**: Docker & Docker Compose
-- **Language**: JavaScript (ES Modules)
-
-## 📚 Documentation
-
-- **[Microservices Guide](./MICROSERVICES_README.md)** - Complete microservices documentation
-- **[Database Schema](./docs/DATABASE_SCHEMA.md)** - Database schema documentation
-- **[Database Detailed](./docs/DATABASE_DETAILED.md)** - Detailed database guide
-
-## 🔐 Features
-
-- ✅ Multi-tenant architecture with tenant isolation
-- ✅ Role-based access control (RBAC)
-- ✅ Configurable workflow engine
-- ✅ Case management with assignment and escalation
-- ✅ Inter-organization case referrals
-- ✅ Immutable audit logging
-- ✅ RESTful APIs for external integrations
-- ✅ Webhook system for event notifications
-- ✅ Event-driven architecture
-
-## 🛠️ Development
-
-### Service Ports
-
-- API Gateway: `3000`
-- Auth Service: `3001`
-- RBAC Service: `3002`
-- Case Service: `3003`
-- Workflow Service: `3004`
-- Referral Service: `3005`
-- Audit Service: `3006`
-- Integration Service: `3007`
-- Notification Service: `3008`
-
-### Health Checks
-
-Each service has a health endpoint:
-```bash
-curl http://localhost:3001/health  # Auth Service
-curl http://localhost:3003/health  # Case Service
-```
-
-### Environment Variables
-
-Each service has its own `.env` file. See service directories for examples.
-
-Common variables:
-- `DATABASE_URL` - PostgreSQL connection
-- `REDIS_URL` - Redis connection
-- `JWT_SECRET` - JWT secret (Auth Service)
-- `PORT` - Service port
-
-## 📦 Services Overview
-
-### API Gateway
-- Routes requests to appropriate services
-- Single entry point
-- Request/response transformation
-
-### Auth Service
-- User authentication (login, register)
-- JWT token generation
-- Tenant validation
-- User profile management
-
-### RBAC Service
-- Role management
-- Permission management
-- User-role assignments
-- Permission checks
-
-### Case Service
-- Case CRUD operations
-- Case assignments
-- File attachments
-- Case status management
-
-### Workflow Service
-- Workflow definitions
-- State transitions
-- Workflow execution
-
-### Referral Service
-- Inter-organization referrals
-- Referral status tracking
-- Cross-tenant access
-
-### Audit Service
-- Immutable audit logging
-- Audit queries
-- Compliance reporting
-
-### Integration Service
-- Webhook management
-- External system integrations
-- Data synchronization
-
-### Notification Service
-- Event-driven notifications
-- Email/SMS notifications
-- Real-time notifications
-
-## 🔄 Service Communication
-
-### Synchronous (HTTP/REST)
-- API Gateway → Services
-- Service-to-service calls (when needed)
-
-### Asynchronous (Events)
-- Redis Pub/Sub for events
-- Event-driven architecture
-- Loose coupling between services
-
-## 🐳 Docker
-
-All services are containerized and can be run with Docker Compose:
-
-```bash
-# Build all services
-docker-compose build
-
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f <service-name>
-
-# Restart a service
-docker-compose restart <service-name>
-```
-
-## 📝 Development Status
-
-The microservices architecture is fully structured. Remaining work:
-
-1. Complete service implementations
-2. Add authentication middleware to API Gateway
-3. Implement all event handlers
-4. Add comprehensive tests
-5. Set up monitoring and logging
-
-## 🤝 Contributing
-
-1. Each service is independent
-2. Follow the service structure
-3. Use shared utilities from `shared/`
-4. Publish events for cross-service communication
-5. Write tests for each service
-
-## 📄 License
-
-ISC
 
 ---
 
-For detailed microservices documentation, see [MICROSERVICES_README.md](./MICROSERVICES_README.md)
+## Quick Start (Local Development)
+
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [Node.js 20+](https://nodejs.org/)
+- [Postman](https://www.postman.com/) (for testing)
+
+### 1. Start Infrastructure
+
+```powershell
+cd infrastructure
+docker-compose up -d postgres zookeeper kafka
+```
+
+Verify containers are healthy:
+```powershell
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+```
+
+Expected output:
+```
+NAMES             STATUS              PORTS
+iacms-postgres    Up (healthy)        0.0.0.0:5433->5432/tcp
+iacms-zookeeper   Up (healthy)        0.0.0.0:2181->2181/tcp
+iacms-kafka       Up (healthy)        0.0.0.0:9092->9092/tcp
+```
+
+### 2. Run Database Migrations
+
+```powershell
+cd ..
+npx prisma migrate deploy
+npx prisma db seed
+```
+
+### 3. Start Services
+
+Open separate terminals for each service:
+
+```powershell
+# Terminal 1 - Auth Service
+cd services/auth-service
+npm start
+
+# Terminal 2 - API Gateway
+cd services/api-gateway
+npm start
+```
+
+### 4. Verify Everything Works
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:3000/health"
+```
+
+Expected:
+```json
+{ "status": "ok", "features": { "sessionAuth": true, "jwtAuth": true } }
+```
+
+---
+
+## Authentication
+
+The system supports **two authentication methods**:
+
+### Session Auth (Web Browsers)
+```
+POST /api/v1/session/login    → sets iacms.sid cookie
+GET  /api/v1/session/status   → check session
+POST /api/v1/session/logout   → destroy session
+POST /api/v1/session/refresh  → extend session
+```
+
+### JWT Auth (API / Mobile)
+```
+POST /api/v1/auth/login       → returns accessToken + refreshToken
+POST /api/v1/auth/register    → create account
+GET  /api/v1/auth/profile     → get profile (Bearer token required)
+POST /api/v1/auth/refresh     → get new access token
+```
+
+---
+
+## API Endpoints (via Gateway on port 3000)
+
+```
+POST   /api/v1/auth/login
+POST   /api/v1/auth/register
+GET    /api/v1/auth/profile
+
+POST   /api/v1/session/login
+POST   /api/v1/session/logout
+GET    /api/v1/session/status
+POST   /api/v1/session/refresh
+
+GET    /api/v1/cases
+POST   /api/v1/cases
+GET    /api/v1/cases/:id
+
+GET    /api/v1/rbac/roles
+POST   /api/v1/rbac/user-roles/assign
+
+GET    /api/v1/workflows
+GET    /api/v1/referrals
+GET    /api/v1/audit
+GET    /api/v1/integrations
+GET    /api/v1/notifications
+```
+
+---
+
+## Testing with Postman
+
+Import the collection: `IACMS_Auth_Postman_Collection.json`
+
+Test credentials:
+```json
+{
+  "email": "admin@test-org.com",
+  "password": "password123",
+  "tenantCode": "TEST-ORG"
+}
+```
+
+---
+
+## Common Commands
+
+### Docker
+
+```powershell
+# Start infrastructure only
+cd infrastructure
+docker-compose up -d postgres zookeeper kafka
+
+# Start all services (including microservices via Docker)
+docker-compose up -d
+
+# Stop everything
+docker-compose down
+
+# Stop and delete all data
+docker-compose down -v
+
+# View logs
+docker-compose logs -f kafka
+```
+
+### Database
+
+```powershell
+# Run migrations
+npx prisma migrate deploy
+
+# Seed test data
+npx prisma db seed
+
+# Open database GUI
+npx prisma studio
+
+# Connect to database directly
+docker exec -it iacms-postgres psql -U postgres -d iacms
+```
+
+### Kafka
+
+```powershell
+# List topics (shows after first event is published)
+docker exec iacms-kafka kafka-topics --bootstrap-server localhost:9092 --list
+
+# Watch events in real time
+docker exec iacms-kafka kafka-console-consumer --bootstrap-server localhost:9092 --topic case.created --from-beginning
+```
+
+---
+
+## Environment Variables
+
+### Root `.env`
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms?schema=public
+KAFKA_BROKERS=localhost:9092
+```
+
+### `services/auth-service/.env`
+```env
+PORT=3001
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms?schema=public
+JWT_SECRET=iacms-dev-secret-key-change-in-production
+JWT_EXPIRES_IN=24h
+JWT_REFRESH_EXPIRES_IN=7d
+KAFKA_BROKERS=localhost:9092
+```
+
+### `services/api-gateway/.env`
+```env
+PORT=3000
+AUTH_SERVICE_URL=http://localhost:3001
+SESSION_SECRET=iacms-session-secret-change-in-production
+SESSION_MAX_AGE=86400
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms
+CORS_ORIGIN=http://localhost:5173
+KAFKA_BROKERS=localhost:9092
+```
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Docker not starting | Open Docker Desktop, wait for engine to fully start |
+| `iacms-postgres` name conflict | `docker rm iacms-postgres` then re-run docker-compose |
+| Database auth failed | Check `DATABASE_URL` port is `5433` not `5432` |
+| Kafka not connecting | Wait ~30s after starting, Kafka takes time to initialize |
+| Session not persisting | Ensure `credentials: 'include'` in frontend fetch calls |
+| CORS error | Set `CORS_ORIGIN` to your frontend URL |
+
+---
+
+## Documentation
+
+All detailed technical documentation is in `docs/DOCUMENTATION.md`:
+
+- Architecture deep-dive
+- Database schema (all 15 tables)
+- Session authentication internals
+- Kafka event streaming
+- Development setup guide
+- API reference
