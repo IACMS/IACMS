@@ -13,7 +13,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { authenticate } from './middleware/auth.middleware.js';
 import { createRbacMiddleware } from './middleware/rbac.middleware.js';
+import { apiRateLimiter, authRateLimiter } from './middleware/rateLimit.middleware.js';
 import { createSessionMiddleware } from './config/session.config.js';
+import { closeRedisClient } from './config/redis.config.js';
 import sessionRoutes from './routes/session.routes.js';
 
 // Load .env from service directory
@@ -78,6 +80,11 @@ async function startServer() {
   // Session routes (handled at gateway level)
   app.use('/api/v1/session', express.json());
   app.use('/api/v1/session', sessionRoutes);
+
+  // Rate limiting — stricter for auth endpoints, standard for everything else
+  app.use('/api/v1/auth/login', authRateLimiter);
+  app.use('/api/v1/session/login', authRateLimiter);
+  app.use('/api/v1', apiRateLimiter);
 
   // Authentication middleware
   app.use('/api/v1', authenticate);
@@ -244,13 +251,23 @@ async function startServer() {
   app.listen(PORT, () => {
     console.log(`\nAPI Gateway running on port ${PORT}`);
     console.log('='.repeat(50));
-    console.log('Authentication: Session (PostgreSQL) + JWT');
+    console.log('Authentication : Session (PostgreSQL) + JWT');
+    console.log('Caching        : Redis (RBAC permissions)');
+    console.log('Rate Limiting  : Redis (per-user / per-IP)');
+    console.log('Events         : Kafka');
     console.log('='.repeat(50));
     console.log('Session Routes:');
     console.log('  POST /api/v1/session/login');
     console.log('  POST /api/v1/session/logout');
     console.log('  GET  /api/v1/session/status');
     console.log('='.repeat(50));
+  });
+
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('[Gateway] SIGTERM received — shutting down gracefully');
+    await closeRedisClient();
+    process.exit(0);
   });
 }
 

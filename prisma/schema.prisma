@@ -53,11 +53,14 @@ model User {
   lastName        String    @map("last_name")
   phone           String?
   nationalId      String?   @map("national_id")
-  isActive        Boolean   @default(true) @map("is_active")
-  isEmailVerified Boolean   @default(false) @map("is_email_verified")
-  lastLogin       DateTime? @map("last_login")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  isActive             Boolean   @default(true) @map("is_active")
+  isEmailVerified      Boolean   @default(false) @map("is_email_verified")
+  mustChangePassword   Boolean   @default(false) @map("must_change_password")
+  resetPasswordToken   String?   @map("reset_password_token")
+  resetPasswordExpires DateTime? @map("reset_password_expires")
+  lastLogin            DateTime? @map("last_login")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
 
   // Relations
   tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)

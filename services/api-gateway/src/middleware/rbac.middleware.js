@@ -1,11 +1,21 @@
 /**
  * RBAC Middleware for API Gateway
- * Checks user permissions before allowing access to protected resources
+ *
+ * Checks user permissions before allowing access to protected resources.
+ * Permission results are cached in Redis (5-minute TTL) to avoid calling
+ * the RBAC service on every single request.
+ *
+ * Cache key format: rbac:perms:{userId}:{tenantId}
  */
 
+import { getRedisClient } from '../config/redis.config.js';
+
+const CACHE_TTL_SECONDS = 5 * 60; // 5 minutes
+const CACHE_KEY_PREFIX = 'rbac:perms:';
+
 /**
- * Route permission mappings
- * Maps HTTP method + path patterns to required permissions
+ * Route → required permission mapping.
+ * HTTP method + path pattern → permission string.
  */
 const ROUTE_PERMISSIONS = {
   // Cases
@@ -49,152 +59,100 @@ const ROUTE_PERMISSIONS = {
   'PUT:/api/v1/tenants/:id': 'tenants:update',
 };
 
-/**
- * Cache for user permissions (simple in-memory cache)
- * In production, use Redis or similar
- */
-const permissionCache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// ─── Path matching ───────────────────────────────────────────────────────────
 
-/**
- * Match a path pattern against actual path
- * e.g., '/api/v1/cases/:id' matches '/api/v1/cases/123'
- */
 function matchPath(pattern, actualPath) {
   const patternParts = pattern.split('/');
   const actualParts = actualPath.split('/');
-
-  if (patternParts.length !== actualParts.length) {
-    return false;
-  }
-
-  return patternParts.every((part, index) => {
-    // :param matches any value
-    if (part.startsWith(':')) return true;
-    return part === actualParts[index];
-  });
+  if (patternParts.length !== actualParts.length) return false;
+  return patternParts.every((part, i) => part.startsWith(':') || part === actualParts[i]);
 }
 
-/**
- * Get required permission for a route
- */
 function getRequiredPermission(method, path) {
-  // First try exact match
   const exactKey = `${method}:${path}`;
-  if (ROUTE_PERMISSIONS[exactKey]) {
-    return ROUTE_PERMISSIONS[exactKey];
-  }
+  if (ROUTE_PERMISSIONS[exactKey]) return ROUTE_PERMISSIONS[exactKey];
 
-  // Then try pattern matching
   for (const [routeKey, permission] of Object.entries(ROUTE_PERMISSIONS)) {
     const [routeMethod, routePath] = routeKey.split(':');
-    if (routeMethod === method && matchPath(routePath, path)) {
-      return permission;
-    }
+    if (routeMethod === method && matchPath(routePath, path)) return permission;
   }
-
   return null;
 }
 
-/**
- * Fetch user permissions from RBAC service
- */
+// ─── Permission fetching ──────────────────────────────────────────────────────
+
 async function fetchUserPermissions(userId, tenantId, rbacServiceUrl) {
   try {
-    const response = await fetch(
-      `${rbacServiceUrl}/permissions/user/${userId}`,
-      {
-        headers: {
-          'x-user-id': userId,
-          'x-tenant-id': tenantId,
-        },
-      }
-    );
-
+    const response = await fetch(`${rbacServiceUrl}/permissions/user/${userId}`, {
+      headers: { 'x-user-id': userId, 'x-tenant-id': tenantId },
+    });
     if (!response.ok) {
-      console.error('Failed to fetch permissions:', response.status);
+      console.error('[RBAC] Failed to fetch permissions:', response.status);
       return [];
     }
-
     const data = await response.json();
     return data.permissions || [];
   } catch (error) {
-    console.error('Error fetching permissions:', error.message);
+    console.error('[RBAC] Error fetching permissions:', error.message);
     return [];
   }
 }
 
-/**
- * Get user permissions with caching
- */
-async function getUserPermissions(userId, tenantId, rbacServiceUrl) {
-  const cacheKey = `${userId}:${tenantId}`;
-  const cached = permissionCache.get(cacheKey);
+// ─── Redis-backed cache ───────────────────────────────────────────────────────
 
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.permissions;
+async function getUserPermissions(userId, tenantId, rbacServiceUrl) {
+  const cacheKey = `${CACHE_KEY_PREFIX}${userId}:${tenantId}`;
+  const redis = getRedisClient();
+
+  // Try Redis first
+  if (redis && redis.status === 'ready') {
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (err) {
+      console.warn('[RBAC] Redis read error, falling back to live fetch:', err.message);
+    }
   }
 
+  // Cache miss (or Redis unavailable) — fetch from RBAC service
   const permissions = await fetchUserPermissions(userId, tenantId, rbacServiceUrl);
-  
-  permissionCache.set(cacheKey, {
-    permissions,
-    timestamp: Date.now(),
-  });
+
+  // Store in Redis if available
+  if (redis && redis.status === 'ready') {
+    try {
+      await redis.set(cacheKey, JSON.stringify(permissions), 'EX', CACHE_TTL_SECONDS);
+    } catch (err) {
+      console.warn('[RBAC] Redis write error:', err.message);
+    }
+  }
 
   return permissions;
 }
 
-/**
- * Check if user has required permission
- */
+// ─── Permission check ─────────────────────────────────────────────────────────
+
 function hasPermission(userPermissions, requiredPermission) {
-  // Admin role typically has all permissions
-  if (userPermissions.includes('*') || userPermissions.includes('admin:*')) {
-    return true;
-  }
-
-  // Check for exact permission
-  if (userPermissions.includes(requiredPermission)) {
-    return true;
-  }
-
-  // Check for wildcard permission (e.g., 'cases:*' allows 'cases:read')
+  if (userPermissions.includes('*') || userPermissions.includes('admin:*')) return true;
+  if (userPermissions.includes(requiredPermission)) return true;
   const [resource] = requiredPermission.split(':');
-  if (userPermissions.includes(`${resource}:*`)) {
-    return true;
-  }
-
+  if (userPermissions.includes(`${resource}:*`)) return true;
   return false;
 }
 
-/**
- * Create RBAC middleware
- */
+// ─── Middleware ───────────────────────────────────────────────────────────────
+
 export function createRbacMiddleware(rbacServiceUrl) {
   return async function rbacMiddleware(req, res, next) {
-    // Skip if no user (public routes)
-    if (!req.user) {
-      return next();
-    }
+    if (!req.user) return next();
 
-    // Get required permission for this route
     const requiredPermission = getRequiredPermission(req.method, req.path);
-
-    // If no permission mapping, allow access (route not protected by RBAC)
-    if (!requiredPermission) {
-      return next();
-    }
+    if (!requiredPermission) return next();
 
     try {
-      // Get user permissions
-      const userPermissions = await getUserPermissions(
-        req.user.id,
-        req.user.tenantId,
-        rbacServiceUrl
-      );
+      const userPermissions = await getUserPermissions(req.user.id, req.user.tenantId, rbacServiceUrl);
 
-      // Check permission
       if (!hasPermission(userPermissions, requiredPermission)) {
         return res.status(403).json({
           error: {
@@ -204,30 +162,36 @@ export function createRbacMiddleware(rbacServiceUrl) {
         });
       }
 
-      // Permission granted, continue
       next();
     } catch (error) {
-      console.error('RBAC middleware error:', error);
-      // Fail open for now (allow access if RBAC check fails)
-      // In production, you might want to fail closed (deny access)
-      next();
+      console.error('[RBAC] Middleware error:', error);
+      next(); // fail open
     }
   };
 }
 
+// ─── Cache invalidation helpers ───────────────────────────────────────────────
+
 /**
- * Clear permission cache for a user
+ * Invalidate cached permissions for a specific user.
+ * Call this whenever a user's roles change.
  */
-export function clearPermissionCache(userId, tenantId) {
-  const cacheKey = `${userId}:${tenantId}`;
-  permissionCache.delete(cacheKey);
+export async function clearPermissionCache(userId, tenantId) {
+  const redis = getRedisClient();
+  if (redis && redis.status === 'ready') {
+    await redis.del(`${CACHE_KEY_PREFIX}${userId}:${tenantId}`);
+  }
 }
 
 /**
- * Clear all permission cache
+ * Invalidate all cached permissions (e.g., after a bulk role change).
  */
-export function clearAllPermissionCache() {
-  permissionCache.clear();
+export async function clearAllPermissionCache() {
+  const redis = getRedisClient();
+  if (redis && redis.status === 'ready') {
+    const keys = await redis.keys(`${CACHE_KEY_PREFIX}*`);
+    if (keys.length) await redis.del(...keys);
+  }
 }
 
 export default createRbacMiddleware;
