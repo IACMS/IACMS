@@ -16,6 +16,7 @@
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "http-proxy-middleware": "^3.0.3",
+    "ioredis": "^5.10.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.18.0"
   }

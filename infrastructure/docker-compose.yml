@@ -1,7 +1,8 @@
 version: '3.8'
 
 services:
-  # Database
+  # ── Infrastructure ────────────────────────────────────────────────────────
+
   postgres:
     image: postgres:15-alpine
     container_name: iacms-postgres
@@ -19,7 +20,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis (used for session storage)
+  # Redis — used ONLY by api-gateway for RBAC caching and rate limiting
   redis:
     image: redis:7-alpine
     container_name: iacms-redis
@@ -31,7 +32,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Kafka (used for inter-service event streaming)
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: iacms-zookeeper
@@ -72,7 +72,9 @@ services:
       retries: 10
       start_period: 30s
 
-  # API Gateway
+  # ── Services ──────────────────────────────────────────────────────────────
+
+  # API Gateway — the only service that uses Redis (caching + rate limiting)
   api-gateway:
     build:
       context: ..
@@ -90,13 +92,21 @@ services:
       AUDIT_SERVICE_URL: http://audit-service:3006
       INTEGRATION_SERVICE_URL: http://integration-service:3007
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
+      REDIS_URL: redis://redis:6379
+      RATE_LIMIT_MAX_REQUESTS: 100
+      RATE_LIMIT_WINDOW_SECONDS: 60
+      AUTH_RATE_LIMIT_MAX: 10
     depends_on:
-      - auth-service
-      - case-service
+      redis:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     networks:
       - iacms-network
 
-  # Auth Service
+  # Auth Service — PostgreSQL + Kafka only
   auth-service:
     build:
       context: ..
@@ -107,7 +117,6 @@ services:
     environment:
       PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
       JWT_SECRET: change-this-secret-key
       JWT_EXPIRES_IN: 24h
@@ -115,14 +124,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - iacms-network
 
-  # RBAC Service
+  # RBAC Service — PostgreSQL + Kafka only
   rbac-service:
     build:
       context: ..
@@ -133,19 +140,16 @@ services:
     environment:
       PORT: 3002
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - iacms-network
 
-  # Case Service
+  # Case Service — PostgreSQL + Kafka only
   case-service:
     build:
       context: ..
@@ -156,19 +160,16 @@ services:
     environment:
       PORT: 3003
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - iacms-network
 
-  # Workflow Service
+  # Workflow Service — PostgreSQL + Kafka only
   workflow-service:
     build:
       context: ..
@@ -179,19 +180,16 @@ services:
     environment:
       PORT: 3004
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - iacms-network
 
-  # Referral Service
+  # Referral Service — PostgreSQL + Kafka only
   referral-service:
     build:
       context: ..
@@ -202,19 +200,16 @@ services:
     environment:
       PORT: 3005
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - iacms-network
 
-  # Audit Service
+  # Audit Service — PostgreSQL + Kafka only
   audit-service:
     build:
       context: ..
@@ -225,19 +220,16 @@ services:
     environment:
       PORT: 3006
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - iacms-network
 
-  # Integration Service
+  # Integration Service — PostgreSQL + Kafka only
   integration-service:
     build:
       context: ..
@@ -248,19 +240,16 @@ services:
     environment:
       PORT: 3007
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - iacms-network
 
-  # Notification Service
+  # Notification Service — Kafka only (no database)
   notification-service:
     build:
       context: ..
@@ -270,11 +259,8 @@ services:
       - "3008:3008"
     environment:
       PORT: 3008
-      REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:29092
     depends_on:
-      redis:
-        condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
@@ -287,4 +273,3 @@ volumes:
 networks:
   iacms-network:
     driver: bridge
-
