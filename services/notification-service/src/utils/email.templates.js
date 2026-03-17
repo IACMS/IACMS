@@ -124,7 +124,7 @@ export function welcomeEmailTemplate({ firstName, tenantName, email, temporaryPa
     </table>
 
     <div style="background: #fff8e1; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 0 6px 6px 0; margin: 24px 0;">
-      <strong style="color: #92400e;">⚠ Important:</strong>
+      <strong style="color: #92400e;">Important:</strong>
       <span style="color: #78350f;"> This is a temporary password. You will be required to change it when you log in for the first time.</span>
     </div>
 
@@ -159,7 +159,7 @@ export function passwordResetTemplate({ firstName, resetUrl }) {
     </div>
 
     <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; border-radius: 0 6px 6px 0; margin: 24px 0;">
-      <strong style="color: #991b1b;">⏱ This link expires in 1 hour.</strong>
+      <strong style="color: #991b1b;">This link expires in 1 hour.</strong>
     </div>
 
     <p>
@@ -193,7 +193,7 @@ export function passwordChangedTemplate({ firstName }) {
     </p>
 
     <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; border-radius: 0 6px 6px 0; margin: 24px 0;">
-      <strong style="color: #166534;">✓ Your account is secure.</strong>
+      <strong style="color: #166534;">Your account is secure.</strong>
     </div>
 
     <p style="color: #666; font-size: 14px;">

@@ -2,11 +2,11 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../config/database.js';
+import { getRedisClient } from '../config/redis.config.js';
 import { ValidationError, UnauthorizedError, NotFoundError } from '../../../../shared/common/errors.js';
 import Logger from '../../../../shared/common/logger.js';
-import EventBus from '../../../../shared/utils/eventBus.js';
+import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
 import { validateLoginRequest, validateRegisterRequest, validateCreateUserRequest } from '../utils/validators.js';
-import { sendWelcomeEmail, sendPasswordResetEmail, sendPasswordChangedEmail } from '../utils/email.js';
 
 const logger = new Logger('auth-service');
 let eventBus = null;
@@ -27,6 +27,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'iacms-dev-secret-key-change-in-pro
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 const RESET_TOKEN_EXPIRES_HOURS = 1;
+const LOCKOUT_ATTEMPTS = 5;
+const LOCKOUT_SECONDS = 15 * 60; // 15 minutes
 
 /**
  * Generate a random temporary password: 4 letters + 4 digits + 4 special chars
@@ -55,10 +57,14 @@ function generateTemporaryPassword() {
  * Generate JWT tokens
  */
 function generateTokens(user) {
+  const jti = crypto.randomUUID();
+
   const payload = {
+    jti,
     id: user.id,
     tenantId: user.tenantId,
     email: user.email,
+    mustChangePassword: user.mustChangePassword ?? false,
   };
 
   const accessToken = jwt.sign(payload, JWT_SECRET, {
@@ -82,6 +88,26 @@ export async function login(req, res, next) {
 
     if (!password) {
       throw new ValidationError('Password is required');
+    }
+
+    // Check account lockout before hitting the DB for password verification
+    const redis = getRedisClient();
+    const lockKey = `auth:lockout:${email}`;
+    const attemptsKey = `auth:attempts:${email}`;
+
+    if (redis) {
+      try {
+        const locked = await redis.get(lockKey);
+        if (locked) {
+          const ttl = await redis.ttl(lockKey);
+          throw new UnauthorizedError(
+            `Account temporarily locked due to too many failed attempts. Try again in ${Math.ceil(ttl / 60)} minute(s).`
+          );
+        }
+      } catch (err) {
+        if (err instanceof UnauthorizedError) throw err;
+        // Redis unavailable — continue without lockout check
+      }
     }
 
     // Find tenant if tenantCode provided
@@ -113,9 +139,22 @@ export async function login(req, res, next) {
       throw new UnauthorizedError('Invalid credentials');
     }
 
-    // Verify password
+    // Verify password — track failures for lockout
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
+      if (redis) {
+        try {
+          const attempts = await redis.incr(attemptsKey);
+          await redis.expire(attemptsKey, LOCKOUT_SECONDS);
+          if (attempts >= LOCKOUT_ATTEMPTS) {
+            await redis.set(lockKey, '1', 'EX', LOCKOUT_SECONDS);
+            await redis.del(attemptsKey);
+            logger.warn('Account locked after failed attempts', { email });
+          }
+        } catch {
+          // Redis unavailable — skip counter
+        }
+      }
       throw new UnauthorizedError('Invalid credentials');
     }
 
@@ -127,6 +166,15 @@ export async function login(req, res, next) {
     // Check if tenant is active
     if (!user.tenant.isActive) {
       throw new UnauthorizedError('Tenant is inactive');
+    }
+
+    // Clear failed attempt counters on successful login
+    if (redis) {
+      try {
+        await redis.del(lockKey, attemptsKey);
+      } catch {
+        // Redis unavailable — no-op
+      }
     }
 
     // Generate tokens
@@ -155,6 +203,7 @@ export async function login(req, res, next) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        mustChangePassword: user.mustChangePassword,
         tenant: {
           id: user.tenant.id,
           name: user.tenant.name,
@@ -241,10 +290,12 @@ export async function register(req, res, next) {
     // Publish event (non-blocking)
     const bus = getEventBus();
     if (bus) {
-      bus.publish('user.created', {
+      bus.publish(TOPICS.USER_CREATED, {
         userId: user.id,
         tenantId: user.tenantId,
         email: user.email,
+        firstName: user.firstName,
+        source: 'register',
       }).catch(err => logger.warn('Failed to publish user.created event', { error: err.message }));
     }
 
@@ -308,8 +359,20 @@ export async function refreshToken(req, res, next) {
  */
 export async function logout(req, res, next) {
   try {
-    // In a production system, you might want to blacklist the token
-    // For now, we'll just return success
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (token) {
+      const decoded = jwt.decode(token);
+      if (decoded?.jti && decoded?.exp) {
+        const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+        if (ttl > 0) {
+          const redis = getRedisClient();
+          if (redis) {
+            await redis.set(`auth:blacklist:${decoded.jti}`, '1', 'EX', ttl);
+          }
+        }
+      }
+    }
+    logger.info('User logged out', { userId: req.user?.id });
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     next(error);
@@ -361,7 +424,7 @@ export async function getProfile(req, res, next) {
  */
 export async function createUser(req, res, next) {
   try {
-    const { email, firstName, lastName, username, tenantCode, tenantId } = validateCreateUserRequest(req.body);
+    const { email, firstName, lastName, username, tenantCode, tenantId, roleId } = validateCreateUserRequest(req.body);
 
     // Resolve tenant
     let tenant;
@@ -405,26 +468,40 @@ export async function createUser(req, res, next) {
       include: { tenant: true },
     });
 
-    // Send welcome email (non-blocking — don't fail user creation if email fails)
-    sendWelcomeEmail({
-      to: email,
-      firstName,
-      tenantName: tenant.name,
-      temporaryPassword,
-    }).catch(err => logger.warn('Welcome email failed', { error: err.message }));
+    // Assign role if provided
+    let assignedRole = null;
+    if (roleId) {
+      const role = await prisma.role.findFirst({
+        where: { id: roleId, isActive: true },
+      });
+      if (!role) throw new NotFoundError('Role');
+      await prisma.userRole.create({
+        data: {
+          userId: user.id,
+          roleId,
+          assignedBy: req.headers['x-user-id'] || null,
+        },
+      });
+      assignedRole = { id: role.id, name: role.name };
+    }
 
-    // Publish event
+    // Publish user.created — notification-service will send the welcome email
     const bus = getEventBus();
     if (bus) {
-      bus.publish('user.created', {
+      bus.publish(TOPICS.USER_CREATED, {
         userId: user.id,
         tenantId: user.tenantId,
         email: user.email,
-        createdBy: req.headers['x-user-id'],
+        firstName,
+        tenantName: tenant.name,
+        tenantCode: tenant.code,
+        temporaryPassword,
+        source: 'admin',
+        createdBy: req.headers['x-user-id'] || null,
       }).catch(err => logger.warn('Failed to publish user.created event', { error: err.message }));
     }
 
-    logger.info('Admin created user', { userId: user.id, tenantId: user.tenantId, email: user.email });
+    logger.info('Admin created user', { userId: user.id, tenantId: user.tenantId, email: user.email, roleId });
 
     res.status(201).json({
       message: 'User created. A welcome email with their temporary password has been sent.',
@@ -435,6 +512,7 @@ export async function createUser(req, res, next) {
         firstName: user.firstName,
         lastName: user.lastName,
         mustChangePassword: user.mustChangePassword,
+        role: assignedRole,
         tenant: { id: user.tenant.id, name: user.tenant.name, code: user.tenant.code },
       },
     });
@@ -488,13 +566,16 @@ export async function forgotPassword(req, res, next) {
       },
     });
 
-    // Send email with the plain token (user pastes it in the reset form)
-    sendPasswordResetEmail({
-      to: user.email,
-      firstName: user.firstName,
-      resetToken,
-      tenantCode: user.tenant.code,
-    }).catch(err => logger.warn('Reset email failed', { error: err.message }));
+    // Publish event — notification-service will send the reset email
+    const bus = getEventBus();
+    if (bus) {
+      bus.publish(TOPICS.PASSWORD_RESET_REQUESTED, {
+        email: user.email,
+        firstName: user.firstName,
+        resetToken,
+        tenantCode: user.tenant.code,
+      }).catch(err => logger.warn('Failed to publish password.reset.requested event', { error: err.message }));
+    }
 
     logger.info('Password reset requested', { userId: user.id, email: user.email });
     res.json(successResponse);
@@ -546,11 +627,14 @@ export async function resetPassword(req, res, next) {
       },
     });
 
-    // Notify user
-    sendPasswordChangedEmail({
-      to: user.email,
-      firstName: user.firstName,
-    }).catch(err => logger.warn('Password changed email failed', { error: err.message }));
+    // Publish event — notification-service will send the confirmation email
+    const bus = getEventBus();
+    if (bus) {
+      bus.publish(TOPICS.PASSWORD_CHANGED, {
+        email: user.email,
+        firstName: user.firstName,
+      }).catch(err => logger.warn('Failed to publish password.changed event', { error: err.message }));
+    }
 
     logger.info('Password reset successful', { userId: user.id, email: user.email });
     res.json({ message: 'Password has been reset successfully. You can now log in.' });
@@ -591,11 +675,14 @@ export async function changePassword(req, res, next) {
       },
     });
 
-    // Notify user
-    sendPasswordChangedEmail({
-      to: user.email,
-      firstName: user.firstName,
-    }).catch(err => logger.warn('Password changed email failed', { error: err.message }));
+    // Publish event — notification-service will send the confirmation email
+    const bus = getEventBus();
+    if (bus) {
+      bus.publish(TOPICS.PASSWORD_CHANGED, {
+        email: user.email,
+        firstName: user.firstName,
+      }).catch(err => logger.warn('Failed to publish password.changed event', { error: err.message }));
+    }
 
     logger.info('Password changed', { userId: user.id });
     res.json({ message: 'Password changed successfully.' });

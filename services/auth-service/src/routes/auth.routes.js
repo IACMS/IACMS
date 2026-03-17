@@ -10,7 +10,7 @@ import {
   resetPassword,
   changePassword,
 } from '../controllers/auth.controller.js';
-import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authenticateToken, requirePasswordChange } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -22,11 +22,13 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
 // ── Protected routes (require JWT) ───────────────────────────────────────
-router.post('/logout', authenticateToken, logout);
-router.get('/profile', authenticateToken, getProfile);
+// change-password is intentionally excluded from requirePasswordChange so users
+// with mustChangePassword=true can still reach it to complete the required change.
 router.post('/change-password', authenticateToken, changePassword);
+router.post('/logout',       authenticateToken, requirePasswordChange, logout);
+router.get('/profile',       authenticateToken, requirePasswordChange, getProfile);
 
 // ── Admin routes (require JWT — RBAC enforcement is done at API Gateway) ──
-router.post('/users/create', authenticateToken, createUser);
+router.post('/users/create', authenticateToken, requirePasswordChange, createUser);
 
 export default router;
