@@ -10,6 +10,7 @@ import {
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendPasswordChangedEmail,
+  sendVerificationEmail,
 } from '../utils/email.js';
 import Logger from '../../../../shared/common/logger.js';
 
@@ -69,5 +70,23 @@ export async function handlePasswordChanged(data) {
   await sendPasswordChangedEmail({
     to: data.email,
     firstName: data.firstName,
+  });
+}
+
+/**
+ * Handle email.verification.requested events.
+ * Sent on registration and when the user requests a resend.
+ *
+ * Expected payload:
+ *   { userId, email, firstName, verificationToken, tenantCode }
+ */
+export async function handleEmailVerificationRequested(data) {
+  logger.info('Sending verification email', { userId: data.userId, email: data.email });
+
+  await sendVerificationEmail({
+    to: data.email,
+    firstName: data.firstName,
+    verificationToken: data.verificationToken,
+    tenantCode: data.tenantCode,
   });
 }

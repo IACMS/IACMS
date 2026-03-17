@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import auditRoutes from './routes/audit.routes.js';
 import Logger from '../../../shared/common/logger.js';
-import EventBus from '../../../shared/utils/eventBus.js';
+import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
+import { handleAuditLog } from './consumers/audit.consumer.js';
 import './config/database.js'; // Initialize database connection
 
 dotenv.config();
@@ -18,12 +19,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'audit-service', timestamp: new Date().toISOString() });
 });
 
-// Subscribe to audit events
+// Subscribe to audit events and persist them to the database
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'audit-service');
-eventBus.subscribe('audit.log', async (data) => {
-  // Handle audit log creation
-  logger.info('Audit event received', data);
-});
+eventBus.subscribe(TOPICS.AUDIT_LOG, handleAuditLog);
 
 app.use('/audit', auditRoutes);
 

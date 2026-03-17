@@ -31,6 +31,8 @@ export const TOPICS = {
   WEBHOOK_UPDATED: 'webhook.updated',
   WEBHOOK_TEST: 'webhook.test',
   AUDIT_LOG: 'audit.log',
+  USER_LOGGED_IN: 'user.logged_in',
+  EMAIL_VERIFICATION_REQUESTED: 'email.verification.requested',
   PASSWORD_RESET_REQUESTED: 'password.reset.requested',
   PASSWORD_CHANGED: 'password.changed',
 };
