@@ -177,6 +177,40 @@ export function passwordResetTemplate({ firstName, resetUrl }) {
 }
 
 /**
+ * Email verification email with a one-time link.
+ * Link expires in 24 hours.
+ */
+export function emailVerificationTemplate({ firstName, verificationLink }) {
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Verify Your Email Address</h2>
+    <p>Hi ${firstName},</p>
+    <p>
+      Thank you for registering with IACMS. Please verify your email address
+      by clicking the button below to activate your account.
+    </p>
+
+    <div style="text-align: center;">
+      <a href="${verificationLink}" style="${buttonStyle}">Verify Email Address</a>
+    </div>
+
+    <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 0 6px 6px 0; margin: 24px 0;">
+      <strong style="color: #1e40af;">This link expires in 24 hours.</strong>
+    </div>
+
+    <p>
+      If the button doesn't work, copy and paste this link into your browser:
+    </p>
+    <p style="word-break: break-all; background: #f4f6f9; padding: 12px; border-radius: 4px; font-size: 13px; color: #555;">
+      ${verificationLink}
+    </p>
+
+    <p style="color: #666; font-size: 14px;">
+      If you did not create an account, you can safely ignore this email.
+    </p>
+  `);
+}
+
+/**
  * Confirmation email after a password change.
  */
 export function passwordChangedTemplate({ firstName }) {

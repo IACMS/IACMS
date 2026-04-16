@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "iacms-auth-collection",
     "name": "IACMS Authentication",
-    "description": "Complete authentication testing collection for IACMS.\n\nIncludes:\n- Health Check\n- JWT Authentication (for API clients)\n- Session Authentication (for web browsers)\n- Admin: Create User (with email + temp password)\n- Password Management (forgot / reset / change)\n- Error Cases\n\n**Test Order:**\n1. Health Check\n2. JWT Login → use {{accessToken}} in all protected requests\n3. Admin creates user → check Mailtrap inbox for temp password\n4. Forgot Password → check Mailtrap inbox → Reset Password\n5. Change Password (logged-in user)",
+    "description": "Complete authentication testing collection for IACMS.\n\nIncludes:\n- Health Check\n- JWT Authentication (for API clients)\n- Session Authentication (for web browsers)\n- Admin: Create User (with email + temp password)\n- Password Management (forgot / reset / change)\n- Self-Registration\n- Admin: User Management (list / get / update / assign role / deactivate / reactivate / delete)\n- Profile & Email Verification (update profile / verify email / resend verification)\n- Error Cases\n\n**Test Order:**\n1. Health Check\n2. JWT Login → use {{accessToken}} in all protected requests\n3. Admin creates user → check Mailtrap inbox for temp password\n4. Forgot Password → check Mailtrap inbox → Reset Password\n5. Change Password (logged-in user)\n6. Admin user management CRUD\n7. Profile update + email verification flow",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -34,6 +34,18 @@
       "value": "",
       "type": "string",
       "description": "Auto-set when admin creates a user"
+    },
+    {
+      "key": "targetUserId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-set by List Users — used in single-user management requests"
+    },
+    {
+      "key": "verificationToken",
+      "value": "",
+      "type": "string",
+      "description": "Manually paste token from Mailtrap verification email URL"
     }
   ],
   "item": [
@@ -664,7 +676,440 @@
       ]
     },
     {
-      "name": "7. Error Cases",
+      "name": "7. Admin: User Management",
+      "description": "Full admin CRUD over users within the admin's tenant.\n\n**Requires:** JWT Login first to get `{{accessToken}}`\n\n**Flow:**\n1. List Users → copies first non-admin user ID into `{{targetUserId}}`\n2. Get User, Update User, Assign Role, Deactivate, Reactivate, Delete",
+      "item": [
+        {
+          "name": "List Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Returns users array', () => pm.expect(Array.isArray(jsonData.users)).to.be.true);",
+                  "",
+                  "// Save the first non-admin user for subsequent requests",
+                  "var nonAdmin = jsonData.users.find(u => u.email !== 'admin@test-org.com');",
+                  "if (nonAdmin) {",
+                  "    pm.collectionVariables.set('targetUserId', nonAdmin.id);",
+                  "    console.log('✓ targetUserId saved:', nonAdmin.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users"]
+            },
+            "description": "List all users in the admin's tenant.\n\nThe test script auto-saves the first non-admin user ID into `{{targetUserId}}`."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has user object', () => {",
+                  "    var u = pm.response.json().user;",
+                  "    pm.expect(u).to.have.property('id');",
+                  "    pm.expect(u).to.have.property('email');",
+                  "    pm.expect(u).to.have.property('isEmailVerified');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/{{targetUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "{{targetUserId}}"]
+            },
+            "description": "Get full details for a single user.\n\n**Requires:** `{{targetUserId}}` to be set (run List Users first)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('User updated', () => {",
+                  "    var u = pm.response.json().user;",
+                  "    pm.expect(u.phone).to.equal('+1234567890');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/{{targetUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "{{targetUserId}}"]
+            },
+            "description": "Update one or more profile fields for a user.\n\nAllowed fields: `firstName`, `lastName`, `email`, `phone`.\nAt least one field is required."
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Role assigned', () => {",
+                  "    pm.expect(pm.response.json().message).to.match(/assigned/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleId\": \"55555555-5555-5555-5555-555555555555\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/{{targetUserId}}/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "{{targetUserId}}", "role"]
+            },
+            "description": "Assign (or replace) a role for the target user.\n\nThe `roleId` must belong to the same tenant or be a system-level role.\n\n**Seeded admin role ID:** `55555555-5555-5555-5555-555555555555`"
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('User deactivated', () => {",
+                  "    pm.expect(pm.response.json().message).to.match(/deactivated/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/{{targetUserId}}/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "{{targetUserId}}", "deactivate"]
+            },
+            "description": "Deactivate a user — they can no longer log in.\n\n**Guards:**\n- Cannot deactivate yourself\n- Cannot deactivate the last active admin"
+          },
+          "response": []
+        },
+        {
+          "name": "Reactivate User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('User reactivated', () => {",
+                  "    pm.expect(pm.response.json().message).to.match(/reactivated/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/{{targetUserId}}/reactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "{{targetUserId}}", "reactivate"]
+            },
+            "description": "Reactivate a previously deactivated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User (Soft)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('User deleted', () => {",
+                  "    pm.expect(pm.response.json().message).to.match(/deleted/i);",
+                  "});",
+                  "",
+                  "// Clear the saved ID since the user no longer exists",
+                  "pm.collectionVariables.set('targetUserId', '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/{{targetUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "{{targetUserId}}"]
+            },
+            "description": "Soft-delete a user: all PII is anonymized and the account is deactivated.\n\n**This is irreversible.** The user record remains in the DB for audit purposes but the email, name and phone are overwritten.\n\n**Guards:**\n- Cannot delete yourself\n- Cannot delete the last active admin"
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Self (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error mentions own account', () => {",
+                  "    var msg = pm.response.json().error.message.toLowerCase();",
+                  "    pm.expect(msg).to.include('your own');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/users/22222222-2222-2222-2222-222222222222/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "users", "22222222-2222-2222-2222-222222222222", "deactivate"]
+            },
+            "description": "Try to deactivate yourself (seeded admin ID).\n\n**Expected:** 400 — 'You cannot deactivate your own account'"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Profile & Email Verification",
+      "description": "Self-service profile editing and email verification flow.\n\n**Email Verification Flow:**\n1. Register a new user → verification email sent to Mailtrap\n2. Open Mailtrap, copy token from the link URL (`?token=...`)\n3. Paste into `{{verificationToken}}` variable\n4. Send Verify Email\n\n**Profile Update:**\n- Requires `{{accessToken}}`\n- Can update firstName, lastName, phone (NOT email)",
+      "item": [
+        {
+          "name": "Update Own Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Profile updated', () => {",
+                  "    var u = pm.response.json().user;",
+                  "    pm.expect(u.firstName).to.equal('AdminUpdated');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"AdminUpdated\",\n  \"phone\": \"+9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Update the currently authenticated user's own profile.\n\n**Allowed fields:** `firstName`, `lastName`, `phone`\n**Not allowed:** `email` (changing email would break email-verified state)\n\nAt least one field must be provided."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile - No Fields (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Validation error', () => {",
+                  "    var msg = pm.response.json().error.message.toLowerCase();",
+                  "    pm.expect(msg).to.include('at least one field');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "**Expected:** 400 — at least one field required."
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Email verified', () => {",
+                  "    pm.expect(pm.response.json().message).to.match(/verified/i);",
+                  "});",
+                  "",
+                  "// Clear used token",
+                  "pm.collectionVariables.set('verificationToken', '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{verificationToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "verify-email"]
+            },
+            "description": "Verify a user's email address using the one-time token.\n\n**No auth required** — this is a public endpoint.\n\n**Before sending:**\n1. Register a new user (or wait for admin-created user)\n2. Open [Mailtrap](https://mailtrap.io/inboxes)\n3. Find the verification email\n4. Copy the token from the link URL: `?token=<TOKEN>&tenant=...`\n5. Paste into `{{verificationToken}}` collection variable\n\n**Token rules:**\n- Expires after **24 hours**\n- Single-use: cleared from DB on success"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Email - Invalid Token (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Invalid or expired', () => {",
+                  "    pm.expect(pm.response.json().message).to.match(/invalid or expired/i);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"thisisaninvalidverificationtoken\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "verify-email"]
+            },
+            "description": "**Expected:** 400 — Invalid or expired token."
+          },
+          "response": []
+        },
+        {
+          "name": "Resend Verification Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Email resent', () => {",
+                  "    pm.expect(pm.response.json().message).to.match(/resent/i);",
+                  "});",
+                  "",
+                  "console.log('📧 Check Mailtrap for the new verification email.');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/resend-verification",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "resend-verification"]
+            },
+            "description": "Re-generates the email verification token and re-sends the verification email.\n\n**Requires:** Valid `{{accessToken}}`\n**Only works if:** email is not already verified\n\nAfter sending, check [Mailtrap](https://mailtrap.io/inboxes) for the new verification email."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Error Cases",
       "description": "Verify all error handling is working correctly",
       "item": [
         {
