@@ -216,6 +216,84 @@ export function validateCreateUserRequest(body) {
   };
 }
 
+/**
+ * Validate admin "update user" request.
+ * All fields are optional but at least one must be provided.
+ * Email uniqueness within the tenant is checked in the controller.
+ */
+export function validateUpdateUserRequest(body) {
+  const { firstName, lastName, email, phone } = body || {};
+
+  const hasAnyField = firstName !== undefined || lastName !== undefined ||
+    email !== undefined || phone !== undefined;
+
+  if (!hasAnyField) {
+    throw new ValidationError('At least one field (firstName, lastName, email, phone) is required');
+  }
+
+  const result = {};
+
+  if (firstName !== undefined) {
+    result.firstName = validateName(firstName, 'First name');
+  }
+  if (lastName !== undefined) {
+    result.lastName = validateName(lastName, 'Last name');
+  }
+  if (email !== undefined) {
+    result.email = validateEmail(email);
+  }
+  if (phone !== undefined) {
+    if (phone !== null && phone !== '') {
+      const trimmed = String(phone).trim();
+      if (trimmed.length > 30) {
+        throw new ValidationError('Phone must be less than 30 characters');
+      }
+      result.phone = trimmed;
+    } else {
+      result.phone = null; // allow clearing phone
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Validate self-service profile update request.
+ * Unlike admin update, email cannot be changed here (it would break verified state).
+ * Only firstName, lastName, phone are allowed.
+ */
+export function validateProfileUpdateRequest(body) {
+  const { firstName, lastName, phone } = body || {};
+
+  const hasAnyField = firstName !== undefined || lastName !== undefined || phone !== undefined;
+
+  if (!hasAnyField) {
+    throw new ValidationError('At least one field (firstName, lastName, phone) is required');
+  }
+
+  const result = {};
+
+  if (firstName !== undefined) {
+    result.firstName = validateName(firstName, 'First name');
+  }
+  if (lastName !== undefined) {
+    result.lastName = validateName(lastName, 'Last name');
+  }
+  if (phone !== undefined) {
+    if (phone !== null && phone !== '') {
+      const trimmed = String(phone).trim();
+      if (trimmed.length > 30) {
+        throw new ValidationError('Phone must be less than 30 characters');
+      }
+      result.phone = trimmed;
+    } else {
+      result.phone = null;
+    }
+  }
+
+  return result;
+}
+
 export default {
   validateEmail,
   validatePassword,
@@ -226,4 +304,6 @@ export default {
   validateLoginRequest,
   validateRegisterRequest,
   validateCreateUserRequest,
+  validateUpdateUserRequest,
+  validateProfileUpdateRequest,
 };

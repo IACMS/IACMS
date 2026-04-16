@@ -10,6 +10,7 @@ import {
   welcomeEmailTemplate,
   passwordResetTemplate,
   passwordChangedTemplate,
+  emailVerificationTemplate,
 } from './email.templates.js';
 import Logger from '../../../../shared/common/logger.js';
 
@@ -76,6 +77,18 @@ export async function sendPasswordResetEmail({ to, firstName, resetToken, tenant
     to,
     subject: 'IACMS — Password Reset Request',
     html: passwordResetTemplate({ firstName, resetUrl }),
+  });
+}
+
+/**
+ * Send email verification link to a newly registered user.
+ */
+export async function sendVerificationEmail({ to, firstName, verificationToken, tenantCode }) {
+  const verificationLink = `${process.env.APP_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}&tenant=${tenantCode}`;
+  return sendEmail({
+    to,
+    subject: 'IACMS — Please Verify Your Email Address',
+    html: emailVerificationTemplate({ firstName, verificationLink }),
   });
 }
 
