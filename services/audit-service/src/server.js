@@ -9,6 +9,11 @@ import './config/database.js'; // Initialize database connection
 
 dotenv.config();
 
+// Prevent any async Kafka errors from killing the process
+process.on('unhandledRejection', (reason) => {
+  console.warn('[audit-service] Unhandled rejection (non-fatal):', reason?.message || reason);
+});
+
 const app = express();
 const PORT = process.env.PORT || 3006;
 const logger = new Logger('audit-service');
@@ -21,7 +26,9 @@ app.get('/health', (req, res) => {
 
 // Subscribe to audit events and persist them to the database
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'audit-service');
-eventBus.subscribe(TOPICS.AUDIT_LOG, handleAuditLog);
+eventBus.subscribe(TOPICS.AUDIT_LOG, handleAuditLog).catch(err =>
+  logger.warn('Kafka subscription failed — audit events will not be persisted until Kafka is available', { error: err.message })
+);
 
 app.use('/audit', auditRoutes);
 

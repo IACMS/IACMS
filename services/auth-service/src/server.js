@@ -11,6 +11,11 @@ import Logger from '../../../shared/common/logger.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
+// Prevent any async Kafka errors from killing the process
+process.on('unhandledRejection', (reason) => {
+  console.warn('[auth-service] Unhandled rejection (non-fatal):', reason?.message || reason);
+});
+
 const app = express();
 const PORT = 3001; // Auth Service port
 const logger = new Logger('auth-service');
