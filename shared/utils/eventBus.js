@@ -55,7 +55,8 @@ class EventBus {
       // Retry settings - allow services to start before Kafka is ready
       retry: {
         initialRetryTime: 3000,
-        retries: 10,
+        retries: 5,
+        maxRetryTime: 30000,
       },
     });
 
@@ -112,38 +113,62 @@ class EventBus {
   }
 
   /**
-   * Subscribe to an event topic
+   * Subscribe to an event topic.
+   * Uses a deferred start so that all topics registered in the same tick
+   * are bundled into a single consumer.connect() call.
    *
    * @param {string} eventType - The event topic to subscribe to
    * @param {function} handler - Callback function(data) called when event arrives
    */
   async subscribe(eventType, handler) {
-    // Store handler
     if (!this.handlers.has(eventType)) {
       this.handlers.set(eventType, []);
     }
     this.handlers.get(eventType).push(handler);
 
-    // Connect consumer and start listening on first subscription
-    if (!this.consumerConnected) {
-      this.consumerConnected = true;
-      await this._startConsumer();
+    // If the consumer is already running, subscribe immediately to the new topic.
+    // This avoids the "only first topic subscribed" issue when services register
+    // multiple subscriptions sequentially (e.g., with await between calls).
+    if (this.consumerConnected) {
+      try {
+        await this.consumer.subscribe({ topic: eventType, fromBeginning: false });
+      } catch (error) {
+        console.warn(`[EventBus] Failed to subscribe to topic "${eventType}":`, error.message);
+      }
+      return;
     }
+
+    // Defer consumer start so all synchronous subscribe() calls are collected
+    // before we connect, ensuring every topic is registered with Kafka.
+    if (!this._connectingPromise) {
+      this._connectingPromise = new Promise(resolve => setImmediate(resolve))
+        .then(() => this._startConsumer());
+    }
+
+    return this._connectingPromise;
   }
 
   /**
-   * Internal: Connect consumer and start processing messages
+   * Internal: Connect consumer and start processing messages.
+   * Only called once; all handlers registered by then are included.
    */
   async _startConsumer() {
+    if (this.consumerConnected) return;
     try {
       await this.consumer.connect();
+      this.consumerConnected = true;
 
-      // Subscribe to all topics that have handlers
+      // Absorb internal KafkaJS crashes so they don't become unhandled rejections
+      this.consumer.on(this.consumer.events.CRASH, ({ payload }) => {
+        console.warn('[EventBus] Consumer crash event:', payload?.error?.message);
+        this.consumerConnected = false;
+        this._connectingPromise = null;
+      });
+
       for (const topic of this.handlers.keys()) {
         await this.consumer.subscribe({ topic, fromBeginning: false });
       }
 
-      // Start consuming messages
       await this.consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
           try {
@@ -160,6 +185,7 @@ class EventBus {
     } catch (error) {
       console.warn('[EventBus] Consumer connection failed:', error.message);
       this.consumerConnected = false;
+      this._connectingPromise = null; // allow retry on next subscribe call
     }
   }
 

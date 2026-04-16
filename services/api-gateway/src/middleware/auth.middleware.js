@@ -20,6 +20,9 @@ const PUBLIC_ROUTES = [
   { method: 'POST', path: '/auth/login' },
   { method: 'POST', path: '/auth/register' },
   { method: 'POST', path: '/auth/refresh' },
+  { method: 'POST', path: '/auth/forgot-password' },
+  { method: 'POST', path: '/auth/reset-password' },
+  { method: 'POST', path: '/auth/verify-email' },
   // Session routes (handled at gateway level)
   { method: 'POST', path: '/session/login' },
   // Tenant validation
