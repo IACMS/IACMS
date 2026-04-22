@@ -12,7 +12,7 @@ A **multi-tenant microservices** backend for managing cases across government or
 | Framework | Express.js 5.x |
 | Database | PostgreSQL 15 |
 | ORM | Prisma 6.x |
-| Sessions | PostgreSQL (`user_sessions` table) |
+| Sessions | Redis (`iacms:sess:*` keys, API Gateway) |
 | Events | Apache Kafka |
 | Containerization | Docker & Docker Compose |
 
