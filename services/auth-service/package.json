@@ -11,8 +11,8 @@
     "migrate:deploy": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "test": "vitest run tests/unit",
-    "test:integration": "vitest run tests/integration",
-    "test:all": "vitest run",
+    "test:integration": "prisma generate && vitest run tests/integration",
+    "test:all": "prisma generate && vitest run",
     "test:watch": "vitest tests/unit",
     "test:coverage": "vitest run --coverage"
   },

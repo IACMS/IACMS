@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../src/generated/prisma/client.js';
 import Redis from 'ioredis';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
