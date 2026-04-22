@@ -1,98 +1,102 @@
 /**
- * Session Configuration for API Gateway
- * Uses PostgreSQL as the session store for persistence
+ * Session configuration for the API Gateway.
+ * Stores express-session data in Redis (not PostgreSQL).
  */
 
 import session from 'express-session';
-import pgSession from 'connect-pg-simple';
-import pg from 'pg';
+import { RedisStore } from 'connect-redis';
+import { createClient } from 'redis';
 
-// Database configuration
-const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/iacms';
+/** Redis key prefix for session keys (connect-redis appends the session id). */
+export const SESSION_REDIS_KEY_PREFIX = 'iacms:sess:';
 
-// Create PostgreSQL connection pool
-const pool = new pg.Pool({
-  connectionString: databaseUrl,
-});
-
-// Create the PostgreSQL session store
-const PgStore = pgSession(session);
+let sessionRedisClient = null;
 
 /**
- * Create session middleware with PostgreSQL store
+ * Returns the node-redis client used for the session store (for tests / shutdown).
+ * Lazily created by {@link createSessionMiddleware}.
+ */
+export function getSessionRedisClient() {
+  return sessionRedisClient;
+}
+
+/**
+ * Create express-session middleware backed by Redis.
+ * Fails fast if Redis is unreachable (session-based auth requires Redis).
  */
 export async function createSessionMiddleware() {
-  // Create sessions table if it doesn't exist
-  await createSessionTable();
+  const url = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
-  // Create PostgreSQL store
-  const pgStore = new PgStore({
-    pool: pool,
-    tableName: 'user_sessions', // Custom table name
-    createTableIfMissing: true, // Auto-create table
+  if (!sessionRedisClient) {
+    sessionRedisClient = createClient({ url });
+    sessionRedisClient.on('error', (err) => {
+      console.error('[Session][Redis] Client error:', err.message);
+    });
+    const connectTimeoutMs = parseInt(process.env.REDIS_CONNECT_TIMEOUT_MS || '5000', 10);
+    try {
+      await Promise.race([
+        sessionRedisClient.connect(),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`Redis connect timeout after ${connectTimeoutMs}ms`)),
+            connectTimeoutMs
+          )
+        ),
+      ]);
+    } catch (err) {
+      sessionRedisClient = null;
+      throw new Error(
+        `Session store: cannot connect to Redis at ${url}. ` +
+          'Set REDIS_URL or start Redis. Session-based auth is unavailable without Redis.',
+        { cause: err }
+      );
+    }
+  }
+
+  const maxAgeSec = parseInt(process.env.SESSION_MAX_AGE || '86400', 10);
+  const redisStore = new RedisStore({
+    client: sessionRedisClient,
+    prefix: SESSION_REDIS_KEY_PREFIX,
+    ttl: maxAgeSec,
   });
 
-  // Session configuration
   const sessionConfig = {
-    store: pgStore,
+    store: redisStore,
     secret: process.env.SESSION_SECRET || 'iacms-session-secret-change-in-production',
-    name: 'iacms.sid', // Custom cookie name
-    resave: false, // Don't save session if unmodified
-    saveUninitialized: false, // Don't create session until something stored
-    rolling: true, // Reset expiration on each request
+    name: 'iacms.sid',
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-      httpOnly: true, // Prevent client-side JS access
-      maxAge: parseInt(process.env.SESSION_MAX_AGE || '86400', 10) * 1000, // Convert to milliseconds
-      sameSite: 'lax', // CSRF protection
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: maxAgeSec * 1000,
+      sameSite: 'lax',
       path: '/',
     },
   };
 
-  // In development, allow non-HTTPS cookies
   if (process.env.NODE_ENV !== 'production') {
     sessionConfig.cookie.secure = false;
   }
 
-  console.log('Session store: PostgreSQL connected');
-  
+  console.log('Session store: Redis connected');
   return session(sessionConfig);
 }
 
 /**
- * Create the sessions table if it doesn't exist
- */
-async function createSessionTable() {
-  const createTableSQL = `
-    CREATE TABLE IF NOT EXISTS "user_sessions" (
-      "sid" varchar NOT NULL COLLATE "default",
-      "sess" json NOT NULL,
-      "expire" timestamp(6) NOT NULL,
-      CONSTRAINT "user_sessions_pkey" PRIMARY KEY ("sid")
-    );
-    CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "user_sessions" ("expire");
-  `;
-  
-  try {
-    await pool.query(createTableSQL);
-  } catch (error) {
-    console.error('Failed to create sessions table:', error.message);
-  }
-}
-
-/**
- * Get the database pool (for manual operations if needed)
- */
-export function getPool() {
-  return pool;
-}
-
-/**
- * Gracefully close database connection
+ * Close the session store Redis client (ioredis cache client is separate).
  */
 export async function closeSessionStore() {
-  await pool.end();
-  console.log('Session store: PostgreSQL connection closed');
+  if (sessionRedisClient) {
+    try {
+      await sessionRedisClient.quit();
+    } catch (err) {
+      console.warn('Session store: Redis quit error:', err?.message);
+    }
+    sessionRedisClient = null;
+  }
+  console.log('Session store: Redis connection closed');
 }
 
 export default createSessionMiddleware;

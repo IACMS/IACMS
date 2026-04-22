@@ -6,7 +6,7 @@
  *  - Rate limiting (per-user / per-IP request counters)
  *
  * NOT used for:
- *  - Sessions  → stored in PostgreSQL (user_sessions table)
+ *  - Sessions  → use node-redis + connect-redis in session.config.js
  *  - Events    → handled by Kafka
  */
 
