@@ -1,8 +1,11 @@
 // Auth Service Prisma Schema
 // Contains: tenants, users
 
+// Output under src/ so this service’s client is not overwritten by other workspace `prisma generate` runs
+// (those schemas often define a minimal `User` with only `id`, which breaks `passwordHash` in tests).
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -21,6 +24,7 @@ model Tenant {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   users User[]
+  roles Role[]
 
   @@index([code])
   @@index([isActive])
@@ -48,7 +52,10 @@ model User {
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles         UserRole[]
+  userRolesAssigned UserRole[] @relation("RoleAssigner")
+  rolesCreated      Role[]
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -56,5 +63,45 @@ model User {
   @@index([email])
   @@index([username])
   @@map("users")
+}
+
+// RBAC (same tables as root schema; required for admin user APIs and createUser with role)
+model Role {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String?  @map("tenant_id") @db.Uuid
+  name         String
+  description  String?  @db.Text
+  isSystemRole Boolean  @default(false) @map("is_system_role")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant     Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles  UserRole[]
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String? @db.Uuid
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([name])
+  @@map("roles")
+}
+
+model UserRole {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  roleId     String    @map("role_id") @db.Uuid
+  assignedBy String?   @map("assigned_by") @db.Uuid
+  assignedAt DateTime  @default(now()) @map("assigned_at")
+  expiresAt  DateTime? @map("expires_at")
+
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assigner User? @relation("RoleAssigner", fields: [assignedBy], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
 }
 

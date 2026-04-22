@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import crypto from 'crypto';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../src/generated/prisma/client.js';
 import Redis from 'ioredis';
 import dotenv from 'dotenv';
 import path from 'path';
