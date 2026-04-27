@@ -20,7 +20,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis — used ONLY by api-gateway for RBAC caching and rate limiting
+  # Redis — api-gateway: sessions (connect-redis), RBAC cache, rate limiting
   redis:
     image: redis:7-alpine
     container_name: iacms-redis

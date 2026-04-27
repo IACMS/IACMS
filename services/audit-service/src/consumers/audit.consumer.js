@@ -7,7 +7,7 @@
  */
 
 import prisma from '../config/database.js';
-import Logger from '../../../shared/common/logger.js';
+import Logger from '../../../../shared/common/logger.js';
 
 const logger = new Logger('audit-service');
 

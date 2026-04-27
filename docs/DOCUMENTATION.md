@@ -41,8 +41,12 @@
                             │
               ┌─────────────▼─────────────┐
               │         PostgreSQL         │
-              │  (data + user_sessions)   │
-              └───────────────────────────┘
+              │    (Prisma / app data)     │
+              └────────────┬───────────────┘
+              ┌─────────────▼─────────────┐
+              │  Redis (API Gateway)       │
+              │  sessions, RBAC, limits    │
+              └────────────┬───────────────┘
                             │
               ┌─────────────▼─────────────┐
               │       Apache Kafka         │
@@ -68,7 +72,8 @@
 
 | Container | Port | Purpose |
 |-----------|------|---------|
-| `iacms-postgres` | 5433 | Primary database + session storage |
+| `iacms-postgres` | 5433 | Primary database (Prisma) |
+| `iacms-redis` | 6379 | API Gateway: sessions, RBAC cache, rate limits |
 | `iacms-zookeeper` | 2181 | Kafka cluster management |
 | `iacms-kafka` | 9092 (host) / 29092 (internal) | Event message broker |
 
@@ -83,14 +88,14 @@ The single entry point for all external traffic. Responsibilities:
 - **Authentication middleware** — validates session cookie OR JWT Bearer token
 - **RBAC middleware** — checks permissions against RBAC Service
 - **Reverse proxy** — routes requests to downstream services via `http-proxy-middleware`
-- **Session management** — creates, stores, and destroys sessions in PostgreSQL
+- **Session management** — creates, stores, and destroys sessions in **Redis** (`connect-redis`)
 
 Key files:
 
 | File | Purpose |
 |------|---------|
 | `src/server.js` | Express app setup, middleware pipeline |
-| `src/config/session.config.js` | PostgreSQL session store configuration |
+| `src/config/session.config.js` | Redis session store (`connect-redis` + `redis`) |
 | `src/middleware/auth.middleware.js` | Dual auth (session + JWT) |
 | `src/middleware/rbac.middleware.js` | Permission checks |
 | `src/controllers/session.controller.js` | Session login/logout/status/refresh |
@@ -182,7 +187,7 @@ The API Gateway supports two authentication mechanisms simultaneously:
 
 | Method | Client Type | Transport | Session Store |
 |--------|------------|-----------|--------------|
-| Session (cookie) | Web browsers | `iacms.sid` HttpOnly cookie | PostgreSQL `user_sessions` |
+| Session (cookie) | Web browsers | `iacms.sid` HttpOnly cookie | Redis keys `iacms:sess:*` (API Gateway) |
 | JWT (token) | Mobile apps, API clients | `Authorization: Bearer <token>` | Stateless (no storage) |
 
 The auth middleware checks **session first**, then falls back to JWT:
@@ -230,32 +235,7 @@ Browser  →  GET /api/v1/cases (Cookie: iacms.sid=...)
 | `GET` | `/api/v1/session/status` | Check active session |
 | `POST` | `/api/v1/session/refresh` | Extend session expiry |
 
-**PostgreSQL session table:**
-
-```sql
-CREATE TABLE "user_sessions" (
-  "sid"    VARCHAR    NOT NULL PRIMARY KEY,
-  "sess"   JSON       NOT NULL,
-  "expire" TIMESTAMP  NOT NULL
-);
-CREATE INDEX "IDX_session_expire" ON "user_sessions" ("expire");
-```
-
-`sess` stores:
-```json
-{
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "tenantId": "uuid",
-    "firstName": "Jane",
-    "lastName": "Doe",
-    "roles": ["admin"]
-  },
-  "loginTime": "2026-01-01T00:00:00.000Z",
-  "lastAccessed": "2026-01-01T01:00:00.000Z"
-}
-```
+**Redis session store:** Session payloads are stored under keys prefixed with `iacms:sess:` (see `connect-redis` with the `redis` package in [`services/api-gateway/src/config/session.config.js`](../services/api-gateway/src/config/session.config.js)). The signed cookie `iacms.sid` still only carries the session id; the server looks up the session in Redis. Redis must be available for session login to work; optional env `REDIS_CONNECT_TIMEOUT_MS` bounds initial connection time (default 5000).
 
 **Session configuration** (`services/api-gateway/src/config/session.config.js`):
 
@@ -267,7 +247,7 @@ CREATE INDEX "IDX_session_expire" ON "user_sessions" ("expire");
 | `secure` | `false` (dev) / `true` (prod) | HTTPS-only in production |
 | `maxAge` | 86400s (24h) | Session lifetime |
 | `rolling` | `true` | Expiry resets on every active request |
-| `resave` | `false` | No unnecessary DB writes |
+| `resave` | `false` | No unnecessary store writes |
 | `saveUninitialized` | `false` | No empty sessions for guests |
 
 ### JWT Authentication
@@ -321,7 +301,7 @@ This is a common point of confusion:
 |---------------|------------|-------------|
 | Validate JWT on requests | Yes — reads and verifies token | No |
 | Issue JWT tokens | No | Yes — after verifying credentials |
-| Store sessions | Yes — PostgreSQL `user_sessions` | No |
+| Store sessions | Yes — Redis (`iacms:sess:*`) | No |
 | Check passwords | No | Yes — bcrypt comparison |
 | Check tenant exists | No | Yes — Prisma query |
 | Forward user identity to services | Yes — via `x-user-id` header | No |
@@ -456,7 +436,7 @@ RLS: User can see a case if their tenant owns it, originated it, is currently ha
 
 **`integrations`** — External system integrations
 
-**`user_sessions`** — Session store (created by API Gateway, not Prisma)
+**Session data** is stored in **Redis** (not in PostgreSQL). Legacy `user_sessions` tables from older versions may be removed manually if present.
 
 ### RLS Patterns
 

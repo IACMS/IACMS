@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/prisma/client.js';
 
 // Construct DATABASE_URL if not set in env
 if (!process.env.DATABASE_URL) {

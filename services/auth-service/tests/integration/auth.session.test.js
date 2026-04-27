@@ -7,8 +7,9 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../src/generated/prisma/client.js';
 import Redis from 'ioredis';
+import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -67,18 +68,43 @@ describe('Login', () => {
   });
 
   it('locks account after 5 consecutive wrong passwords', async () => {
-    await clearRedisLockout(redis, ADMIN_EMAIL);
+    // Use a dedicated user for lockout to avoid cross-file interference:
+    // Vitest runs integration files in parallel, and other suites log in as ADMIN,
+    // which clears the shared lockout keys on successful login.
+    const email = `lockout-${Date.now()}@test-org.com`;
+    const password = 'password123';
+
+    const tenant = await prisma.tenant.findUnique({ where: { code: 'TEST-ORG' } });
+    expect(tenant).not.toBeNull();
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: {
+        tenantId: tenant.id,
+        email,
+        username: email,
+        passwordHash,
+        firstName: 'Lockout',
+        lastName: 'Test',
+        isActive: true,
+        isEmailVerified: true,
+        mustChangePassword: false,
+      },
+    });
+
+    await clearRedisLockout(redis, email);
 
     for (let i = 0; i < 5; i++) {
-      await loginAs(ADMIN_EMAIL, 'bad-pass');
+      await loginAs(email, 'bad-pass');
     }
 
-    const res = await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+    const res = await loginAs(email, password);
 
     expect(res.status).toBe(401);
     expect(res.body.error.message).toMatch(/account temporarily locked/i);
 
-    await clearRedisLockout(redis, ADMIN_EMAIL);
+    await clearRedisLockout(redis, email);
+    await prisma.user.delete({ where: { id: user.id } });
   }, 20000);
 
   it('allows login again after lockout is manually cleared', async () => {
