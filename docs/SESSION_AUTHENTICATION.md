@@ -44,8 +44,8 @@ We implement **both** authentication methods, allowing:
                                  │
                                  ▼
                         ┌─────────────────┐
-                        │   PostgreSQL    │
-                        │ (user_sessions) │
+                        │  Redis        │
+                        │  iacms:sess:* │
                         └─────────────────┘
 ```
 
@@ -66,7 +66,7 @@ We implement **both** authentication methods, allowing:
    ↓
 6. Gateway creates session object with user data
    ↓
-7. Gateway saves session to PostgreSQL (user_sessions table)
+7. Gateway saves session to Redis (keys `iacms:sess:*` via `connect-redis`)
    ↓
 8. Gateway sends response with Set-Cookie header (iacms.sid)
    ↓
@@ -80,7 +80,7 @@ We implement **both** authentication methods, allowing:
    ↓
 2. Cookie Parser middleware extracts cookie
    ↓
-3. Session Middleware looks up session in PostgreSQL by session ID
+3. Session Middleware looks up session in Redis by session ID
    ↓
 4. Session data (including user) attached to req.session
    ↓
@@ -93,18 +93,12 @@ We implement **both** authentication methods, allowing:
 
 ### Session Storage
 
-Sessions are stored in PostgreSQL in the `user_sessions` table:
+Sessions are stored in **Redis** using the official `redis` client and **`connect-redis`** (`RedisStore`), with key prefix `iacms:sess:` (see `SESSION_REDIS_KEY_PREFIX` in `services/api-gateway/src/config/session.config.js`). The signed cookie `iacms.sid` only contains the session id; payload lives in Redis with a TTL tied to `SESSION_MAX_AGE`.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `sid` | VARCHAR | Session ID (Primary Key) - A unique cryptographic string |
-| `sess` | JSON | Session data including user info, cookie settings, timestamps |
-| `expire` | TIMESTAMP | When the session expires (used for cleanup) |
-
-**Why PostgreSQL instead of Redis?**
-- Simplicity: No additional service to manage
-- Persistence: Sessions survive database restarts
-- Already available: We're already using PostgreSQL for the application
+**Operational notes**
+- The gateway requires **`REDIS_URL`** for session-based login. Initial connection is bounded by `REDIS_CONNECT_TIMEOUT_MS` (default 5000).
+- `DATABASE_URL` on the API Gateway is **not** used for sessions anymore.
+- If you previously deployed with PostgreSQL-backed sessions, the `user_sessions` table (if it exists) is unused and may be dropped after cutover. Users with old cookies must sign in again.
 
 ---
 
@@ -116,95 +110,17 @@ Sessions are stored in PostgreSQL in the `user_sessions` table:
 
 ### `services/api-gateway/src/config/session.config.js`
 
-**Purpose:** Configures the session middleware and PostgreSQL connection for storing sessions.
+**Purpose:** Configures `express-session` with a **Redis** store via `connect-redis` and the `redis` (node-redis) client. Exports `createSessionMiddleware()`, `closeSessionStore()`, `getSessionRedisClient()`, and `SESSION_REDIS_KEY_PREFIX`. Connects to `REDIS_URL` with an optional `REDIS_CONNECT_TIMEOUT_MS` (default 5000) for fail-fast behavior.
 
-**What It Does:**
-
-This file is the foundation of session management. It:
-1. Creates a connection pool to PostgreSQL for efficient database connections
-2. Sets up the session table in the database if it doesn't exist
-3. Configures how sessions behave (expiry, cookie settings, etc.)
-4. Returns an Express middleware that handles all session operations
-
-**Functions:**
-
-#### `createSessionMiddleware()`
-```javascript
-export async function createSessionMiddleware() {
-  await createSessionTable();  // Ensure table exists
-  
-  const pgStore = new PgStore({
-    pool: pool,
-    tableName: 'user_sessions',
-    createTableIfMissing: true,
-  });
-  
-  return session(sessionConfig);
-}
-```
-
-**What it does:**
-- Creates the sessions table in PostgreSQL if it doesn't exist
-- Initializes the PostgreSQL session store (connect-pg-simple)
-- Configures session behavior (cookie name, expiry, security settings)
-- Returns an Express middleware function
-
-**Why it's async:** The database table creation is an async operation, and we need to ensure the table exists before the server starts accepting requests.
+**Source of truth:** See the file in the repository for the current implementation (older PostgreSQL / `user_sessions` examples below in this document are **obsolete**).
 
 ---
 
-#### `createSessionTable()`
-```javascript
-async function createSessionTable() {
-  const createTableSQL = `
-    CREATE TABLE IF NOT EXISTS "user_sessions" (
-      "sid" varchar NOT NULL COLLATE "default",
-      "sess" json NOT NULL,
-      "expire" timestamp(6) NOT NULL,
-      CONSTRAINT "user_sessions_pkey" PRIMARY KEY ("sid")
-    );
-    CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "user_sessions" ("expire");
-  `;
-  await pool.query(createTableSQL);
-}
-```
-
-**What it does:**
-- Runs SQL to create the `user_sessions` table
-- Uses `IF NOT EXISTS` so it's safe to run multiple times
-- Creates an index on `expire` column for efficient session cleanup queries
-
-**Why the index?** Expired sessions need to be cleaned up periodically. The index makes queries like `DELETE FROM user_sessions WHERE expire < NOW()` fast.
-
----
-
-#### `getPool()`
-```javascript
-export function getPool() {
-  return pool;
-}
-```
-
-**What it does:** Returns the PostgreSQL connection pool for manual database operations if needed elsewhere in the application.
-
----
-
-#### `closeSessionStore()`
-```javascript
-export async function closeSessionStore() {
-  await pool.end();
-}
-```
-
-**What it does:** Gracefully closes all database connections when the server shuts down. Important for clean shutdown and preventing connection leaks.
-
----
-
-**Configuration Options Explained:**
+**Configuration Options Explained (still accurate):**
 
 ```javascript
 {
-  store: pgStore,         // WHERE sessions are stored (PostgreSQL)
+  store: redisStore,      // connect-redis RedisStore (Redis)
   
   secret: SESSION_SECRET, // Key used to sign the session ID cookie
                           // Prevents tampering - if someone modifies the
@@ -214,7 +130,7 @@ export async function closeSessionStore() {
                           // Custom name adds slight security by obscurity
   
   resave: false,          // Don't save session back to store if it wasn't
-                          // modified. Saves database writes.
+                          // modified. Saves Redis writes.
   
   saveUninitialized: false, // Don't create a session until something is
                             // stored. Prevents empty sessions for guests.
@@ -263,7 +179,7 @@ This controller acts as the bridge between web browsers and the authentication s
 1. Extracts credentials from request body
 2. Forwards credentials to Auth Service for validation
 3. If valid, creates a session with user data
-4. Saves session to PostgreSQL
+4. Persists session via session middleware to Redis
 5. Returns success response (cookie is set automatically by Express)
 
 ```javascript
@@ -292,7 +208,7 @@ export async function sessionLogin(req, res, next) {
     }
 
     // STEP 4: Create session with user data
-    // This data will be stored in PostgreSQL and available on subsequent requests
+    // This data will be stored in Redis and available on subsequent requests
     const { user, accessToken, refreshToken } = authData;
     req.session.user = {
       id: user.id,
@@ -914,7 +830,7 @@ startServer().catch((err) => {
 | Package | Version | Purpose |
 |---------|---------|---------|
 | `cookie-parser` | ^1.4.7 | Parses Cookie header into `req.cookies` object |
-| `connect-pg-simple` | ^10.0.0 | PostgreSQL session store for express-session |
+| `connect-redis` / `redis` | (see `package.json`) | Redis session store for express-session |
 | `pg` | ^8.13.3 | PostgreSQL client for Node.js |
 
 **Dependencies Removed:**
@@ -947,7 +863,7 @@ SESSION_MAX_AGE=86400
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms
 ```
-**Purpose:** PostgreSQL connection string for session storage.
+**Purpose:** (obsolete for sessions) Gateway sessions use `REDIS_URL` only, not `DATABASE_URL`.
 **Format:** `postgresql://user:password@host:port/database`
 
 ```env
@@ -1199,7 +1115,7 @@ DELETE FROM user_sessions WHERE expire < NOW();
 | Feature | How It Works |
 |---------|--------------|
 | **Signed Session IDs** | The session ID in the cookie is signed with SESSION_SECRET. If someone tampers with the cookie, the signature won't match and the session is rejected. |
-| **Server-Side Storage** | User data stored in PostgreSQL, not in the cookie. Cookie only contains the session ID. Attackers can't see or modify session data. |
+| **Server-Side Storage** | User data stored in **Redis** (not in the cookie). Cookie only contains the session ID. Attackers can't see or modify session data. |
 | **Rolling Sessions** | Expiry resets on each request. Active users stay logged in; inactive sessions expire. |
 | **No Empty Sessions** | `saveUninitialized: false` - Sessions only created when data is stored. Prevents useless sessions for bots/scrapers. |
 
@@ -1295,21 +1211,17 @@ const { accessToken: newToken } = await refreshResponse.json();
 
 ## Verification Commands
 
-### Check Sessions in PostgreSQL
+### Check session keys in Redis
 
 ```bash
-# List all active sessions
-docker exec iacms-postgres psql -U postgres -d iacms -c "SELECT sid, expire FROM user_sessions;"
+# Keys used by the gateway (prefix from SESSION_REDIS_KEY_PREFIX, default iacms:sess:)
+docker exec iacms-redis redis-cli --scan --pattern 'iacms:sess:*' | head
 
-# View full session data
-docker exec iacms-postgres psql -U postgres -d iacms -c "SELECT sid, sess FROM user_sessions;"
-
-# Count active sessions
-docker exec iacms-postgres psql -U postgres -d iacms -c "SELECT COUNT(*) FROM user_sessions WHERE expire > NOW();"
-
-# Delete expired sessions
-docker exec iacms-postgres psql -U postgres -d iacms -c "DELETE FROM user_sessions WHERE expire < NOW();"
+# Approximate count of session keys
+docker exec iacms-redis redis-cli DBSIZE
 ```
+
+Legacy PostgreSQL `user_sessions` inspection commands are **not applicable** for current builds.
 
 ### Test Session Login (PowerShell)
 
@@ -1356,7 +1268,8 @@ curl -X POST http://localhost:3000/api/v1/session/logout \
 | `UNAUTHORIZED` error | Cookies not being sent | Add `credentials: 'include'` to fetch requests |
 | Session not persisting | CORS blocking cookies | Ensure `credentials: true` in CORS config and correct `CORS_ORIGIN` |
 | `CORS error` in browser | Origin mismatch | Set `CORS_ORIGIN` to your frontend URL |
-| Database auth failed | Wrong connection string | Check `DATABASE_URL` port (5433) and credentials |
+| Redis unavailable / session login fails | Wrong `REDIS_URL` or Redis down | Ensure `iacms-redis` is healthy; gateway requires Redis for session storage |
+| Database auth failed (Prisma) | Wrong connection string | For services using Postgres: check `DATABASE_URL` (often port 5433) and credentials |
 | Session expires too fast | `maxAge` too low | Increase `SESSION_MAX_AGE` in .env |
 | Can't logout | Cookie path mismatch | Ensure `clearCookie` uses same path as session cookie |
 
@@ -1371,17 +1284,9 @@ console.log('Auth Method:', req.authMethod);
 console.log('Cookies:', req.cookies);
 ```
 
-### Check Session in Database
+### Check session in Redis (optional)
 
-```sql
--- Find session by user email
-SELECT * FROM user_sessions 
-WHERE sess::text LIKE '%admin@test-org.com%';
-
--- Check if session has expired
-SELECT sid, expire, expire < NOW() as is_expired 
-FROM user_sessions;
-```
+Use `redis-cli --scan --pattern 'iacms:sess:*'` on the `iacms-redis` container to list session keys (value format is internal to `connect-redis`).
 
 ---
 

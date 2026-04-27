@@ -14,7 +14,7 @@ import { fileURLToPath } from 'url';
 import { authenticate } from './middleware/auth.middleware.js';
 import { createRbacMiddleware } from './middleware/rbac.middleware.js';
 import { apiRateLimiter, authRateLimiter } from './middleware/rateLimit.middleware.js';
-import { createSessionMiddleware } from './config/session.config.js';
+import { createSessionMiddleware, closeSessionStore } from './config/session.config.js';
 import { closeRedisClient } from './config/redis.config.js';
 import sessionRoutes from './routes/session.routes.js';
 
@@ -73,7 +73,7 @@ async function startServer() {
     });
   });
 
-  // Session middleware (PostgreSQL store)
+  // Session middleware (Redis store; requires REDIS_URL)
   const sessionMiddleware = await createSessionMiddleware();
   app.use(sessionMiddleware);
 
@@ -251,7 +251,7 @@ async function startServer() {
   app.listen(PORT, () => {
     console.log(`\nAPI Gateway running on port ${PORT}`);
     console.log('='.repeat(50));
-    console.log('Authentication : Session (PostgreSQL) + JWT');
+    console.log('Authentication : Session (Redis) + JWT');
     console.log('Caching        : Redis (RBAC permissions)');
     console.log('Rate Limiting  : Redis (per-user / per-IP)');
     console.log('Events         : Kafka');
@@ -266,6 +266,7 @@ async function startServer() {
   // Graceful shutdown
   process.on('SIGTERM', async () => {
     console.log('[Gateway] SIGTERM received — shutting down gracefully');
+    await closeSessionStore();
     await closeRedisClient();
     process.exit(0);
   });

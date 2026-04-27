@@ -98,3 +98,6 @@ Thumbs.db
 build/
 dist/
 
+# Auth service: Prisma client (generated; run `npx prisma generate` in services/auth-service)
+services/auth-service/src/generated/
+
