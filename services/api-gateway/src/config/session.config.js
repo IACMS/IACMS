@@ -1,6 +1,6 @@
 /**
  * Session configuration for the API Gateway.
- * Stores express-session data in Redis (not PostgreSQL).
+ * Stores express-session data in Redis.
  */
 
 import session from 'express-session';

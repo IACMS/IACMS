@@ -1,8 +1,16 @@
 import prisma from '../config/database.js';
-import { NotFoundError, ValidationError } from '../../../shared/common/errors.js';
-import EventBus from '../../../shared/utils/eventBus.js';
+import { NotFoundError, ValidationError } from '../../../../shared/common/errors.js';
+import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'referral-service');
+
+async function firstUserEmailForTenant(tenantId) {
+  const u = await prisma.user.findFirst({
+    where: { tenantId },
+    select: { email: true, firstName: true },
+  });
+  return u;
+}
 
 export async function getReferrals(req, res, next) {
   try {
@@ -63,11 +71,22 @@ export async function createReferral(req, res, next) {
         referrer: true,
       },
     });
-    await eventBus.publish('referral.created', {
+    const partnerContact = await firstUserEmailForTenant(referral.toTenantId);
+    await eventBus.publish(TOPICS.REFERRAL_CREATED, {
       referralId: referral.id,
       caseId: referral.caseId,
+      caseNumber: referral.case?.caseNumber ?? null,
+      caseTitle: referral.case?.title ?? null,
       fromTenantId: referral.fromTenantId,
       toTenantId: referral.toTenantId,
+      fromTenantCode: referral.fromTenant?.code ?? null,
+      toTenantCode: referral.toTenant?.code ?? null,
+      toTenantName: referral.toTenant?.name ?? null,
+      referrerEmail: referral.referrer?.email ?? null,
+      referrerFirstName: referral.referrer?.firstName ?? null,
+      partnerContactEmail: partnerContact?.email ?? null,
+      partnerContactFirstName: partnerContact?.firstName ?? null,
+      referralReason: referral.referralReason ?? null,
     });
     res.status(201).json({ referral });
   } catch (error) {
@@ -90,12 +109,23 @@ export async function acceptReferral(req, res, next) {
       },
       include: {
         case: true,
+        fromTenant: true,
+        toTenant: true,
+        referrer: true,
         accepter: true,
       },
     });
-    await eventBus.publish('referral.accepted', {
+    await eventBus.publish(TOPICS.REFERRAL_ACCEPTED, {
       referralId: referral.id,
       caseId: referral.caseId,
+      caseNumber: referral.case?.caseNumber ?? null,
+      caseTitle: referral.case?.title ?? null,
+      fromTenantCode: referral.fromTenant?.code ?? null,
+      toTenantCode: referral.toTenant?.code ?? null,
+      referrerEmail: referral.referrer?.email ?? null,
+      referrerFirstName: referral.referrer?.firstName ?? null,
+      accepterEmail: referral.accepter?.email ?? null,
+      accepterFirstName: referral.accepter?.firstName ?? null,
     });
     res.json({ referral });
   } catch (error) {
@@ -118,16 +148,26 @@ export async function rejectReferral(req, res, next) {
       },
       include: {
         case: true,
+        fromTenant: true,
+        toTenant: true,
+        referrer: true,
         rejecter: true,
       },
     });
-    await eventBus.publish('referral.rejected', {
+    await eventBus.publish(TOPICS.REFERRAL_REJECTED, {
       referralId: referral.id,
       caseId: referral.caseId,
+      caseNumber: referral.case?.caseNumber ?? null,
+      caseTitle: referral.case?.title ?? null,
+      fromTenantCode: referral.fromTenant?.code ?? null,
+      toTenantCode: referral.toTenant?.code ?? null,
+      referrerEmail: referral.referrer?.email ?? null,
+      referrerFirstName: referral.referrer?.firstName ?? null,
+      rejecterEmail: referral.rejecter?.email ?? null,
+      rejecterFirstName: referral.rejecter?.firstName ?? null,
     });
     res.json({ referral });
   } catch (error) {
     next(error);
   }
 }
-

@@ -9,6 +9,13 @@ import {
   handlePasswordResetRequested,
   handlePasswordChanged,
   handleEmailVerificationRequested,
+  handleCaseCreated,
+  handleCaseAssigned,
+  handleCaseUpdated,
+  handleWorkflowStateChanged,
+  handleReferralCreated,
+  handleReferralAccepted,
+  handleReferralRejected,
 } from './consumers/email.consumer.js';
 
 dotenv.config();
@@ -42,28 +49,13 @@ async function registerSubscriptions() {
     eventBus.subscribe(TOPICS.PASSWORD_CHANGED, handlePasswordChanged),
     eventBus.subscribe(TOPICS.EMAIL_VERIFICATION_REQUESTED, handleEmailVerificationRequested),
 
-    // Case / workflow / referral events (stub handlers — real templates to be added later)
-    eventBus.subscribe(TOPICS.CASE_CREATED, (data) => {
-      logger.info('Case creation notification pending implementation', { caseId: data?.id });
-    }),
-    eventBus.subscribe(TOPICS.CASE_ASSIGNED, (data) => {
-      logger.info('Case assignment notification pending implementation', { caseId: data?.id });
-    }),
-    eventBus.subscribe(TOPICS.CASE_UPDATED, (data) => {
-      logger.info('Case update notification pending implementation', { caseId: data?.id });
-    }),
-    eventBus.subscribe(TOPICS.WORKFLOW_STATE_CHANGED, (data) => {
-      logger.info('Workflow state change notification pending implementation', { workflowId: data?.workflowId });
-    }),
-    eventBus.subscribe(TOPICS.REFERRAL_CREATED, (data) => {
-      logger.info('Referral created notification pending implementation', { referralId: data?.id });
-    }),
-    eventBus.subscribe(TOPICS.REFERRAL_ACCEPTED, (data) => {
-      logger.info('Referral accepted notification pending implementation', { referralId: data?.id });
-    }),
-    eventBus.subscribe(TOPICS.REFERRAL_REJECTED, (data) => {
-      logger.info('Referral rejected notification pending implementation', { referralId: data?.id });
-    }),
+    eventBus.subscribe(TOPICS.CASE_CREATED, handleCaseCreated),
+    eventBus.subscribe(TOPICS.CASE_ASSIGNED, handleCaseAssigned),
+    eventBus.subscribe(TOPICS.CASE_UPDATED, handleCaseUpdated),
+    eventBus.subscribe(TOPICS.WORKFLOW_STATE_CHANGED, handleWorkflowStateChanged),
+    eventBus.subscribe(TOPICS.REFERRAL_CREATED, handleReferralCreated),
+    eventBus.subscribe(TOPICS.REFERRAL_ACCEPTED, handleReferralAccepted),
+    eventBus.subscribe(TOPICS.REFERRAL_REJECTED, handleReferralRejected),
   ];
 
   await Promise.all(subscriptions);

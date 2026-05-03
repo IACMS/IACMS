@@ -143,9 +143,10 @@ Core business logic: case lifecycle management.
 
 State machine for cases.
 
-- Define workflow templates (states + transitions)
-- Execute state transitions
-- Track transition history in `workflow_states`
+- Define workflow templates with a **validated JSON** `definition` (states, initial state, and allowed transitions)
+- **Execute** transitions with `POST /workflows/cases/:caseId/transition` (primary path: updates `cases.status` and appends to `workflow_states` in one transaction; emits `workflow.state.changed` on Kafka)
+- Track full transition history in `workflow_states`
+- Case creation in the case-service, when `workflowId` is set, **bootstraps** the first `WorkflowState` row and sets the case’s `status` to the definition’s `initialState`
 
 ### Referral Service (`services/referral-service`, port 3005)
 
@@ -732,6 +733,33 @@ GET  /api/v1/cases/:id          Get case detail
 PUT  /api/v1/cases/:id          Update case
 DELETE /api/v1/cases/:id        Soft-delete case
 ```
+
+`POST /api/v1/cases` with a `workflowId` sets the new case’s `status` to the workflow’s `initialState` and inserts the first history row in `workflow_states` (client-supplied `status` for that create is ignored when a workflow is attached).
+
+### Workflow definition & transitions (via gateway)
+
+`Workflow.definition` (JSON) must match this shape (same idea as the root seed):
+
+- `states`: string[] — all valid state names
+- `initialState`: string — must appear in `states`
+- `transitions`: `{ "from", "to", "name" (optional) }[]` — each `from` / `to` must be in `states`
+
+**Apply a transition (recommended):**
+
+```http
+POST /api/v1/workflows/cases/{caseId}/transition
+x-tenant-id: {tenant}   (set by gateway from the authenticated user)
+x-user-id: {user}       (set by gateway)
+Content-Type: application/json
+
+{ "to": "in_review", "transitionName": "submit", "notes": "optional" }
+```
+
+- Requires `workflows:update` at the gateway.
+- The service resolves the current state from the latest `workflow_states` row (or, if none, from the definition’s `initialState` and the case’s current `status`), finds a matching edge in `definition.transitions`, then in one transaction inserts a new `workflow_states` row and sets `cases.status` to `to`.
+- If multiple transitions share the same `from` → `to`, you must disambiguate with `transitionName` (or a single unnamed edge).
+
+**Other workflow HTTP routes (direct service base path: `/workflows`, gateway: `/api/v1/workflows/…`):** list/create/update/delete templates; `GET /workflows/:id/states` lists history for that template (optional `?caseId=…`). A lower-level `POST /workflows/states` exists for advanced use; normal operation should use the transition endpoint.
 
 ### RBAC Endpoints
 

@@ -19,17 +19,23 @@ model Tenant {
   casesOriginated Case[]           @relation("CaseOriginatingTenant")
   casesCurrent    Case[]           @relation("CaseCurrentTenant")
   attachments     CaseAttachment[]
+  workflows       Workflow[]
 
   @@map("tenants")
 }
 
 model User {
-  id String @id @default(uuid()) @db.Uuid
+  id        String @id @default(uuid()) @db.Uuid
+  email     String @map("email")
+  firstName String @map("first_name")
+  lastName  String @map("last_name")
 
   casesCreated  Case[]       @relation("CaseCreator")
   casesAssigned Case[]       @relation("CaseAssignee")
-  assignments   Assignment[]
+  assignmentsToMe   Assignment[] @relation("AssignmentAssignee")
+  assignmentsByMe   Assignment[] @relation("AssignmentAssigner")
   attachments   CaseAttachment[]
+  workflowStates WorkflowState[]
 
   @@map("users")
 }
@@ -61,13 +67,61 @@ model Case {
   currentTenant     Tenant?          @relation("CaseCurrentTenant", fields: [currentTenantId], references: [id])
   assignee          User?            @relation("CaseAssignee", fields: [assignedTo], references: [id])
   creator           User             @relation("CaseCreator", fields: [createdBy], references: [id])
+  workflow          Workflow?        @relation(fields: [workflowId], references: [id])
   assignments       Assignment[]
   attachments       CaseAttachment[]
+  workflowStates    WorkflowState[]
 
   @@index([tenantId])
   @@index([caseNumber])
   @@index([tenantId, status])
+  @@index([workflowId])
   @@map("cases")
+}
+
+// Read/insert for workflow assignment at case creation; shared DB tables with workflow-service
+model Workflow {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  name        String
+  description String?  @db.Text
+  definition  Json
+  version     Int      @default(1)
+  isActive    Boolean  @default(true) @map("is_active")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  cases          Case[]
+  workflowStates WorkflowState[]
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@map("workflows")
+}
+
+model WorkflowState {
+  id              String   @id @default(uuid()) @db.Uuid
+  caseId          String   @map("case_id") @db.Uuid
+  workflowId      String   @map("workflow_id") @db.Uuid
+  currentState    String   @map("current_state")
+  previousState   String?  @map("previous_state")
+  transitionedBy  String?  @map("transitioned_by") @db.Uuid
+  transitionNotes String?  @map("transition_notes") @db.Text
+  stateData       Json?    @map("state_data")
+  transitionedAt  DateTime @default(now()) @map("transitioned_at")
+
+  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  transitioner User?    @relation(fields: [transitionedBy], references: [id])
+
+  @@index([caseId])
+  @@index([workflowId])
+  @@index([currentState])
+  @@index([transitionedAt])
+  @@map("workflow_states")
 }
 
 model Assignment {
@@ -82,8 +136,8 @@ model Assignment {
   isActive       Boolean   @default(true) @map("is_active")
 
   case     Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  assignee User @relation(fields: [assignedTo], references: [id])
-  assigner User @relation(fields: [assignedBy], references: [id])
+  assignee User @relation("AssignmentAssignee", fields: [assignedTo], references: [id])
+  assigner User @relation("AssignmentAssigner", fields: [assignedBy], references: [id])
 
   @@index([caseId])
   @@index([assignedTo])

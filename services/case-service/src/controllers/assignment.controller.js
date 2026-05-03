@@ -1,5 +1,5 @@
 import prisma from '../config/database.js';
-import EventBus from '../../../shared/utils/eventBus.js';
+import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
 
@@ -13,7 +13,7 @@ export async function getAssignments(req, res, next) {
         isActive: true,
       },
       include: {
-        case: true,
+        case: { include: { tenant: true } },
         assignee: true,
         assigner: true,
       },
@@ -29,13 +29,18 @@ export async function assignCase(req, res, next) {
     const assignment = await prisma.assignment.create({
       data: req.body,
       include: {
-        case: true,
+        case: { include: { tenant: true } },
         assignee: true,
       },
     });
-    await eventBus.publish('case.assigned', {
+    await eventBus.publish(TOPICS.CASE_ASSIGNED, {
       caseId: assignment.caseId,
       assignedTo: assignment.assignedTo,
+      assigneeEmail: assignment.assignee?.email ?? null,
+      assigneeFirstName: assignment.assignee?.firstName ?? null,
+      caseNumber: assignment.case?.caseNumber ?? null,
+      caseTitle: assignment.case?.title ?? null,
+      tenantCode: assignment.case?.tenant?.code ?? null,
     });
     res.status(201).json({ assignment });
   } catch (error) {
@@ -54,4 +59,3 @@ export async function unassignCase(req, res, next) {
     next(error);
   }
 }
-

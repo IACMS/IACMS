@@ -28,7 +28,8 @@ export async function getTenant(req, res, next) {
 
 export async function validateTenant(req, res, next) {
   try {
-    const { code } = req.params;
+    const raw = req.params.code;
+    const code = typeof raw === 'string' ? raw.trim().toUpperCase() : '';
     const tenant = await prisma.tenant.findUnique({
       where: { code },
       select: {

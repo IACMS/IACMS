@@ -1,24 +1,31 @@
 /**
  * Unit tests for email consumer handlers.
- *
- * The only logic worth testing is the handleUserCreated discriminator —
- * it must send a welcome email for admin-created users only.
- * The other two handlers are straight pass-throughs with no branching.
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the email utility before importing the consumer
 vi.mock('../../src/utils/email.js', () => ({
   sendWelcomeEmail: vi.fn().mockResolvedValue(true),
   sendPasswordResetEmail: vi.fn().mockResolvedValue(true),
   sendPasswordChangedEmail: vi.fn().mockResolvedValue(true),
+  sendVerificationEmail: vi.fn().mockResolvedValue(true),
+  sendCaseCreatedEmail: vi.fn().mockResolvedValue(true),
+  sendCaseAssignedEmail: vi.fn().mockResolvedValue(true),
+  sendCaseUpdatedEmail: vi.fn().mockResolvedValue(true),
+  sendWorkflowStateChangedEmail: vi.fn().mockResolvedValue(true),
+  sendReferralCreatedReferrerEmail: vi.fn().mockResolvedValue(true),
+  sendReferralCreatedPartnerEmail: vi.fn().mockResolvedValue(true),
+  sendReferralAcceptedEmail: vi.fn().mockResolvedValue(true),
+  sendReferralRejectedEmail: vi.fn().mockResolvedValue(true),
 }));
 
-const { sendWelcomeEmail } = await import('../../src/utils/email.js');
-const { handleUserCreated } = await import('../../src/consumers/email.consumer.js');
+const { sendWelcomeEmail, sendCaseCreatedEmail } = await import('../../src/utils/email.js');
+const { handleUserCreated, handleCaseCreated } = await import('../../src/consumers/email.consumer.js');
 
-// ── handleUserCreated discriminator ──────────────────────────────────────────
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 describe('handleUserCreated', () => {
   const adminPayload = {
     userId: 'u1',
@@ -49,9 +56,42 @@ describe('handleUserCreated', () => {
   });
 
   it('does NOT send welcome email when source is admin but temporaryPassword is missing', async () => {
-    const { temporaryPassword, ...payloadWithoutPassword } = adminPayload;
+    const { temporaryPassword: _tp, ...payloadWithoutPassword } = adminPayload;
     await handleUserCreated(payloadWithoutPassword);
 
     expect(sendWelcomeEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleCaseCreated', () => {
+  it('sends case created email to creator with assignee as cc when different', async () => {
+    await handleCaseCreated({
+      caseId: 'c1',
+      tenantId: 't1',
+      caseNumber: 'IAC-1',
+      title: 'Test',
+      tenantCode: 'ORG',
+      creatorEmail: 'creator@test.gov',
+      creatorFirstName: 'C',
+      assigneeEmail: 'assignee@test.gov',
+      assigneeFirstName: 'A',
+    });
+
+    expect(sendCaseCreatedEmail).toHaveBeenCalledOnce();
+    expect(sendCaseCreatedEmail).toHaveBeenCalledWith({
+      to: 'creator@test.gov',
+      cc: 'assignee@test.gov',
+      firstName: 'C',
+      caseNumber: 'IAC-1',
+      title: 'Test',
+      tenantCode: 'ORG',
+      caseId: 'c1',
+    });
+  });
+
+  it('skips when creatorEmail missing', async () => {
+    vi.mocked(sendCaseCreatedEmail).mockClear();
+    await handleCaseCreated({ caseId: 'c1' });
+    expect(sendCaseCreatedEmail).not.toHaveBeenCalled();
   });
 });

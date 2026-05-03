@@ -286,6 +286,18 @@ KAFKA_BROKERS=localhost:9092
 
 ---
 
+## Portal: case creation, referrals, and email
+
+The Vite app in `../client` calls the gateway to create cases and referrals.
+
+**RBAC:** `POST /api/v1/cases` requires the **`cases:create`** permission. The database seed grants that to **Admin** and **Case Manager** users; the **Viewer** user has only `cases:read`, so case creation returns 403 for that account. Run `npx prisma db seed` from the `prisma/` directory after migrations.
+
+**Kafka:** Case, assignment, workflow, and referral services publish events to the bus configured with **`KAFKA_BROKERS`** (same variable name across services). The notification service must be able to reach the same brokers to deliver emails.
+
+**SMTP (notification-service):** Set **`SMTP_HOST`**, **`SMTP_PORT`**, **`SMTP_USER`**, **`SMTP_PASS`**, and **`SMTP_FROM`**. Use **`APP_URL`** as the public base URL for links inside emails (e.g. `http://localhost:5173` in development). See `services/notification-service/.env` for examples.
+
+---
+
 ## Documentation
 
 All detailed technical documentation is in `docs/DOCUMENTATION.md`:

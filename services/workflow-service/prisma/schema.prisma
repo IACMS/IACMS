@@ -16,12 +16,16 @@ model Tenant {
   code String @unique
 
   workflows Workflow[]
+  cases     Case[]
 
   @@map("tenants")
 }
 
 model User {
-  id String @id @default(uuid()) @db.Uuid
+  id        String @id @default(uuid()) @db.Uuid
+  email     String @map("email")
+  firstName String @map("first_name")
+  lastName  String @map("last_name")
 
   workflowsCreated Workflow[]
   workflowStates    WorkflowState[]
@@ -30,10 +34,19 @@ model User {
 }
 
 model Case {
-  id String @id @default(uuid()) @db.Uuid
+  id         String  @id @default(uuid()) @db.Uuid
+  tenantId   String  @map("tenant_id") @db.Uuid
+  status     String
+  workflowId String? @map("workflow_id") @db.Uuid
+  caseNumber String  @map("case_number")
+  title      String
 
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workflow       Workflow?      @relation(fields: [workflowId], references: [id])
   workflowStates WorkflowState[]
 
+  @@index([tenantId])
+  @@index([workflowId])
   @@map("cases")
 }
 
@@ -52,6 +65,7 @@ model Workflow {
 
   tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   creator        User?           @relation(fields: [createdBy], references: [id])
+  cases          Case[]
   workflowStates WorkflowState[]
 
   @@index([tenantId])

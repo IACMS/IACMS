@@ -9,8 +9,8 @@ import {
 const router = express.Router();
 
 router.get('/', getAuditLogs);
-router.get('/:id', getAuditLog);
 router.post('/', createAuditLog);
 router.get('/entity/:entityType/:entityId', getAuditLogsByEntity);
+router.get('/:id', getAuditLog);
 
 export default router;

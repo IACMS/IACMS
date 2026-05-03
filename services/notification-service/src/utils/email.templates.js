@@ -236,3 +236,156 @@ export function passwordChangedTemplate({ firstName }) {
     </p>
   `);
 }
+
+function escapeHtml(s) {
+  if (s == null || s === '') return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+export function caseCreatedTemplate({ firstName, caseNumber, title, tenantCode, caseUrl }) {
+  const fn = escapeHtml(firstName || 'there');
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Case created</h2>
+    <p>Hi ${fn},</p>
+    <p>A new case has been created${tenantCode ? ` for tenant <strong>${escapeHtml(tenantCode)}</strong>` : ''}.</p>
+    <p><strong>${escapeHtml(caseNumber)}</strong> — ${escapeHtml(title)}</p>
+    <div style="text-align: center;">
+      <a href="${caseUrl}" style="${buttonStyle}">Open case</a>
+    </div>
+  `);
+}
+
+export function caseAssignedTemplate({ firstName, caseNumber, title, tenantCode, caseUrl }) {
+  const fn = escapeHtml(firstName || 'there');
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Case assigned to you</h2>
+    <p>Hi ${fn},</p>
+    <p>You have been assigned a case${tenantCode ? ` (${escapeHtml(tenantCode)})` : ''}.</p>
+    <p><strong>${escapeHtml(caseNumber)}</strong> — ${escapeHtml(title)}</p>
+    <div style="text-align: center;">
+      <a href="${caseUrl}" style="${buttonStyle}">View case</a>
+    </div>
+  `);
+}
+
+export function caseUpdatedTemplate({ firstName, caseNumber, title, caseUrl }) {
+  const fn = escapeHtml(firstName || 'there');
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Case updated</h2>
+    <p>Hi ${fn},</p>
+    <p>A case you are involved with was updated.</p>
+    <p><strong>${escapeHtml(caseNumber)}</strong> — ${escapeHtml(title)}</p>
+    <div style="text-align: center;">
+      <a href="${caseUrl}" style="${buttonStyle}">Open case</a>
+    </div>
+  `);
+}
+
+export function workflowStateChangedTemplate({
+  firstName,
+  caseNumber,
+  title,
+  fromState,
+  toState,
+  tenantCode,
+  caseUrl,
+}) {
+  const fn = escapeHtml(firstName || 'there');
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Workflow transition</h2>
+    <p>Hi ${fn},</p>
+    <p>
+      Case <strong>${escapeHtml(caseNumber)}</strong> — ${escapeHtml(title)}${tenantCode ? ` (${escapeHtml(tenantCode)})` : ''}
+      moved from <strong>${escapeHtml(fromState)}</strong> to <strong>${escapeHtml(toState)}</strong>.
+    </p>
+    <div style="text-align: center;">
+      <a href="${caseUrl}" style="${buttonStyle}">Open case</a>
+    </div>
+  `);
+}
+
+export function referralCreatedReferrerTemplate({
+  firstName,
+  caseNumber,
+  title,
+  toTenantName,
+  toTenantCode,
+  caseUrl,
+}) {
+  const fn = escapeHtml(firstName || 'there');
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Referral sent</h2>
+    <p>Hi ${fn},</p>
+    <p>
+      Your referral for case <strong>${escapeHtml(caseNumber)}</strong> — ${escapeHtml(title)} was submitted
+      to <strong>${escapeHtml(toTenantName || toTenantCode || 'partner agency')}</strong>.
+    </p>
+    <div style="text-align: center;">
+      <a href="${caseUrl}" style="${buttonStyle}">Open case</a>
+    </div>
+  `);
+}
+
+export function referralCreatedPartnerTemplate({
+  firstName,
+  caseNumber,
+  title,
+  fromTenantCode,
+  reason,
+  caseUrl,
+}) {
+  const fn = escapeHtml(firstName || 'there');
+  const reasonHtml = reason ? `<p>Reason:</p><p style="background:#f4f6f9;padding:12px;border-radius:6px;">${escapeHtml(reason)}</p>` : '';
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">New case referral</h2>
+    <p>Hi ${fn},</p>
+    <p>
+      <strong>${escapeHtml(fromTenantCode || 'Another agency')}</strong> referred a case to your organization.
+    </p>
+    <p><strong>${escapeHtml(caseNumber)}</strong> — ${escapeHtml(title)}</p>
+    ${reasonHtml}
+    <div style="text-align: center;">
+      <a href="${caseUrl}" style="${buttonStyle}">Open case</a>
+    </div>
+  `);
+}
+
+export function referralAcceptedTemplate({ firstName, caseNumber, toTenantCode, caseUrl, perspective }) {
+  const fn = escapeHtml(firstName || 'there');
+  const partner = escapeHtml(toTenantCode || 'partner');
+  const cn = escapeHtml(caseNumber);
+  const body =
+    perspective === 'accepter'
+      ? `<p>You accepted the referral for case <strong>${cn}</strong>.</p>`
+      : `<p>Case <strong>${cn}</strong> was accepted by <strong>${partner}</strong>.</p>`;
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Referral accepted</h2>
+    <p>Hi ${fn},</p>
+    ${body}
+    <div style="text-align: center;">
+      <a href="${caseUrl}" style="${buttonStyle}">Open case</a>
+    </div>
+  `);
+}
+
+export function referralRejectedTemplate({ firstName, caseNumber, toTenantCode, caseUrl, perspective }) {
+  const fn = escapeHtml(firstName || 'there');
+  const partner = escapeHtml(toTenantCode || 'partner');
+  const cn = escapeHtml(caseNumber);
+  const body =
+    perspective === 'rejecter'
+      ? `<p>You declined the referral for case <strong>${cn}</strong>.</p>`
+      : `<p>Case <strong>${cn}</strong> referral was not accepted by <strong>${partner}</strong>.</p>`;
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Referral declined</h2>
+    <p>Hi ${fn},</p>
+    ${body}
+    <div style="text-align: center;">
+      <a href="${caseUrl}" style="${buttonStyle}">Open case</a>
+    </div>
+  `);
+}

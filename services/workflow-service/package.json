@@ -9,12 +9,17 @@
     "dev": "node --watch src/server.js",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "test": "prisma generate && vitest run"
   },
   "dependencies": {
     "express": "^5.2.1",
     "@prisma/client": "^6.0.0",
     "prisma": "^6.0.0",
     "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0",
+    "vitest": "^3.0.0"
   }
 }

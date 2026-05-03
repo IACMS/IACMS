@@ -11,6 +11,14 @@ import {
   sendPasswordResetEmail,
   sendPasswordChangedEmail,
   sendVerificationEmail,
+  sendCaseCreatedEmail,
+  sendCaseAssignedEmail,
+  sendCaseUpdatedEmail,
+  sendWorkflowStateChangedEmail,
+  sendReferralCreatedReferrerEmail,
+  sendReferralCreatedPartnerEmail,
+  sendReferralAcceptedEmail,
+  sendReferralRejectedEmail,
 } from '../utils/email.js';
 import Logger from '../../../../shared/common/logger.js';
 
@@ -89,4 +97,148 @@ export async function handleEmailVerificationRequested(data) {
     verificationToken: data.verificationToken,
     tenantCode: data.tenantCode,
   });
+}
+
+export async function handleCaseCreated(data) {
+  if (!data?.caseId || !data?.creatorEmail) return;
+  logger.info('Case created notification', { caseId: data.caseId });
+  const cc = data.assigneeEmail && data.assigneeEmail !== data.creatorEmail ? data.assigneeEmail : undefined;
+  await sendCaseCreatedEmail({
+    to: data.creatorEmail,
+    cc,
+    firstName: data.creatorFirstName,
+    caseNumber: data.caseNumber,
+    title: data.title,
+    tenantCode: data.tenantCode,
+    caseId: data.caseId,
+  });
+}
+
+export async function handleCaseAssigned(data) {
+  if (!data?.caseId || !data?.assigneeEmail) return;
+  logger.info('Case assigned notification', { caseId: data.caseId });
+  await sendCaseAssignedEmail({
+    to: data.assigneeEmail,
+    firstName: data.assigneeFirstName,
+    caseNumber: data.caseNumber,
+    title: data.caseTitle,
+    tenantCode: data.tenantCode,
+    caseId: data.caseId,
+  });
+}
+
+export async function handleCaseUpdated(data) {
+  if (!data?.caseId) return;
+  logger.info('Case updated notification', { caseId: data.caseId });
+  const { caseId, creatorEmail, assigneeEmail, creatorFirstName, assigneeFirstName, caseNumber, title } = data;
+  if (creatorEmail) {
+    await sendCaseUpdatedEmail({
+      to: creatorEmail,
+      firstName: creatorFirstName,
+      caseNumber,
+      title,
+      caseId,
+    });
+  }
+  if (assigneeEmail && assigneeEmail !== creatorEmail) {
+    await sendCaseUpdatedEmail({
+      to: assigneeEmail,
+      firstName: assigneeFirstName,
+      caseNumber,
+      title,
+      caseId,
+    });
+  }
+}
+
+export async function handleWorkflowStateChanged(data) {
+  if (!data?.caseId || !data?.transitionerEmail) return;
+  logger.info('Workflow state notification', { caseId: data.caseId });
+  await sendWorkflowStateChangedEmail({
+    to: data.transitionerEmail,
+    firstName: data.transitionerFirstName,
+    caseNumber: data.caseNumber,
+    title: data.caseTitle,
+    fromState: data.from,
+    toState: data.to,
+    tenantCode: data.tenantCode,
+    caseId: data.caseId,
+  });
+}
+
+export async function handleReferralCreated(data) {
+  if (!data?.referralId || !data?.caseId) return;
+  logger.info('Referral created notification', { referralId: data.referralId });
+  if (data.referrerEmail) {
+    await sendReferralCreatedReferrerEmail({
+      to: data.referrerEmail,
+      firstName: data.referrerFirstName,
+      caseNumber: data.caseNumber,
+      title: data.caseTitle,
+      toTenantName: data.toTenantName,
+      toTenantCode: data.toTenantCode,
+      caseId: data.caseId,
+    });
+  }
+  if (data.partnerContactEmail && data.partnerContactEmail !== data.referrerEmail) {
+    await sendReferralCreatedPartnerEmail({
+      to: data.partnerContactEmail,
+      firstName: data.partnerContactFirstName,
+      caseNumber: data.caseNumber,
+      title: data.caseTitle,
+      fromTenantCode: data.fromTenantCode,
+      reason: data.referralReason,
+      caseId: data.caseId,
+    });
+  }
+}
+
+export async function handleReferralAccepted(data) {
+  if (!data?.referralId) return;
+  logger.info('Referral accepted notification', { referralId: data.referralId });
+  if (data.referrerEmail) {
+    await sendReferralAcceptedEmail({
+      to: data.referrerEmail,
+      firstName: data.referrerFirstName,
+      caseNumber: data.caseNumber,
+      toTenantCode: data.toTenantCode,
+      caseId: data.caseId,
+      perspective: 'referrer',
+    });
+  }
+  if (data.accepterEmail && data.accepterEmail !== data.referrerEmail) {
+    await sendReferralAcceptedEmail({
+      to: data.accepterEmail,
+      firstName: data.accepterFirstName,
+      caseNumber: data.caseNumber,
+      toTenantCode: data.toTenantCode,
+      caseId: data.caseId,
+      perspective: 'accepter',
+    });
+  }
+}
+
+export async function handleReferralRejected(data) {
+  if (!data?.referralId) return;
+  logger.info('Referral rejected notification', { referralId: data.referralId });
+  if (data.referrerEmail) {
+    await sendReferralRejectedEmail({
+      to: data.referrerEmail,
+      firstName: data.referrerFirstName,
+      caseNumber: data.caseNumber,
+      toTenantCode: data.toTenantCode,
+      caseId: data.caseId,
+      perspective: 'referrer',
+    });
+  }
+  if (data.rejecterEmail && data.rejecterEmail !== data.referrerEmail) {
+    await sendReferralRejectedEmail({
+      to: data.rejecterEmail,
+      firstName: data.rejecterFirstName,
+      caseNumber: data.caseNumber,
+      toTenantCode: data.toTenantCode,
+      caseId: data.caseId,
+      perspective: 'rejecter',
+    });
+  }
 }
