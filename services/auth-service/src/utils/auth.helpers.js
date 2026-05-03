@@ -37,8 +37,10 @@ export function getEventBus() {
 
 /**
  * Generate a signed access token and refresh token for a user.
+ * @param {{ id: string, tenantId: string, email: string, mustChangePassword?: boolean }} user
+ * @param {string[]} [roleIds] — RBAC role UUIDs (forwarded as x-user-roles by the gateway)
  */
-export function generateTokens(user) {
+export function generateTokens(user, roleIds = []) {
   const jti = crypto.randomUUID();
 
   const payload = {
@@ -47,6 +49,7 @@ export function generateTokens(user) {
     tenantId: user.tenantId,
     email: user.email,
     mustChangePassword: user.mustChangePassword ?? false,
+    roles: roleIds,
   };
 
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });

@@ -1,11 +1,30 @@
 import prisma from '../config/database.js';
-import { NotFoundError } from '../../../shared/common/errors.js';
+import { NotFoundError, ValidationError } from '../../../shared/common/errors.js';
+
+async function assertCaseInTenant(caseId, tenantId) {
+  const c = await prisma.case.findFirst({
+    where: { id: caseId, tenantId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!c) throw new NotFoundError('Case');
+  return c;
+}
 
 export async function getAttachments(req, res, next) {
   try {
+    const tenantId = req.headers['x-tenant-id'];
+    const { caseId } = req.params;
+
+    if (!tenantId) {
+      throw new ValidationError('Tenant ID is required in headers');
+    }
+
+    await assertCaseInTenant(caseId, tenantId);
+
     const attachments = await prisma.caseAttachment.findMany({
       where: {
-        caseId: req.params.caseId,
+        caseId,
+        tenantId,
         deletedAt: null,
       },
       include: {
@@ -20,10 +39,50 @@ export async function getAttachments(req, res, next) {
 
 export async function uploadAttachment(req, res, next) {
   try {
-    // File upload logic would go here
-    // For now, just create the record
+    const tenantId = req.headers['x-tenant-id'];
+    const uploadedBy = req.headers['x-user-id'];
+
+    if (!tenantId || !uploadedBy) {
+      throw new ValidationError('Tenant ID and User ID are required in headers');
+    }
+
+    const {
+      caseId,
+      filename,
+      originalFilename,
+      mimeType,
+      fileSize,
+      filePath,
+      description,
+    } = req.body || {};
+
+    if (!caseId || !filename || !originalFilename || !mimeType || fileSize == null || !filePath) {
+      throw new ValidationError(
+        'caseId, filename, originalFilename, mimeType, fileSize, and filePath are required'
+      );
+    }
+
+    await assertCaseInTenant(caseId, tenantId);
+
+    const uploader = await prisma.user.findFirst({
+      where: { id: uploadedBy, tenantId, isActive: true },
+    });
+    if (!uploader) {
+      throw new ValidationError('Uploader not found in this tenant');
+    }
+
     const attachment = await prisma.caseAttachment.create({
-      data: req.body,
+      data: {
+        caseId,
+        tenantId,
+        filename,
+        originalFilename,
+        mimeType,
+        fileSize: Number(fileSize),
+        filePath,
+        description: description ?? undefined,
+        uploadedBy,
+      },
       include: {
         uploader: true,
       },
@@ -36,8 +95,27 @@ export async function uploadAttachment(req, res, next) {
 
 export async function deleteAttachment(req, res, next) {
   try {
+    const tenantId = req.headers['x-tenant-id'];
+
+    if (!tenantId) {
+      throw new ValidationError('Tenant ID is required in headers');
+    }
+
+    const attachment = await prisma.caseAttachment.findFirst({
+      where: {
+        id: req.params.id,
+        tenantId,
+        deletedAt: null,
+      },
+      include: { case: true },
+    });
+
+    if (!attachment || attachment.case.tenantId !== tenantId) {
+      throw new NotFoundError('Attachment');
+    }
+
     await prisma.caseAttachment.update({
-      where: { id: req.params.id },
+      where: { id: attachment.id },
       data: { deletedAt: new Date() },
     });
     res.json({ message: 'Attachment deleted' });
@@ -45,4 +123,3 @@ export async function deleteAttachment(req, res, next) {
     next(error);
   }
 }
-

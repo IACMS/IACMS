@@ -45,6 +45,7 @@ export async function sessionLogin(req, res, next) {
       firstName: user.firstName,
       lastName: user.lastName,
       tenant: user.tenant,
+      roles: Array.isArray(user.roles) ? user.roles : [],
     };
     req.session.createdAt = new Date().toISOString();
     req.session.lastAccessed = new Date().toISOString();

@@ -156,7 +156,7 @@ describe('createUser role assignment', () => {
       .send({ email, firstName: 'Role', lastName: 'Test', tenantCode: TENANT_CODE, roleId: ADMIN_ROLE_ID });
 
     expect(res.status).toBe(201);
-    expect(res.body.user.role).toMatchObject({ id: ADMIN_ROLE_ID, name: 'admin' });
+    expect(res.body.user.role).toMatchObject({ id: ADMIN_ROLE_ID, name: 'tenant_admin' });
 
     const user = await prisma.user.findFirst({ where: { email } });
     const userRole = await prisma.userRole.findFirst({ where: { userId: user.id } });

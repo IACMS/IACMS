@@ -44,3 +44,33 @@ export class ConflictError extends AppError {
   }
 }
 
+export class InvalidTransitionError extends AppError {
+  constructor(message = 'Invalid transition for current case state') {
+    super(message, 400, 'INVALID_TRANSITION');
+  }
+}
+
+export class WorkflowClosedError extends AppError {
+  constructor(message = 'Workflow is closed or archived') {
+    super(message, 400, 'WORKFLOW_CLOSED');
+  }
+}
+
+export class WorkflowNotPublishedError extends AppError {
+  constructor(message = 'Workflow is not published') {
+    super(message, 400, 'WORKFLOW_NOT_PUBLISHED');
+  }
+}
+
+export class TenantMismatchError extends AppError {
+  constructor(message = 'Tenant mismatch detected') {
+    super(message, 403, 'TENANT_MISMATCH');
+  }
+}
+
+export class InvalidReferralStateError extends AppError {
+  constructor(message = 'Invalid referral state operation') {
+    super(message, 400, 'INVALID_REFERRAL_STATE');
+  }
+}
+

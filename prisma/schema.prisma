@@ -15,28 +15,32 @@ datasource db {
 // ============================================
 
 model Tenant {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String
-  code        String   @unique
-  description String?  @db.Text
-  config      Json?
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                   String   @id @default(uuid()) @db.Uuid
+  name                 String
+  code                 String   @unique
+  description          String?  @db.Text
+  config               Json?
+  isActive             Boolean  @default(true) @map("is_active")
+  /** First user who registered this tenant — tenant administrator bootstrap. */
+  registeredByUserId   String?  @map("registered_by_user_id") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   // Relations
-  users           User[]
-  roles           Role[]
-  workflows       Workflow[]
-  cases           Case[]           @relation("CaseTenant")
-  casesOriginated Case[]           @relation("CaseOriginatingTenant")
-  casesCurrent    Case[]           @relation("CaseCurrentTenant")
-  referralsFrom   CaseReferral[]   @relation("ReferralFrom")
-  referralsTo     CaseReferral[]   @relation("ReferralTo")
-  attachments     CaseAttachment[]
-  auditLogs       AuditLog[]
-  webhooks        Webhook[]
-  integrations    Integration[]
+  registeredBy     User?            @relation("TenantRegistrar", fields: [registeredByUserId], references: [id], onDelete: SetNull)
+  users            User[]
+  roles            Role[]
+  workflows        Workflow[]
+  cases            Case[]           @relation("CaseTenant")
+  casesOriginated  Case[]           @relation("CaseOriginatingTenant")
+  casesCurrent     Case[]           @relation("CaseCurrentTenant")
+  referralsFrom    CaseReferral[]   @relation("ReferralFrom")
+  referralsTo      CaseReferral[]   @relation("ReferralTo")
+  attachments      CaseAttachment[]
+  auditLogs        AuditLog[]       @relation("AuditLogTenant")
+  relatedAuditLogs AuditLog[]       @relation("relatedTenant")
+  webhooks         Webhook[]
+  integrations     Integration[]
 
   @@index([code])
   @@index([isActive])
@@ -44,25 +48,25 @@ model Tenant {
 }
 
 model User {
-  id              String    @id @default(uuid()) @db.Uuid
-  tenantId        String    @map("tenant_id") @db.Uuid
-  email           String
-  username        String
-  passwordHash    String    @map("password_hash")
-  firstName       String    @map("first_name")
-  lastName        String    @map("last_name")
-  phone           String?
-  nationalId      String?   @map("national_id")
-  isActive             Boolean   @default(true) @map("is_active")
-  isEmailVerified      Boolean   @default(false) @map("is_email_verified")
-  mustChangePassword   Boolean   @default(false) @map("must_change_password")
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @map("tenant_id") @db.Uuid
+  email                    String
+  username                 String
+  passwordHash             String    @map("password_hash")
+  firstName                String    @map("first_name")
+  lastName                 String    @map("last_name")
+  phone                    String?
+  nationalId               String?   @map("national_id")
+  isActive                 Boolean   @default(true) @map("is_active")
+  isEmailVerified          Boolean   @default(false) @map("is_email_verified")
+  mustChangePassword       Boolean   @default(false) @map("must_change_password")
   resetPasswordToken       String?   @map("reset_password_token")
   resetPasswordExpires     DateTime? @map("reset_password_expires")
   emailVerificationToken   String?   @map("email_verification_token")
   emailVerificationExpires DateTime? @map("email_verification_expires")
-  lastLogin            DateTime? @map("last_login")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
+  lastLogin                DateTime? @map("last_login")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
 
   // Relations
   tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -70,7 +74,7 @@ model User {
   casesAssigned         Case[]           @relation("CaseAssignee")
   assignmentsAssignedTo Assignment[]     @relation("AssignmentAssignedTo")
   assignmentsAssignedBy Assignment[]     @relation("AssignmentAssignedBy")
-  workflowStates        WorkflowState[]
+  caseHistory           CaseHistory[]
   referralsMade         CaseReferral[]   @relation("ReferralMadeBy")
   referralsAccepted     CaseReferral[]   @relation("ReferralAcceptedBy")
   referralsRejected     CaseReferral[]   @relation("ReferralRejectedBy")
@@ -82,6 +86,7 @@ model User {
   webhooksCreated       Webhook[]
   integrationsCreated   Integration[]
   userRolesAssigned     UserRole[]       @relation("RoleAssigner")
+  tenantsRegistered     Tenant[]         @relation("TenantRegistrar")
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -172,29 +177,82 @@ model UserRole {
 // Case Management Tables
 // ============================================
 
+enum WorkflowStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 model Workflow {
-  id          String   @id @default(uuid()) @db.Uuid
-  tenantId    String   @map("tenant_id") @db.Uuid
+  id          String         @id @default(uuid()) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  key         String
   name        String
-  description String?  @db.Text
-  definition  Json
-  version     Int      @default(1)
-  isActive    Boolean  @default(true) @map("is_active")
-  isDefault   Boolean  @default(false) @map("is_default")
-  createdBy   String?  @map("created_by") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  description String?        @db.Text
+  definition  Json?
+  version     Int            @default(1)
+  status      WorkflowStatus @default(DRAFT)
+  publishedAt DateTime?      @map("published_at")
+  isActive    Boolean        @default(true) @map("is_active")
+  isDefault   Boolean        @default(false) @map("is_default")
+  createdBy   String?        @map("created_by") @db.Uuid
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  creator        User?           @relation(fields: [createdBy], references: [id])
-  cases          Case[]
-  workflowStates WorkflowState[]
+  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator     User?                @relation(fields: [createdBy], references: [id])
+  cases       Case[]
+  steps       WorkflowStep[]
+  transitions WorkflowTransition[]
 
-  @@index([tenantId])
-  @@index([tenantId, isActive])
+  @@unique([tenantId, key, version])
+  @@index([tenantId, key, status])
   @@index([tenantId, isDefault])
   @@map("workflows")
+}
+
+model WorkflowStep {
+  id             String   @id @default(uuid()) @db.Uuid
+  workflowId     String   @map("workflow_id") @db.Uuid
+  key            String
+  name           String
+  description    String?
+  isInitial      Boolean  @default(false) @map("is_initial")
+  isFinal        Boolean  @default(false) @map("is_final")
+  position       Int      @default(0)
+  allowedRoleIds String[] @map("allowed_role_ids") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  workflow Workflow             @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  outgoing WorkflowTransition[] @relation("from")
+  incoming WorkflowTransition[] @relation("to")
+  cases    Case[]               @relation("currentStep")
+
+  @@unique([workflowId, key])
+  @@map("workflow_steps")
+}
+
+model WorkflowTransition {
+  id              String   @id @default(uuid()) @db.Uuid
+  workflowId      String   @map("workflow_id") @db.Uuid
+  fromStepId      String   @map("from_step_id") @db.Uuid
+  toStepId        String   @map("to_step_id") @db.Uuid
+  name            String
+  description     String?
+  allowedRoleIds  String[] @map("allowed_role_ids") @db.Uuid
+  requiresComment Boolean  @default(false) @map("requires_comment")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  workflow Workflow      @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  fromStep WorkflowStep  @relation("from", fields: [fromStepId], references: [id])
+  toStep   WorkflowStep  @relation("to", fields: [toStepId], references: [id])
+  history  CaseHistory[]
+
+  @@unique([workflowId, fromStepId, name])
+  @@map("workflow_transitions")
 }
 
 model Case {
@@ -203,13 +261,16 @@ model Case {
   originatingTenantId String?   @map("originating_tenant_id") @db.Uuid
   currentTenantId     String?   @map("current_tenant_id") @db.Uuid
   referralStatus      String    @default("none") @map("referral_status")
-  caseNumber          String    @unique @map("case_number")
+  workflowId          String    @map("workflow_id") @db.Uuid
+  workflowVersion     Int       @default(1) @map("workflow_version")
+  caseNumber          String    @map("case_number")
+  currentStepId       String?   @map("current_step_id") @db.Uuid
+  closedAt            DateTime? @map("closed_at")
   title               String
   description         String?   @db.Text
   type                String
   priority            String    @default("normal")
   status              String    @default("open")
-  workflowId          String?   @map("workflow_id") @db.Uuid
   assignedTo          String?   @map("assigned_to") @db.Uuid
   createdBy           String    @map("created_by") @db.Uuid
   metadata            Json?
@@ -223,49 +284,55 @@ model Case {
   tenant            Tenant           @relation("CaseTenant", fields: [tenantId], references: [id], onDelete: Cascade)
   originatingTenant Tenant?          @relation("CaseOriginatingTenant", fields: [originatingTenantId], references: [id])
   currentTenant     Tenant?          @relation("CaseCurrentTenant", fields: [currentTenantId], references: [id])
-  workflow          Workflow?        @relation(fields: [workflowId], references: [id])
+  workflow          Workflow         @relation(fields: [workflowId], references: [id])
+  currentStep       WorkflowStep?    @relation("currentStep", fields: [currentStepId], references: [id])
   assignee          User?            @relation("CaseAssignee", fields: [assignedTo], references: [id])
   creator           User             @relation("CaseCreator", fields: [createdBy], references: [id])
-  workflowStates    WorkflowState[]
+  history           CaseHistory[]
   assignments       Assignment[]
   referrals         CaseReferral[]
   attachments       CaseAttachment[]
 
-  @@index([tenantId])
-  @@index([caseNumber])
+  @@unique([tenantId, caseNumber])
+  @@index([tenantId, currentStepId])
+  @@index([tenantId, workflowId, closedAt])
+  @@index([currentTenantId, referralStatus])
+  @@index([originatingTenantId, referralStatus])
   @@index([tenantId, status])
   @@index([tenantId, type])
   @@index([tenantId, assignedTo])
   @@index([dueDate])
   @@index([createdAt])
-  @@index([originatingTenantId])
-  @@index([currentTenantId])
-  @@index([referralStatus])
-  @@index([currentTenantId, referralStatus])
   @@map("cases")
 }
 
-model WorkflowState {
-  id              String   @id @default(uuid()) @db.Uuid
-  caseId          String   @map("case_id") @db.Uuid
-  workflowId      String   @map("workflow_id") @db.Uuid
-  currentState    String   @map("current_state")
-  previousState   String?  @map("previous_state")
-  transitionedBy  String?  @map("transitioned_by") @db.Uuid
-  transitionNotes String?  @map("transition_notes") @db.Text
-  stateData       Json?    @map("state_data")
-  transitionedAt  DateTime @default(now()) @map("transitioned_at")
+model CaseHistory {
+  id             String   @id @default(uuid()) @db.Uuid
+  caseId         String   @map("case_id") @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  transitionId   String?  @map("transition_id") @db.Uuid
+  fromStepId     String?  @map("from_step_id") @db.Uuid
+  toStepId       String   @map("to_step_id") @db.Uuid
+  actorId        String   @map("actor_id") @db.Uuid
+  comment        String?  @db.Text
+  transitionedAt DateTime @default(now()) @map("transitioned_at")
 
-  // Relations
-  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  transitioner User?    @relation(fields: [transitionedBy], references: [id])
+  case       Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  transition WorkflowTransition? @relation(fields: [transitionId], references: [id])
+  actor      User                @relation(fields: [actorId], references: [id])
 
-  @@index([caseId])
-  @@index([workflowId])
-  @@index([currentState])
-  @@index([transitionedAt])
-  @@map("workflow_states")
+  @@index([caseId, transitionedAt])
+  @@map("case_history")
+}
+
+model CaseSequence {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  year      Int
+  lastSeq   Int      @default(0) @map("last_seq")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([tenantId, year])
+  @@map("case_sequences")
 }
 
 model Assignment {
@@ -320,8 +387,8 @@ model CaseReferral {
   @@index([fromTenantId])
   @@index([toTenantId])
   @@index([status])
-  @@index([fromTenantId, status])
-  @@index([toTenantId, status])
+  @@index([fromTenantId, status, referredAt(sort: Desc)])
+  @@index([toTenantId, status, referredAt(sort: Desc)])
   @@index([referredAt])
   @@map("case_referrals")
 }
@@ -356,29 +423,28 @@ model CaseAttachment {
 // ============================================
 
 model AuditLog {
-  id         String   @id @default(uuid()) @db.Uuid
-  tenantId   String   @map("tenant_id") @db.Uuid
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id") @db.Uuid
-  action     String
-  userId     String?  @map("user_id") @db.Uuid
-  oldValues  Json?    @map("old_values")
-  newValues  Json?    @map("new_values")
-  metadata   Json?
-  ipAddress  String?  @map("ip_address")
-  userAgent  String?  @map("user_agent")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  entityType      String   @map("entity_type")
+  entityId        String   @map("entity_id") @db.Uuid
+  action          String
+  userId          String?  @map("user_id") @db.Uuid
+  oldValues       Json?    @map("old_values")
+  newValues       Json?    @map("new_values")
+  metadata        Json?
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  relatedTenantId String?  @map("related_tenant_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
 
   // Relations
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user   User?  @relation(fields: [userId], references: [id])
+  tenant        Tenant  @relation("AuditLogTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  user          User?   @relation(fields: [userId], references: [id])
+  relatedTenant Tenant? @relation("relatedTenant", fields: [relatedTenantId], references: [id])
 
-  @@index([tenantId])
-  @@index([entityType, entityId])
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
-  @@index([tenantId, createdAt])
+  @@index([tenantId, entityType, entityId, createdAt])
+  @@index([relatedTenantId, entityType, entityId, createdAt])
+  @@index([tenantId, userId, createdAt])
   @@map("audit_logs")
 }
 
