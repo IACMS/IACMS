@@ -64,7 +64,7 @@ export async function register(req, res, next) {
       data: { emailVerificationToken: tokenHash, emailVerificationExpires: tokenExpires },
     });
 
-    const { accessToken, refreshToken } = generateTokens(user);
+    const { accessToken, refreshToken } = generateTokens(user, []);
 
     const bus = getEventBus();
     if (bus) {

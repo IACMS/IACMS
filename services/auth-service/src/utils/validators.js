@@ -262,6 +262,36 @@ export function validateUpdateUserRequest(body) {
  * Unlike admin update, email cannot be changed here (it would break verified state).
  * Only firstName, lastName, phone are allowed.
  */
+/**
+ * Self-service tenant registration: creates organization + first user as tenant administrator.
+ */
+export function validateTenantRegistrationRequest(body) {
+  const { tenantName, tenantCode, email, password, firstName, lastName, username } = body || {};
+
+  if (!tenantName || typeof tenantName !== 'string' || !tenantName.trim()) {
+    throw new ValidationError('Organization name is required');
+  }
+  const orgName = tenantName.trim();
+  if (orgName.length > 200) {
+    throw new ValidationError('Organization name must be at most 200 characters');
+  }
+
+  const code = validateTenantCode(tenantCode);
+  if (!code) {
+    throw new ValidationError('Tenant code is required');
+  }
+
+  return {
+    tenantName: orgName,
+    tenantCode: code,
+    email: validateEmail(email),
+    password: validatePassword(password),
+    firstName: validateName(firstName, 'First name'),
+    lastName: validateName(lastName, 'Last name'),
+    username: validateUsername(username),
+  };
+}
+
 export function validateProfileUpdateRequest(body) {
   const { firstName, lastName, phone } = body || {};
 
@@ -306,4 +336,5 @@ export default {
   validateCreateUserRequest,
   validateUpdateUserRequest,
   validateProfileUpdateRequest,
+  validateTenantRegistrationRequest,
 };

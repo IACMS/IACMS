@@ -13,7 +13,11 @@ import bcrypt from 'bcryptjs';
 export const ADMIN_EMAIL    = 'admin@test-org.com';
 export const ADMIN_PASSWORD = 'password123';
 export const TENANT_CODE    = 'TEST-ORG';
-export const ADMIN_ROLE_ID  = '55555555-5555-5555-5555-555555555555';
+/** Tenant-scoped org administrator (seed UUID unchanged). */
+export const TENANT_ADMIN_ROLE_ID = '55555555-5555-5555-5555-555555555555';
+/** @deprecated Use TENANT_ADMIN_ROLE_ID */
+export const ADMIN_ROLE_ID = TENANT_ADMIN_ROLE_ID;
+export const SYSTEM_ADMIN_ROLE_ID = '99999999-9999-9999-9999-999999999991';
 export const NONEXISTENT_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
 /**

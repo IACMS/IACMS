@@ -25,8 +25,9 @@ const PUBLIC_ROUTES = [
   { method: 'POST', path: '/auth/verify-email' },
   // Session routes (handled at gateway level)
   { method: 'POST', path: '/session/login' },
-  // Tenant validation
+  // Tenant validation & self-service org registration
   { method: 'GET', path: '/tenants/validate' },
+  { method: 'POST', path: '/tenants/register' },
 ];
 
 /**
@@ -60,6 +61,9 @@ function setUserHeaders(req, user) {
   req.headers['x-user-email'] = user.email;
   if (user.firstName) req.headers['x-user-firstname'] = user.firstName;
   if (user.lastName) req.headers['x-user-lastname'] = user.lastName;
+  if (user.roles) {
+    req.headers['x-user-roles'] = Array.isArray(user.roles) ? user.roles.join(',') : user.roles;
+  }
 }
 
 /**
@@ -97,6 +101,7 @@ export function authenticate(req, res, next) {
       email: sessionUser.email,
       firstName: sessionUser.firstName,
       lastName: sessionUser.lastName,
+      roles: Array.isArray(sessionUser.roles) ? sessionUser.roles : [],
     };
     req.authMethod = 'session';
     
@@ -123,6 +128,7 @@ export function authenticate(req, res, next) {
         id: decoded.id,
         tenantId: decoded.tenantId,
         email: decoded.email,
+        roles: Array.isArray(decoded.roles) ? decoded.roles : [],
       };
       req.authMethod = 'jwt';
       
@@ -164,6 +170,7 @@ export function optionalAuth(req, res, next) {
       email: sessionUser.email,
       firstName: sessionUser.firstName,
       lastName: sessionUser.lastName,
+      roles: Array.isArray(sessionUser.roles) ? sessionUser.roles : [],
     };
     req.authMethod = 'session';
     setUserHeaders(req, req.user);
@@ -180,6 +187,7 @@ export function optionalAuth(req, res, next) {
         id: decoded.id,
         tenantId: decoded.tenantId,
         email: decoded.email,
+        roles: Array.isArray(decoded.roles) ? decoded.roles : [],
       };
       req.authMethod = 'jwt';
       setUserHeaders(req, req.user);

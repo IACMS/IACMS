@@ -17,46 +17,64 @@ const CACHE_KEY_PREFIX = 'rbac:perms:';
  * Route → required permission mapping.
  * HTTP method + path pattern → permission string.
  */
+// Paths match Express req.path when middleware is mounted at /api/v1 (no /api/v1 prefix).
 const ROUTE_PERMISSIONS = {
   // Cases
-  'GET:/api/v1/cases': 'cases:read',
-  'POST:/api/v1/cases': 'cases:create',
-  'GET:/api/v1/cases/:id': 'cases:read',
-  'PUT:/api/v1/cases/:id': 'cases:update',
-  'PATCH:/api/v1/cases/:id': 'cases:update',
-  'DELETE:/api/v1/cases/:id': 'cases:delete',
-  'POST:/api/v1/cases/:id/assign': 'cases:assign',
-  'POST:/api/v1/cases/:id/close': 'cases:close',
+  'GET:/cases': 'cases:read',
+  'POST:/cases': 'cases:create',
+  'GET:/cases/:id': 'cases:read',
+  'PUT:/cases/:id': 'cases:update',
+  'PATCH:/cases/:id': 'cases:update',
+  'DELETE:/cases/:id': 'cases:delete',
+  'GET:/cases/:id/state': 'cases:read',
+  'GET:/cases/:id/history': 'cases:read',
+  'POST:/cases/:id/transitions/:transitionId/execute': 'cases:update',
 
-  // Assignments
-  'GET:/api/v1/cases/:id/assignments': 'cases:read',
-  'POST:/api/v1/cases/:id/assignments': 'cases:assign',
+  // Assignments (case-service mounts /assignments)
+  'GET:/assignments': 'cases:read',
+  'POST:/assignments': 'cases:assign',
+  'POST:/assignments/:id/unassign': 'cases:assign',
+
+  // Attachments
+  'GET:/attachments/case/:caseId': 'cases:read',
+  'POST:/attachments': 'cases:update',
+  'DELETE:/attachments/:id': 'cases:update',
 
   // Workflows
-  'GET:/api/v1/workflows': 'workflows:read',
-  'POST:/api/v1/workflows': 'workflows:create',
-  'GET:/api/v1/workflows/:id': 'workflows:read',
-  'PUT:/api/v1/workflows/:id': 'workflows:update',
-  'DELETE:/api/v1/workflows/:id': 'workflows:delete',
+  'GET:/workflows': 'workflows:read',
+  'POST:/workflows': 'workflows:create',
+  'GET:/workflows/published': 'workflows:read',
+  'GET:/workflows/:id': 'workflows:read',
+  'GET:/workflows/:id/full': 'workflows:read',
+  'PUT:/workflows/:id': 'workflows:update',
+  'DELETE:/workflows/:id': 'workflows:delete',
+  'POST:/workflows/:id/steps': 'workflows:update',
+  'PUT:/workflows/:id/steps/:stepId': 'workflows:update',
+  'DELETE:/workflows/:id/steps/:stepId': 'workflows:update',
+  'POST:/workflows/:id/transitions': 'workflows:update',
+  'DELETE:/workflows/:id/transitions/:transitionId': 'workflows:update',
+  'POST:/workflows/:id/publish': 'workflows:update',
 
   // Users (via RBAC service)
-  'GET:/api/v1/rbac/users': 'users:read',
-  'GET:/api/v1/rbac/users/:id': 'users:read',
+  'GET:/rbac/users': 'users:read',
+  'GET:/rbac/users/:id': 'users:read',
 
   // Roles
-  'GET:/api/v1/rbac/roles': 'roles:read',
-  'POST:/api/v1/rbac/roles': 'roles:create',
-  'PUT:/api/v1/rbac/roles/:id': 'roles:update',
-  'DELETE:/api/v1/rbac/roles/:id': 'roles:delete',
-  'POST:/api/v1/rbac/user-roles/assign': 'roles:assign',
+  'GET:/rbac/roles': 'roles:read',
+  'POST:/rbac/roles': 'roles:create',
+  'PUT:/rbac/roles/:id': 'roles:update',
+  'DELETE:/rbac/roles/:id': 'roles:delete',
+  'POST:/rbac/user-roles/assign': 'roles:assign',
+  'POST:/rbac/user-roles/revoke': 'roles:assign',
 
   // Audit
-  'GET:/api/v1/audit': 'audit:read',
-  'GET:/api/v1/audit/:id': 'audit:read',
+  'GET:/audit': 'audit:read',
+  'GET:/audit/:id': 'audit:read',
 
   // Tenants
-  'GET:/api/v1/tenants': 'tenants:read',
-  'PUT:/api/v1/tenants/:id': 'tenants:update',
+  'GET:/tenants': 'tenants:read',
+  'PUT:/tenants/:id': 'tenants:update',
+  'PATCH:/tenants/:id/config': 'tenants:update',
 };
 
 // ─── Path matching ───────────────────────────────────────────────────────────
@@ -73,7 +91,10 @@ function getRequiredPermission(method, path) {
   if (ROUTE_PERMISSIONS[exactKey]) return ROUTE_PERMISSIONS[exactKey];
 
   for (const [routeKey, permission] of Object.entries(ROUTE_PERMISSIONS)) {
-    const [routeMethod, routePath] = routeKey.split(':');
+    const sep = routeKey.indexOf(':');
+    if (sep === -1) continue;
+    const routeMethod = routeKey.slice(0, sep);
+    const routePath = routeKey.slice(sep + 1);
     if (routeMethod === method && matchPath(routePath, path)) return permission;
   }
   return null;
