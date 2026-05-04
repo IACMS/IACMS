@@ -12,6 +12,8 @@ const logger = new Logger('auth-service');
 /**
  * POST /auth/register
  * Public self-registration — creates a user and immediately issues tokens.
+ * firstName and lastName are required. New accounts use mustChangePassword so the client
+ * must prompt for a new password before other protected routes work.
  */
 export async function register(req, res, next) {
   try {
@@ -50,6 +52,7 @@ export async function register(req, res, next) {
         firstName,
         lastName,
         tenantId: tenant.id,
+        mustChangePassword: true,
       },
       include: { tenant: true },
     });
@@ -107,6 +110,7 @@ export async function register(req, res, next) {
         firstName: user.firstName,
         lastName: user.lastName,
         isEmailVerified: false,
+        mustChangePassword: true,
         tenant: { id: user.tenant.id, name: user.tenant.name, code: user.tenant.code },
       },
       accessToken,
@@ -210,7 +214,11 @@ export async function resendVerification(req, res, next) {
  */
 export async function createUser(req, res, next) {
   try {
-    const { email, firstName, lastName, username, tenantCode, tenantId, roleId } = validateCreateUserRequest(req.body);
+    const actorTenantId = req.headers['x-tenant-id'] || req.user?.tenantId;
+    const { email, firstName, lastName, username, tenantCode, tenantId, roleId } = validateCreateUserRequest(
+      req.body,
+      actorTenantId,
+    );
 
     // Resolve tenant
     let tenant;
@@ -221,6 +229,9 @@ export async function createUser(req, res, next) {
     }
 
     if (!tenant) throw new NotFoundError('Tenant');
+    if (actorTenantId && tenant.id !== actorTenantId) {
+      throw new ValidationError('Cannot create users for another organization');
+    }
     if (!tenant.isActive) throw new ValidationError('Cannot create user for inactive tenant');
 
     // Duplicate check

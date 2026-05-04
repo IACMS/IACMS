@@ -1,6 +1,6 @@
 import prisma from '../config/database.js';
-import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
-import { NotFoundError, ValidationError } from '../../../shared/common/errors.js';
+import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
+import { NotFoundError, ValidationError } from '../../../../shared/common/errors.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
 

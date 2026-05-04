@@ -5,6 +5,27 @@ generator client {
   provider = "prisma-client-js"
 }
 
+/// Per-service clients (outputs relative to this `prisma/` directory). Run `npx prisma generate` from repo root.
+generator clientAuth {
+  provider = "prisma-client-js"
+  output   = "../services/auth-service/src/generated/prisma"
+}
+
+generator clientCase {
+  provider = "prisma-client-js"
+  output   = "../services/case-service/src/generated/prisma"
+}
+
+generator clientWorkflow {
+  provider = "prisma-client-js"
+  output   = "../services/workflow-service/src/generated/prisma"
+}
+
+generator clientReferral {
+  provider = "prisma-client-js"
+  output   = "../services/referral-service/src/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -220,15 +241,17 @@ model WorkflowStep {
   description    String?
   isInitial      Boolean  @default(false) @map("is_initial")
   isFinal        Boolean  @default(false) @map("is_final")
-  position       Int      @default(0)
-  allowedRoleIds String[] @map("allowed_role_ids") @db.Uuid
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  position             Int      @default(0)
+  allowedRoleIds       String[] @map("allowed_role_ids") @db.Uuid
+  requiresAttachment   Boolean  @default(false) @map("requires_attachment")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
-  workflow Workflow             @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  outgoing WorkflowTransition[] @relation("from")
-  incoming WorkflowTransition[] @relation("to")
-  cases    Case[]               @relation("currentStep")
+  workflow        Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  outgoing        WorkflowTransition[] @relation("from")
+  incoming        WorkflowTransition[] @relation("to")
+  cases           Case[]            @relation("currentStep")
+  stepAttachments CaseAttachment[]
 
   @@unique([workflowId, key])
   @@map("workflow_steps")
@@ -406,15 +429,18 @@ model CaseAttachment {
   uploadedBy       String    @map("uploaded_by") @db.Uuid
   uploadedAt       DateTime  @default(now()) @map("uploaded_at")
   deletedAt        DateTime? @map("deleted_at")
+  workflowStepId   String?   @map("workflow_step_id") @db.Uuid
 
   // Relations
-  case     Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case         Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  workflowStep WorkflowStep? @relation(fields: [workflowStepId], references: [id], onDelete: SetNull)
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   uploader User   @relation(fields: [uploadedBy], references: [id])
 
   @@index([caseId])
   @@index([tenantId])
   @@index([uploadedBy])
+  @@index([workflowStepId])
   @@map("case_attachments")
 }
 

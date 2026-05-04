@@ -103,9 +103,12 @@ describe('POST /auth/verify-email', () => {
     const email = `verify-test-${Date.now()}@test-org.com`;
     createdEmails.push(email);
 
-    await request(app)
+    const regRes = await request(app)
       .post('/auth/register')
       .send({ email, password: 'Test1234', firstName: 'Verify', lastName: 'Test', tenantCode: TENANT_CODE });
+
+    expect(regRes.status).toBe(201);
+    expect(regRes.body.user.mustChangePassword).toBe(true);
 
     // Retrieve the raw token from DB by looking up the hash
     const user = await prisma.user.findFirst({ where: { email } });
@@ -159,6 +162,7 @@ describe('POST /auth/resend-verification', () => {
       .post('/auth/register')
       .send({ email, password: 'Test1234', firstName: 'Resend', lastName: 'Test', tenantCode: TENANT_CODE });
 
+    expect(regRes.body.user.mustChangePassword).toBe(true);
     const token = regRes.body.accessToken;
 
     const before = await prisma.user.findFirst({ where: { email } });

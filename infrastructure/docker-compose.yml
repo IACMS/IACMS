@@ -101,6 +101,12 @@ services:
         condition: service_healthy
       auth-service:
         condition: service_started
+      case-service:
+        condition: service_started
+      workflow-service:
+        condition: service_started
+      referral-service:
+        condition: service_started
       kafka:
         condition: service_healthy
     networks:

@@ -2,14 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY services/case-service/package*.json ./
-RUN npm ci
+COPY prisma ./prisma
+COPY shared ./shared
+COPY services/case-service/package*.json ./services/case-service/
 
-COPY services/case-service/prisma ./prisma
-RUN npx prisma generate
+WORKDIR /app/services/case-service
+RUN npm ci
+RUN npx prisma generate --schema=../../prisma/schema.prisma
 
 COPY services/case-service/src ./src
-COPY shared ./shared
 
 EXPOSE 3003
 

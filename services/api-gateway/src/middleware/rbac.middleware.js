@@ -48,10 +48,12 @@ const ROUTE_PERMISSIONS = {
   'GET:/workflows/:id/full': 'workflows:read',
   'PUT:/workflows/:id': 'workflows:update',
   'DELETE:/workflows/:id': 'workflows:delete',
+  'POST:/workflows/:id/new-version': 'workflows:update',
   'POST:/workflows/:id/steps': 'workflows:update',
   'PUT:/workflows/:id/steps/:stepId': 'workflows:update',
   'DELETE:/workflows/:id/steps/:stepId': 'workflows:update',
   'POST:/workflows/:id/transitions': 'workflows:update',
+  'PUT:/workflows/:id/transitions/:transitionId': 'workflows:update',
   'DELETE:/workflows/:id/transitions/:transitionId': 'workflows:update',
   'POST:/workflows/:id/publish': 'workflows:update',
 

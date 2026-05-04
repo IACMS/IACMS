@@ -1,10 +1,10 @@
 import prisma from '../config/database.js';
-import { NotFoundError, ValidationError } from '../../../shared/common/errors.js';
+import { NotFoundError, ValidationError } from '../../../../shared/common/errors.js';
 
 async function assertCaseInTenant(caseId, tenantId) {
   const c = await prisma.case.findFirst({
     where: { id: caseId, tenantId, deletedAt: null },
-    select: { id: true },
+    select: { id: true, workflowId: true, currentStepId: true },
   });
   if (!c) throw new NotFoundError('Case');
   return c;
@@ -54,6 +54,7 @@ export async function uploadAttachment(req, res, next) {
       fileSize,
       filePath,
       description,
+      workflowStepId: workflowStepIdBody,
     } = req.body || {};
 
     if (!caseId || !filename || !originalFilename || !mimeType || fileSize == null || !filePath) {
@@ -62,7 +63,20 @@ export async function uploadAttachment(req, res, next) {
       );
     }
 
-    await assertCaseInTenant(caseId, tenantId);
+    const caseRow = await assertCaseInTenant(caseId, tenantId);
+
+    let workflowStepId = workflowStepIdBody ?? caseRow.currentStepId ?? null;
+    if (workflowStepId) {
+      const step = await prisma.workflowStep.findFirst({
+        where: { id: workflowStepId, workflowId: caseRow.workflowId },
+      });
+      if (!step) {
+        throw new ValidationError('workflowStepId is not part of this case workflow');
+      }
+      if (caseRow.currentStepId && workflowStepId !== caseRow.currentStepId) {
+        throw new ValidationError('Attachments can only be linked to the case current workflow step');
+      }
+    }
 
     const uploader = await prisma.user.findFirst({
       where: { id: uploadedBy, tenantId, isActive: true },
@@ -82,6 +96,7 @@ export async function uploadAttachment(req, res, next) {
         filePath,
         description: description ?? undefined,
         uploadedBy,
+        workflowStepId: workflowStepId ?? undefined,
       },
       include: {
         uploader: true,

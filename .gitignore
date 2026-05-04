@@ -98,6 +98,9 @@ Thumbs.db
 build/
 dist/
 
-# Auth service: Prisma client (generated; run `npx prisma generate` in services/auth-service)
+# Per-service Prisma clients (generated; run `npx prisma generate` from repo root)
 services/auth-service/src/generated/
+services/case-service/src/generated/
+services/workflow-service/src/generated/
+services/referral-service/src/generated/
 

@@ -2,16 +2,16 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY services/referral-service/package*.json ./
-RUN npm ci
+COPY prisma ./prisma
+COPY shared ./shared
+COPY services/referral-service/package*.json ./services/referral-service/
 
-COPY services/referral-service/prisma ./prisma
-RUN npx prisma generate
+WORKDIR /app/services/referral-service
+RUN npm ci
+RUN npx prisma generate --schema=../../prisma/schema.prisma
 
 COPY services/referral-service/src ./src
-COPY shared ./shared
 
 EXPOSE 3005
 
 CMD ["node", "src/server.js"]
-
