@@ -42,7 +42,18 @@ describe('validateCreateUserRequest', () => {
 
     expect(() =>
       validateCreateUserRequest(bodyWithoutTenant)
-    ).toThrow('Tenant code is required');
+    ).toThrow('Tenant code or organization context is required');
+  });
+
+  it('accepts tenantId from gateway header when body omits tenant', () => {
+    const body = {
+      email: 'hdr@example.com',
+      firstName: 'Hdr',
+      lastName: 'User',
+    };
+    const result = validateCreateUserRequest(body, VALID_UUID);
+    expect(result.tenantId).toBe(VALID_UUID);
+    expect(result.tenantCode).toBeNull();
   });
 
   it('accepts tenantId UUID instead of tenantCode', () => {

@@ -1,11 +1,73 @@
 import prisma from '../config/database.js';
-import { NotFoundError, ValidationError, InvalidTransitionError, WorkflowNotPublishedError } from '../../../shared/common/errors.js';
-import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
+import { NotFoundError, ValidationError, InvalidTransitionError, WorkflowNotPublishedError } from '../../../../shared/common/errors.js';
+import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
 
 function emitAudit(payload) {
   eventBus.publish(TOPICS.AUDIT_LOG, payload).catch(() => {});
+}
+
+/** Attach fromStep / toStep summaries (id, name, key) for timeline UI. */
+async function enrichHistoryWithSteps(history) {
+  if (!history?.length) return history;
+  const ids = new Set();
+  for (const h of history) {
+    if (h.fromStepId) ids.add(h.fromStepId);
+    if (h.toStepId) ids.add(h.toStepId);
+  }
+  if (ids.size === 0) return history;
+  const steps = await prisma.workflowStep.findMany({
+    where: { id: { in: [...ids] } },
+    select: { id: true, name: true, key: true },
+  });
+  const map = Object.fromEntries(steps.map((s) => [s.id, s]));
+  return history.map((h) => ({
+    ...h,
+    fromStep: h.fromStepId ? map[h.fromStepId] ?? null : null,
+    toStep: h.toStepId ? map[h.toStepId] ?? null : null,
+  }));
+}
+
+/**
+ * Ordered checklist + edges for case UI (design order via step.position; phases from history).
+ */
+async function buildWorkflowGuide(case_, historyOldestFirst) {
+  const wf = await prisma.workflow.findFirst({
+    where: { id: case_.workflowId },
+    include: { steps: true, transitions: true },
+  });
+  if (!wf?.steps?.length) return null;
+
+  const leftFrom = new Set(
+    (historyOldestFirst || []).filter((h) => h.fromStepId).map((h) => h.fromStepId),
+  );
+  const currentId = case_.currentStepId;
+
+  const stepsSorted = [...wf.steps].sort((a, b) =>
+    a.position !== b.position ? a.position - b.position : a.key.localeCompare(b.key),
+  );
+
+  const steps = stepsSorted.map((s) => ({
+    id: s.id,
+    name: s.name,
+    key: s.key,
+    position: s.position,
+    isInitial: s.isInitial,
+    isFinal: s.isFinal,
+    requiresAttachment: Boolean(s.requiresAttachment),
+    phase: s.id === currentId ? 'current' : leftFrom.has(s.id) ? 'completed' : 'upcoming',
+  }));
+
+  return {
+    steps,
+    transitions: wf.transitions.map((t) => ({
+      id: t.id,
+      name: t.name,
+      fromStepId: t.fromStepId,
+      toStepId: t.toStepId,
+    })),
+  };
 }
 
 /** Tenant-wide case visibility: tenant administrators or platform system administrators. */
@@ -121,6 +183,20 @@ export async function getCase(req, res, next) {
         assignee: true,
         creator: true,
         attachments: true,
+        workflow: {
+          select: { id: true, name: true, key: true, version: true, status: true },
+        },
+        currentStep: {
+          select: {
+            id: true,
+            name: true,
+            key: true,
+            isInitial: true,
+            isFinal: true,
+            allowedRoleIds: true,
+            requiresAttachment: true,
+          },
+        },
       },
     });
     
@@ -287,12 +363,39 @@ export async function executeTransition(req, res, next) {
 
     if (!transition) throw new NotFoundError('Transition');
 
-    // 3. Validate transition from current step
+    // 3. Validate transition belongs to case workflow
+    if (transition.workflowId !== case_.workflowId) {
+      throw new InvalidTransitionError('Transition does not belong to this case workflow');
+    }
+
+    // 4. Validate transition from current step
     if (transition.fromStepId !== case_.currentStepId) {
       throw new InvalidTransitionError(`Transition not valid from current step`);
     }
 
-    // 4. Validate roles (if transition has allowedRoleIds)
+    const fromStep = await prisma.workflowStep.findFirst({
+      where: { id: case_.currentStepId, workflowId: case_.workflowId },
+    });
+    if (!fromStep) {
+      throw new ValidationError('Current workflow step is invalid for this case');
+    }
+
+    if (fromStep.requiresAttachment) {
+      const attCount = await prisma.caseAttachment.count({
+        where: {
+          caseId,
+          workflowStepId: fromStep.id,
+          deletedAt: null,
+        },
+      });
+      if (attCount < 1) {
+        throw new ValidationError(
+          'This step requires at least one file attachment before you can move forward. Upload a document linked to this step (Attachments tab).',
+        );
+      }
+    }
+
+    // 5. Validate roles (if transition has allowedRoleIds)
     if (transition.allowedRoleIds && transition.allowedRoleIds.length > 0) {
       const hasRole = transition.allowedRoleIds.some(role => userRoles.includes(role));
       if (!hasRole) throw new ValidationError('User does not have permission to execute this transition');
@@ -302,7 +405,7 @@ export async function executeTransition(req, res, next) {
       throw new ValidationError('This transition requires a comment');
     }
 
-    // 5. Execute atomically
+    // 6. Execute atomically
     const [updatedCase, history] = await prisma.$transaction([
       prisma.case.update({
         where: { id: caseId },
@@ -357,14 +460,15 @@ export async function getCaseHistory(req, res, next) {
     const tenantId = req.headers['x-tenant-id'];
     const caseId = req.params.id;
 
-    const history = await prisma.caseHistory.findMany({
+    const historyRaw = await prisma.caseHistory.findMany({
       where: { caseId, tenantId },
       include: {
         transition: true,
-        actor: true, 
+        actor: true,
       },
-      orderBy: { transitionedAt: 'desc' }
+      orderBy: { transitionedAt: 'desc' },
     });
+    const history = await enrichHistoryWithSteps(historyRaw);
 
     res.json({ history });
   } catch (error) {
@@ -382,8 +486,18 @@ export async function getCaseState(req, res, next) {
     const case_ = await prisma.case.findFirst({
       where: { id: caseId, tenantId, deletedAt: null },
       include: {
-        currentStep: true,
-      }
+        currentStep: {
+          select: {
+            id: true,
+            name: true,
+            key: true,
+            isInitial: true,
+            isFinal: true,
+            allowedRoleIds: true,
+            requiresAttachment: true,
+          },
+        },
+      },
     });
 
     if (!case_) throw new NotFoundError('Case');
@@ -403,16 +517,21 @@ export async function getCaseState(req, res, next) {
       });
     }
 
-    const history = await prisma.caseHistory.findMany({
+    const historyRaw = await prisma.caseHistory.findMany({
       where: { caseId },
       include: { transition: true, actor: true },
-      orderBy: { transitionedAt: 'desc' }
+      orderBy: { transitionedAt: 'desc' },
     });
+    const history = await enrichHistoryWithSteps(historyRaw);
+
+    const historyOldestFirst = [...historyRaw].reverse();
+    const workflowGuide = await buildWorkflowGuide(case_, historyOldestFirst);
 
     res.json({
       currentStep: case_.currentStep,
       availableActions,
-      history
+      history,
+      workflowGuide,
     });
   } catch (error) {
     next(error);
