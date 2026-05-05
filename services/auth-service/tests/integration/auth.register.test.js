@@ -135,6 +135,31 @@ describe('mustChangePassword enforcement', () => {
   });
 });
 
+// ── Self-service registration ─────────────────────────────────────────────────
+describe('POST /auth/register', () => {
+  it('returns mustChangePassword true for new users', async () => {
+    const email = `self-reg-${Date.now()}@test-org.com`;
+    createdUserEmails.push(email);
+
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ email, password: 'Test1234', firstName: 'New', lastName: 'User', tenantCode: TENANT_CODE });
+
+    expect(res.status).toBe(201);
+    expect(res.body.user.mustChangePassword).toBe(true);
+    expect(res.body.user.firstName).toBe('New');
+    expect(res.body.user.lastName).toBe('User');
+  });
+
+  it('returns 400 when first name is missing', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ email: `noname-${Date.now()}@test-org.com`, password: 'Test1234', lastName: 'Only', tenantCode: TENANT_CODE });
+
+    expect(res.status).toBe(400);
+  });
+});
+
 // ── createUser role assignment ────────────────────────────────────────────────
 describe('createUser role assignment', () => {
   let adminToken;

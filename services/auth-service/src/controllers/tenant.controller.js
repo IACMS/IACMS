@@ -123,6 +123,8 @@ export async function updateTenantConfig(req, res, next) {
 /**
  * POST /tenants/register
  * Creates a new tenant and first user as **tenant_admin** (organization registrar).
+ * Organization name, tenant code, email, password, first name, and last name are required.
+ * The first user must change their password (mustChangePassword) before using most protected routes.
  */
 export async function registerTenant(req, res, next) {
   try {
@@ -169,6 +171,7 @@ export async function registerTenant(req, res, next) {
           lastName: payload.lastName,
           isActive: true,
           isEmailVerified: false,
+          mustChangePassword: true,
         },
       });
 
@@ -217,6 +220,7 @@ export async function registerTenant(req, res, next) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        mustChangePassword: true,
         roles: roleIds,
       },
       accessToken,

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/prisma/client.js';
 
 if (!process.env.DATABASE_URL) {
   const dbConfig = {
