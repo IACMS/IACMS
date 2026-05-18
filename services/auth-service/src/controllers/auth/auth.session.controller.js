@@ -129,7 +129,12 @@ export async function login(req, res, next) {
         lastName: user.lastName,
         mustChangePassword: user.mustChangePassword,
         roles: roleIds,
-        tenant: { id: user.tenant.id, name: user.tenant.name, code: user.tenant.code },
+        tenant: {
+          id: user.tenant.id,
+          name: user.tenant.name,
+          code: user.tenant.code,
+          config: user.tenant.config ?? {},
+        },
       },
       accessToken,
       refreshToken,

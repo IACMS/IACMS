@@ -1,7 +1,7 @@
 import express from 'express';
 import { login, refreshToken, logout } from '../controllers/auth/auth.session.controller.js';
 import { register, createUser, verifyEmail, resendVerification } from '../controllers/auth/auth.register.controller.js';
-import { forgotPassword, resetPassword, changePassword } from '../controllers/auth/auth.password.controller.js';
+import { forgotPassword, resetPassword, changePassword, getPasswordStatus } from '../controllers/auth/auth.password.controller.js';
 import { getProfile, updateProfile }   from '../controllers/auth/auth.profile.controller.js';
 import {
   listUsers,
@@ -28,8 +28,9 @@ router.post('/verify-email',    verifyEmail);
 // change-password and resend-verification are excluded from requirePasswordChange so
 // new accounts can verify email and set a new password before other protected routes.
 router.post('/change-password',        authenticateToken, changePassword);
+router.get('/password-status',         authenticateToken, getPasswordStatus);
 router.post('/resend-verification',    authenticateToken, resendVerification);
-router.post('/logout',                 authenticateToken, requirePasswordChange, logout);
+router.post('/logout',                 authenticateToken, logout);
 router.get('/profile',                 authenticateToken, requirePasswordChange, getProfile);
 router.patch('/profile',               authenticateToken, requirePasswordChange, updateProfile);
 

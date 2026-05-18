@@ -4,8 +4,14 @@ import { NotFoundError, ValidationError } from '../../../../shared/common/errors
 export async function getRoles(req, res, next) {
   try {
     const { tenantId } = req.query;
+    /** Global roles (`tenant_id` null) plus the requesting tenant’s scoped roles. */
+    const where =
+      tenantId &&
+      String(tenantId).length > 0
+        ? { OR: [{ tenantId: null }, { tenantId: String(tenantId) }] }
+        : {};
     const roles = await prisma.role.findMany({
-      where: tenantId ? { tenantId } : {},
+      where,
       include: {
         rolePermissions: {
           include: { permission: true },

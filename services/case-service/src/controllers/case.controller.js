@@ -1,11 +1,63 @@
 import prisma from '../config/database.js';
-import { NotFoundError, ValidationError, InvalidTransitionError, WorkflowNotPublishedError } from '../../../../shared/common/errors.js';
+import { NotFoundError, ValidationError, InvalidTransitionError } from '../../../../shared/common/errors.js';
 import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
+import {
+  userHasTenantWideCaseAccess,
+  findCaseForUser,
+  assertCaseReadable,
+  assertCaseMutable,
+  assertRegistrarMetadataEditAllowed,
+} from '../security/caseAccessPolicy.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
 
 function emitAudit(payload) {
   eventBus.publish(TOPICS.AUDIT_LOG, payload).catch(() => {});
+}
+
+/** When the case entered `stepId`: latest history row with toStepId === stepId, else case createdAt. */
+async function getStepEnteredAt(caseId, stepId) {
+  const [last, kase] = await Promise.all([
+    prisma.caseHistory.findFirst({
+      where: { caseId, toStepId: stepId },
+      orderBy: { transitionedAt: 'desc' },
+      select: { transitionedAt: true },
+    }),
+    prisma.case.findUnique({ where: { id: caseId }, select: { createdAt: true } }),
+  ]);
+  if (last?.transitionedAt) return last.transitionedAt;
+  return kase?.createdAt ?? new Date();
+}
+
+function transitionDurationMs(transition) {
+  const amount = transition.timeLimitAmount;
+  const unit = transition.timeLimitUnit;
+  if (amount == null || amount < 1 || (unit !== 'HOURS' && unit !== 'DAYS')) return null;
+  if (unit === 'HOURS') return amount * 3600_000;
+  return amount * 86400_000;
+}
+
+function transitionTimingForClient(transition, stepEnteredAt) {
+  const type = transition.timeLimitType || 'NONE';
+  const ms = transitionDurationMs(transition);
+  if (!stepEnteredAt || type === 'NONE' || !ms) {
+    return {
+      timeLimitType: type,
+      timeLimitAmount: transition.timeLimitAmount ?? null,
+      timeLimitUnit: transition.timeLimitUnit ?? null,
+      deadlineAt: null,
+      isPastDue: false,
+    };
+  }
+  const deadlineAt = new Date(stepEnteredAt.getTime() + ms);
+  const isPastDue = Date.now() > deadlineAt.getTime();
+  return {
+    timeLimitType: type,
+    timeLimitAmount: transition.timeLimitAmount,
+    timeLimitUnit: transition.timeLimitUnit,
+    deadlineAt: deadlineAt.toISOString(),
+    isPastDue,
+  };
 }
 
 /** Attach fromStep / toStep summaries (id, name, key) for timeline UI. */
@@ -70,17 +122,18 @@ async function buildWorkflowGuide(case_, historyOldestFirst) {
   };
 }
 
-/** Tenant-wide case visibility: tenant administrators or platform system administrators. */
-async function userHasTenantWideCaseAccess(userId) {
-  const rows = await prisma.userRole.findMany({
-    where: {
-      userId,
-      role: { name: { in: ['tenant_admin', 'system_admin'] }, isActive: true },
-    },
-    select: { roleId: true },
-    take: 1,
-  });
-  return rows.length > 0;
+/** Allowlisted scalar/JSON updates only — never workflow/state/assignment from raw body. */
+const CASE_METADATA_FIELDS = ['title', 'description', 'type', 'priority', 'metadata', 'dueDate'];
+
+function pickAllowedCaseUpdates(body) {
+  if (!body || typeof body !== 'object') return {};
+  const out = {};
+  for (const key of CASE_METADATA_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(body, key)) {
+      out[key] = body[key];
+    }
+  }
+  return out;
 }
 
 async function generateCaseNumber(tenantId) {
@@ -120,7 +173,7 @@ export async function getCases(req, res, next) {
 
     if (!userId) throw new ValidationError('User ID is required in headers');
 
-    const isAdmin = await userHasTenantWideCaseAccess(userId);
+    const isAdmin = await userHasTenantWideCaseAccess(prisma, userId);
 
     const whereClause = {
       tenantId, // strict tenant boundary
@@ -161,7 +214,7 @@ export async function getCase(req, res, next) {
     const userId = req.headers['x-user-id'];
     if (!userId) throw new ValidationError('User ID is required in headers');
 
-    const isAdmin = await userHasTenantWideCaseAccess(userId);
+    const isAdmin = await userHasTenantWideCaseAccess(prisma, userId);
 
     const whereClause = {
       id: req.params.id,
@@ -216,14 +269,13 @@ export async function createCase(req, res, next) {
     if (!tenantId || !userId) throw new ValidationError('Tenant ID and User ID are required');
     if (!workflowId || !title || !type) throw new ValidationError('workflowId, title, and type are required');
 
-    // 1. Validate workflow
-    const workflow = await prisma.workflow.findUnique({
-      where: { id: workflowId },
-      include: { steps: true }
+    // 1. Validate workflow belongs to this tenant and is published
+    const workflow = await prisma.workflow.findFirst({
+      where: { id: workflowId, tenantId, status: 'PUBLISHED' },
+      include: { steps: true },
     });
 
     if (!workflow) throw new NotFoundError('Workflow');
-    if (workflow.status !== 'PUBLISHED') throw new WorkflowNotPublishedError();
 
     // 2. Find initial step
     const initialStep = workflow.steps.find(s => s.isInitial);
@@ -286,11 +338,26 @@ export async function updateCase(req, res, next) {
   try {
     const tenantId = req.headers['x-tenant-id'];
     const userId = req.headers['x-user-id'];
-    const case_ = await prisma.case.updateMany({
-      where: { id: req.params.id, tenantId },
-      data: req.body,
+
+    const data = pickAllowedCaseUpdates(req.body);
+    if (Object.keys(data).length === 0) {
+      throw new ValidationError('No permitted fields provided for update');
+    }
+
+    const existing = await assertCaseMutable(prisma, req, req.params.id, {
+      select: {
+        id: true,
+        currentStepId: true,
+      },
     });
-    if (case_.count === 0) throw new NotFoundError('Case');
+
+    await assertRegistrarMetadataEditAllowed(prisma, req, existing);
+
+    const updated = await prisma.case.updateMany({
+      where: { id: req.params.id, tenantId },
+      data,
+    });
+    if (updated.count === 0) throw new NotFoundError('Case');
 
     await eventBus.publish(TOPICS.CASE_UPDATED, { caseId: req.params.id });
     emitAudit({
@@ -299,11 +366,11 @@ export async function updateCase(req, res, next) {
       entityId: req.params.id,
       action: 'case_updated',
       userId: userId || null,
-      metadata: { fields: Object.keys(req.body || {}) },
+      metadata: { fields: Object.keys(data) },
     });
 
-    const updated = await prisma.case.findUnique({ where: { id: req.params.id } });
-    res.json({ case: updated });
+    const caseOut = await prisma.case.findUnique({ where: { id: req.params.id } });
+    res.json({ case: caseOut });
   } catch (error) {
     next(error);
   }
@@ -313,6 +380,9 @@ export async function deleteCase(req, res, next) {
   try {
     const tenantId = req.headers['x-tenant-id'];
     const userId = req.headers['x-user-id'];
+
+    await assertCaseMutable(prisma, req, req.params.id, { select: { id: true } });
+
     const result = await prisma.case.updateMany({
       where: { id: req.params.id, tenantId },
       data: { deletedAt: new Date() },
@@ -347,9 +417,11 @@ export async function executeTransition(req, res, next) {
     if (!tenantId || !userId) throw new ValidationError('Authentication headers required');
 
     // 1. Fetch case with current step
-    const case_ = await prisma.case.findFirst({
-      where: { id: caseId, tenantId, deletedAt: null },
-      include: { workflow: true }
+    const case_ = await findCaseForUser(prisma, {
+      tenantId,
+      userId,
+      caseId,
+      include: { workflow: true },
     });
 
     if (!case_) throw new NotFoundError('Case');
@@ -395,6 +467,13 @@ export async function executeTransition(req, res, next) {
       }
     }
 
+    if (fromStep.allowedRoleIds && fromStep.allowedRoleIds.length > 0) {
+      const allowed = fromStep.allowedRoleIds.some((role) => userRoles.includes(role));
+      if (!allowed) {
+        throw new ValidationError('User does not have permission to act on the current workflow step');
+      }
+    }
+
     // 5. Validate roles (if transition has allowedRoleIds)
     if (transition.allowedRoleIds && transition.allowedRoleIds.length > 0) {
       const hasRole = transition.allowedRoleIds.some(role => userRoles.includes(role));
@@ -403,6 +482,19 @@ export async function executeTransition(req, res, next) {
 
     if (transition.requiresComment && !comment) {
       throw new ValidationError('This transition requires a comment');
+    }
+
+    const limitMs = transitionDurationMs(transition);
+    if (transition.timeLimitType === 'DEADLINE' && limitMs != null && limitMs > 0) {
+      const enteredAt = await getStepEnteredAt(caseId, case_.currentStepId);
+      const deadlineMs = enteredAt.getTime() + limitMs;
+      if (Date.now() > deadlineMs) {
+        const amt = transition.timeLimitAmount;
+        const u = transition.timeLimitUnit === 'DAYS' ? 'day(s)' : 'hour(s)';
+        throw new ValidationError(
+          `This transition is past its deadline (${amt} ${u} from when this step started).`,
+        );
+      }
     }
 
     // 6. Execute atomically
@@ -460,6 +552,8 @@ export async function getCaseHistory(req, res, next) {
     const tenantId = req.headers['x-tenant-id'];
     const caseId = req.params.id;
 
+    await assertCaseReadable(prisma, req, caseId, { select: { id: true } });
+
     const historyRaw = await prisma.caseHistory.findMany({
       where: { caseId, tenantId },
       include: {
@@ -482,9 +576,12 @@ export async function getCaseState(req, res, next) {
     const userRolesStr = req.headers['x-user-roles'];
     const userRoles = userRolesStr ? userRolesStr.split(',') : [];
     const caseId = req.params.id;
+    const userId = req.headers['x-user-id'];
 
-    const case_ = await prisma.case.findFirst({
-      where: { id: caseId, tenantId, deletedAt: null },
+    const case_ = await findCaseForUser(prisma, {
+      tenantId,
+      userId,
+      caseId,
       include: {
         currentStep: {
           select: {
@@ -505,20 +602,23 @@ export async function getCaseState(req, res, next) {
     // Get available outgoing transitions from current step
     let availableActions = [];
     if (case_.currentStepId) {
+      const stepEnteredAt = await getStepEnteredAt(caseId, case_.currentStepId);
       const transitions = await prisma.workflowTransition.findMany({
         where: { fromStepId: case_.currentStepId },
         include: { toStep: true }
       });
 
       // Filter by role
-      availableActions = transitions.filter(t => {
-        if (!t.allowedRoleIds || t.allowedRoleIds.length === 0) return true;
-        return t.allowedRoleIds.some(role => userRoles.includes(role));
-      });
+      availableActions = transitions
+        .filter(t => {
+          if (!t.allowedRoleIds || t.allowedRoleIds.length === 0) return true;
+          return t.allowedRoleIds.some(role => userRoles.includes(role));
+        })
+        .map((t) => ({ ...t, ...transitionTimingForClient(t, stepEnteredAt) }));
     }
 
     const historyRaw = await prisma.caseHistory.findMany({
-      where: { caseId },
+      where: { caseId, tenantId },
       include: { transition: true, actor: true },
       orderBy: { transitionedAt: 'desc' },
     });

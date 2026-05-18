@@ -283,15 +283,14 @@ export function validateUpdateUserRequest(body) {
 }
 
 /**
- * Validate self-service profile update request.
- * Unlike admin update, email cannot be changed here (it would break verified state).
- * Only firstName, lastName, phone are allowed.
- */
-/**
- * Self-service tenant registration: creates organization + first user as tenant administrator.
+ * Platform-only tenant registration (new organization + first tenant_admin user).
+ * Caller must be authenticated as `system_admin` with `platform:manage_tenants` at the gateway.
+ *
+ * The first org admin's password is **generated server-side** and emailed (notification-service);
+ * do not send `password` in the body.
  */
 export function validateTenantRegistrationRequest(body) {
-  const { tenantName, tenantCode, email, password, firstName, lastName, username } = body || {};
+  const { tenantName, tenantCode, email, firstName, lastName, username } = body || {};
 
   if (!tenantName || typeof tenantName !== 'string' || !tenantName.trim()) {
     throw new ValidationError('Organization name is required');
@@ -310,13 +309,17 @@ export function validateTenantRegistrationRequest(body) {
     tenantName: orgName,
     tenantCode: code,
     email: validateEmail(email),
-    password: validatePassword(password),
     firstName: validateName(firstName, 'First name'),
     lastName: validateName(lastName, 'Last name'),
     username: validateUsername(username),
   };
 }
 
+/**
+ * Validate self-service profile update request.
+ * Unlike admin update, email cannot be changed here (it would break verified state).
+ * Only firstName, lastName, phone are allowed.
+ */
 export function validateProfileUpdateRequest(body) {
   const { firstName, lastName, phone } = body || {};
 

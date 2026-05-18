@@ -4,6 +4,7 @@ import {
   NotFoundError,
   ForbiddenError,
 } from '../../../../shared/common/errors.js';
+import { loadUserRoleIdsForUser } from '../../../../shared/utils/userRoles.js';
 
 function parseRoleIdsHeader(headers) {
   const raw = headers['x-user-roles'];
@@ -36,10 +37,19 @@ async function assertMayManageRoles(actorRoleIds, tenantIdHeader, targetUserId, 
   }
 }
 
+async function actorRoleIdsFromRequest(req) {
+  let ids = parseRoleIdsHeader(req.headers);
+  const actorUserId = req.headers['x-user-id'];
+  if ((!ids || !ids.length) && actorUserId) {
+    ids = await loadUserRoleIdsForUser(prisma, actorUserId);
+  }
+  return ids;
+}
+
 export async function assignRole(req, res, next) {
   try {
     const tenantId = req.headers['x-tenant-id'];
-    const actorRoleIds = parseRoleIdsHeader(req.headers);
+    const actorRoleIds = await actorRoleIdsFromRequest(req);
     const { userId, roleId, assignedBy, expiresAt } = req.body;
 
     if (!userId || !roleId) {
@@ -69,7 +79,7 @@ export async function assignRole(req, res, next) {
 export async function revokeRole(req, res, next) {
   try {
     const tenantId = req.headers['x-tenant-id'];
-    const actorRoleIds = parseRoleIdsHeader(req.headers);
+    const actorRoleIds = await actorRoleIdsFromRequest(req);
     const { userId, roleId } = req.body;
 
     if (!userId || !roleId) {

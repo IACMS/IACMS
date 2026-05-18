@@ -15,10 +15,13 @@ const CACHE_KEY_PREFIX = 'rbac:perms:';
 
 /**
  * Route → required permission mapping.
- * HTTP method + path pattern → permission string.
+ * HTTP method + path pattern → permission string, or **array of strings** (user needs one of them).
  */
 // Paths match Express req.path when middleware is mounted at /api/v1 (no /api/v1 prefix).
 const ROUTE_PERMISSIONS = {
+  // Platform — operational visibility (connectivity from gateway → microservices)
+  'GET:/platform/service-probes': 'platform:manage_tenants',
+
   // Cases
   'GET:/cases': 'cases:read',
   'POST:/cases': 'cases:create',
@@ -61,8 +64,19 @@ const ROUTE_PERMISSIONS = {
   'GET:/rbac/users': 'users:read',
   'GET:/rbac/users/:id': 'users:read',
 
-  // Roles
-  'GET:/rbac/roles': 'roles:read',
+  // User admin (auth-service, proxied as /api/v1/auth → /auth)
+  'POST:/auth/users/create': 'users:create',
+  'GET:/auth/users': 'users:read',
+  'GET:/auth/users/:id': 'users:read',
+  'PATCH:/auth/users/:id': 'users:update',
+  'PATCH:/auth/users/:id/role': 'roles:assign',
+  'PATCH:/auth/users/:id/deactivate': 'users:update',
+  'PATCH:/auth/users/:id/reactivate': 'users:update',
+  'DELETE:/auth/users/:id': 'users:delete',
+
+  // Roles (RBAC service) — listing roles is required for workflow/case UIs to show friendly role names.
+  // Allow anyone who can read workflows or users (or formally manage roles) to avoid spurious 403 + global banner.
+  'GET:/rbac/roles': ['users:read', 'workflows:read', 'roles:read'],
   'POST:/rbac/roles': 'roles:create',
   'PUT:/rbac/roles/:id': 'roles:update',
   'DELETE:/rbac/roles/:id': 'roles:delete',
@@ -73,10 +87,19 @@ const ROUTE_PERMISSIONS = {
   'GET:/audit': 'audit:read',
   'GET:/audit/:id': 'audit:read',
 
-  // Tenants
+  // Tenants — register orgs is platform-admin only (`platform:manage_tenants`)
+  'POST:/tenants/register': 'platform:manage_tenants',
   'GET:/tenants': 'tenants:read',
   'PUT:/tenants/:id': 'tenants:update',
   'PATCH:/tenants/:id/config': 'tenants:update',
+  'POST:/tenants/:id/logo': 'tenants:update',
+
+  // Referrals (cross-agency — explicit permissions)
+  'GET:/referrals': 'referrals:read',
+  'GET:/referrals/:id': 'referrals:read',
+  'POST:/referrals': 'referrals:create',
+  'POST:/referrals/:id/accept': 'referrals:update',
+  'POST:/referrals/:id/reject': 'referrals:update',
 };
 
 // ─── Path matching ───────────────────────────────────────────────────────────
@@ -111,57 +134,78 @@ async function fetchUserPermissions(userId, tenantId, rbacServiceUrl) {
     });
     if (!response.ok) {
       console.error('[RBAC] Failed to fetch permissions:', response.status);
-      return [];
+      return { ok: false, permissions: [] };
     }
     const data = await response.json();
-    return data.permissions || [];
+    return { ok: true, permissions: data.permissions || [] };
   } catch (error) {
     console.error('[RBAC] Error fetching permissions:', error.message);
-    return [];
+    return { ok: false, permissions: [] };
   }
 }
 
-// ─── Redis-backed cache ───────────────────────────────────────────────────────
-
-async function getUserPermissions(userId, tenantId, rbacServiceUrl) {
+/**
+ * Resolve permissions from cache or live RBAC. On live fetch failure, returns
+ * rbacAvailable: false and does NOT write an empty list to Redis (avoids caching
+ * transient RBAC outages as “user has zero permissions”).
+ */
+async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
   const cacheKey = `${CACHE_KEY_PREFIX}${userId}:${tenantId}`;
   const redis = getRedisClient();
 
-  // Try Redis first
   if (redis && redis.status === 'ready') {
     try {
       const cached = await redis.get(cacheKey);
-      if (cached) {
-        return JSON.parse(cached);
+      if (cached !== null) {
+        return { permissions: JSON.parse(cached), rbacAvailable: true };
       }
     } catch (err) {
       console.warn('[RBAC] Redis read error, falling back to live fetch:', err.message);
     }
   }
 
-  // Cache miss (or Redis unavailable) — fetch from RBAC service
-  const permissions = await fetchUserPermissions(userId, tenantId, rbacServiceUrl);
+  const result = await fetchUserPermissions(userId, tenantId, rbacServiceUrl);
+  if (!result.ok) {
+    return { permissions: [], rbacAvailable: false };
+  }
 
-  // Store in Redis if available
   if (redis && redis.status === 'ready') {
     try {
-      await redis.set(cacheKey, JSON.stringify(permissions), 'EX', CACHE_TTL_SECONDS);
+      await redis.set(cacheKey, JSON.stringify(result.permissions), 'EX', CACHE_TTL_SECONDS);
     } catch (err) {
       console.warn('[RBAC] Redis write error:', err.message);
     }
   }
 
+  return { permissions: result.permissions, rbacAvailable: true };
+}
+
+// ─── Redis-backed cache (via resolvePermissions) ─────────────────────────────
+
+export async function getUserPermissions(userId, tenantId, rbacServiceUrl) {
+  const { permissions } = await resolvePermissions(userId, tenantId, rbacServiceUrl);
   return permissions;
+}
+
+/** Same resolution as getUserPermissions; includes rbacAvailable for session APIs. */
+export async function getUserPermissionsWithAvailability(userId, tenantId, rbacServiceUrl) {
+  return resolvePermissions(userId, tenantId, rbacServiceUrl);
 }
 
 // ─── Permission check ─────────────────────────────────────────────────────────
 
-function hasPermission(userPermissions, requiredPermission) {
+export function hasPermission(userPermissions, requiredPermission) {
   if (userPermissions.includes('*') || userPermissions.includes('admin:*')) return true;
   if (userPermissions.includes(requiredPermission)) return true;
   const [resource] = requiredPermission.split(':');
   if (userPermissions.includes(`${resource}:*`)) return true;
   return false;
+}
+
+/** True if the user satisfies at least one permission in the list (OR semantics). */
+export function hasAnyPermission(userPermissions, requiredList) {
+  if (!requiredList?.length) return true;
+  return requiredList.some((p) => hasPermission(userPermissions, p));
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -173,14 +217,31 @@ export function createRbacMiddleware(rbacServiceUrl) {
     const requiredPermission = getRequiredPermission(req.method, req.path);
     if (!requiredPermission) return next();
 
-    try {
-      const userPermissions = await getUserPermissions(req.user.id, req.user.tenantId, rbacServiceUrl);
+    const requiredList = Array.isArray(requiredPermission) ? requiredPermission : [requiredPermission];
 
-      if (!hasPermission(userPermissions, requiredPermission)) {
+    try {
+      const { permissions: userPermissions, rbacAvailable } = await getUserPermissionsWithAvailability(
+        req.user.id,
+        req.user.tenantId,
+        rbacServiceUrl,
+      );
+
+      if (!rbacAvailable) {
+        return res.status(503).json({
+          error: {
+            code: 'POLICY_UNAVAILABLE',
+            message: 'Authorization checks are temporarily unavailable. Please try again later.',
+          },
+        });
+      }
+
+      if (!hasAnyPermission(userPermissions, requiredList)) {
+        const reqLabel =
+          requiredList.length === 1 ? requiredList[0] : `one of: ${requiredList.join(', ')}`;
         return res.status(403).json({
           error: {
             code: 'FORBIDDEN',
-            message: `You don't have permission to perform this action. Required: ${requiredPermission}`,
+            message: `You don't have permission to perform this action. Required: ${reqLabel}`,
           },
         });
       }
@@ -188,7 +249,12 @@ export function createRbacMiddleware(rbacServiceUrl) {
       next();
     } catch (error) {
       console.error('[RBAC] Middleware error:', error);
-      next(); // fail open
+      return res.status(503).json({
+        error: {
+          code: 'POLICY_UNAVAILABLE',
+          message: 'Authorization checks are temporarily unavailable. Please try again later.',
+        },
+      });
     }
   };
 }
