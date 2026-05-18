@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import prisma from '../../config/database.js';
-import { ValidationError, NotFoundError } from '../../../../../shared/common/errors.js';
+import { ValidationError, NotFoundError, UnauthorizedError } from '../../../../../shared/common/errors.js';
 import Logger from '../../../../../shared/common/logger.js';
 import { TOPICS } from '../../../../../shared/utils/eventBus.js';
 import { validatePassword } from '../../utils/validators.js';
@@ -126,6 +126,27 @@ export async function resetPassword(req, res, next) {
 
     logger.info('Password reset successful', { userId: user.id, email: user.email });
     res.json({ message: 'Password has been reset successfully. You can now log in.' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /auth/password-status
+ * Returns the live `mustChangePassword` flag from the database (not the JWT snapshot).
+ * No `requirePasswordChange` guard — used by the gateway for session/status and first-login flows.
+ */
+export async function getPasswordStatus(req, res, next) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedError('Not authenticated');
+
+    const row = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { mustChangePassword: true },
+    });
+
+    res.json({ mustChangePassword: row?.mustChangePassword ?? false });
   } catch (error) {
     next(error);
   }

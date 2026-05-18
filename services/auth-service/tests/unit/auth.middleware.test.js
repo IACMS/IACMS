@@ -13,12 +13,24 @@ const mockRedis = {
   get: vi.fn(),
 };
 
+const { mockFindFirstUser } = vi.hoisted(() => ({
+  mockFindFirstUser: vi.fn(),
+}));
+
 vi.mock('../../src/config/redis.config.js', () => ({
   getRedisClient: vi.fn(() => mockRedis),
 }));
 
+vi.mock('../../src/config/database.js', () => ({
+  default: {
+    user: {
+      findFirst: mockFindFirstUser,
+    },
+  },
+}));
+
 // Import after mocks are set up
-const { authenticateToken, requirePasswordChange } = await import(
+const { authenticateToken, authenticateTokenOptional, requirePasswordChange } = await import(
   '../../src/middleware/auth.middleware.js'
 );
 
@@ -44,6 +56,8 @@ describe('authenticateToken', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRedis.get.mockResolvedValue(null); // not blacklisted by default
+    mockFindFirstUser.mockReset();
+    process.env.TRUST_GATEWAY_IDENTITY_HEADERS = 'false';
   });
 
   it('calls next with UnauthorizedError when no token provided', async () => {
@@ -56,6 +70,57 @@ describe('authenticateToken', () => {
     const err = next.mock.calls[0][0];
     expect(err.statusCode).toBe(401);
     expect(err.message).toMatch(/token required/i);
+    expect(mockFindFirstUser).not.toHaveBeenCalled();
+  });
+
+  it('accepts forwarded gateway identity when no Bearer token (trust on)', async () => {
+    process.env.TRUST_GATEWAY_IDENTITY_HEADERS = 'true';
+    mockFindFirstUser.mockResolvedValue({
+      id: 'u-gateway',
+      tenantId: 't1',
+      email: 'a@b.gov',
+      mustChangePassword: false,
+      userRoles: [{ roleId: 'role-tenant-admin-uuid' }],
+    });
+
+    const req = {
+      headers: { 'x-user-id': 'u-gateway', 'x-tenant-id': 't1' },
+    };
+    const next = vi.fn();
+
+    await authenticateToken(req, makeRes(), next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(req.user).toMatchObject({
+      id: 'u-gateway',
+      tenantId: 't1',
+      email: 'a@b.gov',
+      roles: ['role-tenant-admin-uuid'],
+      mustChangePassword: false,
+    });
+  });
+
+  it('calls next with UnauthorizedError when forwarded tenant does not match user record', async () => {
+    process.env.TRUST_GATEWAY_IDENTITY_HEADERS = 'true';
+    mockFindFirstUser.mockResolvedValue({
+      id: 'u-gateway',
+      tenantId: 't-correct',
+      email: 'a@b.gov',
+      mustChangePassword: false,
+      userRoles: [],
+    });
+
+    const req = {
+      headers: { 'x-user-id': 'u-gateway', 'x-tenant-id': 't-wrong' },
+    };
+    const next = vi.fn();
+
+    await authenticateToken(req, makeRes(), next);
+
+    expect(next).toHaveBeenCalledOnce();
+    const err = next.mock.calls[0][0];
+    expect(err.statusCode).toBe(401);
+    expect(err.message).toMatch(/forwarded identity/i);
   });
 
   it('calls next with UnauthorizedError for an invalid JWT', async () => {
@@ -103,6 +168,7 @@ describe('authenticateToken', () => {
     const payload = { id: 'u1', tenantId: 't1', email: 'a@b.com', jti: 'valid-jti', mustChangePassword: false };
     const token = makeToken(payload);
     mockRedis.get.mockResolvedValue(null); // not blacklisted
+    mockFindFirstUser.mockResolvedValue({ mustChangePassword: false });
 
     const req = makeReq(token);
     const next = vi.fn();
@@ -110,13 +176,29 @@ describe('authenticateToken', () => {
     await authenticateToken(req, makeRes(), next);
 
     expect(next).toHaveBeenCalledWith(); // called with no args = success
-    expect(req.user).toMatchObject({ id: 'u1', email: 'a@b.com' });
+    expect(req.user).toMatchObject({ id: 'u1', email: 'a@b.com', mustChangePassword: false });
+  });
+
+  it('overlay mustChangePassword from DB after password change (stale JWT still true)', async () => {
+    const payload = { id: 'u1', tenantId: 't1', email: 'a@b.com', jti: 'jti-1', mustChangePassword: true };
+    const token = makeToken(payload);
+    mockRedis.get.mockResolvedValue(null);
+    mockFindFirstUser.mockResolvedValue({ mustChangePassword: false });
+
+    const req = makeReq(token);
+    const next = vi.fn();
+
+    await authenticateToken(req, makeRes(), next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(req.user).toMatchObject({ id: 'u1', mustChangePassword: false });
   });
 
   it('fails open (sets req.user, calls next) when Redis throws', async () => {
     const payload = { id: 'u1', jti: 'some-jti' };
     const token = makeToken(payload);
     mockRedis.get.mockRejectedValue(new Error('Redis connection refused'));
+    mockFindFirstUser.mockResolvedValue({ mustChangePassword: false });
 
     const req = makeReq(token);
     const next = vi.fn();
@@ -126,6 +208,41 @@ describe('authenticateToken', () => {
     // Should not block the request when Redis is unavailable
     expect(next).toHaveBeenCalledWith();
     expect(req.user).toBeDefined();
+  });
+});
+
+describe('authenticateTokenOptional', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRedis.get.mockResolvedValue(null);
+  });
+
+  it('calls next() without setting req.user when Authorization is absent', async () => {
+    const req = makeReq(null);
+    const next = vi.fn();
+
+    await authenticateTokenOptional(req, makeRes(), next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(req.user).toBeUndefined();
+  });
+
+  it('sets req.user when Bearer token is valid', async () => {
+    const payload = {
+      id: 'u1',
+      tenantId: 't1',
+      email: 'a@b.com',
+      jti: 'valid-jti',
+      mustChangePassword: false,
+    };
+    const token = makeToken(payload);
+    const req = makeReq(token);
+    const next = vi.fn();
+
+    await authenticateTokenOptional(req, makeRes(), next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(req.user).toMatchObject({ id: 'u1', tenantId: 't1' });
   });
 });
 

@@ -60,11 +60,11 @@ async function sendEmail({ to, subject, html }) {
  * Send welcome email with temporary password to a newly created user.
  * Called by the admin createUser flow.
  */
-export async function sendWelcomeEmail({ to, firstName, tenantName, temporaryPassword }) {
+export async function sendWelcomeEmail({ to, firstName, tenantName, tenantCode, temporaryPassword }) {
   return sendEmail({
     to,
     subject: `Welcome to IACMS — ${tenantName}`,
-    html: welcomeEmailTemplate({ firstName, tenantName, email: to, temporaryPassword }),
+    html: welcomeEmailTemplate({ firstName, tenantName, tenantCode, email: to, temporaryPassword }),
   });
 }
 

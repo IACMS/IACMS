@@ -3,6 +3,11 @@
  * Handles session-based authentication for web browsers
  */
 
+import { getUserPermissionsWithAvailability } from '../middleware/rbac.middleware.js';
+import { fetchMustChangePasswordFromAuth } from '../utils/authPasswordStatus.js';
+
+const rbacServiceUrl = () => process.env.RBAC_SERVICE_URL || 'http://localhost:3002';
+
 /**
  * Session Login
  * POST /api/v1/session/login
@@ -35,8 +40,27 @@ export async function sessionLogin(req, res, next) {
       return res.status(authResponse.status).json(authData);
     }
 
-    // Create session
     const { user, accessToken, refreshToken } = authData;
+
+    const mustPw = Boolean(user.mustChangePassword);
+    let permissions = [];
+    let rbacAvailable = true;
+
+    if (!mustPw) {
+      const resolved = await getUserPermissionsWithAvailability(user.id, user.tenant.id, rbacServiceUrl());
+      permissions = resolved.permissions;
+      rbacAvailable = resolved.rbacAvailable;
+
+      if (!rbacAvailable) {
+        return res.status(503).json({
+          error: {
+            code: 'POLICY_UNAVAILABLE',
+            message:
+              'Authorization service is temporarily unavailable. Please try again in a moment.',
+          },
+        });
+      }
+    }
 
     req.session.user = {
       id: user.id,
@@ -46,6 +70,7 @@ export async function sessionLogin(req, res, next) {
       lastName: user.lastName,
       tenant: user.tenant,
       roles: Array.isArray(user.roles) ? user.roles : [],
+      mustChangePassword: mustPw,
     };
     req.session.createdAt = new Date().toISOString();
     req.session.lastAccessed = new Date().toISOString();
@@ -68,7 +93,9 @@ export async function sessionLogin(req, res, next) {
         firstName: user.firstName,
         lastName: user.lastName,
         tenant: user.tenant,
+        mustChangePassword: mustPw,
       },
+      permissions,
       tokens: { accessToken, refreshToken },
     });
   } catch (error) {
@@ -125,16 +152,37 @@ export async function sessionLogout(req, res, next) {
  */
 export async function sessionStatus(req, res) {
   if (req.session && req.session.user) {
+    const u = req.session.user;
+    const dbMustChange = await fetchMustChangePasswordFromAuth(u.id, u.tenantId);
+    const mustChangePassword =
+      dbMustChange !== null ? dbMustChange : Boolean(u.mustChangePassword);
+
+    let permissions = [];
+    let rbacAvailable = true;
+    if (!mustChangePassword) {
+      try {
+        const resolved = await getUserPermissionsWithAvailability(u.id, u.tenantId, rbacServiceUrl());
+        permissions = resolved.permissions;
+        rbacAvailable = resolved.rbacAvailable;
+      } catch {
+        permissions = [];
+        rbacAvailable = false;
+      }
+    }
+
     return res.json({
       authenticated: true,
       authMethod: 'session',
       user: {
-        id: req.session.user.id,
-        email: req.session.user.email,
-        firstName: req.session.user.firstName,
-        lastName: req.session.user.lastName,
-        tenant: req.session.user.tenant,
+        id: u.id,
+        email: u.email,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        tenant: u.tenant,
+        mustChangePassword,
       },
+      permissions,
+      rbac: { available: rbacAvailable },
       session: {
         createdAt: req.session.createdAt,
         lastAccessed: req.session.lastAccessed,
@@ -143,6 +191,27 @@ export async function sessionStatus(req, res) {
   }
 
   if (req.user && req.authMethod === 'jwt') {
+    const dbMustChange = await fetchMustChangePasswordFromAuth(req.user.id, req.user.tenantId);
+    const mustChangePassword =
+      dbMustChange !== null ? dbMustChange : Boolean(req.user.mustChangePassword);
+
+    let permissions = [];
+    let rbacAvailable = true;
+    if (!mustChangePassword) {
+      try {
+        const resolved = await getUserPermissionsWithAvailability(
+          req.user.id,
+          req.user.tenantId,
+          rbacServiceUrl(),
+        );
+        permissions = resolved.permissions;
+        rbacAvailable = resolved.rbacAvailable;
+      } catch {
+        permissions = [];
+        rbacAvailable = false;
+      }
+    }
+
     return res.json({
       authenticated: true,
       authMethod: 'jwt',
@@ -150,7 +219,10 @@ export async function sessionStatus(req, res) {
         id: req.user.id,
         email: req.user.email,
         tenantId: req.user.tenantId,
+        mustChangePassword,
       },
+      permissions,
+      rbac: { available: rbacAvailable },
     });
   }
 
@@ -158,6 +230,8 @@ export async function sessionStatus(req, res) {
     authenticated: false,
     authMethod: null,
     user: null,
+    permissions: [],
+    rbac: { available: true },
   });
 }
 

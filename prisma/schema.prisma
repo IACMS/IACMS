@@ -266,6 +266,12 @@ model WorkflowTransition {
   description     String?
   allowedRoleIds  String[] @map("allowed_role_ids") @db.Uuid
   requiresComment Boolean  @default(false) @map("requires_comment")
+  /// Duration on the current step before taking this transition (with timeLimitUnit). Used with timeLimitType.
+  timeLimitAmount Int?     @map("time_limit_amount")
+  /// HOURS | DAYS when timeLimitType is RECOMMENDATION or DEADLINE; null when NONE.
+  timeLimitUnit   String?  @map("time_limit_unit")
+  /// NONE | RECOMMENDATION (guidance only) | DEADLINE (executeTransition rejects after deadline).
+  timeLimitType   String   @default("NONE") @map("time_limit_type")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 

@@ -4,6 +4,9 @@
   "description": "Inter-Agency Case Management Platform - Microservices Architecture",
   "private": true,
   "type": "module",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "keywords": [
     "case-management",
     "government",

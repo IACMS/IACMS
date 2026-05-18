@@ -99,7 +99,15 @@ function layout(content) {
  * Welcome email sent to new users created by an admin.
  * Contains their email, temporary password, and instructions.
  */
-export function welcomeEmailTemplate({ firstName, tenantName, email, temporaryPassword }) {
+export function welcomeEmailTemplate({ firstName, tenantName, tenantCode, email, temporaryPassword }) {
+  const orgCodeHint = tenantCode
+    ? `
+    <tr>
+      <td style="padding: 8px 12px; border-top: 2px solid #fff; background: #f4f6f9; font-weight: 600; color: #555;">Organization code</td>
+      <td style="padding: 8px 12px; border-top: 2px solid #fff; background: #f4f6f9; color: #333;">${tenantCode}</td>
+    </tr>
+    `
+    : '';
   return layout(`
     <h2 style="color: #1a3c5e; margin-top: 0;">Welcome, ${firstName}!</h2>
     <p>
@@ -113,6 +121,7 @@ export function welcomeEmailTemplate({ firstName, tenantName, email, temporaryPa
         <td style="padding: 8px 12px; background: #f4f6f9; border-radius: 4px 0 0 0; font-weight: 600; color: #555; width: 120px;">Email</td>
         <td style="padding: 8px 12px; background: #f4f6f9; border-radius: 0 4px 0 0; color: #333;">${email}</td>
       </tr>
+      ${orgCodeHint}
       <tr>
         <td style="padding: 8px 12px; border-top: 2px solid #fff; background: #f4f6f9; border-radius: 0 0 0 4px; font-weight: 600; color: #555;">Password</td>
         <td style="padding: 8px 12px; border-top: 2px solid #fff; background: #f4f6f9; border-radius: 0 0 4px 0;">

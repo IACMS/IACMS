@@ -1,14 +1,6 @@
 import prisma from '../config/database.js';
 import { NotFoundError, ValidationError } from '../../../../shared/common/errors.js';
-
-async function assertCaseInTenant(caseId, tenantId) {
-  const c = await prisma.case.findFirst({
-    where: { id: caseId, tenantId, deletedAt: null },
-    select: { id: true, workflowId: true, currentStepId: true },
-  });
-  if (!c) throw new NotFoundError('Case');
-  return c;
-}
+import { assertCaseReadable, assertCaseMutable } from '../security/caseAccessPolicy.js';
 
 export async function getAttachments(req, res, next) {
   try {
@@ -19,7 +11,7 @@ export async function getAttachments(req, res, next) {
       throw new ValidationError('Tenant ID is required in headers');
     }
 
-    await assertCaseInTenant(caseId, tenantId);
+    await assertCaseReadable(prisma, req, caseId, { select: { id: true } });
 
     const attachments = await prisma.caseAttachment.findMany({
       where: {
@@ -63,7 +55,9 @@ export async function uploadAttachment(req, res, next) {
       );
     }
 
-    const caseRow = await assertCaseInTenant(caseId, tenantId);
+    const caseRow = await assertCaseMutable(prisma, req, caseId, {
+      select: { id: true, workflowId: true, currentStepId: true },
+    });
 
     let workflowStepId = workflowStepIdBody ?? caseRow.currentStepId ?? null;
     if (workflowStepId) {
@@ -128,6 +122,8 @@ export async function deleteAttachment(req, res, next) {
     if (!attachment || attachment.case.tenantId !== tenantId) {
       throw new NotFoundError('Attachment');
     }
+
+    await assertCaseMutable(prisma, req, attachment.caseId, { select: { id: true } });
 
     await prisma.caseAttachment.update({
       where: { id: attachment.id },

@@ -9,8 +9,12 @@ import Logger from '../../../../../shared/common/logger.js';
 import { TOPICS } from '../../../../../shared/utils/eventBus.js';
 import { validateUpdateUserRequest } from '../../utils/validators.js';
 import { getEventBus } from '../../utils/auth.helpers.js';
+import { allGlobalTenantAdminRoleIds } from '../../utils/globalTenantAdminRole.js';
 
 const logger = new Logger('auth-service');
+
+/** Must match seeded platform tenant (`tenants.code`). All `system_admin` accounts belong in this tenant. */
+const PLATFORM_TENANT_CODE = 'ADMIN';
 
 /**
  * GET /auth/users
@@ -154,10 +158,21 @@ export async function assignRole(req, res, next) {
     if (!role) throw new NotFoundError('Role not found or not accessible in this tenant');
 
     if (role.name === 'system_admin') {
+      // Multiple system_admin users are allowed; each must live in the platform (ADMIN) tenant.
+      // Only an existing system_admin may grant this role (no self-serve promotion from org admins).
       const callerRoleIds = Array.isArray(req.user.roles) ? req.user.roles : [];
       const callerRoles = await prisma.role.findMany({ where: { id: { in: callerRoleIds } } });
       if (!callerRoles.some((r) => r.name === 'system_admin')) {
         throw new ForbiddenError('Only system administrators may assign the system_admin role');
+      }
+      const targetTenant = await prisma.tenant.findUnique({
+        where: { id: user.tenantId },
+        select: { code: true },
+      });
+      if (!targetTenant || targetTenant.code !== PLATFORM_TENANT_CODE) {
+        throw new ForbiddenError(
+          `system_admin may only be assigned to users in the platform tenant (code ${PLATFORM_TENANT_CODE})`,
+        );
       }
     }
 
@@ -195,28 +210,25 @@ export async function assignRole(req, res, next) {
  * Used to prevent lockout by deactivating/deleting the last admin.
  */
 async function countActiveTenantAdmins(tenantId) {
-  const tenantAdminRole = await prisma.role.findFirst({
-    where: { name: 'tenant_admin', tenantId: null },
-  });
-  if (!tenantAdminRole) return Infinity;
+  const roleIds = await allGlobalTenantAdminRoleIds(prisma);
+  if (!roleIds.length) return Infinity;
 
   const tenantAdminUserRoles = await prisma.userRole.findMany({
-    where: { roleId: tenantAdminRole.id },
+    where: { roleId: { in: roleIds } },
     select: { userId: true },
   });
-  const ids = tenantAdminUserRoles.map((r) => r.userId);
+  const ids = [...new Set(tenantAdminUserRoles.map((r) => r.userId))];
+  if (!ids.length) return 0;
 
   return prisma.user.count({ where: { id: { in: ids }, tenantId, isActive: true } });
 }
 
 async function isLastTenantAdmin(userId, tenantId) {
-  const tenantAdminRole = await prisma.role.findFirst({
-    where: { name: 'tenant_admin', tenantId: null },
-  });
-  if (!tenantAdminRole) return false;
+  const roleIds = await allGlobalTenantAdminRoleIds(prisma);
+  if (!roleIds.length) return false;
 
   const userRoleRecord = await prisma.userRole.findFirst({
-    where: { userId, roleId: tenantAdminRole.id },
+    where: { userId, roleId: { in: roleIds } },
   });
   if (!userRoleRecord) return false;
 

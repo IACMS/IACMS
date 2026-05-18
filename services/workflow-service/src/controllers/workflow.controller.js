@@ -8,6 +8,47 @@ function emitAudit(payload) {
   eventBus.publish(TOPICS.AUDIT_LOG, payload).catch(() => {});
 }
 
+/**
+ * @param {Record<string, unknown>} body
+ * @returns {{ timeLimitType: string, timeLimitAmount: number | null, timeLimitUnit: string | null }}
+ */
+function parseTransitionTimeLimits(body) {
+  const b = body && typeof body === 'object' ? body : {};
+  const rawType = b.timeLimitType;
+  const t =
+    rawType === 'RECOMMENDATION' || rawType === 'DEADLINE'
+      ? rawType
+      : rawType === 'NONE' || rawType == null || rawType === ''
+        ? 'NONE'
+        : null;
+  if (t === null) {
+    throw new ValidationError('timeLimitType must be NONE, RECOMMENDATION, or DEADLINE');
+  }
+
+  if (t === 'NONE') {
+    return { timeLimitType: 'NONE', timeLimitAmount: null, timeLimitUnit: null };
+  }
+
+  let amount = null;
+  if (b.timeLimitAmount != null && b.timeLimitAmount !== '') {
+    const n = parseInt(String(b.timeLimitAmount), 10);
+    if (!Number.isFinite(n) || n < 1) {
+      throw new ValidationError('timeLimitAmount must be a positive integer');
+    }
+    amount = n;
+  }
+
+  const rawUnit = b.timeLimitUnit;
+  const unit = rawUnit === 'HOURS' || rawUnit === 'DAYS' ? rawUnit : null;
+
+  if (!amount || !unit) {
+    throw new ValidationError(
+      'timeLimitAmount and timeLimitUnit (HOURS or DAYS) are required when timeLimitType is RECOMMENDATION or DEADLINE',
+    );
+  }
+  return { timeLimitType: t, timeLimitAmount: amount, timeLimitUnit: unit };
+}
+
 export async function getWorkflows(req, res, next) {
   try {
     const tenantId = req.headers['x-tenant-id'];
@@ -266,6 +307,8 @@ export async function addTransition(req, res, next) {
       throw new ValidationError('name is required');
     }
 
+    const tl = parseTransitionTimeLimits(req.body || {});
+
     const { fromStepId, toStepId } = await resolveTransitionEndpoints(workflowId, req.body);
     const trimmedName = name.trim();
 
@@ -285,6 +328,9 @@ export async function addTransition(req, res, next) {
         description: description ?? undefined,
         requiresComment: Boolean(requiresComment),
         allowedRoleIds: Array.isArray(allowedRoleIds) ? allowedRoleIds : [],
+        timeLimitType: tl.timeLimitType,
+        timeLimitAmount: tl.timeLimitAmount,
+        timeLimitUnit: tl.timeLimitUnit,
       },
     });
     res.status(201).json({ transition });
@@ -385,6 +431,9 @@ export async function createWorkflowNewVersion(req, res, next) {
             description: t.description,
             allowedRoleIds: Array.isArray(t.allowedRoleIds) ? t.allowedRoleIds : [],
             requiresComment: t.requiresComment,
+            timeLimitType: t.timeLimitType ?? 'NONE',
+            timeLimitAmount: t.timeLimitAmount ?? null,
+            timeLimitUnit: t.timeLimitUnit ?? null,
           },
         });
       }
@@ -464,6 +513,22 @@ export async function updateTransition(req, res, next) {
     if (b.description !== undefined) data.description = b.description;
     if (b.requiresComment !== undefined) data.requiresComment = b.requiresComment;
     if (b.allowedRoleIds !== undefined) data.allowedRoleIds = b.allowedRoleIds;
+
+    if (
+      'timeLimitType' in b ||
+      'timeLimitAmount' in b ||
+      'timeLimitUnit' in b
+    ) {
+      const merged = {
+        timeLimitType: 'timeLimitType' in b ? b.timeLimitType : existing.timeLimitType,
+        timeLimitAmount: 'timeLimitAmount' in b ? b.timeLimitAmount : existing.timeLimitAmount,
+        timeLimitUnit: 'timeLimitUnit' in b ? b.timeLimitUnit : existing.timeLimitUnit,
+      };
+      const tl = parseTransitionTimeLimits(merged);
+      data.timeLimitType = tl.timeLimitType;
+      data.timeLimitAmount = tl.timeLimitAmount;
+      data.timeLimitUnit = tl.timeLimitUnit;
+    }
 
     let nextFrom = existing.fromStepId;
     if (b.fromTransitionId) {
