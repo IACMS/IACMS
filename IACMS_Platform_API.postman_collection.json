@@ -1,0 +1,211 @@
+{
+  "info": {
+    "_postman_id": "iacms-platform-api",
+    "name": "IACMS Platform API (cases, workflows, referrals, audit)",
+    "description": "Gateway routes requiring JWT from IACMS Auth collection. Paste {{accessToken}} from login; set UUIDs for {{tenantId}} and actor headers.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "tenantId", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "userRoles", "value": "", "type": "string", "description": "Comma-separated role UUIDs (gateway RBAC)." },
+    { "key": "workflowId", "value": "", "type": "string" },
+    { "key": "caseId", "value": "", "type": "string" },
+    { "key": "transitionId", "value": "", "type": "string" },
+    { "key": "referralId", "value": "", "type": "string" },
+    { "key": "workflowPublishedKey", "value": "default", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Workflows",
+      "item": [
+        {
+          "name": "List workflows (tenant)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/workflows"
+          }
+        },
+        {
+          "name": "Published workflow by key",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/workflows/published?key={{workflowPublishedKey}}&tenantId={{tenantId}}"
+          }
+        },
+        {
+          "name": "Workflow full projection",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/workflows/{{workflowId}}/full"
+          }
+        },
+        {
+          "name": "Publish workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" },
+              { "key": "x-user-id", "value": "{{userId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/workflows/{{workflowId}}/publish"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cases",
+      "item": [
+        {
+          "name": "Create case",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" },
+              { "key": "x-user-id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-user-roles", "value": "{{userRoles}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workflowKey\": \"{{workflowPublishedKey}}\",\n  \"title\": \"Postman test case\",\n  \"priority\": \"normal\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/cases"
+          }
+        },
+        {
+          "name": "Case state (transitions)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" },
+              { "key": "x-user-id", "value": "{{userId}}" },
+              { "key": "x-user-roles", "value": "{{userRoles}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/cases/{{caseId}}/state"
+          }
+        },
+        {
+          "name": "Execute transition",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" },
+              { "key": "x-user-id", "value": "{{userId}}" },
+              { "key": "x-user-roles", "value": "{{userRoles}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{}\n" },
+            "url": "{{baseUrl}}/api/v1/cases/{{caseId}}/transitions/{{transitionId}}/execute"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Referrals",
+      "item": [
+        {
+          "name": "Create referral",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" },
+              { "key": "x-user-id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caseId\": \"{{caseId}}\",\n  \"fromTenantId\": \"{{tenantId}}\",\n  \"toTenantId\": \"REPLACE-WITH-TARGET-TENANT-UUID\",\n  \"referralReason\": \"interop\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/referrals"
+          }
+        },
+        {
+          "name": "Accept referral",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" },
+              { "key": "x-user-id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{}\n" },
+            "url": "{{baseUrl}}/api/v1/referrals/{{referralId}}/accept"
+          }
+        },
+        {
+          "name": "Complete referral",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" },
+              { "key": "x-user-id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{}\n" },
+            "url": "{{baseUrl}}/api/v1/referrals/{{referralId}}/complete"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit",
+      "item": [
+        {
+          "name": "Case audit trail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/audit/cases/{{caseId}}"
+          }
+        },
+        {
+          "name": "User actions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/audit/users/{{userId}}/actions"
+          }
+        },
+        {
+          "name": "Compliance CSV export",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/audit/compliance/{{tenantId}}?limit=500"
+          }
+        }
+      ]
+    }
+  ]
+}

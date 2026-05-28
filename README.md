@@ -25,10 +25,10 @@ A **multi-tenant microservices** backend for managing cases across government or
 | API Gateway | 3000 | Single entry point, auth, routing |
 | Auth Service | 3001 | Login, register, JWT tokens |
 | RBAC Service | 3002 | Roles, permissions |
-| Case Service | 3003 | Case CRUD, assignments |
-| Workflow Service | 3004 | Workflow definitions, state transitions |
-| Referral Service | 3005 | Inter-organization referrals |
-| Audit Service | 3006 | Immutable audit logging |
+| Case Service | 3003 | Cases bound to published workflows, tenant-aware reads/writes, transitions, `/cases/:id/state`, assignments |
+| Workflow Service | 3004 | Workflow defs (steps/transitions), `/workflows/:id/full`, `/workflows/published`, publish/version/archive |
+| Referral Service | 3005 | Referrals with case ownership handoff (`accept`/`reject`/`complete`), Kafka referral topics |
+| Audit Service | 3006 | `audit.log` ingestion with validation; trails `/audit/cases/:caseId`, user actions, compliance CSV |
 | Integration Service | 3007 | Webhooks, external integrations |
 | Notification Service | 3008 | Event-driven notifications |
 
@@ -50,7 +50,8 @@ IACMS/
 │   └── notification-service/
 ├── shared/                    # Code shared across services
 │   ├── common/                # Logger, error classes
-│   ├── middleware/            # Error handler
+│   ├── middleware/            # Error handler, optional tenant context (`req.iacmsTenantId`)
+│   ├── contracts/             # Sprint 0 Kafka + HTTP fixtures (canonical shapes)
 │   └── utils/                 # EventBus (Kafka), HTTP client
 ├── infrastructure/
 │   └── docker-compose.yml     # All Docker services
@@ -59,8 +60,14 @@ IACMS/
 │   ├── DOCUMENTATION.md       # Full technical reference
 │   ├── SESSION_AUTHENTICATION.md
 │   ├── KAFKA_INTEGRATION.md
+│   ├── CHANGELOG.md
+│   ├── DEFERRED_WORK.md        # Minimal remaining backlog
+│   ├── SYSTEM_OVERVIEW.md      # What is built, how it works, why (mid-tech)
+│   ├── PHASE_STATUS.md         # Done / partial vs PHASES.md
+│   ├── TENANT_ISOLATION.md     # ADR: explicit scopes vs RLS
 │   └── session-auth-flow.png
-└── IACMS_Auth_Postman_Collection.json
+├── IACMS_Auth_Postman_Collection.json
+└── IACMS_Platform_API.postman_collection.json
 ```
 
 ---

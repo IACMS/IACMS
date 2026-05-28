@@ -57,10 +57,13 @@ Each event type has its own dedicated topic:
 | `case.created` | case-service | notification-service, audit-service | New case opened |
 | `case.updated` | case-service | audit-service | Case details changed |
 | `case.assigned` | case-service | notification-service, audit-service | Case assigned to worker |
+| `case.transitioned` | case-service | notification-service | Case executed a workflow transition |
 | `workflow.created` | workflow-service | audit-service | New workflow created |
 | `workflow.updated` | workflow-service | audit-service | Workflow modified |
-| `workflow.state.changed` | workflow-service | notification-service, audit-service | Workflow moved to new state |
+| `workflow.published` | workflow-service | — | Workflow version published |
+| `workflow.archived` | workflow-service | — | Workflow version archived |
 | `referral.created` | referral-service | notification-service, audit-service | New referral submitted |
+| `referral.completed` | referral-service | notification-service | Referral completed (case handoff) |
 | `referral.accepted` | referral-service | notification-service | Referral accepted |
 | `referral.rejected` | referral-service | notification-service | Referral rejected |
 | `integration.created` | integration-service | audit-service | External integration configured |

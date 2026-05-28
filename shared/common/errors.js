@@ -51,14 +51,14 @@ export class InvalidTransitionError extends AppError {
 }
 
 export class WorkflowClosedError extends AppError {
-  constructor(message = 'Workflow is closed or archived') {
-    super(message, 400, 'WORKFLOW_CLOSED');
+  constructor(message = 'Workflow is locked (not editable in current status)') {
+    super(message, 409, 'WORKFLOW_CLOSED');
   }
 }
 
 export class WorkflowNotPublishedError extends AppError {
-  constructor(message = 'Workflow is not published') {
-    super(message, 400, 'WORKFLOW_NOT_PUBLISHED');
+  constructor(message = 'No published workflow matches the request') {
+    super(message, 409, 'WORKFLOW_NOT_PUBLISHED');
   }
 }
 
@@ -69,8 +69,8 @@ export class TenantMismatchError extends AppError {
 }
 
 export class InvalidReferralStateError extends AppError {
-  constructor(message = 'Invalid referral state operation') {
-    super(message, 400, 'INVALID_REFERRAL_STATE');
+  constructor(message = 'Referral cannot be transitioned from this state') {
+    super(message, 409, 'INVALID_REFERRAL_STATE');
   }
 }
 

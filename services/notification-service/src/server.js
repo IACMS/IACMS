@@ -52,8 +52,11 @@ async function registerSubscriptions() {
     eventBus.subscribe(TOPICS.CASE_UPDATED, (data) => {
       logger.info('Case update notification pending implementation', { caseId: data?.id });
     }),
-    eventBus.subscribe(TOPICS.WORKFLOW_STATE_CHANGED, (data) => {
-      logger.info('Workflow state change notification pending implementation', { workflowId: data?.workflowId });
+    eventBus.subscribe(TOPICS.CASE_TRANSITIONED, (data) => {
+      logger.info('Case transition notification pending implementation', {
+        caseId: data?.caseId,
+        transitionId: data?.transitionId,
+      });
     }),
     eventBus.subscribe(TOPICS.REFERRAL_CREATED, (data) => {
       logger.info('Referral created notification pending implementation', { referralId: data?.id });

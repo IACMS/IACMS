@@ -15,8 +15,12 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const prisma = new PrismaClient();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const SYSTEM_USER_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2';
 
@@ -708,6 +712,73 @@ async function main() {
   }
 
   console.log('✅ Cases and referrals created\n');
+  await prisma.userRole.upsert({
+    where: { userId_roleId: { userId: VIEWER_USER_ID, roleId: VIEWER_ROLE_ID } },
+    update: {},
+    create: {
+      userId: VIEWER_USER_ID,
+      roleId: VIEWER_ROLE_ID,
+    },
+  });
+  console.log(`✅ Roles assigned to users\n`);
+
+  // 7. Published workflow matching shared/contracts/__fixtures__/workflow-full.example.json
+  console.log('Creating published workflow standard-case…');
+  await prisma.workflowTransition.deleteMany({ where: { workflowId: WORKFLOW_ID } }).catch(() => {});
+  await prisma.workflowStep.deleteMany({ where: { workflowId: WORKFLOW_ID } }).catch(() => {});
+  await prisma.workflow.deleteMany({ where: { id: WORKFLOW_ID } }).catch(() => {});
+
+  const wfFixture = JSON.parse(
+    readFileSync(
+      path.join(__dirname, '..', 'shared', 'contracts', '__fixtures__', 'workflow-full.example.json'),
+      'utf8',
+    ),
+  );
+
+  await prisma.workflow.create({
+    data: {
+      id: WORKFLOW_ID,
+      tenantId: TENANT_ID,
+      key: wfFixture.key,
+      name: 'Standard Case Flow',
+      description: 'Seed workflow (Draft → Review → Approval → Closed)',
+      version: wfFixture.version,
+      status: 'PUBLISHED',
+      publishedAt: new Date(wfFixture.publishedAt),
+      definition: wfFixture,
+      isActive: true,
+      isDefault: true,
+      createdBy: ADMIN_USER_ID,
+      steps: {
+        create: wfFixture.steps.map(s => ({
+          id: s.id,
+          key: s.key,
+          name: s.name,
+          description: s.description,
+          isInitial: s.isInitial,
+          isFinal: s.isFinal,
+          position: s.position,
+          allowedRoleIds: s.allowedRoleIds ?? [],
+        })),
+      },
+    },
+  });
+
+  await prisma.workflowTransition.createMany({
+    data: wfFixture.transitions.map(t => ({
+      id: t.id,
+      workflowId: WORKFLOW_ID,
+      name: t.name,
+      description: t.description,
+      fromStepId: t.fromStepId,
+      toStepId: t.toStepId,
+      allowedRoleIds: t.allowedRoleIds ?? [],
+      requiresComment: t.requiresComment ?? false,
+      requiresAttachment: false,
+    })),
+  });
+
+  console.log(`✅ Workflow ${wfFixture.key} v${wfFixture.version} seeded (PUBLISHED)\n`);
 
   // Summary
   console.log('═'.repeat(60));

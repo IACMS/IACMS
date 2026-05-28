@@ -1,16 +1,13 @@
 /**
  * RBAC Middleware for API Gateway
  *
- * Checks user permissions before allowing access to protected resources.
- * Permission results are cached in Redis (5-minute TTL) to avoid calling
- * the RBAC service on every single request.
- *
- * Cache key format: rbac:perms:{userId}:{tenantId}
+ * For every authenticated request, loads permissions + role IDs from RBAC (Redis cache).
+ * Downstream proxies read `req.rbacEnvelope` to forward `x-user-roles`.
  */
 
 import { getRedisClient } from '../config/redis.config.js';
 
-const CACHE_TTL_SECONDS = 5 * 60; // 5 minutes
+const CACHE_TTL_SECONDS = 5 * 60;
 const CACHE_KEY_PREFIX = 'rbac:perms:';
 
 /**
@@ -100,9 +97,24 @@ const ROUTE_PERMISSIONS = {
   'POST:/referrals': 'referrals:create',
   'POST:/referrals/:id/accept': 'referrals:update',
   'POST:/referrals/:id/reject': 'referrals:update',
-};
+  
+  // Additional case operations
+'POST:/cases/:id/assign': 'cases:assign',
+'POST:/cases/:id/close': 'cases:close',
+'GET:/cases/:id/assignments': 'cases:read',
+'POST:/cases/:id/assignments': 'cases:assign',
 
-// ─── Path matching ───────────────────────────────────────────────────────────
+// Workflow archive
+'POST:/workflows/:id/archive': 'workflows:update',
+
+// Referral completion
+'POST:/referrals/:id/complete': 'referrals:update',
+
+// Extra audit routes
+'GET:/audit/cases/:caseId': 'audit:read',
+'GET:/audit/users/:userId/actions': 'audit:read',
+'GET:/audit/compliance/:tenantId': 'audit:read',
+};
 
 function matchPath(pattern, actualPath) {
   const patternParts = pattern.split('/');
@@ -125,29 +137,55 @@ function getRequiredPermission(method, path) {
   return null;
 }
 
-// ─── Permission fetching ──────────────────────────────────────────────────────
+function normalizeRbacEnvelope(cached) {
+  if (!cached) return { permissions: [], roleIds: [] };
+  if (Array.isArray(cached)) return { permissions: cached, roleIds: [] };
+  return {
+    permissions: cached.permissions || [],
+    roleIds: cached.roleIds || [],
+  };
+}
 
-async function fetchUserPermissions(userId, tenantId, rbacServiceUrl) {
+async function fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl) {
   try {
     const response = await fetch(`${rbacServiceUrl}/permissions/user/${userId}`, {
       headers: { 'x-user-id': userId, 'x-tenant-id': tenantId },
     });
     if (!response.ok) {
       console.error('[RBAC] Failed to fetch permissions:', response.status);
-      return { ok: false, permissions: [] };
+      return { ok: false, permissions: [], roleIds: [] };
     }
+
     const data = await response.json();
-    return { ok: true, permissions: data.permissions || [] };
+
+    const permissions = data.permissions || [];
+
+    const roleIds =
+      data.roleIds?.length
+        ? data.roleIds
+        : Array.from(
+            new Set((data.roles || []).map(r => r.id).filter(Boolean))
+          );
+
+    return {
+      ok: true,
+      permissions,
+      roleIds,
+    };
   } catch (error) {
     console.error('[RBAC] Error fetching permissions:', error.message);
-    return { ok: false, permissions: [] };
+
+    return {
+      ok: false,
+      permissions: [],
+      roleIds: [],
+    };
   }
 }
 
 /**
- * Resolve permissions from cache or live RBAC. On live fetch failure, returns
- * rbacAvailable: false and does NOT write an empty list to Redis (avoids caching
- * transient RBAC outages as “user has zero permissions”).
+ * Resolve permissions from cache or live RBAC.
+ * On live fetch failure, do NOT cache empty permissions.
  */
 async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
   const cacheKey = `${CACHE_KEY_PREFIX}${userId}:${tenantId}`;
@@ -157,7 +195,7 @@ async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
     try {
       const cached = await redis.get(cacheKey);
       if (cached !== null) {
-        return { permissions: JSON.parse(cached), rbacAvailable: true };
+        return normalizeRbacEnvelope(JSON.parse(cached));
       }
     } catch (err) {
       console.warn('[RBAC] Redis read error, falling back to live fetch:', err.message);
@@ -259,12 +297,6 @@ export function createRbacMiddleware(rbacServiceUrl) {
   };
 }
 
-// ─── Cache invalidation helpers ───────────────────────────────────────────────
-
-/**
- * Invalidate cached permissions for a specific user.
- * Call this whenever a user's roles change.
- */
 export async function clearPermissionCache(userId, tenantId) {
   const redis = getRedisClient();
   if (redis && redis.status === 'ready') {
@@ -272,9 +304,6 @@ export async function clearPermissionCache(userId, tenantId) {
   }
 }
 
-/**
- * Invalidate all cached permissions (e.g., after a bulk role change).
- */
 export async function clearAllPermissionCache() {
   const redis = getRedisClient();
   if (redis && redis.status === 'ready') {
