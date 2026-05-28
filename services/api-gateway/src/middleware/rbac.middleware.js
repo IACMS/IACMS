@@ -202,20 +202,20 @@ async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
     }
   }
 
-  const result = await fetchUserPermissions(userId, tenantId, rbacServiceUrl);
+  const result = await fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl);
   if (!result.ok) {
-    return { permissions: [], rbacAvailable: false };
+    return { permissions: [], roleIds: [], rbacAvailable: false };
   }
 
   if (redis && redis.status === 'ready') {
     try {
-      await redis.set(cacheKey, JSON.stringify(result.permissions), 'EX', CACHE_TTL_SECONDS);
+      await redis.set(cacheKey, JSON.stringify({ permissions: result.permissions, roleIds: result.roleIds }), 'EX', CACHE_TTL_SECONDS);
     } catch (err) {
       console.warn('[RBAC] Redis write error:', err.message);
     }
   }
 
-  return { permissions: result.permissions, rbacAvailable: true };
+  return { permissions: result.permissions, roleIds: result.roleIds, rbacAvailable: true };
 }
 
 // ─── Redis-backed cache (via resolvePermissions) ─────────────────────────────
@@ -258,11 +258,13 @@ export function createRbacMiddleware(rbacServiceUrl) {
     const requiredList = Array.isArray(requiredPermission) ? requiredPermission : [requiredPermission];
 
     try {
-      const { permissions: userPermissions, rbacAvailable } = await getUserPermissionsWithAvailability(
+      const { permissions: userPermissions, roleIds, rbacAvailable } = await getUserPermissionsWithAvailability(
         req.user.id,
         req.user.tenantId,
         rbacServiceUrl,
       );
+
+      req.rbacEnvelope = { permissions: userPermissions, roleIds: roleIds || [], rbacAvailable };
 
       if (!rbacAvailable) {
         return res.status(503).json({

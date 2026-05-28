@@ -236,6 +236,7 @@ model WorkflowStep {
   outgoing  WorkflowTransition[] @relation("TransitionFromStep")
   incoming  WorkflowTransition[] @relation("TransitionToStep")
   casesHere Case[]               @relation("CaseCurrentWorkflowStep")
+  attachments CaseAttachment[]   @relation("WorkflowStepAttachments")
 
   @@unique([workflowId, key])
   @@map("workflow_steps")
@@ -279,10 +280,6 @@ model Case {
   type                String
   priority            String    @default("normal")
   status              String    @default("open")
-  workflowId          String    @map("workflow_id") @db.Uuid
-  workflowVersion     Int       @default(1) @map("workflow_version")
-  currentStepId       String?   @map("current_step_id") @db.Uuid
-  closedAt            DateTime? @map("closed_at")
   data                Json?
   assignedTo          String?   @map("assigned_to") @db.Uuid
   createdBy           String    @map("created_by") @db.Uuid
@@ -313,15 +310,11 @@ model Case {
   @@index([tenantId, status])
   @@index([tenantId, type])
   @@index([tenantId, assignedTo])
-  @@index([tenantId, currentStepId])
-  @@index([tenantId, workflowId, closedAt])
   @@index([dueDate])
   @@index([createdAt])
   @@index([originatingTenantId])
   @@index([currentTenantId])
   @@index([referralStatus])
-  @@index([currentTenantId, referralStatus])
-  @@index([originatingTenantId, referralStatus])
   @@map("cases")
 }
 
@@ -410,8 +403,6 @@ model CaseReferral {
   @@index([toTenantId, status, referredAt(sort: Desc)])
   @@index([referredAt])
   @@index([caseId, status])
-  @@index([toTenantId, status, referredAt(sort: Desc)])
-  @@index([fromTenantId, status, referredAt(sort: Desc)])
   @@map("case_referrals")
 }
 
@@ -432,7 +423,7 @@ model CaseAttachment {
 
   // Relations
   case         Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  workflowStep WorkflowStep? @relation(fields: [workflowStepId], references: [id], onDelete: SetNull)
+  workflowStep WorkflowStep? @relation("WorkflowStepAttachments", fields: [workflowStepId], references: [id], onDelete: SetNull)
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   uploader User   @relation(fields: [uploadedBy], references: [id])
 

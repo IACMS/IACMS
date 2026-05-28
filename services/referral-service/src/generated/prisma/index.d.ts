@@ -15,7 +15,7 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
 /**
  * Model Tenant
- * Per-service clients (outputs relative to this `prisma/` directory). Run `npx prisma generate` from repo root.
+ * 
  */
 export type Tenant = $Result.DefaultSelection<Prisma.$TenantPayload>
 /**
@@ -477,7 +477,7 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.19.2
+   * Prisma Client JS version: 6.19.3
    * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
    */
   export type PrismaVersion = {
@@ -2439,6 +2439,7 @@ export namespace Prisma {
     relatedAuditLogs: number
     webhooks: number
     integrations: number
+    caseSequences: number
   }
 
   export type TenantCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2455,6 +2456,7 @@ export namespace Prisma {
     relatedAuditLogs?: boolean | TenantCountOutputTypeCountRelatedAuditLogsArgs
     webhooks?: boolean | TenantCountOutputTypeCountWebhooksArgs
     integrations?: boolean | TenantCountOutputTypeCountIntegrationsArgs
+    caseSequences?: boolean | TenantCountOutputTypeCountCaseSequencesArgs
   }
 
   // Custom InputTypes
@@ -2559,6 +2561,13 @@ export namespace Prisma {
     where?: IntegrationWhereInput
   }
 
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountCaseSequencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseSequenceWhereInput
+  }
+
 
   /**
    * Count Type UserCountOutputType
@@ -2569,7 +2578,7 @@ export namespace Prisma {
     casesAssigned: number
     assignmentsAssignedTo: number
     assignmentsAssignedBy: number
-    caseHistory: number
+    caseHistoryAsActor: number
     referralsMade: number
     referralsAccepted: number
     referralsRejected: number
@@ -2589,7 +2598,7 @@ export namespace Prisma {
     casesAssigned?: boolean | UserCountOutputTypeCountCasesAssignedArgs
     assignmentsAssignedTo?: boolean | UserCountOutputTypeCountAssignmentsAssignedToArgs
     assignmentsAssignedBy?: boolean | UserCountOutputTypeCountAssignmentsAssignedByArgs
-    caseHistory?: boolean | UserCountOutputTypeCountCaseHistoryArgs
+    caseHistoryAsActor?: boolean | UserCountOutputTypeCountCaseHistoryAsActorArgs
     referralsMade?: boolean | UserCountOutputTypeCountReferralsMadeArgs
     referralsAccepted?: boolean | UserCountOutputTypeCountReferralsAcceptedArgs
     referralsRejected?: boolean | UserCountOutputTypeCountReferralsRejectedArgs
@@ -2646,7 +2655,7 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountCaseHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type UserCountOutputTypeCountCaseHistoryAsActorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CaseHistoryWhereInput
   }
 
@@ -2862,15 +2871,15 @@ export namespace Prisma {
   export type WorkflowStepCountOutputType = {
     outgoing: number
     incoming: number
-    cases: number
-    stepAttachments: number
+    casesHere: number
+    attachments: number
   }
 
   export type WorkflowStepCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     outgoing?: boolean | WorkflowStepCountOutputTypeCountOutgoingArgs
     incoming?: boolean | WorkflowStepCountOutputTypeCountIncomingArgs
-    cases?: boolean | WorkflowStepCountOutputTypeCountCasesArgs
-    stepAttachments?: boolean | WorkflowStepCountOutputTypeCountStepAttachmentsArgs
+    casesHere?: boolean | WorkflowStepCountOutputTypeCountCasesHereArgs
+    attachments?: boolean | WorkflowStepCountOutputTypeCountAttachmentsArgs
   }
 
   // Custom InputTypes
@@ -2901,14 +2910,14 @@ export namespace Prisma {
   /**
    * WorkflowStepCountOutputType without action
    */
-  export type WorkflowStepCountOutputTypeCountCasesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type WorkflowStepCountOutputTypeCountCasesHereArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CaseWhereInput
   }
 
   /**
    * WorkflowStepCountOutputType without action
    */
-  export type WorkflowStepCountOutputTypeCountStepAttachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type WorkflowStepCountOutputTypeCountAttachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CaseAttachmentWhereInput
   }
 
@@ -3212,6 +3221,7 @@ export namespace Prisma {
     relatedAuditLogs?: boolean | Tenant$relatedAuditLogsArgs<ExtArgs>
     webhooks?: boolean | Tenant$webhooksArgs<ExtArgs>
     integrations?: boolean | Tenant$integrationsArgs<ExtArgs>
+    caseSequences?: boolean | Tenant$caseSequencesArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tenant"]>
 
@@ -3269,6 +3279,7 @@ export namespace Prisma {
     relatedAuditLogs?: boolean | Tenant$relatedAuditLogsArgs<ExtArgs>
     webhooks?: boolean | Tenant$webhooksArgs<ExtArgs>
     integrations?: boolean | Tenant$integrationsArgs<ExtArgs>
+    caseSequences?: boolean | Tenant$caseSequencesArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TenantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3295,6 +3306,7 @@ export namespace Prisma {
       relatedAuditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
       webhooks: Prisma.$WebhookPayload<ExtArgs>[]
       integrations: Prisma.$IntegrationPayload<ExtArgs>[]
+      caseSequences: Prisma.$CaseSequencePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3717,6 +3729,7 @@ export namespace Prisma {
     relatedAuditLogs<T extends Tenant$relatedAuditLogsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$relatedAuditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     webhooks<T extends Tenant$webhooksArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$webhooksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     integrations<T extends Tenant$integrationsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$integrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    caseSequences<T extends Tenant$caseSequencesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$caseSequencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseSequencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4482,6 +4495,30 @@ export namespace Prisma {
   }
 
   /**
+   * Tenant.caseSequences
+   */
+  export type Tenant$caseSequencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseSequence
+     */
+    select?: CaseSequenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseSequence
+     */
+    omit?: CaseSequenceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
+    where?: CaseSequenceWhereInput
+    orderBy?: CaseSequenceOrderByWithRelationInput | CaseSequenceOrderByWithRelationInput[]
+    cursor?: CaseSequenceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CaseSequenceScalarFieldEnum | CaseSequenceScalarFieldEnum[]
+  }
+
+  /**
    * Tenant without action
    */
   export type TenantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4781,7 +4818,7 @@ export namespace Prisma {
     casesAssigned?: boolean | User$casesAssignedArgs<ExtArgs>
     assignmentsAssignedTo?: boolean | User$assignmentsAssignedToArgs<ExtArgs>
     assignmentsAssignedBy?: boolean | User$assignmentsAssignedByArgs<ExtArgs>
-    caseHistory?: boolean | User$caseHistoryArgs<ExtArgs>
+    caseHistoryAsActor?: boolean | User$caseHistoryAsActorArgs<ExtArgs>
     referralsMade?: boolean | User$referralsMadeArgs<ExtArgs>
     referralsAccepted?: boolean | User$referralsAcceptedArgs<ExtArgs>
     referralsRejected?: boolean | User$referralsRejectedArgs<ExtArgs>
@@ -4872,7 +4909,7 @@ export namespace Prisma {
     casesAssigned?: boolean | User$casesAssignedArgs<ExtArgs>
     assignmentsAssignedTo?: boolean | User$assignmentsAssignedToArgs<ExtArgs>
     assignmentsAssignedBy?: boolean | User$assignmentsAssignedByArgs<ExtArgs>
-    caseHistory?: boolean | User$caseHistoryArgs<ExtArgs>
+    caseHistoryAsActor?: boolean | User$caseHistoryAsActorArgs<ExtArgs>
     referralsMade?: boolean | User$referralsMadeArgs<ExtArgs>
     referralsAccepted?: boolean | User$referralsAcceptedArgs<ExtArgs>
     referralsRejected?: boolean | User$referralsRejectedArgs<ExtArgs>
@@ -4902,7 +4939,7 @@ export namespace Prisma {
       casesAssigned: Prisma.$CasePayload<ExtArgs>[]
       assignmentsAssignedTo: Prisma.$AssignmentPayload<ExtArgs>[]
       assignmentsAssignedBy: Prisma.$AssignmentPayload<ExtArgs>[]
-      caseHistory: Prisma.$CaseHistoryPayload<ExtArgs>[]
+      caseHistoryAsActor: Prisma.$CaseHistoryPayload<ExtArgs>[]
       referralsMade: Prisma.$CaseReferralPayload<ExtArgs>[]
       referralsAccepted: Prisma.$CaseReferralPayload<ExtArgs>[]
       referralsRejected: Prisma.$CaseReferralPayload<ExtArgs>[]
@@ -5335,7 +5372,7 @@ export namespace Prisma {
     casesAssigned<T extends User$casesAssignedArgs<ExtArgs> = {}>(args?: Subset<T, User$casesAssignedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     assignmentsAssignedTo<T extends User$assignmentsAssignedToArgs<ExtArgs> = {}>(args?: Subset<T, User$assignmentsAssignedToArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     assignmentsAssignedBy<T extends User$assignmentsAssignedByArgs<ExtArgs> = {}>(args?: Subset<T, User$assignmentsAssignedByArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    caseHistory<T extends User$caseHistoryArgs<ExtArgs> = {}>(args?: Subset<T, User$caseHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    caseHistoryAsActor<T extends User$caseHistoryAsActorArgs<ExtArgs> = {}>(args?: Subset<T, User$caseHistoryAsActorArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     referralsMade<T extends User$referralsMadeArgs<ExtArgs> = {}>(args?: Subset<T, User$referralsMadeArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     referralsAccepted<T extends User$referralsAcceptedArgs<ExtArgs> = {}>(args?: Subset<T, User$referralsAcceptedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     referralsRejected<T extends User$referralsRejectedArgs<ExtArgs> = {}>(args?: Subset<T, User$referralsRejectedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -5888,9 +5925,9 @@ export namespace Prisma {
   }
 
   /**
-   * User.caseHistory
+   * User.caseHistoryAsActor
    */
-  export type User$caseHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$caseHistoryAsActorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the CaseHistory
      */
@@ -12008,7 +12045,6 @@ export namespace Prisma {
     isInitial: boolean | null
     isFinal: boolean | null
     position: number | null
-    requiresAttachment: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12022,7 +12058,6 @@ export namespace Prisma {
     isInitial: boolean | null
     isFinal: boolean | null
     position: number | null
-    requiresAttachment: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12037,7 +12072,6 @@ export namespace Prisma {
     isFinal: number
     position: number
     allowedRoleIds: number
-    requiresAttachment: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -12061,7 +12095,6 @@ export namespace Prisma {
     isInitial?: true
     isFinal?: true
     position?: true
-    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12075,7 +12108,6 @@ export namespace Prisma {
     isInitial?: true
     isFinal?: true
     position?: true
-    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12090,7 +12122,6 @@ export namespace Prisma {
     isFinal?: true
     position?: true
     allowedRoleIds?: true
-    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -12192,7 +12223,6 @@ export namespace Prisma {
     isFinal: boolean
     position: number
     allowedRoleIds: string[]
-    requiresAttachment: boolean
     createdAt: Date
     updatedAt: Date
     _count: WorkflowStepCountAggregateOutputType | null
@@ -12226,14 +12256,13 @@ export namespace Prisma {
     isFinal?: boolean
     position?: boolean
     allowedRoleIds?: boolean
-    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     outgoing?: boolean | WorkflowStep$outgoingArgs<ExtArgs>
     incoming?: boolean | WorkflowStep$incomingArgs<ExtArgs>
-    cases?: boolean | WorkflowStep$casesArgs<ExtArgs>
-    stepAttachments?: boolean | WorkflowStep$stepAttachmentsArgs<ExtArgs>
+    casesHere?: boolean | WorkflowStep$casesHereArgs<ExtArgs>
+    attachments?: boolean | WorkflowStep$attachmentsArgs<ExtArgs>
     _count?: boolean | WorkflowStepCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workflowStep"]>
 
@@ -12247,7 +12276,6 @@ export namespace Prisma {
     isFinal?: boolean
     position?: boolean
     allowedRoleIds?: boolean
-    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -12263,7 +12291,6 @@ export namespace Prisma {
     isFinal?: boolean
     position?: boolean
     allowedRoleIds?: boolean
-    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -12279,18 +12306,17 @@ export namespace Prisma {
     isFinal?: boolean
     position?: boolean
     allowedRoleIds?: boolean
-    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type WorkflowStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workflowId" | "key" | "name" | "description" | "isInitial" | "isFinal" | "position" | "allowedRoleIds" | "requiresAttachment" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowStep"]>
+  export type WorkflowStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workflowId" | "key" | "name" | "description" | "isInitial" | "isFinal" | "position" | "allowedRoleIds" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowStep"]>
   export type WorkflowStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     outgoing?: boolean | WorkflowStep$outgoingArgs<ExtArgs>
     incoming?: boolean | WorkflowStep$incomingArgs<ExtArgs>
-    cases?: boolean | WorkflowStep$casesArgs<ExtArgs>
-    stepAttachments?: boolean | WorkflowStep$stepAttachmentsArgs<ExtArgs>
+    casesHere?: boolean | WorkflowStep$casesHereArgs<ExtArgs>
+    attachments?: boolean | WorkflowStep$attachmentsArgs<ExtArgs>
     _count?: boolean | WorkflowStepCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkflowStepIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12306,8 +12332,8 @@ export namespace Prisma {
       workflow: Prisma.$WorkflowPayload<ExtArgs>
       outgoing: Prisma.$WorkflowTransitionPayload<ExtArgs>[]
       incoming: Prisma.$WorkflowTransitionPayload<ExtArgs>[]
-      cases: Prisma.$CasePayload<ExtArgs>[]
-      stepAttachments: Prisma.$CaseAttachmentPayload<ExtArgs>[]
+      casesHere: Prisma.$CasePayload<ExtArgs>[]
+      attachments: Prisma.$CaseAttachmentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -12319,7 +12345,6 @@ export namespace Prisma {
       isFinal: boolean
       position: number
       allowedRoleIds: string[]
-      requiresAttachment: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["workflowStep"]>
@@ -12719,8 +12744,8 @@ export namespace Prisma {
     workflow<T extends WorkflowDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowDefaultArgs<ExtArgs>>): Prisma__WorkflowClient<$Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     outgoing<T extends WorkflowStep$outgoingArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowStep$outgoingArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowTransitionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     incoming<T extends WorkflowStep$incomingArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowStep$incomingArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowTransitionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    cases<T extends WorkflowStep$casesArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowStep$casesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    stepAttachments<T extends WorkflowStep$stepAttachmentsArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowStep$stepAttachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    casesHere<T extends WorkflowStep$casesHereArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowStep$casesHereArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    attachments<T extends WorkflowStep$attachmentsArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowStep$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12759,7 +12784,6 @@ export namespace Prisma {
     readonly isFinal: FieldRef<"WorkflowStep", 'Boolean'>
     readonly position: FieldRef<"WorkflowStep", 'Int'>
     readonly allowedRoleIds: FieldRef<"WorkflowStep", 'String[]'>
-    readonly requiresAttachment: FieldRef<"WorkflowStep", 'Boolean'>
     readonly createdAt: FieldRef<"WorkflowStep", 'DateTime'>
     readonly updatedAt: FieldRef<"WorkflowStep", 'DateTime'>
   }
@@ -13206,9 +13230,9 @@ export namespace Prisma {
   }
 
   /**
-   * WorkflowStep.cases
+   * WorkflowStep.casesHere
    */
-  export type WorkflowStep$casesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type WorkflowStep$casesHereArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Case
      */
@@ -13230,9 +13254,9 @@ export namespace Prisma {
   }
 
   /**
-   * WorkflowStep.stepAttachments
+   * WorkflowStep.attachments
    */
-  export type WorkflowStep$stepAttachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type WorkflowStep$attachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the CaseAttachment
      */
@@ -13290,6 +13314,7 @@ export namespace Prisma {
     name: string | null
     description: string | null
     requiresComment: boolean | null
+    requiresAttachment: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -13302,6 +13327,7 @@ export namespace Prisma {
     name: string | null
     description: string | null
     requiresComment: boolean | null
+    requiresAttachment: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -13315,6 +13341,7 @@ export namespace Prisma {
     description: number
     allowedRoleIds: number
     requiresComment: number
+    requiresAttachment: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -13329,6 +13356,7 @@ export namespace Prisma {
     name?: true
     description?: true
     requiresComment?: true
+    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -13341,6 +13369,7 @@ export namespace Prisma {
     name?: true
     description?: true
     requiresComment?: true
+    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -13354,6 +13383,7 @@ export namespace Prisma {
     description?: true
     allowedRoleIds?: true
     requiresComment?: true
+    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -13440,6 +13470,7 @@ export namespace Prisma {
     description: string | null
     allowedRoleIds: string[]
     requiresComment: boolean
+    requiresAttachment: boolean
     createdAt: Date
     updatedAt: Date
     _count: WorkflowTransitionCountAggregateOutputType | null
@@ -13470,6 +13501,7 @@ export namespace Prisma {
     description?: boolean
     allowedRoleIds?: boolean
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -13488,6 +13520,7 @@ export namespace Prisma {
     description?: boolean
     allowedRoleIds?: boolean
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -13504,6 +13537,7 @@ export namespace Prisma {
     description?: boolean
     allowedRoleIds?: boolean
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -13520,11 +13554,12 @@ export namespace Prisma {
     description?: boolean
     allowedRoleIds?: boolean
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type WorkflowTransitionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workflowId" | "fromStepId" | "toStepId" | "name" | "description" | "allowedRoleIds" | "requiresComment" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTransition"]>
+  export type WorkflowTransitionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workflowId" | "fromStepId" | "toStepId" | "name" | "description" | "allowedRoleIds" | "requiresComment" | "requiresAttachment" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTransition"]>
   export type WorkflowTransitionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     fromStep?: boolean | WorkflowStepDefaultArgs<ExtArgs>
@@ -13560,6 +13595,7 @@ export namespace Prisma {
       description: string | null
       allowedRoleIds: string[]
       requiresComment: boolean
+      requiresAttachment: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["workflowTransition"]>
@@ -13997,6 +14033,7 @@ export namespace Prisma {
     readonly description: FieldRef<"WorkflowTransition", 'String'>
     readonly allowedRoleIds: FieldRef<"WorkflowTransition", 'String[]'>
     readonly requiresComment: FieldRef<"WorkflowTransition", 'Boolean'>
+    readonly requiresAttachment: FieldRef<"WorkflowTransition", 'Boolean'>
     readonly createdAt: FieldRef<"WorkflowTransition", 'DateTime'>
     readonly updatedAt: FieldRef<"WorkflowTransition", 'DateTime'>
   }
@@ -14523,6 +14560,7 @@ export namespace Prisma {
     type: number
     priority: number
     status: number
+    data: number
     assignedTo: number
     createdBy: number
     metadata: number
@@ -14609,6 +14647,7 @@ export namespace Prisma {
     type?: true
     priority?: true
     status?: true
+    data?: true
     assignedTo?: true
     createdBy?: true
     metadata?: true
@@ -14722,6 +14761,7 @@ export namespace Prisma {
     type: string
     priority: string
     status: string
+    data: JsonValue | null
     assignedTo: string | null
     createdBy: string
     metadata: JsonValue | null
@@ -14767,6 +14807,7 @@ export namespace Prisma {
     type?: boolean
     priority?: boolean
     status?: boolean
+    data?: boolean
     assignedTo?: boolean
     createdBy?: boolean
     metadata?: boolean
@@ -14805,6 +14846,7 @@ export namespace Prisma {
     type?: boolean
     priority?: boolean
     status?: boolean
+    data?: boolean
     assignedTo?: boolean
     createdBy?: boolean
     metadata?: boolean
@@ -14838,6 +14880,7 @@ export namespace Prisma {
     type?: boolean
     priority?: boolean
     status?: boolean
+    data?: boolean
     assignedTo?: boolean
     createdBy?: boolean
     metadata?: boolean
@@ -14871,6 +14914,7 @@ export namespace Prisma {
     type?: boolean
     priority?: boolean
     status?: boolean
+    data?: boolean
     assignedTo?: boolean
     createdBy?: boolean
     metadata?: boolean
@@ -14881,7 +14925,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type CaseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "originatingTenantId" | "currentTenantId" | "referralStatus" | "workflowId" | "workflowVersion" | "caseNumber" | "currentStepId" | "closedAt" | "title" | "description" | "type" | "priority" | "status" | "assignedTo" | "createdBy" | "metadata" | "dueDate" | "resolvedAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["case"]>
+  export type CaseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "originatingTenantId" | "currentTenantId" | "referralStatus" | "workflowId" | "workflowVersion" | "caseNumber" | "currentStepId" | "closedAt" | "title" | "description" | "type" | "priority" | "status" | "data" | "assignedTo" | "createdBy" | "metadata" | "dueDate" | "resolvedAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["case"]>
   export type CaseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     originatingTenant?: boolean | Case$originatingTenantArgs<ExtArgs>
@@ -14946,6 +14990,7 @@ export namespace Prisma {
       type: string
       priority: string
       status: string
+      data: Prisma.JsonValue | null
       assignedTo: string | null
       createdBy: string
       metadata: Prisma.JsonValue | null
@@ -15403,6 +15448,7 @@ export namespace Prisma {
     readonly type: FieldRef<"Case", 'String'>
     readonly priority: FieldRef<"Case", 'String'>
     readonly status: FieldRef<"Case", 'String'>
+    readonly data: FieldRef<"Case", 'Json'>
     readonly assignedTo: FieldRef<"Case", 'String'>
     readonly createdBy: FieldRef<"Case", 'String'>
     readonly metadata: FieldRef<"Case", 'Json'>
@@ -17336,6 +17382,7 @@ export namespace Prisma {
     year?: boolean
     lastSeq?: boolean
     updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["caseSequence"]>
 
   export type CaseSequenceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -17343,6 +17390,7 @@ export namespace Prisma {
     year?: boolean
     lastSeq?: boolean
     updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["caseSequence"]>
 
   export type CaseSequenceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -17350,6 +17398,7 @@ export namespace Prisma {
     year?: boolean
     lastSeq?: boolean
     updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["caseSequence"]>
 
   export type CaseSequenceSelectScalar = {
@@ -17360,10 +17409,21 @@ export namespace Prisma {
   }
 
   export type CaseSequenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"tenantId" | "year" | "lastSeq" | "updatedAt", ExtArgs["result"]["caseSequence"]>
+  export type CaseSequenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+  export type CaseSequenceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+  export type CaseSequenceIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
 
   export type $CaseSequencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "CaseSequence"
-    objects: {}
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+    }
     scalars: $Extensions.GetPayloadResult<{
       tenantId: string
       year: number
@@ -17763,6 +17823,7 @@ export namespace Prisma {
    */
   export interface Prisma__CaseSequenceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17813,6 +17874,10 @@ export namespace Prisma {
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
+    /**
      * Filter, which CaseSequence to fetch.
      */
     where: CaseSequenceWhereUniqueInput
@@ -17831,6 +17896,10 @@ export namespace Prisma {
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
+    /**
      * Filter, which CaseSequence to fetch.
      */
     where: CaseSequenceWhereUniqueInput
@@ -17848,6 +17917,10 @@ export namespace Prisma {
      * Omit specific fields from the CaseSequence
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
     /**
      * Filter, which CaseSequence to fetch.
      */
@@ -17897,6 +17970,10 @@ export namespace Prisma {
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
+    /**
      * Filter, which CaseSequence to fetch.
      */
     where?: CaseSequenceWhereInput
@@ -17945,6 +18022,10 @@ export namespace Prisma {
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
+    /**
      * Filter, which CaseSequences to fetch.
      */
     where?: CaseSequenceWhereInput
@@ -17988,6 +18069,10 @@ export namespace Prisma {
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
+    /**
      * The data needed to create a CaseSequence.
      */
     data: XOR<CaseSequenceCreateInput, CaseSequenceUncheckedCreateInput>
@@ -18021,6 +18106,10 @@ export namespace Prisma {
      */
     data: CaseSequenceCreateManyInput | CaseSequenceCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -18035,6 +18124,10 @@ export namespace Prisma {
      * Omit specific fields from the CaseSequence
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
     /**
      * The data needed to update a CaseSequence.
      */
@@ -18087,6 +18180,10 @@ export namespace Prisma {
      * Limit how many CaseSequences to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -18101,6 +18198,10 @@ export namespace Prisma {
      * Omit specific fields from the CaseSequence
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
     /**
      * The filter to search for the CaseSequence to update in case it exists.
      */
@@ -18127,6 +18228,10 @@ export namespace Prisma {
      * Omit specific fields from the CaseSequence
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
     /**
      * Filter which CaseSequence to delete.
      */
@@ -18159,6 +18264,10 @@ export namespace Prisma {
      * Omit specific fields from the CaseSequence
      */
     omit?: CaseSequenceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseSequenceInclude<ExtArgs> | null
   }
 
 
@@ -21802,32 +21911,33 @@ export namespace Prisma {
   export type AuditLogMinAggregateOutputType = {
     id: string | null
     tenantId: string | null
+    relatedTenantId: string | null
     entityType: string | null
     entityId: string | null
     action: string | null
     userId: string | null
     ipAddress: string | null
     userAgent: string | null
-    relatedTenantId: string | null
     createdAt: Date | null
   }
 
   export type AuditLogMaxAggregateOutputType = {
     id: string | null
     tenantId: string | null
+    relatedTenantId: string | null
     entityType: string | null
     entityId: string | null
     action: string | null
     userId: string | null
     ipAddress: string | null
     userAgent: string | null
-    relatedTenantId: string | null
     createdAt: Date | null
   }
 
   export type AuditLogCountAggregateOutputType = {
     id: number
     tenantId: number
+    relatedTenantId: number
     entityType: number
     entityId: number
     action: number
@@ -21837,7 +21947,6 @@ export namespace Prisma {
     metadata: number
     ipAddress: number
     userAgent: number
-    relatedTenantId: number
     createdAt: number
     _all: number
   }
@@ -21846,32 +21955,33 @@ export namespace Prisma {
   export type AuditLogMinAggregateInputType = {
     id?: true
     tenantId?: true
+    relatedTenantId?: true
     entityType?: true
     entityId?: true
     action?: true
     userId?: true
     ipAddress?: true
     userAgent?: true
-    relatedTenantId?: true
     createdAt?: true
   }
 
   export type AuditLogMaxAggregateInputType = {
     id?: true
     tenantId?: true
+    relatedTenantId?: true
     entityType?: true
     entityId?: true
     action?: true
     userId?: true
     ipAddress?: true
     userAgent?: true
-    relatedTenantId?: true
     createdAt?: true
   }
 
   export type AuditLogCountAggregateInputType = {
     id?: true
     tenantId?: true
+    relatedTenantId?: true
     entityType?: true
     entityId?: true
     action?: true
@@ -21881,7 +21991,6 @@ export namespace Prisma {
     metadata?: true
     ipAddress?: true
     userAgent?: true
-    relatedTenantId?: true
     createdAt?: true
     _all?: true
   }
@@ -21961,6 +22070,7 @@ export namespace Prisma {
   export type AuditLogGroupByOutputType = {
     id: string
     tenantId: string
+    relatedTenantId: string | null
     entityType: string
     entityId: string
     action: string
@@ -21970,7 +22080,6 @@ export namespace Prisma {
     metadata: JsonValue | null
     ipAddress: string | null
     userAgent: string | null
-    relatedTenantId: string | null
     createdAt: Date
     _count: AuditLogCountAggregateOutputType | null
     _min: AuditLogMinAggregateOutputType | null
@@ -21994,6 +22103,7 @@ export namespace Prisma {
   export type AuditLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    relatedTenantId?: boolean
     entityType?: boolean
     entityId?: boolean
     action?: boolean
@@ -22003,16 +22113,16 @@ export namespace Prisma {
     metadata?: boolean
     ipAddress?: boolean
     userAgent?: boolean
-    relatedTenantId?: boolean
     createdAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
-    user?: boolean | AuditLog$userArgs<ExtArgs>
     relatedTenant?: boolean | AuditLog$relatedTenantArgs<ExtArgs>
+    user?: boolean | AuditLog$userArgs<ExtArgs>
   }, ExtArgs["result"]["auditLog"]>
 
   export type AuditLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    relatedTenantId?: boolean
     entityType?: boolean
     entityId?: boolean
     action?: boolean
@@ -22022,16 +22132,16 @@ export namespace Prisma {
     metadata?: boolean
     ipAddress?: boolean
     userAgent?: boolean
-    relatedTenantId?: boolean
     createdAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
-    user?: boolean | AuditLog$userArgs<ExtArgs>
     relatedTenant?: boolean | AuditLog$relatedTenantArgs<ExtArgs>
+    user?: boolean | AuditLog$userArgs<ExtArgs>
   }, ExtArgs["result"]["auditLog"]>
 
   export type AuditLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    relatedTenantId?: boolean
     entityType?: boolean
     entityId?: boolean
     action?: boolean
@@ -22041,16 +22151,16 @@ export namespace Prisma {
     metadata?: boolean
     ipAddress?: boolean
     userAgent?: boolean
-    relatedTenantId?: boolean
     createdAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
-    user?: boolean | AuditLog$userArgs<ExtArgs>
     relatedTenant?: boolean | AuditLog$relatedTenantArgs<ExtArgs>
+    user?: boolean | AuditLog$userArgs<ExtArgs>
   }, ExtArgs["result"]["auditLog"]>
 
   export type AuditLogSelectScalar = {
     id?: boolean
     tenantId?: boolean
+    relatedTenantId?: boolean
     entityType?: boolean
     entityId?: boolean
     action?: boolean
@@ -22060,37 +22170,37 @@ export namespace Prisma {
     metadata?: boolean
     ipAddress?: boolean
     userAgent?: boolean
-    relatedTenantId?: boolean
     createdAt?: boolean
   }
 
-  export type AuditLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "entityType" | "entityId" | "action" | "userId" | "oldValues" | "newValues" | "metadata" | "ipAddress" | "userAgent" | "relatedTenantId" | "createdAt", ExtArgs["result"]["auditLog"]>
+  export type AuditLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "relatedTenantId" | "entityType" | "entityId" | "action" | "userId" | "oldValues" | "newValues" | "metadata" | "ipAddress" | "userAgent" | "createdAt", ExtArgs["result"]["auditLog"]>
   export type AuditLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
-    user?: boolean | AuditLog$userArgs<ExtArgs>
     relatedTenant?: boolean | AuditLog$relatedTenantArgs<ExtArgs>
+    user?: boolean | AuditLog$userArgs<ExtArgs>
   }
   export type AuditLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
-    user?: boolean | AuditLog$userArgs<ExtArgs>
     relatedTenant?: boolean | AuditLog$relatedTenantArgs<ExtArgs>
+    user?: boolean | AuditLog$userArgs<ExtArgs>
   }
   export type AuditLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
-    user?: boolean | AuditLog$userArgs<ExtArgs>
     relatedTenant?: boolean | AuditLog$relatedTenantArgs<ExtArgs>
+    user?: boolean | AuditLog$userArgs<ExtArgs>
   }
 
   export type $AuditLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AuditLog"
     objects: {
       tenant: Prisma.$TenantPayload<ExtArgs>
-      user: Prisma.$UserPayload<ExtArgs> | null
       relatedTenant: Prisma.$TenantPayload<ExtArgs> | null
+      user: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       tenantId: string
+      relatedTenantId: string | null
       entityType: string
       entityId: string
       action: string
@@ -22100,7 +22210,6 @@ export namespace Prisma {
       metadata: Prisma.JsonValue | null
       ipAddress: string | null
       userAgent: string | null
-      relatedTenantId: string | null
       createdAt: Date
     }, ExtArgs["result"]["auditLog"]>
     composites: {}
@@ -22497,8 +22606,8 @@ export namespace Prisma {
   export interface Prisma__AuditLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    user<T extends AuditLog$userArgs<ExtArgs> = {}>(args?: Subset<T, AuditLog$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     relatedTenant<T extends AuditLog$relatedTenantArgs<ExtArgs> = {}>(args?: Subset<T, AuditLog$relatedTenantArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    user<T extends AuditLog$userArgs<ExtArgs> = {}>(args?: Subset<T, AuditLog$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -22530,6 +22639,7 @@ export namespace Prisma {
   interface AuditLogFieldRefs {
     readonly id: FieldRef<"AuditLog", 'String'>
     readonly tenantId: FieldRef<"AuditLog", 'String'>
+    readonly relatedTenantId: FieldRef<"AuditLog", 'String'>
     readonly entityType: FieldRef<"AuditLog", 'String'>
     readonly entityId: FieldRef<"AuditLog", 'String'>
     readonly action: FieldRef<"AuditLog", 'String'>
@@ -22539,7 +22649,6 @@ export namespace Prisma {
     readonly metadata: FieldRef<"AuditLog", 'Json'>
     readonly ipAddress: FieldRef<"AuditLog", 'String'>
     readonly userAgent: FieldRef<"AuditLog", 'String'>
-    readonly relatedTenantId: FieldRef<"AuditLog", 'String'>
     readonly createdAt: FieldRef<"AuditLog", 'DateTime'>
   }
     
@@ -22937,25 +23046,6 @@ export namespace Prisma {
   }
 
   /**
-   * AuditLog.user
-   */
-  export type AuditLog$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserInclude<ExtArgs> | null
-    where?: UserWhereInput
-  }
-
-  /**
    * AuditLog.relatedTenant
    */
   export type AuditLog$relatedTenantArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -22972,6 +23062,25 @@ export namespace Prisma {
      */
     include?: TenantInclude<ExtArgs> | null
     where?: TenantWhereInput
+  }
+
+  /**
+   * AuditLog.user
+   */
+  export type AuditLog$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -25567,7 +25676,6 @@ export namespace Prisma {
     isFinal: 'isFinal',
     position: 'position',
     allowedRoleIds: 'allowedRoleIds',
-    requiresAttachment: 'requiresAttachment',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -25584,6 +25692,7 @@ export namespace Prisma {
     description: 'description',
     allowedRoleIds: 'allowedRoleIds',
     requiresComment: 'requiresComment',
+    requiresAttachment: 'requiresAttachment',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -25607,6 +25716,7 @@ export namespace Prisma {
     type: 'type',
     priority: 'priority',
     status: 'status',
+    data: 'data',
     assignedTo: 'assignedTo',
     createdBy: 'createdBy',
     metadata: 'metadata',
@@ -25703,6 +25813,7 @@ export namespace Prisma {
   export const AuditLogScalarFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
+    relatedTenantId: 'relatedTenantId',
     entityType: 'entityType',
     entityId: 'entityId',
     action: 'action',
@@ -25712,7 +25823,6 @@ export namespace Prisma {
     metadata: 'metadata',
     ipAddress: 'ipAddress',
     userAgent: 'userAgent',
-    relatedTenantId: 'relatedTenantId',
     createdAt: 'createdAt'
   };
 
@@ -25931,6 +26041,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogListRelationFilter
     webhooks?: WebhookListRelationFilter
     integrations?: IntegrationListRelationFilter
+    caseSequences?: CaseSequenceListRelationFilter
   }
 
   export type TenantOrderByWithRelationInput = {
@@ -25957,6 +26068,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogOrderByRelationAggregateInput
     webhooks?: WebhookOrderByRelationAggregateInput
     integrations?: IntegrationOrderByRelationAggregateInput
+    caseSequences?: CaseSequenceOrderByRelationAggregateInput
   }
 
   export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -25986,6 +26098,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogListRelationFilter
     webhooks?: WebhookListRelationFilter
     integrations?: IntegrationListRelationFilter
+    caseSequences?: CaseSequenceListRelationFilter
   }, "id" | "code">
 
   export type TenantOrderByWithAggregationInput = {
@@ -26046,7 +26159,7 @@ export namespace Prisma {
     casesAssigned?: CaseListRelationFilter
     assignmentsAssignedTo?: AssignmentListRelationFilter
     assignmentsAssignedBy?: AssignmentListRelationFilter
-    caseHistory?: CaseHistoryListRelationFilter
+    caseHistoryAsActor?: CaseHistoryListRelationFilter
     referralsMade?: CaseReferralListRelationFilter
     referralsAccepted?: CaseReferralListRelationFilter
     referralsRejected?: CaseReferralListRelationFilter
@@ -26086,7 +26199,7 @@ export namespace Prisma {
     casesAssigned?: CaseOrderByRelationAggregateInput
     assignmentsAssignedTo?: AssignmentOrderByRelationAggregateInput
     assignmentsAssignedBy?: AssignmentOrderByRelationAggregateInput
-    caseHistory?: CaseHistoryOrderByRelationAggregateInput
+    caseHistoryAsActor?: CaseHistoryOrderByRelationAggregateInput
     referralsMade?: CaseReferralOrderByRelationAggregateInput
     referralsAccepted?: CaseReferralOrderByRelationAggregateInput
     referralsRejected?: CaseReferralOrderByRelationAggregateInput
@@ -26131,7 +26244,7 @@ export namespace Prisma {
     casesAssigned?: CaseListRelationFilter
     assignmentsAssignedTo?: AssignmentListRelationFilter
     assignmentsAssignedBy?: AssignmentListRelationFilter
-    caseHistory?: CaseHistoryListRelationFilter
+    caseHistoryAsActor?: CaseHistoryListRelationFilter
     referralsMade?: CaseReferralListRelationFilter
     referralsAccepted?: CaseReferralListRelationFilter
     referralsRejected?: CaseReferralListRelationFilter
@@ -26586,14 +26699,13 @@ export namespace Prisma {
     isFinal?: BoolFilter<"WorkflowStep"> | boolean
     position?: IntFilter<"WorkflowStep"> | number
     allowedRoleIds?: StringNullableListFilter<"WorkflowStep">
-    requiresAttachment?: BoolFilter<"WorkflowStep"> | boolean
     createdAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
     outgoing?: WorkflowTransitionListRelationFilter
     incoming?: WorkflowTransitionListRelationFilter
-    cases?: CaseListRelationFilter
-    stepAttachments?: CaseAttachmentListRelationFilter
+    casesHere?: CaseListRelationFilter
+    attachments?: CaseAttachmentListRelationFilter
   }
 
   export type WorkflowStepOrderByWithRelationInput = {
@@ -26606,14 +26718,13 @@ export namespace Prisma {
     isFinal?: SortOrder
     position?: SortOrder
     allowedRoleIds?: SortOrder
-    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workflow?: WorkflowOrderByWithRelationInput
     outgoing?: WorkflowTransitionOrderByRelationAggregateInput
     incoming?: WorkflowTransitionOrderByRelationAggregateInput
-    cases?: CaseOrderByRelationAggregateInput
-    stepAttachments?: CaseAttachmentOrderByRelationAggregateInput
+    casesHere?: CaseOrderByRelationAggregateInput
+    attachments?: CaseAttachmentOrderByRelationAggregateInput
   }
 
   export type WorkflowStepWhereUniqueInput = Prisma.AtLeast<{
@@ -26630,14 +26741,13 @@ export namespace Prisma {
     isFinal?: BoolFilter<"WorkflowStep"> | boolean
     position?: IntFilter<"WorkflowStep"> | number
     allowedRoleIds?: StringNullableListFilter<"WorkflowStep">
-    requiresAttachment?: BoolFilter<"WorkflowStep"> | boolean
     createdAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
     outgoing?: WorkflowTransitionListRelationFilter
     incoming?: WorkflowTransitionListRelationFilter
-    cases?: CaseListRelationFilter
-    stepAttachments?: CaseAttachmentListRelationFilter
+    casesHere?: CaseListRelationFilter
+    attachments?: CaseAttachmentListRelationFilter
   }, "id" | "workflowId_key">
 
   export type WorkflowStepOrderByWithAggregationInput = {
@@ -26650,7 +26760,6 @@ export namespace Prisma {
     isFinal?: SortOrder
     position?: SortOrder
     allowedRoleIds?: SortOrder
-    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: WorkflowStepCountOrderByAggregateInput
@@ -26673,7 +26782,6 @@ export namespace Prisma {
     isFinal?: BoolWithAggregatesFilter<"WorkflowStep"> | boolean
     position?: IntWithAggregatesFilter<"WorkflowStep"> | number
     allowedRoleIds?: StringNullableListFilter<"WorkflowStep">
-    requiresAttachment?: BoolWithAggregatesFilter<"WorkflowStep"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"WorkflowStep"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"WorkflowStep"> | Date | string
   }
@@ -26690,6 +26798,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"WorkflowTransition"> | string | null
     allowedRoleIds?: StringNullableListFilter<"WorkflowTransition">
     requiresComment?: BoolFilter<"WorkflowTransition"> | boolean
+    requiresAttachment?: BoolFilter<"WorkflowTransition"> | boolean
     createdAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
@@ -26707,6 +26816,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     allowedRoleIds?: SortOrder
     requiresComment?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workflow?: WorkflowOrderByWithRelationInput
@@ -26728,6 +26838,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"WorkflowTransition"> | string | null
     allowedRoleIds?: StringNullableListFilter<"WorkflowTransition">
     requiresComment?: BoolFilter<"WorkflowTransition"> | boolean
+    requiresAttachment?: BoolFilter<"WorkflowTransition"> | boolean
     createdAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
@@ -26745,6 +26856,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     allowedRoleIds?: SortOrder
     requiresComment?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: WorkflowTransitionCountOrderByAggregateInput
@@ -26764,6 +26876,7 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"WorkflowTransition"> | string | null
     allowedRoleIds?: StringNullableListFilter<"WorkflowTransition">
     requiresComment?: BoolWithAggregatesFilter<"WorkflowTransition"> | boolean
+    requiresAttachment?: BoolWithAggregatesFilter<"WorkflowTransition"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"WorkflowTransition"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"WorkflowTransition"> | Date | string
   }
@@ -26787,6 +26900,7 @@ export namespace Prisma {
     type?: StringFilter<"Case"> | string
     priority?: StringFilter<"Case"> | string
     status?: StringFilter<"Case"> | string
+    data?: JsonNullableFilter<"Case">
     assignedTo?: UuidNullableFilter<"Case"> | string | null
     createdBy?: UuidFilter<"Case"> | string
     metadata?: JsonNullableFilter<"Case">
@@ -26824,6 +26938,7 @@ export namespace Prisma {
     type?: SortOrder
     priority?: SortOrder
     status?: SortOrder
+    data?: SortOrderInput | SortOrder
     assignedTo?: SortOrderInput | SortOrder
     createdBy?: SortOrder
     metadata?: SortOrderInput | SortOrder
@@ -26865,6 +26980,7 @@ export namespace Prisma {
     type?: StringFilter<"Case"> | string
     priority?: StringFilter<"Case"> | string
     status?: StringFilter<"Case"> | string
+    data?: JsonNullableFilter<"Case">
     assignedTo?: UuidNullableFilter<"Case"> | string | null
     createdBy?: UuidFilter<"Case"> | string
     metadata?: JsonNullableFilter<"Case">
@@ -26902,6 +27018,7 @@ export namespace Prisma {
     type?: SortOrder
     priority?: SortOrder
     status?: SortOrder
+    data?: SortOrderInput | SortOrder
     assignedTo?: SortOrderInput | SortOrder
     createdBy?: SortOrder
     metadata?: SortOrderInput | SortOrder
@@ -26936,6 +27053,7 @@ export namespace Prisma {
     type?: StringWithAggregatesFilter<"Case"> | string
     priority?: StringWithAggregatesFilter<"Case"> | string
     status?: StringWithAggregatesFilter<"Case"> | string
+    data?: JsonNullableWithAggregatesFilter<"Case">
     assignedTo?: UuidNullableWithAggregatesFilter<"Case"> | string | null
     createdBy?: UuidWithAggregatesFilter<"Case"> | string
     metadata?: JsonNullableWithAggregatesFilter<"Case">
@@ -27035,6 +27153,7 @@ export namespace Prisma {
     year?: IntFilter<"CaseSequence"> | number
     lastSeq?: IntFilter<"CaseSequence"> | number
     updatedAt?: DateTimeFilter<"CaseSequence"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
   }
 
   export type CaseSequenceOrderByWithRelationInput = {
@@ -27042,6 +27161,7 @@ export namespace Prisma {
     year?: SortOrder
     lastSeq?: SortOrder
     updatedAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
   }
 
   export type CaseSequenceWhereUniqueInput = Prisma.AtLeast<{
@@ -27053,6 +27173,7 @@ export namespace Prisma {
     year?: IntFilter<"CaseSequence"> | number
     lastSeq?: IntFilter<"CaseSequence"> | number
     updatedAt?: DateTimeFilter<"CaseSequence"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
   }, "tenantId_year">
 
   export type CaseSequenceOrderByWithAggregationInput = {
@@ -27390,6 +27511,7 @@ export namespace Prisma {
     NOT?: AuditLogWhereInput | AuditLogWhereInput[]
     id?: UuidFilter<"AuditLog"> | string
     tenantId?: UuidFilter<"AuditLog"> | string
+    relatedTenantId?: UuidNullableFilter<"AuditLog"> | string | null
     entityType?: StringFilter<"AuditLog"> | string
     entityId?: UuidFilter<"AuditLog"> | string
     action?: StringFilter<"AuditLog"> | string
@@ -27399,16 +27521,16 @@ export namespace Prisma {
     metadata?: JsonNullableFilter<"AuditLog">
     ipAddress?: StringNullableFilter<"AuditLog"> | string | null
     userAgent?: StringNullableFilter<"AuditLog"> | string | null
-    relatedTenantId?: UuidNullableFilter<"AuditLog"> | string | null
     createdAt?: DateTimeFilter<"AuditLog"> | Date | string
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
-    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     relatedTenant?: XOR<TenantNullableScalarRelationFilter, TenantWhereInput> | null
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }
 
   export type AuditLogOrderByWithRelationInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    relatedTenantId?: SortOrderInput | SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
     action?: SortOrder
@@ -27418,11 +27540,10 @@ export namespace Prisma {
     metadata?: SortOrderInput | SortOrder
     ipAddress?: SortOrderInput | SortOrder
     userAgent?: SortOrderInput | SortOrder
-    relatedTenantId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
-    user?: UserOrderByWithRelationInput
     relatedTenant?: TenantOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
   }
 
   export type AuditLogWhereUniqueInput = Prisma.AtLeast<{
@@ -27431,6 +27552,7 @@ export namespace Prisma {
     OR?: AuditLogWhereInput[]
     NOT?: AuditLogWhereInput | AuditLogWhereInput[]
     tenantId?: UuidFilter<"AuditLog"> | string
+    relatedTenantId?: UuidNullableFilter<"AuditLog"> | string | null
     entityType?: StringFilter<"AuditLog"> | string
     entityId?: UuidFilter<"AuditLog"> | string
     action?: StringFilter<"AuditLog"> | string
@@ -27440,16 +27562,16 @@ export namespace Prisma {
     metadata?: JsonNullableFilter<"AuditLog">
     ipAddress?: StringNullableFilter<"AuditLog"> | string | null
     userAgent?: StringNullableFilter<"AuditLog"> | string | null
-    relatedTenantId?: UuidNullableFilter<"AuditLog"> | string | null
     createdAt?: DateTimeFilter<"AuditLog"> | Date | string
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
-    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     relatedTenant?: XOR<TenantNullableScalarRelationFilter, TenantWhereInput> | null
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }, "id">
 
   export type AuditLogOrderByWithAggregationInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    relatedTenantId?: SortOrderInput | SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
     action?: SortOrder
@@ -27459,7 +27581,6 @@ export namespace Prisma {
     metadata?: SortOrderInput | SortOrder
     ipAddress?: SortOrderInput | SortOrder
     userAgent?: SortOrderInput | SortOrder
-    relatedTenantId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: AuditLogCountOrderByAggregateInput
     _max?: AuditLogMaxOrderByAggregateInput
@@ -27472,6 +27593,7 @@ export namespace Prisma {
     NOT?: AuditLogScalarWhereWithAggregatesInput | AuditLogScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"AuditLog"> | string
     tenantId?: UuidWithAggregatesFilter<"AuditLog"> | string
+    relatedTenantId?: UuidNullableWithAggregatesFilter<"AuditLog"> | string | null
     entityType?: StringWithAggregatesFilter<"AuditLog"> | string
     entityId?: UuidWithAggregatesFilter<"AuditLog"> | string
     action?: StringWithAggregatesFilter<"AuditLog"> | string
@@ -27481,7 +27603,6 @@ export namespace Prisma {
     metadata?: JsonNullableWithAggregatesFilter<"AuditLog">
     ipAddress?: StringNullableWithAggregatesFilter<"AuditLog"> | string | null
     userAgent?: StringNullableWithAggregatesFilter<"AuditLog"> | string | null
-    relatedTenantId?: UuidNullableWithAggregatesFilter<"AuditLog"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"AuditLog"> | Date | string
   }
 
@@ -27706,6 +27827,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateInput = {
@@ -27731,6 +27853,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUpdateInput = {
@@ -27756,6 +27879,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateInput = {
@@ -27781,6 +27905,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateManyInput = {
@@ -27842,7 +27967,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -27881,7 +28006,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -27920,7 +28045,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -27959,7 +28084,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -28434,14 +28559,13 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
     outgoing?: WorkflowTransitionCreateNestedManyWithoutFromStepInput
     incoming?: WorkflowTransitionCreateNestedManyWithoutToStepInput
-    cases?: CaseCreateNestedManyWithoutCurrentStepInput
-    stepAttachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
+    casesHere?: CaseCreateNestedManyWithoutCurrentStepInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
   }
 
   export type WorkflowStepUncheckedCreateInput = {
@@ -28454,13 +28578,12 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
     incoming?: WorkflowTransitionUncheckedCreateNestedManyWithoutToStepInput
-    cases?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
-    stepAttachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
+    casesHere?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
   }
 
   export type WorkflowStepUpdateInput = {
@@ -28472,14 +28595,13 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
     outgoing?: WorkflowTransitionUpdateManyWithoutFromStepNestedInput
     incoming?: WorkflowTransitionUpdateManyWithoutToStepNestedInput
-    cases?: CaseUpdateManyWithoutCurrentStepNestedInput
-    stepAttachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
+    casesHere?: CaseUpdateManyWithoutCurrentStepNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type WorkflowStepUncheckedUpdateInput = {
@@ -28492,13 +28614,12 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
     incoming?: WorkflowTransitionUncheckedUpdateManyWithoutToStepNestedInput
-    cases?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
-    stepAttachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
+    casesHere?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type WorkflowStepCreateManyInput = {
@@ -28511,7 +28632,6 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28525,7 +28645,6 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28540,7 +28659,6 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28551,6 +28669,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutTransitionsInput
@@ -28568,6 +28687,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     history?: CaseHistoryUncheckedCreateNestedManyWithoutTransitionInput
@@ -28579,6 +28699,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutTransitionsNestedInput
@@ -28596,6 +28717,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     history?: CaseHistoryUncheckedUpdateManyWithoutTransitionNestedInput
@@ -28610,6 +28732,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28620,6 +28743,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28633,6 +28757,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28648,6 +28773,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -28658,7 +28784,7 @@ export namespace Prisma {
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
@@ -28683,6 +28809,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -28708,6 +28835,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28718,7 +28846,7 @@ export namespace Prisma {
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
@@ -28743,6 +28871,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -28773,6 +28902,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -28794,6 +28924,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28818,6 +28949,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -28837,7 +28969,7 @@ export namespace Prisma {
     transitionedAt?: Date | string
     case: CaseCreateNestedOneWithoutHistoryInput
     transition?: WorkflowTransitionCreateNestedOneWithoutHistoryInput
-    actor: UserCreateNestedOneWithoutCaseHistoryInput
+    actor: UserCreateNestedOneWithoutCaseHistoryAsActorInput
   }
 
   export type CaseHistoryUncheckedCreateInput = {
@@ -28861,7 +28993,7 @@ export namespace Prisma {
     transitionedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     case?: CaseUpdateOneRequiredWithoutHistoryNestedInput
     transition?: WorkflowTransitionUpdateOneWithoutHistoryNestedInput
-    actor?: UserUpdateOneRequiredWithoutCaseHistoryNestedInput
+    actor?: UserUpdateOneRequiredWithoutCaseHistoryAsActorNestedInput
   }
 
   export type CaseHistoryUncheckedUpdateInput = {
@@ -28910,10 +29042,10 @@ export namespace Prisma {
   }
 
   export type CaseSequenceCreateInput = {
-    tenantId: string
     year: number
     lastSeq?: number
     updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutCaseSequencesInput
   }
 
   export type CaseSequenceUncheckedCreateInput = {
@@ -28924,10 +29056,10 @@ export namespace Prisma {
   }
 
   export type CaseSequenceUpdateInput = {
-    tenantId?: StringFieldUpdateOperationsInput | string
     year?: IntFieldUpdateOperationsInput | number
     lastSeq?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutCaseSequencesNestedInput
   }
 
   export type CaseSequenceUncheckedUpdateInput = {
@@ -28945,7 +29077,6 @@ export namespace Prisma {
   }
 
   export type CaseSequenceUpdateManyMutationInput = {
-    tenantId?: StringFieldUpdateOperationsInput | string
     year?: IntFieldUpdateOperationsInput | number
     lastSeq?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29170,7 +29301,7 @@ export namespace Prisma {
     uploadedAt?: Date | string
     deletedAt?: Date | string | null
     case: CaseCreateNestedOneWithoutAttachmentsInput
-    workflowStep?: WorkflowStepCreateNestedOneWithoutStepAttachmentsInput
+    workflowStep?: WorkflowStepCreateNestedOneWithoutAttachmentsInput
     tenant: TenantCreateNestedOneWithoutAttachmentsInput
     uploader: UserCreateNestedOneWithoutAttachmentsInput
   }
@@ -29202,7 +29333,7 @@ export namespace Prisma {
     uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     case?: CaseUpdateOneRequiredWithoutAttachmentsNestedInput
-    workflowStep?: WorkflowStepUpdateOneWithoutStepAttachmentsNestedInput
+    workflowStep?: WorkflowStepUpdateOneWithoutAttachmentsNestedInput
     tenant?: TenantUpdateOneRequiredWithoutAttachmentsNestedInput
     uploader?: UserUpdateOneRequiredWithoutAttachmentsNestedInput
   }
@@ -29279,13 +29410,14 @@ export namespace Prisma {
     userAgent?: string | null
     createdAt?: Date | string
     tenant: TenantCreateNestedOneWithoutAuditLogsInput
-    user?: UserCreateNestedOneWithoutAuditLogsInput
     relatedTenant?: TenantCreateNestedOneWithoutRelatedAuditLogsInput
+    user?: UserCreateNestedOneWithoutAuditLogsInput
   }
 
   export type AuditLogUncheckedCreateInput = {
     id?: string
     tenantId: string
+    relatedTenantId?: string | null
     entityType: string
     entityId: string
     action: string
@@ -29295,7 +29427,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: string | null
     userAgent?: string | null
-    relatedTenantId?: string | null
     createdAt?: Date | string
   }
 
@@ -29311,13 +29442,14 @@ export namespace Prisma {
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutAuditLogsNestedInput
-    user?: UserUpdateOneWithoutAuditLogsNestedInput
     relatedTenant?: TenantUpdateOneWithoutRelatedAuditLogsNestedInput
+    user?: UserUpdateOneWithoutAuditLogsNestedInput
   }
 
   export type AuditLogUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
     action?: StringFieldUpdateOperationsInput | string
@@ -29327,13 +29459,13 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
-    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AuditLogCreateManyInput = {
     id?: string
     tenantId: string
+    relatedTenantId?: string | null
     entityType: string
     entityId: string
     action: string
@@ -29343,7 +29475,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: string | null
     userAgent?: string | null
-    relatedTenantId?: string | null
     createdAt?: Date | string
   }
 
@@ -29363,6 +29494,7 @@ export namespace Prisma {
   export type AuditLogUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
     action?: StringFieldUpdateOperationsInput | string
@@ -29372,7 +29504,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
-    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -29748,6 +29879,12 @@ export namespace Prisma {
     none?: IntegrationWhereInput
   }
 
+  export type CaseSequenceListRelationFilter = {
+    every?: CaseSequenceWhereInput
+    some?: CaseSequenceWhereInput
+    none?: CaseSequenceWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -29786,6 +29923,10 @@ export namespace Prisma {
   }
 
   export type IntegrationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CaseSequenceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -30396,7 +30537,6 @@ export namespace Prisma {
     isFinal?: SortOrder
     position?: SortOrder
     allowedRoleIds?: SortOrder
-    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30414,7 +30554,6 @@ export namespace Prisma {
     isInitial?: SortOrder
     isFinal?: SortOrder
     position?: SortOrder
-    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30428,7 +30567,6 @@ export namespace Prisma {
     isInitial?: SortOrder
     isFinal?: SortOrder
     position?: SortOrder
-    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30457,6 +30595,7 @@ export namespace Prisma {
     description?: SortOrder
     allowedRoleIds?: SortOrder
     requiresComment?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30469,6 +30608,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     requiresComment?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30481,6 +30621,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     requiresComment?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30511,6 +30652,7 @@ export namespace Prisma {
     type?: SortOrder
     priority?: SortOrder
     status?: SortOrder
+    data?: SortOrder
     assignedTo?: SortOrder
     createdBy?: SortOrder
     metadata?: SortOrder
@@ -30808,6 +30950,7 @@ export namespace Prisma {
   export type AuditLogCountOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    relatedTenantId?: SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
     action?: SortOrder
@@ -30817,33 +30960,32 @@ export namespace Prisma {
     metadata?: SortOrder
     ipAddress?: SortOrder
     userAgent?: SortOrder
-    relatedTenantId?: SortOrder
     createdAt?: SortOrder
   }
 
   export type AuditLogMaxOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    relatedTenantId?: SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
     action?: SortOrder
     userId?: SortOrder
     ipAddress?: SortOrder
     userAgent?: SortOrder
-    relatedTenantId?: SortOrder
     createdAt?: SortOrder
   }
 
   export type AuditLogMinOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    relatedTenantId?: SortOrder
     entityType?: SortOrder
     entityId?: SortOrder
     action?: SortOrder
     userId?: SortOrder
     ipAddress?: SortOrder
     userAgent?: SortOrder
-    relatedTenantId?: SortOrder
     createdAt?: SortOrder
   }
   export type JsonFilter<$PrismaModel = never> =
@@ -31093,6 +31235,13 @@ export namespace Prisma {
     connect?: IntegrationWhereUniqueInput | IntegrationWhereUniqueInput[]
   }
 
+  export type CaseSequenceCreateNestedManyWithoutTenantInput = {
+    create?: XOR<CaseSequenceCreateWithoutTenantInput, CaseSequenceUncheckedCreateWithoutTenantInput> | CaseSequenceCreateWithoutTenantInput[] | CaseSequenceUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: CaseSequenceCreateOrConnectWithoutTenantInput | CaseSequenceCreateOrConnectWithoutTenantInput[]
+    createMany?: CaseSequenceCreateManyTenantInputEnvelope
+    connect?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutTenantInput = {
     create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
@@ -31182,6 +31331,13 @@ export namespace Prisma {
     connectOrCreate?: IntegrationCreateOrConnectWithoutTenantInput | IntegrationCreateOrConnectWithoutTenantInput[]
     createMany?: IntegrationCreateManyTenantInputEnvelope
     connect?: IntegrationWhereUniqueInput | IntegrationWhereUniqueInput[]
+  }
+
+  export type CaseSequenceUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<CaseSequenceCreateWithoutTenantInput, CaseSequenceUncheckedCreateWithoutTenantInput> | CaseSequenceCreateWithoutTenantInput[] | CaseSequenceUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: CaseSequenceCreateOrConnectWithoutTenantInput | CaseSequenceCreateOrConnectWithoutTenantInput[]
+    createMany?: CaseSequenceCreateManyTenantInputEnvelope
+    connect?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -31392,6 +31548,20 @@ export namespace Prisma {
     deleteMany?: IntegrationScalarWhereInput | IntegrationScalarWhereInput[]
   }
 
+  export type CaseSequenceUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<CaseSequenceCreateWithoutTenantInput, CaseSequenceUncheckedCreateWithoutTenantInput> | CaseSequenceCreateWithoutTenantInput[] | CaseSequenceUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: CaseSequenceCreateOrConnectWithoutTenantInput | CaseSequenceCreateOrConnectWithoutTenantInput[]
+    upsert?: CaseSequenceUpsertWithWhereUniqueWithoutTenantInput | CaseSequenceUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: CaseSequenceCreateManyTenantInputEnvelope
+    set?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+    disconnect?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+    delete?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+    connect?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+    update?: CaseSequenceUpdateWithWhereUniqueWithoutTenantInput | CaseSequenceUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: CaseSequenceUpdateManyWithWhereWithoutTenantInput | CaseSequenceUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: CaseSequenceScalarWhereInput | CaseSequenceScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
@@ -31572,6 +31742,20 @@ export namespace Prisma {
     update?: IntegrationUpdateWithWhereUniqueWithoutTenantInput | IntegrationUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: IntegrationUpdateManyWithWhereWithoutTenantInput | IntegrationUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: IntegrationScalarWhereInput | IntegrationScalarWhereInput[]
+  }
+
+  export type CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<CaseSequenceCreateWithoutTenantInput, CaseSequenceUncheckedCreateWithoutTenantInput> | CaseSequenceCreateWithoutTenantInput[] | CaseSequenceUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: CaseSequenceCreateOrConnectWithoutTenantInput | CaseSequenceCreateOrConnectWithoutTenantInput[]
+    upsert?: CaseSequenceUpsertWithWhereUniqueWithoutTenantInput | CaseSequenceUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: CaseSequenceCreateManyTenantInputEnvelope
+    set?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+    disconnect?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+    delete?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+    connect?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+    update?: CaseSequenceUpdateWithWhereUniqueWithoutTenantInput | CaseSequenceUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: CaseSequenceUpdateManyWithWhereWithoutTenantInput | CaseSequenceUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: CaseSequenceScalarWhereInput | CaseSequenceScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutUsersInput = {
@@ -33012,9 +33196,9 @@ export namespace Prisma {
     connect?: WorkflowWhereUniqueInput
   }
 
-  export type WorkflowStepCreateNestedOneWithoutCasesInput = {
-    create?: XOR<WorkflowStepCreateWithoutCasesInput, WorkflowStepUncheckedCreateWithoutCasesInput>
-    connectOrCreate?: WorkflowStepCreateOrConnectWithoutCasesInput
+  export type WorkflowStepCreateNestedOneWithoutCasesHereInput = {
+    create?: XOR<WorkflowStepCreateWithoutCasesHereInput, WorkflowStepUncheckedCreateWithoutCasesHereInput>
+    connectOrCreate?: WorkflowStepCreateOrConnectWithoutCasesHereInput
     connect?: WorkflowStepWhereUniqueInput
   }
 
@@ -33122,14 +33306,14 @@ export namespace Prisma {
     update?: XOR<XOR<WorkflowUpdateToOneWithWhereWithoutCasesInput, WorkflowUpdateWithoutCasesInput>, WorkflowUncheckedUpdateWithoutCasesInput>
   }
 
-  export type WorkflowStepUpdateOneWithoutCasesNestedInput = {
-    create?: XOR<WorkflowStepCreateWithoutCasesInput, WorkflowStepUncheckedCreateWithoutCasesInput>
-    connectOrCreate?: WorkflowStepCreateOrConnectWithoutCasesInput
-    upsert?: WorkflowStepUpsertWithoutCasesInput
+  export type WorkflowStepUpdateOneWithoutCasesHereNestedInput = {
+    create?: XOR<WorkflowStepCreateWithoutCasesHereInput, WorkflowStepUncheckedCreateWithoutCasesHereInput>
+    connectOrCreate?: WorkflowStepCreateOrConnectWithoutCasesHereInput
+    upsert?: WorkflowStepUpsertWithoutCasesHereInput
     disconnect?: WorkflowStepWhereInput | boolean
     delete?: WorkflowStepWhereInput | boolean
     connect?: WorkflowStepWhereUniqueInput
-    update?: XOR<XOR<WorkflowStepUpdateToOneWithWhereWithoutCasesInput, WorkflowStepUpdateWithoutCasesInput>, WorkflowStepUncheckedUpdateWithoutCasesInput>
+    update?: XOR<XOR<WorkflowStepUpdateToOneWithWhereWithoutCasesHereInput, WorkflowStepUpdateWithoutCasesHereInput>, WorkflowStepUncheckedUpdateWithoutCasesHereInput>
   }
 
   export type UserUpdateOneWithoutCasesAssignedNestedInput = {
@@ -33274,9 +33458,9 @@ export namespace Prisma {
     connect?: WorkflowTransitionWhereUniqueInput
   }
 
-  export type UserCreateNestedOneWithoutCaseHistoryInput = {
-    create?: XOR<UserCreateWithoutCaseHistoryInput, UserUncheckedCreateWithoutCaseHistoryInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCaseHistoryInput
+  export type UserCreateNestedOneWithoutCaseHistoryAsActorInput = {
+    create?: XOR<UserCreateWithoutCaseHistoryAsActorInput, UserUncheckedCreateWithoutCaseHistoryAsActorInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCaseHistoryAsActorInput
     connect?: UserWhereUniqueInput
   }
 
@@ -33298,12 +33482,26 @@ export namespace Prisma {
     update?: XOR<XOR<WorkflowTransitionUpdateToOneWithWhereWithoutHistoryInput, WorkflowTransitionUpdateWithoutHistoryInput>, WorkflowTransitionUncheckedUpdateWithoutHistoryInput>
   }
 
-  export type UserUpdateOneRequiredWithoutCaseHistoryNestedInput = {
-    create?: XOR<UserCreateWithoutCaseHistoryInput, UserUncheckedCreateWithoutCaseHistoryInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCaseHistoryInput
-    upsert?: UserUpsertWithoutCaseHistoryInput
+  export type UserUpdateOneRequiredWithoutCaseHistoryAsActorNestedInput = {
+    create?: XOR<UserCreateWithoutCaseHistoryAsActorInput, UserUncheckedCreateWithoutCaseHistoryAsActorInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCaseHistoryAsActorInput
+    upsert?: UserUpsertWithoutCaseHistoryAsActorInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCaseHistoryInput, UserUpdateWithoutCaseHistoryInput>, UserUncheckedUpdateWithoutCaseHistoryInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCaseHistoryAsActorInput, UserUpdateWithoutCaseHistoryAsActorInput>, UserUncheckedUpdateWithoutCaseHistoryAsActorInput>
+  }
+
+  export type TenantCreateNestedOneWithoutCaseSequencesInput = {
+    create?: XOR<TenantCreateWithoutCaseSequencesInput, TenantUncheckedCreateWithoutCaseSequencesInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutCaseSequencesInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type TenantUpdateOneRequiredWithoutCaseSequencesNestedInput = {
+    create?: XOR<TenantCreateWithoutCaseSequencesInput, TenantUncheckedCreateWithoutCaseSequencesInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutCaseSequencesInput
+    upsert?: TenantUpsertWithoutCaseSequencesInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutCaseSequencesInput, TenantUpdateWithoutCaseSequencesInput>, TenantUncheckedUpdateWithoutCaseSequencesInput>
   }
 
   export type CaseCreateNestedOneWithoutAssignmentsInput = {
@@ -33442,9 +33640,9 @@ export namespace Prisma {
     connect?: CaseWhereUniqueInput
   }
 
-  export type WorkflowStepCreateNestedOneWithoutStepAttachmentsInput = {
-    create?: XOR<WorkflowStepCreateWithoutStepAttachmentsInput, WorkflowStepUncheckedCreateWithoutStepAttachmentsInput>
-    connectOrCreate?: WorkflowStepCreateOrConnectWithoutStepAttachmentsInput
+  export type WorkflowStepCreateNestedOneWithoutAttachmentsInput = {
+    create?: XOR<WorkflowStepCreateWithoutAttachmentsInput, WorkflowStepUncheckedCreateWithoutAttachmentsInput>
+    connectOrCreate?: WorkflowStepCreateOrConnectWithoutAttachmentsInput
     connect?: WorkflowStepWhereUniqueInput
   }
 
@@ -33468,14 +33666,14 @@ export namespace Prisma {
     update?: XOR<XOR<CaseUpdateToOneWithWhereWithoutAttachmentsInput, CaseUpdateWithoutAttachmentsInput>, CaseUncheckedUpdateWithoutAttachmentsInput>
   }
 
-  export type WorkflowStepUpdateOneWithoutStepAttachmentsNestedInput = {
-    create?: XOR<WorkflowStepCreateWithoutStepAttachmentsInput, WorkflowStepUncheckedCreateWithoutStepAttachmentsInput>
-    connectOrCreate?: WorkflowStepCreateOrConnectWithoutStepAttachmentsInput
-    upsert?: WorkflowStepUpsertWithoutStepAttachmentsInput
+  export type WorkflowStepUpdateOneWithoutAttachmentsNestedInput = {
+    create?: XOR<WorkflowStepCreateWithoutAttachmentsInput, WorkflowStepUncheckedCreateWithoutAttachmentsInput>
+    connectOrCreate?: WorkflowStepCreateOrConnectWithoutAttachmentsInput
+    upsert?: WorkflowStepUpsertWithoutAttachmentsInput
     disconnect?: WorkflowStepWhereInput | boolean
     delete?: WorkflowStepWhereInput | boolean
     connect?: WorkflowStepWhereUniqueInput
-    update?: XOR<XOR<WorkflowStepUpdateToOneWithWhereWithoutStepAttachmentsInput, WorkflowStepUpdateWithoutStepAttachmentsInput>, WorkflowStepUncheckedUpdateWithoutStepAttachmentsInput>
+    update?: XOR<XOR<WorkflowStepUpdateToOneWithWhereWithoutAttachmentsInput, WorkflowStepUpdateWithoutAttachmentsInput>, WorkflowStepUncheckedUpdateWithoutAttachmentsInput>
   }
 
   export type TenantUpdateOneRequiredWithoutAttachmentsNestedInput = {
@@ -33500,16 +33698,16 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput
   }
 
-  export type UserCreateNestedOneWithoutAuditLogsInput = {
-    create?: XOR<UserCreateWithoutAuditLogsInput, UserUncheckedCreateWithoutAuditLogsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAuditLogsInput
-    connect?: UserWhereUniqueInput
-  }
-
   export type TenantCreateNestedOneWithoutRelatedAuditLogsInput = {
     create?: XOR<TenantCreateWithoutRelatedAuditLogsInput, TenantUncheckedCreateWithoutRelatedAuditLogsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutRelatedAuditLogsInput
     connect?: TenantWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAuditLogsInput = {
+    create?: XOR<UserCreateWithoutAuditLogsInput, UserUncheckedCreateWithoutAuditLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAuditLogsInput
+    connect?: UserWhereUniqueInput
   }
 
   export type TenantUpdateOneRequiredWithoutAuditLogsNestedInput = {
@@ -33520,16 +33718,6 @@ export namespace Prisma {
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutAuditLogsInput, TenantUpdateWithoutAuditLogsInput>, TenantUncheckedUpdateWithoutAuditLogsInput>
   }
 
-  export type UserUpdateOneWithoutAuditLogsNestedInput = {
-    create?: XOR<UserCreateWithoutAuditLogsInput, UserUncheckedCreateWithoutAuditLogsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutAuditLogsInput
-    upsert?: UserUpsertWithoutAuditLogsInput
-    disconnect?: UserWhereInput | boolean
-    delete?: UserWhereInput | boolean
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAuditLogsInput, UserUpdateWithoutAuditLogsInput>, UserUncheckedUpdateWithoutAuditLogsInput>
-  }
-
   export type TenantUpdateOneWithoutRelatedAuditLogsNestedInput = {
     create?: XOR<TenantCreateWithoutRelatedAuditLogsInput, TenantUncheckedCreateWithoutRelatedAuditLogsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutRelatedAuditLogsInput
@@ -33538,6 +33726,16 @@ export namespace Prisma {
     delete?: TenantWhereInput | boolean
     connect?: TenantWhereUniqueInput
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutRelatedAuditLogsInput, TenantUpdateWithoutRelatedAuditLogsInput>, TenantUncheckedUpdateWithoutRelatedAuditLogsInput>
+  }
+
+  export type UserUpdateOneWithoutAuditLogsNestedInput = {
+    create?: XOR<UserCreateWithoutAuditLogsInput, UserUncheckedCreateWithoutAuditLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAuditLogsInput
+    upsert?: UserUpsertWithoutAuditLogsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAuditLogsInput, UserUpdateWithoutAuditLogsInput>, UserUncheckedUpdateWithoutAuditLogsInput>
   }
 
   export type TenantCreateNestedOneWithoutWebhooksInput = {
@@ -33915,7 +34113,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -33953,7 +34151,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -33995,7 +34193,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -34033,7 +34231,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -34153,6 +34351,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -34162,7 +34361,7 @@ export namespace Prisma {
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
@@ -34186,6 +34385,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -34221,6 +34421,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -34230,7 +34431,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
@@ -34254,6 +34455,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -34289,6 +34491,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -34298,7 +34501,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
@@ -34322,6 +34525,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -34445,7 +34649,7 @@ export namespace Prisma {
     uploadedAt?: Date | string
     deletedAt?: Date | string | null
     case: CaseCreateNestedOneWithoutAttachmentsInput
-    workflowStep?: WorkflowStepCreateNestedOneWithoutStepAttachmentsInput
+    workflowStep?: WorkflowStepCreateNestedOneWithoutAttachmentsInput
     uploader: UserCreateNestedOneWithoutAttachmentsInput
   }
 
@@ -34485,12 +34689,13 @@ export namespace Prisma {
     ipAddress?: string | null
     userAgent?: string | null
     createdAt?: Date | string
-    user?: UserCreateNestedOneWithoutAuditLogsInput
     relatedTenant?: TenantCreateNestedOneWithoutRelatedAuditLogsInput
+    user?: UserCreateNestedOneWithoutAuditLogsInput
   }
 
   export type AuditLogUncheckedCreateWithoutTenantInput = {
     id?: string
+    relatedTenantId?: string | null
     entityType: string
     entityId: string
     action: string
@@ -34500,7 +34705,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: string | null
     userAgent?: string | null
-    relatedTenantId?: string | null
     createdAt?: Date | string
   }
 
@@ -34634,6 +34838,28 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CaseSequenceCreateWithoutTenantInput = {
+    year: number
+    lastSeq?: number
+    updatedAt?: Date | string
+  }
+
+  export type CaseSequenceUncheckedCreateWithoutTenantInput = {
+    year: number
+    lastSeq?: number
+    updatedAt?: Date | string
+  }
+
+  export type CaseSequenceCreateOrConnectWithoutTenantInput = {
+    where: CaseSequenceWhereUniqueInput
+    create: XOR<CaseSequenceCreateWithoutTenantInput, CaseSequenceUncheckedCreateWithoutTenantInput>
+  }
+
+  export type CaseSequenceCreateManyTenantInputEnvelope = {
+    data: CaseSequenceCreateManyTenantInput | CaseSequenceCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutTenantsRegisteredInput = {
     update: XOR<UserUpdateWithoutTenantsRegisteredInput, UserUncheckedUpdateWithoutTenantsRegisteredInput>
     create: XOR<UserCreateWithoutTenantsRegisteredInput, UserUncheckedCreateWithoutTenantsRegisteredInput>
@@ -34669,7 +34895,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -34707,7 +34933,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -34864,6 +35090,7 @@ export namespace Prisma {
     type?: StringFilter<"Case"> | string
     priority?: StringFilter<"Case"> | string
     status?: StringFilter<"Case"> | string
+    data?: JsonNullableFilter<"Case">
     assignedTo?: UuidNullableFilter<"Case"> | string | null
     createdBy?: UuidFilter<"Case"> | string
     metadata?: JsonNullableFilter<"Case">
@@ -35016,6 +35243,7 @@ export namespace Prisma {
     NOT?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
     id?: UuidFilter<"AuditLog"> | string
     tenantId?: UuidFilter<"AuditLog"> | string
+    relatedTenantId?: UuidNullableFilter<"AuditLog"> | string | null
     entityType?: StringFilter<"AuditLog"> | string
     entityId?: UuidFilter<"AuditLog"> | string
     action?: StringFilter<"AuditLog"> | string
@@ -35025,7 +35253,6 @@ export namespace Prisma {
     metadata?: JsonNullableFilter<"AuditLog">
     ipAddress?: StringNullableFilter<"AuditLog"> | string | null
     userAgent?: StringNullableFilter<"AuditLog"> | string | null
-    relatedTenantId?: UuidNullableFilter<"AuditLog"> | string | null
     createdAt?: DateTimeFilter<"AuditLog"> | Date | string
   }
 
@@ -35115,6 +35342,32 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Integration"> | Date | string
   }
 
+  export type CaseSequenceUpsertWithWhereUniqueWithoutTenantInput = {
+    where: CaseSequenceWhereUniqueInput
+    update: XOR<CaseSequenceUpdateWithoutTenantInput, CaseSequenceUncheckedUpdateWithoutTenantInput>
+    create: XOR<CaseSequenceCreateWithoutTenantInput, CaseSequenceUncheckedCreateWithoutTenantInput>
+  }
+
+  export type CaseSequenceUpdateWithWhereUniqueWithoutTenantInput = {
+    where: CaseSequenceWhereUniqueInput
+    data: XOR<CaseSequenceUpdateWithoutTenantInput, CaseSequenceUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type CaseSequenceUpdateManyWithWhereWithoutTenantInput = {
+    where: CaseSequenceScalarWhereInput
+    data: XOR<CaseSequenceUpdateManyMutationInput, CaseSequenceUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type CaseSequenceScalarWhereInput = {
+    AND?: CaseSequenceScalarWhereInput | CaseSequenceScalarWhereInput[]
+    OR?: CaseSequenceScalarWhereInput[]
+    NOT?: CaseSequenceScalarWhereInput | CaseSequenceScalarWhereInput[]
+    tenantId?: UuidFilter<"CaseSequence"> | string
+    year?: IntFilter<"CaseSequence"> | number
+    lastSeq?: IntFilter<"CaseSequence"> | number
+    updatedAt?: DateTimeFilter<"CaseSequence"> | Date | string
+  }
+
   export type TenantCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -35137,6 +35390,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutUsersInput = {
@@ -35161,6 +35415,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutUsersInput = {
@@ -35179,6 +35434,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -35189,7 +35445,7 @@ export namespace Prisma {
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
     assignments?: AssignmentCreateNestedManyWithoutCaseInput
@@ -35213,6 +35469,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
@@ -35247,6 +35504,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -35257,7 +35515,7 @@ export namespace Prisma {
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
     assignments?: AssignmentCreateNestedManyWithoutCaseInput
@@ -35281,6 +35539,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
@@ -35543,7 +35802,7 @@ export namespace Prisma {
     uploadedAt?: Date | string
     deletedAt?: Date | string | null
     case: CaseCreateNestedOneWithoutAttachmentsInput
-    workflowStep?: WorkflowStepCreateNestedOneWithoutStepAttachmentsInput
+    workflowStep?: WorkflowStepCreateNestedOneWithoutAttachmentsInput
     tenant: TenantCreateNestedOneWithoutAttachmentsInput
   }
 
@@ -35590,6 +35849,7 @@ export namespace Prisma {
   export type AuditLogUncheckedCreateWithoutUserInput = {
     id?: string
     tenantId: string
+    relatedTenantId?: string | null
     entityType: string
     entityId: string
     action: string
@@ -35598,7 +35858,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: string | null
     userAgent?: string | null
-    relatedTenantId?: string | null
     createdAt?: Date | string
   }
 
@@ -35850,6 +36109,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRegisteredByInput = {
@@ -35874,6 +36134,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRegisteredByInput = {
@@ -35919,6 +36180,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutUsersInput = {
@@ -35943,6 +36205,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CaseUpsertWithWhereUniqueWithoutCreatorInput = {
@@ -36296,6 +36559,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRolesInput = {
@@ -36320,6 +36584,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRolesInput = {
@@ -36399,7 +36664,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -36437,7 +36702,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -36489,6 +36754,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRolesInput = {
@@ -36513,6 +36779,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type RolePermissionUpsertWithWhereUniqueWithoutRoleInput = {
@@ -36592,7 +36859,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -36630,7 +36897,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -36822,7 +37089,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -36860,7 +37127,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -36934,7 +37201,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -36972,7 +37239,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -37026,7 +37293,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -37064,7 +37331,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -37150,7 +37417,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -37188,7 +37455,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -37224,6 +37491,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWorkflowsInput = {
@@ -37248,6 +37516,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWorkflowsInput = {
@@ -37279,7 +37548,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -37317,7 +37586,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -37347,6 +37616,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -37356,7 +37626,7 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
@@ -37380,6 +37650,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -37413,13 +37684,12 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionCreateNestedManyWithoutFromStepInput
     incoming?: WorkflowTransitionCreateNestedManyWithoutToStepInput
-    cases?: CaseCreateNestedManyWithoutCurrentStepInput
-    stepAttachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
+    casesHere?: CaseCreateNestedManyWithoutCurrentStepInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
   }
 
   export type WorkflowStepUncheckedCreateWithoutWorkflowInput = {
@@ -37431,13 +37701,12 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
     incoming?: WorkflowTransitionUncheckedCreateNestedManyWithoutToStepInput
-    cases?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
-    stepAttachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
+    casesHere?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
   }
 
   export type WorkflowStepCreateOrConnectWithoutWorkflowInput = {
@@ -37456,6 +37725,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     fromStep: WorkflowStepCreateNestedOneWithoutOutgoingInput
@@ -37471,6 +37741,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     history?: CaseHistoryUncheckedCreateNestedManyWithoutTransitionInput
@@ -37519,6 +37790,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWorkflowsInput = {
@@ -37543,6 +37815,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutWorkflowsCreatedInput = {
@@ -37580,7 +37853,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -37618,7 +37891,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -37677,7 +37950,6 @@ export namespace Prisma {
     isFinal?: BoolFilter<"WorkflowStep"> | boolean
     position?: IntFilter<"WorkflowStep"> | number
     allowedRoleIds?: StringNullableListFilter<"WorkflowStep">
-    requiresAttachment?: BoolFilter<"WorkflowStep"> | boolean
     createdAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowStep"> | Date | string
   }
@@ -37710,6 +37982,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"WorkflowTransition"> | string | null
     allowedRoleIds?: StringNullableListFilter<"WorkflowTransition">
     requiresComment?: BoolFilter<"WorkflowTransition"> | boolean
+    requiresAttachment?: BoolFilter<"WorkflowTransition"> | boolean
     createdAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
   }
@@ -37763,6 +38036,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutTransitionsInput
@@ -37778,6 +38052,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     history?: CaseHistoryUncheckedCreateNestedManyWithoutTransitionInput
@@ -37799,6 +38074,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutTransitionsInput
@@ -37814,6 +38090,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     history?: CaseHistoryUncheckedCreateNestedManyWithoutTransitionInput
@@ -37840,6 +38117,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -37873,6 +38151,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -38102,13 +38381,12 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
     incoming?: WorkflowTransitionCreateNestedManyWithoutToStepInput
-    cases?: CaseCreateNestedManyWithoutCurrentStepInput
-    stepAttachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
+    casesHere?: CaseCreateNestedManyWithoutCurrentStepInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
   }
 
   export type WorkflowStepUncheckedCreateWithoutOutgoingInput = {
@@ -38121,12 +38399,11 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     incoming?: WorkflowTransitionUncheckedCreateNestedManyWithoutToStepInput
-    cases?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
-    stepAttachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
+    casesHere?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
   }
 
   export type WorkflowStepCreateOrConnectWithoutOutgoingInput = {
@@ -38143,13 +38420,12 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
     outgoing?: WorkflowTransitionCreateNestedManyWithoutFromStepInput
-    cases?: CaseCreateNestedManyWithoutCurrentStepInput
-    stepAttachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
+    casesHere?: CaseCreateNestedManyWithoutCurrentStepInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
   }
 
   export type WorkflowStepUncheckedCreateWithoutIncomingInput = {
@@ -38162,12 +38438,11 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
-    cases?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
-    stepAttachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
+    casesHere?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
   }
 
   export type WorkflowStepCreateOrConnectWithoutIncomingInput = {
@@ -38183,7 +38458,7 @@ export namespace Prisma {
     comment?: string | null
     transitionedAt?: Date | string
     case: CaseCreateNestedOneWithoutHistoryInput
-    actor: UserCreateNestedOneWithoutCaseHistoryInput
+    actor: UserCreateNestedOneWithoutCaseHistoryAsActorInput
   }
 
   export type CaseHistoryUncheckedCreateWithoutTransitionInput = {
@@ -38276,13 +38551,12 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
     incoming?: WorkflowTransitionUpdateManyWithoutToStepNestedInput
-    cases?: CaseUpdateManyWithoutCurrentStepNestedInput
-    stepAttachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
+    casesHere?: CaseUpdateManyWithoutCurrentStepNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type WorkflowStepUncheckedUpdateWithoutOutgoingInput = {
@@ -38295,12 +38569,11 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     incoming?: WorkflowTransitionUncheckedUpdateManyWithoutToStepNestedInput
-    cases?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
-    stepAttachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
+    casesHere?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type WorkflowStepUpsertWithoutIncomingInput = {
@@ -38323,13 +38596,12 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
     outgoing?: WorkflowTransitionUpdateManyWithoutFromStepNestedInput
-    cases?: CaseUpdateManyWithoutCurrentStepNestedInput
-    stepAttachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
+    casesHere?: CaseUpdateManyWithoutCurrentStepNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type WorkflowStepUncheckedUpdateWithoutIncomingInput = {
@@ -38342,12 +38614,11 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
-    cases?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
-    stepAttachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
+    casesHere?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type CaseHistoryUpsertWithWhereUniqueWithoutTransitionInput = {
@@ -38388,6 +38659,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesInput = {
@@ -38412,6 +38684,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesInput = {
@@ -38441,6 +38714,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesOriginatedInput = {
@@ -38465,6 +38739,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesOriginatedInput = {
@@ -38494,6 +38769,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesCurrentInput = {
@@ -38518,6 +38794,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesCurrentInput = {
@@ -38568,7 +38845,7 @@ export namespace Prisma {
     create: XOR<WorkflowCreateWithoutCasesInput, WorkflowUncheckedCreateWithoutCasesInput>
   }
 
-  export type WorkflowStepCreateWithoutCasesInput = {
+  export type WorkflowStepCreateWithoutCasesHereInput = {
     id?: string
     key: string
     name: string
@@ -38577,16 +38854,15 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
     outgoing?: WorkflowTransitionCreateNestedManyWithoutFromStepInput
     incoming?: WorkflowTransitionCreateNestedManyWithoutToStepInput
-    stepAttachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutWorkflowStepInput
   }
 
-  export type WorkflowStepUncheckedCreateWithoutCasesInput = {
+  export type WorkflowStepUncheckedCreateWithoutCasesHereInput = {
     id?: string
     workflowId: string
     key: string
@@ -38596,17 +38872,16 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
     incoming?: WorkflowTransitionUncheckedCreateNestedManyWithoutToStepInput
-    stepAttachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutWorkflowStepInput
   }
 
-  export type WorkflowStepCreateOrConnectWithoutCasesInput = {
+  export type WorkflowStepCreateOrConnectWithoutCasesHereInput = {
     where: WorkflowStepWhereUniqueInput
-    create: XOR<WorkflowStepCreateWithoutCasesInput, WorkflowStepUncheckedCreateWithoutCasesInput>
+    create: XOR<WorkflowStepCreateWithoutCasesHereInput, WorkflowStepUncheckedCreateWithoutCasesHereInput>
   }
 
   export type UserCreateWithoutCasesAssignedInput = {
@@ -38632,7 +38907,7 @@ export namespace Prisma {
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -38670,7 +38945,7 @@ export namespace Prisma {
     casesCreated?: CaseUncheckedCreateNestedManyWithoutCreatorInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -38713,7 +38988,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -38751,7 +39026,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -38779,7 +39054,7 @@ export namespace Prisma {
     comment?: string | null
     transitionedAt?: Date | string
     transition?: WorkflowTransitionCreateNestedOneWithoutHistoryInput
-    actor: UserCreateNestedOneWithoutCaseHistoryInput
+    actor: UserCreateNestedOneWithoutCaseHistoryAsActorInput
   }
 
   export type CaseHistoryUncheckedCreateWithoutCaseInput = {
@@ -38889,7 +39164,7 @@ export namespace Prisma {
     description?: string | null
     uploadedAt?: Date | string
     deletedAt?: Date | string | null
-    workflowStep?: WorkflowStepCreateNestedOneWithoutStepAttachmentsInput
+    workflowStep?: WorkflowStepCreateNestedOneWithoutAttachmentsInput
     tenant: TenantCreateNestedOneWithoutAttachmentsInput
     uploader: UserCreateNestedOneWithoutAttachmentsInput
   }
@@ -38952,6 +39227,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesInput = {
@@ -38976,6 +39252,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutCasesOriginatedInput = {
@@ -39011,6 +39288,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesOriginatedInput = {
@@ -39035,6 +39313,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutCasesCurrentInput = {
@@ -39070,6 +39349,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesCurrentInput = {
@@ -39094,6 +39374,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type WorkflowUpsertWithoutCasesInput = {
@@ -39145,18 +39426,18 @@ export namespace Prisma {
     transitions?: WorkflowTransitionUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
-  export type WorkflowStepUpsertWithoutCasesInput = {
-    update: XOR<WorkflowStepUpdateWithoutCasesInput, WorkflowStepUncheckedUpdateWithoutCasesInput>
-    create: XOR<WorkflowStepCreateWithoutCasesInput, WorkflowStepUncheckedCreateWithoutCasesInput>
+  export type WorkflowStepUpsertWithoutCasesHereInput = {
+    update: XOR<WorkflowStepUpdateWithoutCasesHereInput, WorkflowStepUncheckedUpdateWithoutCasesHereInput>
+    create: XOR<WorkflowStepCreateWithoutCasesHereInput, WorkflowStepUncheckedCreateWithoutCasesHereInput>
     where?: WorkflowStepWhereInput
   }
 
-  export type WorkflowStepUpdateToOneWithWhereWithoutCasesInput = {
+  export type WorkflowStepUpdateToOneWithWhereWithoutCasesHereInput = {
     where?: WorkflowStepWhereInput
-    data: XOR<WorkflowStepUpdateWithoutCasesInput, WorkflowStepUncheckedUpdateWithoutCasesInput>
+    data: XOR<WorkflowStepUpdateWithoutCasesHereInput, WorkflowStepUncheckedUpdateWithoutCasesHereInput>
   }
 
-  export type WorkflowStepUpdateWithoutCasesInput = {
+  export type WorkflowStepUpdateWithoutCasesHereInput = {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -39165,16 +39446,15 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
     outgoing?: WorkflowTransitionUpdateManyWithoutFromStepNestedInput
     incoming?: WorkflowTransitionUpdateManyWithoutToStepNestedInput
-    stepAttachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
   }
 
-  export type WorkflowStepUncheckedUpdateWithoutCasesInput = {
+  export type WorkflowStepUncheckedUpdateWithoutCasesHereInput = {
     id?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
@@ -39184,12 +39464,11 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
     incoming?: WorkflowTransitionUncheckedUpdateManyWithoutToStepNestedInput
-    stepAttachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type UserUpsertWithoutCasesAssignedInput = {
@@ -39226,7 +39505,7 @@ export namespace Prisma {
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -39264,7 +39543,7 @@ export namespace Prisma {
     casesCreated?: CaseUncheckedUpdateManyWithoutCreatorNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -39313,7 +39592,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -39351,7 +39630,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -39441,6 +39720,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -39451,7 +39731,7 @@ export namespace Prisma {
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     assignments?: AssignmentCreateNestedManyWithoutCaseInput
@@ -39475,6 +39755,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -39499,6 +39780,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutTransitionsInput
@@ -39515,6 +39797,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39524,7 +39807,7 @@ export namespace Prisma {
     create: XOR<WorkflowTransitionCreateWithoutHistoryInput, WorkflowTransitionUncheckedCreateWithoutHistoryInput>
   }
 
-  export type UserCreateWithoutCaseHistoryInput = {
+  export type UserCreateWithoutCaseHistoryAsActorInput = {
     id?: string
     email: string
     username: string
@@ -39562,7 +39845,7 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
   }
 
-  export type UserUncheckedCreateWithoutCaseHistoryInput = {
+  export type UserUncheckedCreateWithoutCaseHistoryAsActorInput = {
     id?: string
     tenantId: string
     email: string
@@ -39600,9 +39883,9 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
   }
 
-  export type UserCreateOrConnectWithoutCaseHistoryInput = {
+  export type UserCreateOrConnectWithoutCaseHistoryAsActorInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutCaseHistoryInput, UserUncheckedCreateWithoutCaseHistoryInput>
+    create: XOR<UserCreateWithoutCaseHistoryAsActorInput, UserUncheckedCreateWithoutCaseHistoryAsActorInput>
   }
 
   export type CaseUpsertWithoutHistoryInput = {
@@ -39627,6 +39910,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39637,7 +39921,7 @@ export namespace Prisma {
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     assignments?: AssignmentUpdateManyWithoutCaseNestedInput
@@ -39661,6 +39945,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -39691,6 +39976,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutTransitionsNestedInput
@@ -39707,22 +39993,23 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type UserUpsertWithoutCaseHistoryInput = {
-    update: XOR<UserUpdateWithoutCaseHistoryInput, UserUncheckedUpdateWithoutCaseHistoryInput>
-    create: XOR<UserCreateWithoutCaseHistoryInput, UserUncheckedCreateWithoutCaseHistoryInput>
+  export type UserUpsertWithoutCaseHistoryAsActorInput = {
+    update: XOR<UserUpdateWithoutCaseHistoryAsActorInput, UserUncheckedUpdateWithoutCaseHistoryAsActorInput>
+    create: XOR<UserCreateWithoutCaseHistoryAsActorInput, UserUncheckedCreateWithoutCaseHistoryAsActorInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutCaseHistoryInput = {
+  export type UserUpdateToOneWithWhereWithoutCaseHistoryAsActorInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutCaseHistoryInput, UserUncheckedUpdateWithoutCaseHistoryInput>
+    data: XOR<UserUpdateWithoutCaseHistoryAsActorInput, UserUncheckedUpdateWithoutCaseHistoryAsActorInput>
   }
 
-  export type UserUpdateWithoutCaseHistoryInput = {
+  export type UserUpdateWithoutCaseHistoryAsActorInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
@@ -39760,7 +40047,7 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutCaseHistoryInput = {
+  export type UserUncheckedUpdateWithoutCaseHistoryAsActorInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -39798,6 +40085,122 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
   }
 
+  export type TenantCreateWithoutCaseSequencesInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    roles?: RoleCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowCreateNestedManyWithoutTenantInput
+    cases?: CaseCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
+    webhooks?: WebhookCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutCaseSequencesInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    registeredByUserId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
+    cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutCaseSequencesInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutCaseSequencesInput, TenantUncheckedCreateWithoutCaseSequencesInput>
+  }
+
+  export type TenantUpsertWithoutCaseSequencesInput = {
+    update: XOR<TenantUpdateWithoutCaseSequencesInput, TenantUncheckedUpdateWithoutCaseSequencesInput>
+    create: XOR<TenantCreateWithoutCaseSequencesInput, TenantUncheckedCreateWithoutCaseSequencesInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutCaseSequencesInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutCaseSequencesInput, TenantUncheckedUpdateWithoutCaseSequencesInput>
+  }
+
+  export type TenantUpdateWithoutCaseSequencesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    roles?: RoleUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUpdateManyWithoutTenantNestedInput
+    cases?: CaseUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
+    webhooks?: WebhookUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutCaseSequencesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    registeredByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
+    cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
   export type CaseCreateWithoutAssignmentsInput = {
     id?: string
     referralStatus?: string
@@ -39809,6 +40212,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -39819,7 +40223,7 @@ export namespace Prisma {
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
@@ -39843,6 +40247,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -39884,7 +40289,7 @@ export namespace Prisma {
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -39922,7 +40327,7 @@ export namespace Prisma {
     casesCreated?: CaseUncheckedCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -39965,7 +40370,7 @@ export namespace Prisma {
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -40003,7 +40408,7 @@ export namespace Prisma {
     casesCreated?: CaseUncheckedCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -40045,6 +40450,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -40055,7 +40461,7 @@ export namespace Prisma {
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
@@ -40079,6 +40485,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -40126,7 +40533,7 @@ export namespace Prisma {
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -40164,7 +40571,7 @@ export namespace Prisma {
     casesCreated?: CaseUncheckedUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -40213,7 +40620,7 @@ export namespace Prisma {
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -40251,7 +40658,7 @@ export namespace Prisma {
     casesCreated?: CaseUncheckedUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -40277,6 +40684,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -40287,7 +40695,7 @@ export namespace Prisma {
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
@@ -40311,6 +40719,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -40351,6 +40760,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutReferralsFromInput = {
@@ -40375,6 +40785,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutReferralsFromInput = {
@@ -40404,6 +40815,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutReferralsToInput = {
@@ -40428,6 +40840,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutReferralsToInput = {
@@ -40459,7 +40872,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
     attachments?: CaseAttachmentCreateNestedManyWithoutUploaderInput
@@ -40497,7 +40910,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
     attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutUploaderInput
@@ -40540,7 +40953,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
     attachments?: CaseAttachmentCreateNestedManyWithoutUploaderInput
@@ -40578,7 +40991,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
     attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutUploaderInput
@@ -40621,7 +41034,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     attachments?: CaseAttachmentCreateNestedManyWithoutUploaderInput
@@ -40659,7 +41072,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutUploaderInput
@@ -40700,6 +41113,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -40710,7 +41124,7 @@ export namespace Prisma {
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
@@ -40734,6 +41148,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -40780,6 +41195,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutReferralsFromInput = {
@@ -40804,6 +41220,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutReferralsToInput = {
@@ -40839,6 +41256,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutReferralsToInput = {
@@ -40863,6 +41281,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutReferralsMadeInput = {
@@ -40900,7 +41319,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
     attachments?: CaseAttachmentUpdateManyWithoutUploaderNestedInput
@@ -40938,7 +41357,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
     attachments?: CaseAttachmentUncheckedUpdateManyWithoutUploaderNestedInput
@@ -40987,7 +41406,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
     attachments?: CaseAttachmentUpdateManyWithoutUploaderNestedInput
@@ -41025,7 +41444,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
     attachments?: CaseAttachmentUncheckedUpdateManyWithoutUploaderNestedInput
@@ -41074,7 +41493,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     attachments?: CaseAttachmentUpdateManyWithoutUploaderNestedInput
@@ -41112,7 +41531,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     attachments?: CaseAttachmentUncheckedUpdateManyWithoutUploaderNestedInput
@@ -41137,6 +41556,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
     resolvedAt?: Date | string | null
@@ -41147,7 +41567,7 @@ export namespace Prisma {
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
-    currentStep?: WorkflowStepCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
     history?: CaseHistoryCreateNestedManyWithoutCaseInput
@@ -41171,6 +41591,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -41189,7 +41610,7 @@ export namespace Prisma {
     create: XOR<CaseCreateWithoutAttachmentsInput, CaseUncheckedCreateWithoutAttachmentsInput>
   }
 
-  export type WorkflowStepCreateWithoutStepAttachmentsInput = {
+  export type WorkflowStepCreateWithoutAttachmentsInput = {
     id?: string
     key: string
     name: string
@@ -41198,16 +41619,15 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
     outgoing?: WorkflowTransitionCreateNestedManyWithoutFromStepInput
     incoming?: WorkflowTransitionCreateNestedManyWithoutToStepInput
-    cases?: CaseCreateNestedManyWithoutCurrentStepInput
+    casesHere?: CaseCreateNestedManyWithoutCurrentStepInput
   }
 
-  export type WorkflowStepUncheckedCreateWithoutStepAttachmentsInput = {
+  export type WorkflowStepUncheckedCreateWithoutAttachmentsInput = {
     id?: string
     workflowId: string
     key: string
@@ -41217,17 +41637,16 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
     incoming?: WorkflowTransitionUncheckedCreateNestedManyWithoutToStepInput
-    cases?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
+    casesHere?: CaseUncheckedCreateNestedManyWithoutCurrentStepInput
   }
 
-  export type WorkflowStepCreateOrConnectWithoutStepAttachmentsInput = {
+  export type WorkflowStepCreateOrConnectWithoutAttachmentsInput = {
     where: WorkflowStepWhereUniqueInput
-    create: XOR<WorkflowStepCreateWithoutStepAttachmentsInput, WorkflowStepUncheckedCreateWithoutStepAttachmentsInput>
+    create: XOR<WorkflowStepCreateWithoutAttachmentsInput, WorkflowStepUncheckedCreateWithoutAttachmentsInput>
   }
 
   export type TenantCreateWithoutAttachmentsInput = {
@@ -41252,6 +41671,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAttachmentsInput = {
@@ -41276,6 +41696,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAttachmentsInput = {
@@ -41307,7 +41728,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -41345,7 +41766,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -41386,6 +41807,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41396,7 +41818,7 @@ export namespace Prisma {
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
@@ -41420,6 +41842,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -41433,18 +41856,18 @@ export namespace Prisma {
     referrals?: CaseReferralUncheckedUpdateManyWithoutCaseNestedInput
   }
 
-  export type WorkflowStepUpsertWithoutStepAttachmentsInput = {
-    update: XOR<WorkflowStepUpdateWithoutStepAttachmentsInput, WorkflowStepUncheckedUpdateWithoutStepAttachmentsInput>
-    create: XOR<WorkflowStepCreateWithoutStepAttachmentsInput, WorkflowStepUncheckedCreateWithoutStepAttachmentsInput>
+  export type WorkflowStepUpsertWithoutAttachmentsInput = {
+    update: XOR<WorkflowStepUpdateWithoutAttachmentsInput, WorkflowStepUncheckedUpdateWithoutAttachmentsInput>
+    create: XOR<WorkflowStepCreateWithoutAttachmentsInput, WorkflowStepUncheckedCreateWithoutAttachmentsInput>
     where?: WorkflowStepWhereInput
   }
 
-  export type WorkflowStepUpdateToOneWithWhereWithoutStepAttachmentsInput = {
+  export type WorkflowStepUpdateToOneWithWhereWithoutAttachmentsInput = {
     where?: WorkflowStepWhereInput
-    data: XOR<WorkflowStepUpdateWithoutStepAttachmentsInput, WorkflowStepUncheckedUpdateWithoutStepAttachmentsInput>
+    data: XOR<WorkflowStepUpdateWithoutAttachmentsInput, WorkflowStepUncheckedUpdateWithoutAttachmentsInput>
   }
 
-  export type WorkflowStepUpdateWithoutStepAttachmentsInput = {
+  export type WorkflowStepUpdateWithoutAttachmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -41453,16 +41876,15 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
     outgoing?: WorkflowTransitionUpdateManyWithoutFromStepNestedInput
     incoming?: WorkflowTransitionUpdateManyWithoutToStepNestedInput
-    cases?: CaseUpdateManyWithoutCurrentStepNestedInput
+    casesHere?: CaseUpdateManyWithoutCurrentStepNestedInput
   }
 
-  export type WorkflowStepUncheckedUpdateWithoutStepAttachmentsInput = {
+  export type WorkflowStepUncheckedUpdateWithoutAttachmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     key?: StringFieldUpdateOperationsInput | string
@@ -41472,12 +41894,11 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
     incoming?: WorkflowTransitionUncheckedUpdateManyWithoutToStepNestedInput
-    cases?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
+    casesHere?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
   }
 
   export type TenantUpsertWithoutAttachmentsInput = {
@@ -41513,6 +41934,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAttachmentsInput = {
@@ -41537,6 +41959,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutAttachmentsInput = {
@@ -41574,7 +41997,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -41612,7 +42035,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -41648,6 +42071,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAuditLogsInput = {
@@ -41672,11 +42096,67 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAuditLogsInput = {
     where: TenantWhereUniqueInput
     create: XOR<TenantCreateWithoutAuditLogsInput, TenantUncheckedCreateWithoutAuditLogsInput>
+  }
+
+  export type TenantCreateWithoutRelatedAuditLogsInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    roles?: RoleCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowCreateNestedManyWithoutTenantInput
+    cases?: CaseCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    webhooks?: WebhookCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutRelatedAuditLogsInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    registeredByUserId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
+    cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutRelatedAuditLogsInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutRelatedAuditLogsInput, TenantUncheckedCreateWithoutRelatedAuditLogsInput>
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -41703,7 +42183,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -41741,7 +42221,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -41758,59 +42238,6 @@ export namespace Prisma {
   export type UserCreateOrConnectWithoutAuditLogsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutAuditLogsInput, UserUncheckedCreateWithoutAuditLogsInput>
-  }
-
-  export type TenantCreateWithoutRelatedAuditLogsInput = {
-    id?: string
-    name: string
-    code: string
-    description?: string | null
-    config?: NullableJsonNullValueInput | InputJsonValue
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
-    users?: UserCreateNestedManyWithoutTenantInput
-    roles?: RoleCreateNestedManyWithoutTenantInput
-    workflows?: WorkflowCreateNestedManyWithoutTenantInput
-    cases?: CaseCreateNestedManyWithoutTenantInput
-    casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
-    casesCurrent?: CaseCreateNestedManyWithoutCurrentTenantInput
-    referralsFrom?: CaseReferralCreateNestedManyWithoutFromTenantInput
-    referralsTo?: CaseReferralCreateNestedManyWithoutToTenantInput
-    attachments?: CaseAttachmentCreateNestedManyWithoutTenantInput
-    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
-    webhooks?: WebhookCreateNestedManyWithoutTenantInput
-    integrations?: IntegrationCreateNestedManyWithoutTenantInput
-  }
-
-  export type TenantUncheckedCreateWithoutRelatedAuditLogsInput = {
-    id?: string
-    name: string
-    code: string
-    description?: string | null
-    config?: NullableJsonNullValueInput | InputJsonValue
-    isActive?: boolean
-    registeredByUserId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    users?: UserUncheckedCreateNestedManyWithoutTenantInput
-    roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
-    workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
-    cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
-    casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
-    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentTenantInput
-    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromTenantInput
-    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToTenantInput
-    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutTenantInput
-    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
-    webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
-    integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
-  }
-
-  export type TenantCreateOrConnectWithoutRelatedAuditLogsInput = {
-    where: TenantWhereUniqueInput
-    create: XOR<TenantCreateWithoutRelatedAuditLogsInput, TenantUncheckedCreateWithoutRelatedAuditLogsInput>
   }
 
   export type TenantUpsertWithoutAuditLogsInput = {
@@ -41846,6 +42273,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAuditLogsInput = {
@@ -41870,6 +42298,68 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUpsertWithoutRelatedAuditLogsInput = {
+    update: XOR<TenantUpdateWithoutRelatedAuditLogsInput, TenantUncheckedUpdateWithoutRelatedAuditLogsInput>
+    create: XOR<TenantCreateWithoutRelatedAuditLogsInput, TenantUncheckedCreateWithoutRelatedAuditLogsInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutRelatedAuditLogsInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutRelatedAuditLogsInput, TenantUncheckedUpdateWithoutRelatedAuditLogsInput>
+  }
+
+  export type TenantUpdateWithoutRelatedAuditLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    roles?: RoleUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUpdateManyWithoutTenantNestedInput
+    cases?: CaseUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    webhooks?: WebhookUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutRelatedAuditLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    registeredByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
+    cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutAuditLogsInput = {
@@ -41907,7 +42397,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -41945,7 +42435,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -41957,65 +42447,6 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
-  }
-
-  export type TenantUpsertWithoutRelatedAuditLogsInput = {
-    update: XOR<TenantUpdateWithoutRelatedAuditLogsInput, TenantUncheckedUpdateWithoutRelatedAuditLogsInput>
-    create: XOR<TenantCreateWithoutRelatedAuditLogsInput, TenantUncheckedCreateWithoutRelatedAuditLogsInput>
-    where?: TenantWhereInput
-  }
-
-  export type TenantUpdateToOneWithWhereWithoutRelatedAuditLogsInput = {
-    where?: TenantWhereInput
-    data: XOR<TenantUpdateWithoutRelatedAuditLogsInput, TenantUncheckedUpdateWithoutRelatedAuditLogsInput>
-  }
-
-  export type TenantUpdateWithoutRelatedAuditLogsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    config?: NullableJsonNullValueInput | InputJsonValue
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
-    users?: UserUpdateManyWithoutTenantNestedInput
-    roles?: RoleUpdateManyWithoutTenantNestedInput
-    workflows?: WorkflowUpdateManyWithoutTenantNestedInput
-    cases?: CaseUpdateManyWithoutTenantNestedInput
-    casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
-    casesCurrent?: CaseUpdateManyWithoutCurrentTenantNestedInput
-    referralsFrom?: CaseReferralUpdateManyWithoutFromTenantNestedInput
-    referralsTo?: CaseReferralUpdateManyWithoutToTenantNestedInput
-    attachments?: CaseAttachmentUpdateManyWithoutTenantNestedInput
-    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
-    webhooks?: WebhookUpdateManyWithoutTenantNestedInput
-    integrations?: IntegrationUpdateManyWithoutTenantNestedInput
-  }
-
-  export type TenantUncheckedUpdateWithoutRelatedAuditLogsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    config?: NullableJsonNullValueInput | InputJsonValue
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    registeredByUserId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
-    roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
-    workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
-    cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
-    casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
-    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentTenantNestedInput
-    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromTenantNestedInput
-    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToTenantNestedInput
-    attachments?: CaseAttachmentUncheckedUpdateManyWithoutTenantNestedInput
-    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
-    webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
-    integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutWebhooksInput = {
@@ -42040,6 +42471,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWebhooksInput = {
@@ -42064,6 +42496,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWebhooksInput = {
@@ -42095,7 +42528,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -42133,7 +42566,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -42185,6 +42618,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWebhooksInput = {
@@ -42209,6 +42643,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutWebhooksCreatedInput = {
@@ -42246,7 +42681,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -42284,7 +42719,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -42320,6 +42755,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutIntegrationsInput = {
@@ -42344,6 +42780,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutIntegrationsInput = {
@@ -42375,7 +42812,7 @@ export namespace Prisma {
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
@@ -42413,7 +42850,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
-    caseHistory?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
     referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
     referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
     referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
@@ -42465,6 +42902,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutIntegrationsInput = {
@@ -42489,6 +42927,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutIntegrationsCreatedInput = {
@@ -42526,7 +42965,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -42564,7 +43003,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -42641,6 +43080,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42666,6 +43106,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42691,6 +43132,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42752,6 +43194,7 @@ export namespace Prisma {
 
   export type AuditLogCreateManyTenantInput = {
     id?: string
+    relatedTenantId?: string | null
     entityType: string
     entityId: string
     action: string
@@ -42761,7 +43204,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: string | null
     userAgent?: string | null
-    relatedTenantId?: string | null
     createdAt?: Date | string
   }
 
@@ -42810,6 +43252,12 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type CaseSequenceCreateManyTenantInput = {
+    year: number
+    lastSeq?: number
+    updatedAt?: Date | string
+  }
+
   export type UserUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -42833,7 +43281,7 @@ export namespace Prisma {
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
@@ -42871,7 +43319,7 @@ export namespace Prisma {
     casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
-    caseHistory?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
     referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
     referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
     referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
@@ -43009,6 +43457,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43018,7 +43467,7 @@ export namespace Prisma {
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
@@ -43042,6 +43491,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -43071,6 +43521,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -43092,6 +43543,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43101,7 +43553,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
@@ -43125,6 +43577,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -43154,6 +43607,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -43175,6 +43629,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43184,7 +43639,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
@@ -43208,6 +43663,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -43237,6 +43693,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -43360,7 +43817,7 @@ export namespace Prisma {
     uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     case?: CaseUpdateOneRequiredWithoutAttachmentsNestedInput
-    workflowStep?: WorkflowStepUpdateOneWithoutStepAttachmentsNestedInput
+    workflowStep?: WorkflowStepUpdateOneWithoutAttachmentsNestedInput
     uploader?: UserUpdateOneRequiredWithoutAttachmentsNestedInput
   }
 
@@ -43405,12 +43862,13 @@ export namespace Prisma {
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneWithoutAuditLogsNestedInput
     relatedTenant?: TenantUpdateOneWithoutRelatedAuditLogsNestedInput
+    user?: UserUpdateOneWithoutAuditLogsNestedInput
   }
 
   export type AuditLogUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
+    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
     action?: StringFieldUpdateOperationsInput | string
@@ -43420,12 +43878,12 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
-    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AuditLogUncheckedUpdateManyWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
+    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
     action?: StringFieldUpdateOperationsInput | string
@@ -43435,7 +43893,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
-    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -43574,6 +44031,24 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CaseSequenceUpdateWithoutTenantInput = {
+    year?: IntFieldUpdateOperationsInput | number
+    lastSeq?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CaseSequenceUncheckedUpdateWithoutTenantInput = {
+    year?: IntFieldUpdateOperationsInput | number
+    lastSeq?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CaseSequenceUncheckedUpdateManyWithoutTenantInput = {
+    year?: IntFieldUpdateOperationsInput | number
+    lastSeq?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CaseCreateManyCreatorInput = {
     id?: string
     tenantId: string
@@ -43590,6 +44065,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
@@ -43615,6 +44091,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: Date | string | null
@@ -43726,6 +44203,7 @@ export namespace Prisma {
   export type AuditLogCreateManyUserInput = {
     id?: string
     tenantId: string
+    relatedTenantId?: string | null
     entityType: string
     entityId: string
     action: string
@@ -43734,7 +44212,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: string | null
     userAgent?: string | null
-    relatedTenantId?: string | null
     createdAt?: Date | string
   }
 
@@ -43833,6 +44310,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43843,7 +44321,7 @@ export namespace Prisma {
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
     assignments?: AssignmentUpdateManyWithoutCaseNestedInput
@@ -43867,6 +44345,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43896,6 +44375,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43916,6 +44396,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43926,7 +44407,7 @@ export namespace Prisma {
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
     assignments?: AssignmentUpdateManyWithoutCaseNestedInput
@@ -43950,6 +44431,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43979,6 +44461,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -44251,7 +44734,7 @@ export namespace Prisma {
     uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     case?: CaseUpdateOneRequiredWithoutAttachmentsNestedInput
-    workflowStep?: WorkflowStepUpdateOneWithoutStepAttachmentsNestedInput
+    workflowStep?: WorkflowStepUpdateOneWithoutAttachmentsNestedInput
     tenant?: TenantUpdateOneRequiredWithoutAttachmentsNestedInput
   }
 
@@ -44303,6 +44786,7 @@ export namespace Prisma {
   export type AuditLogUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
     action?: StringFieldUpdateOperationsInput | string
@@ -44311,13 +44795,13 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
-    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AuditLogUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     entityType?: StringFieldUpdateOperationsInput | string
     entityId?: StringFieldUpdateOperationsInput | string
     action?: StringFieldUpdateOperationsInput | string
@@ -44326,7 +44810,6 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
-    relatedTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -44581,6 +45064,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRegisteredByInput = {
@@ -44605,6 +45089,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateManyWithoutRegisteredByInput = {
@@ -44713,6 +45198,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -44732,7 +45218,6 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
-    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -44745,6 +45230,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -44760,6 +45246,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -44769,7 +45256,7 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
-    currentStep?: WorkflowStepUpdateOneWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
     history?: CaseHistoryUpdateManyWithoutCaseNestedInput
@@ -44793,6 +45280,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -44822,6 +45310,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -44841,13 +45330,12 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUpdateManyWithoutFromStepNestedInput
     incoming?: WorkflowTransitionUpdateManyWithoutToStepNestedInput
-    cases?: CaseUpdateManyWithoutCurrentStepNestedInput
-    stepAttachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
+    casesHere?: CaseUpdateManyWithoutCurrentStepNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type WorkflowStepUncheckedUpdateWithoutWorkflowInput = {
@@ -44859,13 +45347,12 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
     incoming?: WorkflowTransitionUncheckedUpdateManyWithoutToStepNestedInput
-    cases?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
-    stepAttachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
+    casesHere?: CaseUncheckedUpdateManyWithoutCurrentStepNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutWorkflowStepNestedInput
   }
 
   export type WorkflowStepUncheckedUpdateManyWithoutWorkflowInput = {
@@ -44877,7 +45364,6 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
-    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44888,6 +45374,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fromStep?: WorkflowStepUpdateOneRequiredWithoutOutgoingNestedInput
@@ -44903,6 +45390,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     history?: CaseHistoryUncheckedUpdateManyWithoutTransitionNestedInput
@@ -44916,6 +45404,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44928,6 +45417,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -44940,6 +45430,7 @@ export namespace Prisma {
     description?: string | null
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -44959,6 +45450,7 @@ export namespace Prisma {
     type: string
     priority?: string
     status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: string | null
     createdBy: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -44990,6 +45482,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutTransitionsNestedInput
@@ -45005,6 +45498,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     history?: CaseHistoryUncheckedUpdateManyWithoutTransitionNestedInput
@@ -45018,6 +45512,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45028,6 +45523,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutTransitionsNestedInput
@@ -45043,6 +45539,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     history?: CaseHistoryUncheckedUpdateManyWithoutTransitionNestedInput
@@ -45056,6 +45553,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45071,6 +45569,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -45104,6 +45603,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -45133,6 +45633,7 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
     assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -45207,7 +45708,7 @@ export namespace Prisma {
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     transitionedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     case?: CaseUpdateOneRequiredWithoutHistoryNestedInput
-    actor?: UserUpdateOneRequiredWithoutCaseHistoryNestedInput
+    actor?: UserUpdateOneRequiredWithoutCaseHistoryAsActorNestedInput
   }
 
   export type CaseHistoryUncheckedUpdateWithoutTransitionInput = {
@@ -45294,7 +45795,7 @@ export namespace Prisma {
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     transitionedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     transition?: WorkflowTransitionUpdateOneWithoutHistoryNestedInput
-    actor?: UserUpdateOneRequiredWithoutCaseHistoryNestedInput
+    actor?: UserUpdateOneRequiredWithoutCaseHistoryAsActorNestedInput
   }
 
   export type CaseHistoryUncheckedUpdateWithoutCaseInput = {
@@ -45413,7 +45914,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    workflowStep?: WorkflowStepUpdateOneWithoutStepAttachmentsNestedInput
+    workflowStep?: WorkflowStepUpdateOneWithoutAttachmentsNestedInput
     tenant?: TenantUpdateOneRequiredWithoutAttachmentsNestedInput
     uploader?: UserUpdateOneRequiredWithoutAttachmentsNestedInput
   }
