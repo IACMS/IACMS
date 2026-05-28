@@ -1,0 +1,11 @@
+{
+  "referralId": "dddddddd-dddd-dddd-dddd-dddddddddd01",
+  "caseId": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+  "fromTenantId": "11111111-1111-1111-1111-111111111111",
+  "toTenantId": "22222222-2222-2222-2222-222222222222",
+  "originatingTenantId": "11111111-1111-1111-1111-111111111111",
+  "currentTenantId": "22222222-2222-2222-2222-222222222222",
+  "status": "pending",
+  "referredBy": "44444444-4444-4444-4444-444444444444",
+  "referredAt": "2026-05-02T09:30:00.000Z"
+}

@@ -5,6 +5,7 @@ import { ValidationError, NotFoundError } from '../../../../../shared/common/err
 import Logger from '../../../../../shared/common/logger.js';
 import { TOPICS } from '../../../../../shared/utils/eventBus.js';
 import { getEventBus, generateTokens, generateTemporaryPassword } from '../../utils/auth.helpers.js';
+import { withAuditClient } from '../../utils/audit.helpers.js';
 import { validateRegisterRequest, validateCreateUserRequest } from '../../utils/validators.js';
 
 const logger = new Logger('auth-service');
@@ -87,14 +88,24 @@ export async function register(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId: user.tenantId,
-        entityType: 'user',
-        entityId: user.id,
-        action: 'user_registered',
-        userId: user.id,
-        metadata: { email: user.email },
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId: user.tenantId,
+              entityType: 'user',
+              entityId: user.id,
+              action: 'user_registered',
+              userId: user.id,
+              oldValues: null,
+              newValues: { selfService: true },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('User registered', { userId: user.id, tenantId: user.tenantId, email: user.email });
@@ -279,14 +290,24 @@ export async function createUser(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId: user.tenantId,
-        entityType: 'user',
-        entityId: user.id,
-        action: 'user_created_by_admin',
-        userId: req.headers['x-user-id'] || null,
-        metadata: { email: user.email, roleId: roleId || null },
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId: user.tenantId,
+              entityType: 'user',
+              entityId: user.id,
+              action: 'user_created_by_admin',
+              userId: req.headers['x-user-id'] || null,
+              oldValues: null,
+              newValues: { channel: 'admin_created', roleId: roleId || null },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('Admin created user', { userId: user.id, tenantId: user.tenantId, email: user.email, roleId });

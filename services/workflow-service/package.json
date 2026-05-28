@@ -7,14 +7,16 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "test": "node --test tests/**/*.test.js",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate --schema ../../prisma/schema.prisma"
   },
   "dependencies": {
-    "express": "^5.2.1",
     "@prisma/client": "^6.0.0",
-    "prisma": "^6.0.0",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "ioredis": "^5.4.2",
+    "prisma": "^6.0.0"
   }
 }

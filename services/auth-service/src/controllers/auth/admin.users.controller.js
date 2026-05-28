@@ -4,6 +4,7 @@ import Logger from '../../../../../shared/common/logger.js';
 import { TOPICS } from '../../../../../shared/utils/eventBus.js';
 import { validateUpdateUserRequest } from '../../utils/validators.js';
 import { getEventBus } from '../../utils/auth.helpers.js';
+import { withAuditClient } from '../../utils/audit.helpers.js';
 
 const logger = new Logger('auth-service');
 
@@ -99,7 +100,10 @@ export async function updateUser(req, res, next) {
 
     const fields = validateUpdateUserRequest(req.body);
 
-    const existing = await prisma.user.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.user.findFirst({
+      where: { id, tenantId },
+      select: { id: true, firstName: true, lastName: true, email: true, phone: true, isActive: true },
+    });
     if (!existing) throw new NotFoundError('User not found');
 
     if (fields.email && fields.email !== existing.email) {
@@ -115,10 +119,36 @@ export async function updateUser(req, res, next) {
       select: { id: true, email: true, firstName: true, lastName: true, phone: true, isActive: true },
     });
 
+    const keys = Object.keys(fields);
+    const oldValues = {};
+    const newValues = {};
+    for (const k of keys) {
+      oldValues[k] = existing[k];
+      newValues[k] = updated[k];
+    }
+
     const bus = getEventBus();
     if (bus) {
-      bus.publish(TOPICS.USER_UPDATED, { userId: id, tenantId, action: 'updated', fields: Object.keys(fields) })
+      bus.publish(TOPICS.USER_UPDATED, { userId: id, tenantId, action: 'updated', fields: keys })
         .catch(err => logger.warn('Failed to publish user.updated event', { error: err.message }));
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId,
+              entityType: 'user',
+              entityId: id,
+              action: 'user_updated_by_admin',
+              userId: req.user.id,
+              oldValues,
+              newValues,
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('User updated by admin', { targetUserId: id, adminId: req.user.id });
@@ -148,6 +178,8 @@ export async function assignRole(req, res, next) {
     });
     if (!role) throw new NotFoundError('Role not found or not accessible in this tenant');
 
+    const priorRole = await prisma.userRole.findFirst({ where: { userId: id }, select: { roleId: true } });
+
     await prisma.$transaction([
       prisma.userRole.deleteMany({ where: { userId: id } }),
       prisma.userRole.create({ data: { userId: id, roleId } }),
@@ -160,14 +192,24 @@ export async function assignRole(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId,
-        entityType: 'user',
-        entityId: id,
-        action: 'role_assigned',
-        userId: req.user.id,
-        metadata: { roleId },
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId,
+              entityType: 'user',
+              entityId: id,
+              action: 'role_assigned',
+              userId: req.user.id,
+              oldValues: { roleId: priorRole?.roleId ?? null },
+              newValues: { roleId },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('Role assigned by admin', { targetUserId: id, roleId, adminId: req.user.id });
@@ -236,14 +278,24 @@ export async function deactivateUser(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId,
-        entityType: 'user',
-        entityId: id,
-        action: 'user_deactivated',
-        userId: adminId,
-        metadata: {},
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId,
+              entityType: 'user',
+              entityId: id,
+              action: 'user_deactivated',
+              userId: adminId,
+              oldValues: { isActive: true },
+              newValues: { isActive: false },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('User deactivated by admin', { targetUserId: id, adminId });
@@ -274,14 +326,24 @@ export async function reactivateUser(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId,
-        entityType: 'user',
-        entityId: id,
-        action: 'user_reactivated',
-        userId: req.user.id,
-        metadata: {},
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId,
+              entityType: 'user',
+              entityId: id,
+              action: 'user_reactivated',
+              userId: req.user.id,
+              oldValues: { isActive: false },
+              newValues: { isActive: true },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('User reactivated by admin', { targetUserId: id, adminId: req.user.id });
@@ -330,14 +392,27 @@ export async function deleteUser(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId,
-        entityType: 'user',
-        entityId: id,
-        action: 'user_deleted',
-        userId: adminId,
-        metadata: {},
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId,
+              entityType: 'user',
+              entityId: id,
+              action: 'user_deleted',
+              userId: adminId,
+              oldValues: {
+                emailDomain: user.email?.includes('@') ? user.email.split('@')[1] : null,
+                isActive: user.isActive,
+              },
+              newValues: { anonymized: true, isActive: false },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('User soft-deleted by admin', { targetUserId: id, adminId });

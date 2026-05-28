@@ -1,7 +1,12 @@
 # IACMS Technical Documentation
 
 > Complete technical reference for the Inter-Agency Case Management System.  
-> For quick-start and project overview, see [`README.md`](../README.md).
+> For quick-start and project overview, see [`README.md`](../README.md).  
+> For high-level PHASES deltas, see [`CHANGELOG.md`](CHANGELOG.md) and canonical fixtures in [`shared/contracts/`](../shared/contracts/).  
+> **Deferred backlog:** [`DEFERRED_WORK.md`](DEFERRED_WORK.md).  
+> **What is built (narrative):** [`SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md).  
+> **Phase checklist vs roadmap:** [`PHASE_STATUS.md`](PHASE_STATUS.md).  
+> **Tenant isolation ADR:** [`TENANT_ISOLATION.md`](TENANT_ISOLATION.md) (explicit tenant filters; Postgres RLS deferred).
 
 ---
 
@@ -16,6 +21,10 @@
 7. [API Reference](#7-api-reference)
 8. [Development Setup](#8-development-setup)
 9. [Troubleshooting](#9-troubleshooting)
+10. [Deferred roadmap follow-ups](DEFERRED_WORK.md)
+11. [System overview — built, how, why](SYSTEM_OVERVIEW.md)
+12. [Implementation status vs PHASES](PHASE_STATUS.md)
+13. [Tenant isolation ADR](TENANT_ISOLATION.md)
 
 ---
 
@@ -489,10 +498,13 @@ kafka:
 | `case.created` | case-service | notification-service, audit-service |
 | `case.updated` | case-service | audit-service |
 | `case.assigned` | case-service | notification-service, audit-service |
+| `case.transitioned` | case-service | notification-service |
 | `workflow.created` | workflow-service | audit-service |
 | `workflow.updated` | workflow-service | audit-service |
-| `workflow.state.changed` | workflow-service | notification-service, audit-service |
+| `workflow.published` | workflow-service | — |
+| `workflow.archived` | workflow-service | — |
 | `referral.created` | referral-service | notification-service, audit-service |
+| `referral.completed` | referral-service | notification-service |
 | `referral.accepted` | referral-service | notification-service |
 | `referral.rejected` | referral-service | notification-service |
 | `integration.created` | integration-service | audit-service |
