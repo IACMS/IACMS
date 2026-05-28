@@ -21,11 +21,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.19.2
+ * Prisma Client JS version: 6.19.3
  * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
  */
 Prisma.prismaVersion = {
-  client: "6.19.2",
+  client: "6.19.3",
   engine: "c2990dca591cba766e3b7ef5d9e8a84796e47ab7"
 }
 
@@ -218,7 +218,6 @@ exports.Prisma.WorkflowStepScalarFieldEnum = {
   isFinal: 'isFinal',
   position: 'position',
   allowedRoleIds: 'allowedRoleIds',
-  requiresAttachment: 'requiresAttachment',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -232,6 +231,7 @@ exports.Prisma.WorkflowTransitionScalarFieldEnum = {
   description: 'description',
   allowedRoleIds: 'allowedRoleIds',
   requiresComment: 'requiresComment',
+  requiresAttachment: 'requiresAttachment',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -252,6 +252,7 @@ exports.Prisma.CaseScalarFieldEnum = {
   type: 'type',
   priority: 'priority',
   status: 'status',
+  data: 'data',
   assignedTo: 'assignedTo',
   createdBy: 'createdBy',
   metadata: 'metadata',
@@ -330,6 +331,7 @@ exports.Prisma.CaseAttachmentScalarFieldEnum = {
 exports.Prisma.AuditLogScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
+  relatedTenantId: 'relatedTenantId',
   entityType: 'entityType',
   entityId: 'entityId',
   action: 'action',
@@ -339,7 +341,6 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   metadata: 'metadata',
   ipAddress: 'ipAddress',
   userAgent: 'userAgent',
-  relatedTenantId: 'relatedTenantId',
   createdAt: 'createdAt'
 };
 

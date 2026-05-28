@@ -32,7 +32,7 @@
     "prisma:studio": "npx prisma studio",
     "db:seed": "node prisma/seed.js",
     "db:reset": "npx prisma migrate reset --force",
-    "setup": "npm run docker:up && timeout /t 5 && npm run prisma:migrate && npm run db:seed",
+    "setup": "npm run docker:up && sleep 5 && npm run prisma:migrate && npm run db:seed",
     "test:gateway": "npm run test -w api-gateway"
   },
   "devDependencies": {
