@@ -160,17 +160,25 @@ export async function changePassword(req, res, next) {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword) throw new ValidationError('Current password is required');
     if (!newPassword) throw new ValidationError('New password is required');
-    if (currentPassword === newPassword) throw new ValidationError('New password must be different from current password');
 
     validatePassword(newPassword);
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) throw new NotFoundError('User');
 
-    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!isValid) throw new ValidationError('Current password is incorrect');
+    const forcedFirstLogin = user.mustChangePassword === true;
+
+    if (forcedFirstLogin) {
+      // Temporary password from email is not required — user sets their own password once.
+    } else {
+      if (!currentPassword) throw new ValidationError('Current password is required');
+      if (currentPassword === newPassword) {
+        throw new ValidationError('New password must be different from current password');
+      }
+      const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isValid) throw new ValidationError('Current password is incorrect');
+    }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({

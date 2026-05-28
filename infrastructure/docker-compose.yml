@@ -59,7 +59,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      # PLAINTEXT uses LAN_HOST so host/LAN clients can use <host-ip>:9092 (see infrastructure/.env)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${LAN_HOST:-localhost}:9092,PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -84,6 +85,7 @@ services:
       - "3000:3000"
     environment:
       PORT: 3000
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:5174}
       AUTH_SERVICE_URL: http://auth-service:3001
       RBAC_SERVICE_URL: http://rbac-service:3002
       CASE_SERVICE_URL: http://case-service:3003
@@ -266,6 +268,7 @@ services:
     environment:
       PORT: 3008
       KAFKA_BROKERS: kafka:29092
+      APP_URL: ${APP_URL:-http://localhost:5173}
     depends_on:
       kafka:
         condition: service_healthy

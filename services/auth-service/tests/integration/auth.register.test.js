@@ -116,6 +116,39 @@ describe('mustChangePassword enforcement', () => {
     expect(res.status).toBe(200);
   });
 
+  it('allows first-login change-password without current password when mustChangePassword', async () => {
+    const { body: { accessToken: adminToken } } = await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+    const email = `forced-pw-${Date.now()}@test-org.com`;
+    createdUserEmails.push(email);
+    const tempPassword = 'TempPass123!';
+
+    const createRes = await request(app)
+      .post('/auth/users/create')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        email,
+        firstName: 'Forced',
+        lastName: 'Change',
+        tenantCode: TENANT_CODE,
+      });
+    expect(createRes.status).toBe(201);
+
+    await prisma.user.updateMany({
+      where: { email },
+      data: { passwordHash: await bcrypt.hash(tempPassword, 10), mustChangePassword: true },
+    });
+
+    const loginRes = await loginAs(email, tempPassword);
+    expect(loginRes.body.user.mustChangePassword).toBe(true);
+
+    const changeRes = await request(app)
+      .post('/auth/change-password')
+      .set('Authorization', `Bearer ${loginRes.body.accessToken}`)
+      .send({ newPassword: 'NewPass456!' });
+
+    expect(changeRes.status).toBe(200);
+  });
+
   it('new token after password change has mustChangePassword: false', async () => {
     await request(app)
       .post('/auth/change-password')
