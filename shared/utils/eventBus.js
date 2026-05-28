@@ -18,6 +18,7 @@ export const TOPICS = {
   CASE_CREATED: 'case.created',
   CASE_UPDATED: 'case.updated',
   CASE_ASSIGNED: 'case.assigned',
+  CASE_TRANSITIONED: 'case.transitioned',
   WORKFLOW_CREATED: 'workflow.created',
   WORKFLOW_UPDATED: 'workflow.updated',
   WORKFLOW_STATE_CHANGED: 'workflow.state.changed',

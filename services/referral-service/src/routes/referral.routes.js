@@ -5,6 +5,7 @@ import {
   createReferral,
   acceptReferral,
   rejectReferral,
+  completeReferral,
 } from '../controllers/referral.controller.js';
 import { requireGatewayIdentity } from '../middleware/requireGatewayIdentity.js';
 
@@ -17,5 +18,6 @@ router.get('/:id', getReferral);
 router.post('/', createReferral);
 router.post('/:id/accept', acceptReferral);
 router.post('/:id/reject', rejectReferral);
+router.post('/:id/complete', completeReferral);
 
 export default router;

@@ -6,9 +6,13 @@ COPY prisma ./prisma
 COPY shared ./shared
 COPY services/workflow-service/package*.json ./services/workflow-service/
 
+
 WORKDIR /app/services/workflow-service
 RUN npm ci
-RUN npx prisma generate --schema=../../prisma/schema.prisma
+COPY prisma/schema.prisma ./prisma/schema.prisma
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/iacms"
+RUN npx prisma generate --schema=./prisma/schema.prisma
+
 
 COPY services/workflow-service/src ./src
 

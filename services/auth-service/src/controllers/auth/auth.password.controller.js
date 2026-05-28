@@ -6,6 +6,7 @@ import Logger from '../../../../../shared/common/logger.js';
 import { TOPICS } from '../../../../../shared/utils/eventBus.js';
 import { validatePassword } from '../../utils/validators.js';
 import { RESET_TOKEN_EXPIRES_HOURS, getEventBus } from '../../utils/auth.helpers.js';
+import { withAuditClient } from '../../utils/audit.helpers.js';
 
 const logger = new Logger('auth-service');
 
@@ -54,14 +55,24 @@ export async function forgotPassword(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId: user.tenantId,
-        entityType: 'user',
-        entityId: user.id,
-        action: 'password_reset_requested',
-        userId: null,
-        metadata: { email: user.email },
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId: user.tenantId,
+              entityType: 'user',
+              entityId: user.id,
+              action: 'password_reset_requested',
+              userId: null,
+              oldValues: null,
+              newValues: { resetTokenIssued: true },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('Password reset requested', { userId: user.id, email: user.email });
@@ -114,14 +125,24 @@ export async function resetPassword(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId: user.tenantId,
-        entityType: 'user',
-        entityId: user.id,
-        action: 'password_reset',
-        userId: null,
-        metadata: { email: user.email },
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId: user.tenantId,
+              entityType: 'user',
+              entityId: user.id,
+              action: 'password_reset',
+              userId: null,
+              oldValues: { resetFlow: 'completed' },
+              newValues: { passwordRotated: true },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('Password reset successful', { userId: user.id, email: user.email });
@@ -193,14 +214,24 @@ export async function changePassword(req, res, next) {
     }
 
     if (bus) {
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId: user.tenantId,
-        entityType: 'user',
-        entityId: user.id,
-        action: 'password_changed',
-        userId: user.id,
-        metadata: {},
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId: user.tenantId,
+              entityType: 'user',
+              entityId: user.id,
+              action: 'password_changed',
+              userId: user.id,
+              oldValues: { mustChangePassword: user.mustChangePassword },
+              newValues: { passwordRotated: true, mustChangePassword: false },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('Password changed', { userId: user.id });

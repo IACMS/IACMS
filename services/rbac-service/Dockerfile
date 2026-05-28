@@ -5,8 +5,9 @@ WORKDIR /app
 COPY services/rbac-service/package*.json ./
 RUN npm ci
 
-COPY services/rbac-service/prisma ./prisma
-RUN npx prisma generate
+COPY prisma/schema.prisma ./prisma/schema.prisma
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/iacms"
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
 COPY services/rbac-service/src ./src
 COPY shared ./shared

@@ -1,8 +1,64 @@
 import prisma from '../config/database.js';
 import { NotFoundError, ValidationError, WorkflowNotPublishedError, WorkflowClosedError } from '../../../../shared/common/errors.js';
 import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
+import {
+  NotFoundError,
+  ValidationError,
+  WorkflowClosedError,
+} from '../../../../shared/common/errors.js';
+import { TOPICS } from '../../../../shared/utils/eventBus.js';
+import { workflowEventBus as eventBus } from '../config/eventBus.js';
+import { assertPublishable } from '../services/invariants.js';
+import {
+  getCachedWorkflowFull,
+  setCachedWorkflowFull,
+  invalidateWorkflowFull,
+} from '../services/workflow.cache.js';
 
-const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'workflow-service');
+function tenantId(req) {
+  const t = req.headers['x-tenant-id'];
+  if (!t) throw new ValidationError('x-tenant-id header required');
+  return t;
+}
+
+function auditActor(req) {
+  const u = req.headers['x-user-id'];
+  return u ? String(u) : null;
+}
+
+function toFullJson(wf) {
+  const steps = [...wf.steps].sort((a, b) => a.position - b.position || a.key.localeCompare(b.key));
+  const transitions = [...wf.transitions].sort(
+    (a, b) => a.fromStepId.localeCompare(b.fromStepId) || a.name.localeCompare(b.name),
+  );
+  return {
+    id: wf.id,
+    tenantId: wf.tenantId,
+    key: wf.key,
+    version: wf.version,
+    status: wf.status,
+    publishedAt: wf.publishedAt ? wf.publishedAt.toISOString() : null,
+    steps: steps.map(s => ({
+      id: s.id,
+      key: s.key,
+      name: s.name,
+      description: s.description,
+      isInitial: s.isInitial,
+      isFinal: s.isFinal,
+      position: s.position,
+      allowedRoleIds: s.allowedRoleIds,
+    })),
+    transitions: transitions.map(t => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      fromStepId: t.fromStepId,
+      toStepId: t.toStepId,
+      allowedRoleIds: t.allowedRoleIds,
+      requiresComment: t.requiresComment,
+    })),
+  };
+}
 
 function emitAudit(payload) {
   eventBus.publish(TOPICS.AUDIT_LOG, payload).catch(() => {});
@@ -51,18 +107,63 @@ function parseTransitionTimeLimits(body) {
 
 export async function getWorkflows(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
-    if (!tenantId) throw new ValidationError('Tenant ID is required');
-    const { status } = req.query;
+    const tenant = tenantId(req);
+    const { status, key } = req.query;
     const workflows = await prisma.workflow.findMany({
       where: {
-        tenantId,
+        tenantId: tenant,
         ...(status && { status }),
+        ...(key && { key }),
       },
+      include: { creator: true },
+      orderBy: [{ key: 'asc' }, { version: 'desc' }],
     });
     res.json({ workflows });
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function getPublishedWorkflow(req, res, next) {
+  try {
+    const { key, tenantId: qTenant } = req.query;
+    if (!key) throw new ValidationError('key query param required');
+    const tenant = String(qTenant || tenantId(req));
+    const wf = await prisma.workflow.findFirst({
+      where: { tenantId: tenant, key, status: 'PUBLISHED' },
+      orderBy: { version: 'desc' },
+      include: {
+        steps: { orderBy: [{ position: 'asc' }, { key: 'asc' }] },
+        transitions: true,
+      },
+    });
+    if (!wf) throw new NotFoundError('Published workflow');
+    res.json(toFullJson(wf));
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function getWorkflowFull(req, res, next) {
+  try {
+    const tenant = tenantId(req);
+    const cached = await getCachedWorkflowFull(req.params.id);
+    if (cached && cached.tenantId === tenant) {
+      return res.json(cached);
+    }
+    const wf = await prisma.workflow.findFirst({
+      where: { id: req.params.id, tenantId: tenant },
+      include: {
+        steps: { orderBy: [{ position: 'asc' }, { key: 'asc' }] },
+        transitions: true,
+      },
+    });
+    if (!wf) throw new NotFoundError('Workflow');
+    const json = toFullJson(wf);
+    if (wf.status === 'PUBLISHED') await setCachedWorkflowFull(wf.id, json);
+    res.json(json);
+  } catch (e) {
+    next(e);
   }
 }
 
@@ -93,8 +194,8 @@ export async function getFullWorkflow(req, res, next) {
     });
     if (!workflow) throw new NotFoundError('Workflow');
     res.json({ workflow });
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 }
 
@@ -119,20 +220,48 @@ export async function getPublishedWorkflow(req, res, next) {
 
 export async function createWorkflow(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
-    const actorId = req.headers['x-user-id'];
-    const { name, key, description, createdBy } = req.body;
-    if (!name || !key || !tenantId) throw new ValidationError('name, key, tenantId are required');
-    const workflow = await prisma.workflow.create({
+    const tenant = tenantId(req);
+    const { key, name, description, createdBy } = req.body;
+    if (!key || !name) throw new ValidationError('key and name are required');
+
+    const existingDraft = await prisma.workflow.findFirst({
+      where: { tenantId: tenant, key, status: 'DRAFT' },
+    });
+    if (existingDraft) throw new ValidationError('A draft workflow with this key already exists');
+
+    const maxV = await prisma.workflow.aggregate({
+      where: { tenantId: tenant, key },
+      _max: { version: true },
+    });
+    const nextVersion = (maxV._max.version || 0) + 1;
+
+    const wf = await prisma.workflow.create({
       data: {
-        name,
+        tenantId: tenant,
         key,
+        name,
         description,
-        tenantId,
-        createdBy: createdBy || actorId || undefined,
+        version: nextVersion,
         status: 'DRAFT',
-        version: 1
+        definition: req.body.definition ?? null,
+        createdBy: createdBy || null,
       },
+      include: { creator: true },
+    });
+    await eventBus.publish(TOPICS.AUDIT_LOG, {
+      tenantId: tenant,
+      entityType: 'workflow',
+      entityId: wf.id,
+      action: 'workflow.created',
+      userId: auditActor(req) || (createdBy ? String(createdBy) : null),
+      oldValues: null,
+      newValues: {
+        key: wf.key,
+        version: wf.version,
+        status: wf.status,
+        name: wf.name,
+      },
+      metadata: {},
     });
     await eventBus.publish(TOPICS.WORKFLOW_CREATED, { workflowId: workflow.id, tenantId: workflow.tenantId });
     emitAudit({
@@ -454,6 +583,50 @@ export async function createWorkflowNewVersion(req, res, next) {
     res.status(201).json({ workflow: newWf });
   } catch (error) {
     next(error);
+    const tenant = tenantId(req);
+    const existing = await prisma.workflow.findFirst({ where: { id: req.params.id, tenantId: tenant } });
+    if (!existing) throw new NotFoundError('Workflow');
+    if (existing.status !== 'DRAFT') throw new WorkflowClosedError('Published workflows cannot be edited');
+
+    const { name, description, definition } = req.body;
+    const workflow = await prisma.workflow.update({
+      where: { id: existing.id },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description }),
+        ...(definition !== undefined && { definition }),
+      },
+    });
+    const oldValues = {};
+    const newValues = {};
+    if (name !== undefined) {
+      oldValues.name = existing.name;
+      newValues.name = workflow.name;
+    }
+    if (description !== undefined) {
+      oldValues.description = existing.description ?? null;
+      newValues.description = workflow.description ?? null;
+    }
+    if (definition !== undefined) {
+      oldValues.definitionPresent = Boolean(existing.definition);
+      newValues.definitionPresent = Boolean(workflow.definition);
+    }
+    if (Object.keys(oldValues).length > 0) {
+      await eventBus.publish(TOPICS.AUDIT_LOG, {
+        tenantId: tenant,
+        entityType: 'workflow',
+        entityId: workflow.id,
+        action: 'workflow.update',
+        userId: auditActor(req),
+        oldValues,
+        newValues,
+        metadata: {},
+      });
+    }
+
+    res.json({ workflow });
+  } catch (e) {
+    next(e);
   }
 }
 
@@ -486,155 +659,159 @@ export async function deleteWorkflow(req, res, next) {
       metadata: { key: workflow.key, version: workflow.version },
     });
 
-    res.json({ message: 'Workflow deleted' });
-  } catch (error) {
-    next(error);
-  }
-}
-
-export async function updateTransition(req, res, next) {
-  try {
-    const tenantId = req.headers['x-tenant-id'];
-    const actorId = req.headers['x-user-id'];
-    const { id, transitionId } = req.params;
-
-    const workflow = await prisma.workflow.findFirst({ where: { id, tenantId } });
-    if (!workflow) throw new NotFoundError('Workflow');
-    if (workflow.status !== 'DRAFT') throw new ValidationError('Only DRAFT workflows can be modified');
-
-    const existing = await prisma.workflowTransition.findFirst({
-      where: { id: transitionId, workflowId: id },
+    const tenant = tenantId(req);
+    const existing = await prisma.workflow.findFirst({
+      where: { id: req.params.id, tenantId: tenant },
+      select: {
+        id: true,
+        key: true,
+        version: true,
+        status: true,
+        _count: { select: { cases: true } },
+      },
     });
-    if (!existing) throw new NotFoundError('Transition');
-
-    const b = req.body || {};
-    const data = {};
-    if (b.name !== undefined) data.name = b.name;
-    if (b.description !== undefined) data.description = b.description;
-    if (b.requiresComment !== undefined) data.requiresComment = b.requiresComment;
-    if (b.allowedRoleIds !== undefined) data.allowedRoleIds = b.allowedRoleIds;
-
-    if (
-      'timeLimitType' in b ||
-      'timeLimitAmount' in b ||
-      'timeLimitUnit' in b
-    ) {
-      const merged = {
-        timeLimitType: 'timeLimitType' in b ? b.timeLimitType : existing.timeLimitType,
-        timeLimitAmount: 'timeLimitAmount' in b ? b.timeLimitAmount : existing.timeLimitAmount,
-        timeLimitUnit: 'timeLimitUnit' in b ? b.timeLimitUnit : existing.timeLimitUnit,
-      };
-      const tl = parseTransitionTimeLimits(merged);
-      data.timeLimitType = tl.timeLimitType;
-      data.timeLimitAmount = tl.timeLimitAmount;
-      data.timeLimitUnit = tl.timeLimitUnit;
-    }
-
-    let nextFrom = existing.fromStepId;
-    if (b.fromTransitionId) {
-      const parent = await prisma.workflowTransition.findFirst({
-        where: { id: b.fromTransitionId, workflowId: id },
-      });
-      if (!parent) throw new ValidationError('fromTransitionId must reference a transition in this workflow');
-      data.fromStepId = parent.toStepId;
-      nextFrom = parent.toStepId;
-    } else if (b.fromStepId !== undefined) {
-      data.fromStepId = b.fromStepId;
-      nextFrom = b.fromStepId;
-    }
-
-    let nextTo = existing.toStepId;
-    const terminal = b.terminal === true || b.terminal === 'true';
-    let toProvided = b.toStepId;
-    if (typeof toProvided === 'string' && toProvided.trim() === '') toProvided = undefined;
-
-    if (terminal && (toProvided === undefined || toProvided === null)) {
-      const wfSteps = await prisma.workflowStep.findMany({ where: { workflowId: id } });
-      const finals = wfSteps.filter((s) => s.isFinal);
-      if (finals.length !== 1) {
-        throw new ValidationError(
-          'Closing transitions without toStepId require exactly one final step, or set toStepId explicitly',
-        );
-      }
-      data.toStepId = finals[0].id;
-      nextTo = finals[0].id;
-    } else if (toProvided !== undefined && toProvided !== null) {
-      data.toStepId = toProvided;
-      nextTo = toProvided;
-    }
-
-    if (data.fromStepId || data.toStepId) {
-      const fromId = data.fromStepId ?? existing.fromStepId;
-      const toId = data.toStepId ?? existing.toStepId;
-      if (fromId === toId) throw new ValidationError('From and to steps must differ');
-      const steps = await prisma.workflowStep.count({
-        where: { workflowId: id, id: { in: [fromId, toId] } },
-      });
-      if (steps !== 2) throw new ValidationError('fromStepId and toStepId must belong to this workflow');
-    }
-
-    const nextName = data.name !== undefined ? data.name : existing.name;
-    if (nextName !== existing.name || nextFrom !== existing.fromStepId) {
-      const dup = await prisma.workflowTransition.findFirst({
-        where: {
-          workflowId: id,
-          fromStepId: nextFrom,
-          name: nextName,
-          NOT: { id: transitionId },
-        },
-      });
-      if (dup) throw new ValidationError('Another transition with this name already exists from that step');
-    }
-
-    if (Object.keys(data).length === 0) {
-      const transition = await prisma.workflowTransition.findUnique({ where: { id: transitionId } });
-      return res.json({ transition });
-    }
-
-    const transition = await prisma.workflowTransition.update({
-      where: { id: transitionId },
-      data,
-    });
-
-    emitAudit({
-      tenantId,
+    if (!existing) throw new NotFoundError('Workflow');
+    if (existing.status !== 'DRAFT') throw new WorkflowClosedError('Only draft workflows may be deleted');
+    if (existing._count.cases > 0) throw new ValidationError('Workflow referenced by cases');
+    await eventBus.publish(TOPICS.AUDIT_LOG, {
+      tenantId: tenant,
       entityType: 'workflow',
-      entityId: id,
-      action: 'workflow_transition_updated',
-      userId: actorId || null,
-      metadata: { transitionId },
+      entityId: existing.id,
+      action: 'workflow.delete',
+      userId: auditActor(req),
+      oldValues: { key: existing.key, version: existing.version, status: existing.status },
+      newValues: { deleted: true },
+      metadata: {},
     });
-
-    res.json({ transition });
-  } catch (error) {
-    next(error);
+    await prisma.workflow.delete({ where: { id: existing.id } });
+    res.json({ message: 'Workflow deleted' });
+  } catch (e) {
+    next(e);
   }
 }
 
 export async function publishWorkflow(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
+    const tenant = tenantId(req);
     const workflowId = req.params.id;
-    const workflow = await prisma.workflow.findFirst({
-      where: { id: workflowId, tenantId },
-      include: { steps: true, transitions: true }
-    });
-    
-    if (!workflow) throw new NotFoundError('Workflow');
-    if (workflow.status !== 'DRAFT') throw new ValidationError('Workflow is already published or archived');
 
-    // Business Invariant: Must have exactly one initial step
-    const initialSteps = workflow.steps.filter(s => s.isInitial);
-    if (initialSteps.length !== 1) {
-      throw new ValidationError(`Workflow must have exactly one initial step. Found ${initialSteps.length}.`);
+    const workflow = await prisma.workflow.findFirst({
+      where: {
+        id: workflowId,
+        tenantId: tenant,
+      },
+      include: {
+        steps: true,
+        transitions: true,
+      },
+    });
+
+    if (!workflow) {
+      throw new NotFoundError('Workflow');
     }
 
+    if (workflow.status !== 'DRAFT') {
+      throw new ValidationError('Workflow is already published or archived');
+    }
+
+    // Business invariant: exactly one initial step
+    const initialSteps = workflow.steps.filter((s) => s.isInitial);
+
+    if (initialSteps.length !== 1) {
+      throw new ValidationError(
+        `Workflow must have exactly one initial step. Found ${initialSteps.length}.`
+      );
+    }
+
+    // Optional advanced validator from second branch
+    if (typeof assertPublishable === 'function') {
+      assertPublishable(workflow);
+    }
+
+    // Archive/retire previous published versions with same key
     await prisma.workflow.updateMany({
       where: {
-        tenantId,
+        tenantId: tenant,
         key: workflow.key,
         status: 'PUBLISHED',
         id: { not: workflowId },
+      },
+      data: {
+        status: 'ARCHIVED',
+      },
+    });
+
+    await prisma.workflow.update({
+      where: { id: workflow.id },
+      data: {
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+
+        // Keep snapshot support if schema supports it
+        definition:
+          workflow.definition ??
+          (typeof toFullJson === 'function'
+            ? toFullJson(workflow)
+            : undefined),
+      },
+    });
+
+    const published = await prisma.workflow.findUnique({
+      where: { id: workflow.id },
+      include: {
+        steps: {
+          orderBy: [{ position: 'asc' }, { key: 'asc' }],
+        },
+        transitions: true,
+      },
+    });
+
+    // Optional workflow cache support
+    if (
+      typeof setCachedWorkflowFull === 'function' &&
+      typeof toFullJson === 'function'
+    ) {
+      await setCachedWorkflowFull(
+        workflow.id,
+        toFullJson(published)
+      );
+    }
+
+    await eventBus.publish(TOPICS.WORKFLOW_PUBLISHED, {
+      workflowId: workflow.id,
+      tenantId: workflow.tenantId,
+      key: workflow.key,
+      version: workflow.version,
+      publishedAt: published.publishedAt.toISOString(),
+    });
+
+    emitAudit({
+      tenantId: tenant,
+      entityType: 'workflow',
+      entityId: workflow.id,
+      action: 'workflow.publish',
+      userId:
+        typeof auditActor === 'function'
+          ? auditActor(req)
+          : req.headers['x-user-id'] || null,
+      oldValues: {
+        status: 'DRAFT',
+      },
+      newValues: {
+        status: 'PUBLISHED',
+        publishedAt: published.publishedAt.toISOString(),
+      },
+    });
+
+    res.json({ workflow: published });
+  } catch (e) {
+    if (e.code === 'WORKFLOW_NOT_PUBLISHABLE') {
+      return next(new ValidationError(e.message));
+    }
+
+    next(e);
+  }
+}
       },
       data: { status: 'ARCHIVED' },
     });
@@ -664,5 +841,126 @@ export async function publishWorkflow(req, res, next) {
     res.json({ workflow: updated });
   } catch (error) {
     next(error);
+  }
+}
+    if (!src) throw new NotFoundError('Workflow');
+    if (src.status === 'ARCHIVED') throw new WorkflowClosedError('Cannot fork an archived workflow');
+
+    const maxRow = await prisma.workflow.findFirst({
+      where: { tenantId: tenant, key: src.key },
+      orderBy: { version: 'desc' },
+    });
+
+    const newVersion = (maxRow?.version || src.version) + 1;
+
+    const newWf = await prisma.$transaction(async tx => {
+      const w = await tx.workflow.create({
+        data: {
+          tenantId: tenant,
+          key: src.key,
+          name: src.name,
+          description: src.description,
+          version: newVersion,
+          status: 'DRAFT',
+          definition: src.definition,
+          createdBy: req.body.createdBy || src.createdBy,
+        },
+      });
+      const idMap = new Map();
+      for (const s of src.steps) {
+        const ns = await tx.workflowStep.create({
+          data: {
+            workflowId: w.id,
+            key: s.key,
+            name: s.name,
+            description: s.description,
+            isInitial: s.isInitial,
+            isFinal: s.isFinal,
+            position: s.position,
+            allowedRoleIds: [...s.allowedRoleIds],
+          },
+        });
+        idMap.set(s.id, ns.id);
+      }
+      for (const t of src.transitions) {
+        await tx.workflowTransition.create({
+          data: {
+            workflowId: w.id,
+            name: t.name,
+            description: t.description,
+            fromStepId: idMap.get(t.fromStepId),
+            toStepId: idMap.get(t.toStepId),
+            allowedRoleIds: [...t.allowedRoleIds],
+            requiresComment: t.requiresComment,
+            requiresAttachment: t.requiresAttachment,
+          },
+        });
+      }
+      return w;
+    });
+
+    const out = await prisma.workflow.findUnique({
+      where: { id: newWf.id },
+      include: {
+        steps: { orderBy: [{ position: 'asc' }, { key: 'asc' }] },
+        transitions: true,
+      },
+    });
+    await eventBus.publish(TOPICS.AUDIT_LOG, {
+      tenantId: tenant,
+      entityType: 'workflow',
+      entityId: newWf.id,
+      action: 'workflow.new_version',
+      userId: auditActor(req),
+      oldValues: { sourceWorkflowId: src.id, sourceVersion: src.version },
+      newValues: { version: newWf.version, status: newWf.status },
+      metadata: {},
+    });
+
+    res.status(201).json({ workflow: out });
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function archiveWorkflow(req, res, next) {
+  try {
+    const tenant = tenantId(req);
+    const wf = await prisma.workflow.findFirst({ where: { id: req.params.id, tenantId: tenant } });
+    if (!wf) throw new NotFoundError('Workflow');
+    if (wf.status !== 'PUBLISHED') throw new ValidationError('Only published workflows may be archived');
+    const newer = await prisma.workflow.findFirst({
+      where: {
+        tenantId: tenant,
+        key: wf.key,
+        status: 'PUBLISHED',
+        version: { gt: wf.version },
+      },
+    });
+    if (!newer) throw new ValidationError('Cannot archive the latest published version for this key');
+
+    await prisma.workflow.update({
+      where: { id: wf.id },
+      data: { status: 'ARCHIVED' },
+    });
+    await invalidateWorkflowFull(wf.id);
+    await eventBus.publish(TOPICS.WORKFLOW_ARCHIVED, {
+      workflowId: wf.id,
+      tenantId: tenant,
+      key: wf.key,
+      version: wf.version,
+    });
+    await eventBus.publish(TOPICS.AUDIT_LOG, {
+      tenantId: tenant,
+      entityType: 'workflow',
+      entityId: wf.id,
+      action: 'workflow.archive',
+      userId: auditActor(req),
+      oldValues: { status: 'PUBLISHED' },
+      newValues: { status: 'ARCHIVED' },
+    });
+    res.json({ message: 'Workflow archived', id: wf.id });
+  } catch (e) {
+    next(e);
   }
 }

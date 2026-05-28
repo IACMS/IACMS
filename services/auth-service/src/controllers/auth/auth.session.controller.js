@@ -12,6 +12,7 @@ import {
   getEventBus,
   generateTokens,
 } from '../../utils/auth.helpers.js';
+import { withAuditClient } from '../../utils/audit.helpers.js';
 
 const logger = new Logger('auth-service');
 
@@ -79,14 +80,24 @@ export async function login(req, res, next) {
       }
       const failBus = getEventBus();
       if (failBus) {
-        failBus.publish(TOPICS.AUDIT_LOG, {
-          tenantId: user.tenantId,
-          entityType: 'user',
-          entityId: user.id,
-          action: 'login_failure',
-          userId: null,
-          metadata: { email, ip: req.ip },
-        }).catch(() => {});
+        failBus
+          .publish(
+            TOPICS.AUDIT_LOG,
+            withAuditClient(
+              {
+                tenantId: user.tenantId,
+                entityType: 'user',
+                entityId: user.id,
+                action: 'login_failure',
+                userId: null,
+                oldValues: null,
+                newValues: { outcome: 'failure' },
+                metadata: { reason: 'invalid_credentials' },
+              },
+              req,
+            ),
+          )
+          .catch(() => {});
       }
       throw new UnauthorizedError('Invalid credentials');
     }
@@ -109,14 +120,24 @@ export async function login(req, res, next) {
       bus.publish(TOPICS.USER_LOGGED_IN, { userId: user.id, tenantId: user.tenantId })
         .catch(err => logger.warn('Failed to publish user.logged_in event', { error: err.message }));
 
-      bus.publish(TOPICS.AUDIT_LOG, {
-        tenantId: user.tenantId,
-        entityType: 'user',
-        entityId: user.id,
-        action: 'login_success',
-        userId: user.id,
-        metadata: { email: user.email, ip: req.ip },
-      }).catch(() => {});
+      bus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId: user.tenantId,
+              entityType: 'user',
+              entityId: user.id,
+              action: 'login_success',
+              userId: user.id,
+              oldValues: null,
+              newValues: { outcome: 'success' },
+              metadata: {},
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('User logged in', { userId: user.id, tenantId: user.tenantId });
@@ -192,14 +213,24 @@ export async function logout(req, res, next) {
     }
     const logoutBus = getEventBus();
     if (logoutBus && req.user) {
-      logoutBus.publish(TOPICS.AUDIT_LOG, {
-        tenantId: req.user.tenantId,
-        entityType: 'user',
-        entityId: req.user.id,
-        action: 'logout',
-        userId: req.user.id,
-        metadata: {},
-      }).catch(() => {});
+      logoutBus
+        .publish(
+          TOPICS.AUDIT_LOG,
+          withAuditClient(
+            {
+              tenantId: req.user.tenantId,
+              entityType: 'user',
+              entityId: req.user.id,
+              action: 'logout',
+              userId: req.user.id,
+              oldValues: null,
+              newValues: { sessionEnded: true },
+              metadata: { source: 'session' },
+            },
+            req,
+          ),
+        )
+        .catch(() => {});
     }
 
     logger.info('User logged out', { userId: req.user?.id });

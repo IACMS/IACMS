@@ -169,11 +169,14 @@ services:
       PORT: 3003
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
+      WORKFLOW_SERVICE_URL: http://workflow-service:3004
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      workflow-service:
+        condition: service_started
     networks:
       - iacms-network
 
