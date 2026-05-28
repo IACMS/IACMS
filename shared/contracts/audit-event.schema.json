@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://iacms/contracts/audit-event.schema.json",
+  "title": "AuditLogKafkaEvent",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["tenantId", "entityType", "entityId", "action"],
+  "properties": {
+    "tenantId": { "type": "string", "format": "uuid" },
+    "relatedTenantId": {
+      "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+    },
+    "entityType": { "type": "string", "minLength": 1 },
+    "entityId": { "type": "string", "format": "uuid" },
+    "action": { "type": "string", "minLength": 1 },
+    "userId": {
+      "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+    },
+    "oldValues": { "type": ["object", "null"] },
+    "newValues": { "type": ["object", "null"] },
+    "metadata": { "type": ["object", "null"] },
+    "ipAddress": { "type": ["string", "null"] },
+    "userAgent": { "type": ["string", "null"] }
+  }
+}

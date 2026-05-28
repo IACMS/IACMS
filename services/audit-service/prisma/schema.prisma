@@ -1,5 +1,5 @@
 // Audit Service Prisma Schema
-// Contains: audit_logs
+// Contains: audit_logs (mirror of root for service-local generate)
 
 generator client {
   provider = "prisma-client-js"
@@ -15,7 +15,8 @@ model Tenant {
   name String
   code String @unique
 
-  auditLogs AuditLog[]
+  auditLogs        AuditLog[]
+  relatedAuditLogs AuditLog[] @relation("AuditRelatedTenant")
 
   @@map("tenants")
 }
@@ -29,28 +30,33 @@ model User {
 }
 
 model AuditLog {
-  id         String   @id @default(uuid()) @db.Uuid
-  tenantId   String   @map("tenant_id") @db.Uuid
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id") @db.Uuid
-  action     String
-  userId     String?  @map("user_id") @db.Uuid
-  oldValues  Json?    @map("old_values")
-  newValues  Json?    @map("new_values")
-  metadata   Json?
-  ipAddress  String?  @map("ip_address")
-  userAgent  String?  @map("user_agent")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  relatedTenantId String?  @map("related_tenant_id") @db.Uuid
+  entityType      String   @map("entity_type")
+  entityId        String   @map("entity_id") @db.Uuid
+  action          String
+  userId          String?  @map("user_id") @db.Uuid
+  oldValues       Json?    @map("old_values")
+  newValues       Json?    @map("new_values")
+  metadata        Json?
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  createdAt       DateTime @default(now()) @map("created_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user   User?  @relation(fields: [userId], references: [id])
+  tenant          Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  relatedTenant   Tenant? @relation("AuditRelatedTenant", fields: [relatedTenantId], references: [id])
+  user            User?   @relation(fields: [userId], references: [id])
 
   @@index([tenantId])
+  @@index([relatedTenantId])
   @@index([entityType, entityId])
   @@index([userId])
   @@index([action])
   @@index([createdAt])
   @@index([tenantId, createdAt])
+  @@index([tenantId, entityType, entityId, createdAt])
+  @@index([relatedTenantId, entityType, entityId, createdAt])
+  @@index([tenantId, userId, createdAt])
   @@map("audit_logs")
 }
-

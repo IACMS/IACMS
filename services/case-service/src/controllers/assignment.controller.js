@@ -1,5 +1,5 @@
 import prisma from '../config/database.js';
-import EventBus from '../../../shared/utils/eventBus.js';
+import EventBus from '../../../../shared/utils/eventBus.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
 

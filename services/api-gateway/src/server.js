@@ -26,6 +26,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Service URLs
+/** Forward identity + RBAC role ids to downstream microservices */
+function attachDownstreamHeaders(proxyReq, req) {
+  if (!req.user) return;
+  proxyReq.setHeader('x-user-id', req.user.id);
+  proxyReq.setHeader('x-tenant-id', req.user.tenantId);
+  const roleIds = req.rbacEnvelope?.roleIds;
+  if (Array.isArray(roleIds) && roleIds.length) {
+    proxyReq.setHeader('x-user-roles', roleIds.join(','));
+  }
+}
+
 const services = {
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
   rbac: process.env.RBAC_SERVICE_URL || 'http://localhost:3002',
@@ -99,10 +110,7 @@ async function startServer() {
     changeOrigin: true,
     pathRewrite: (path) => '/auth' + path,
     onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
+      attachDownstreamHeaders(proxyReq, req);
     },
     onError: (err, req, res) => {
       console.error('Proxy error (auth):', err.message);
@@ -114,6 +122,9 @@ async function startServer() {
     target: services.auth,
     changeOrigin: true,
     pathRewrite: (path) => '/tenants' + path,
+    onProxyReq: (proxyReq, req) => {
+      attachDownstreamHeaders(proxyReq, req);
+    },
     onError: (err, req, res) => {
       console.error('Proxy error (tenants):', err.message);
       res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Auth service unavailable' } });
@@ -125,10 +136,7 @@ async function startServer() {
     changeOrigin: true,
     pathRewrite: (path) => path,
     onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
+      attachDownstreamHeaders(proxyReq, req);
     },
     onError: (err, req, res) => {
       console.error('Proxy error (rbac):', err.message);
@@ -141,10 +149,7 @@ async function startServer() {
     changeOrigin: true,
     pathRewrite: (path) => '/cases' + path,
     onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
+      attachDownstreamHeaders(proxyReq, req);
     },
     onError: (err, req, res) => {
       console.error('Proxy error (cases):', err.message);
@@ -157,10 +162,7 @@ async function startServer() {
     changeOrigin: true,
     pathRewrite: (path) => '/workflows' + path,
     onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
+      attachDownstreamHeaders(proxyReq, req);
     },
     onError: (err, req, res) => {
       console.error('Proxy error (workflows):', err.message);
@@ -173,10 +175,7 @@ async function startServer() {
     changeOrigin: true,
     pathRewrite: (path) => '/referrals' + path,
     onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
+      attachDownstreamHeaders(proxyReq, req);
     },
     onError: (err, req, res) => {
       console.error('Proxy error (referrals):', err.message);
@@ -189,10 +188,7 @@ async function startServer() {
     changeOrigin: true,
     pathRewrite: (path) => '/audit' + path,
     onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
+      attachDownstreamHeaders(proxyReq, req);
     },
     onError: (err, req, res) => {
       console.error('Proxy error (audit):', err.message);
@@ -205,10 +201,7 @@ async function startServer() {
     changeOrigin: true,
     pathRewrite: (path) => '/integrations' + path,
     onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
+      attachDownstreamHeaders(proxyReq, req);
     },
     onError: (err, req, res) => {
       console.error('Proxy error (integrations):', err.message);
@@ -221,10 +214,7 @@ async function startServer() {
     changeOrigin: true,
     pathRewrite: (path) => '/notifications' + path,
     onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
+      attachDownstreamHeaders(proxyReq, req);
     },
     onError: (err, req, res) => {
       console.error('Proxy error (notifications):', err.message);

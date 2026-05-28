@@ -89,10 +89,18 @@ export async function getUserPermissions(req, res, next) {
 
     // Return permissions as an array of "resource:action" strings
     const permissions = Array.from(permissionSet);
+    const roleIds = Array.from(
+      new Set(
+        userRoles
+          .filter(ur => ur.role?.isActive)
+          .map(ur => ur.role.id),
+      ),
+    );
 
     res.json({
       userId,
       permissions,
+      roleIds,
       details: permissionDetails,
       roles: userRoles.map(ur => ({
         id: ur.role.id,

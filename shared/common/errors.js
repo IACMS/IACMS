@@ -44,3 +44,33 @@ export class ConflictError extends AppError {
   }
 }
 
+export class InvalidTransitionError extends AppError {
+  constructor(message = 'Invalid workflow transition') {
+    super(message, 400, 'INVALID_TRANSITION');
+  }
+}
+
+export class WorkflowClosedError extends AppError {
+  constructor(message = 'Workflow is locked (not editable in current status)') {
+    super(message, 409, 'WORKFLOW_CLOSED');
+  }
+}
+
+export class WorkflowNotPublishedError extends AppError {
+  constructor(message = 'No published workflow matches the request') {
+    super(message, 409, 'WORKFLOW_NOT_PUBLISHED');
+  }
+}
+
+export class TenantMismatchError extends AppError {
+  constructor(message = 'Tenant scope mismatch') {
+    super(message, 403, 'TENANT_MISMATCH');
+  }
+}
+
+export class InvalidReferralStateError extends AppError {
+  constructor(message = 'Referral cannot be transitioned from this state') {
+    super(message, 409, 'INVALID_REFERRAL_STATE');
+  }
+}
+
