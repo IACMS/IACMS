@@ -73,6 +73,12 @@ registerSubscriptions().catch(err =>
   logger.warn('Kafka subscriptions failed to initialize — service will still handle HTTP requests', { error: err.message })
 );
 
+// Log when the Kafka consumer becomes active (helps debug missed emails after Kafka starts late)
+setInterval(() => {
+  if (eventBus.consumerConnected) return;
+  logger.warn('Kafka consumer not connected — notification emails will not be sent until Kafka is reachable');
+}, 60_000).unref();
+
 app.use('/notifications', notificationRoutes);
 
 app.use(errorHandler);

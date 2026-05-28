@@ -24,6 +24,7 @@
     "docker:up": "cd infrastructure && docker-compose up -d postgres redis kafka zookeeper",
     "docker:down": "cd infrastructure && docker-compose down",
     "docker:all": "cd infrastructure && docker-compose up -d",
+    "network:env": "bash infrastructure/setup-network-env.sh",
     "docker:logs": "cd infrastructure && docker-compose logs -f",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate deploy",
