@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import tenantRoutes from './routes/tenant.routes.js';
@@ -23,6 +24,15 @@ const logger = new Logger('auth-service');
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Public static assets (tenant logos, etc.)
+const uploadsDir = path.join(process.cwd(), 'uploads');
+try {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+} catch {
+  // ignore
+}
+app.use('/tenants/assets', express.static(uploadsDir, { maxAge: '1h' }));
 
 // Health check
 app.get('/health', (req, res) => {

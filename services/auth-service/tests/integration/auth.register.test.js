@@ -116,6 +116,39 @@ describe('mustChangePassword enforcement', () => {
     expect(res.status).toBe(200);
   });
 
+  it('allows first-login change-password without current password when mustChangePassword', async () => {
+    const { body: { accessToken: adminToken } } = await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+    const email = `forced-pw-${Date.now()}@test-org.com`;
+    createdUserEmails.push(email);
+    const tempPassword = 'TempPass123!';
+
+    const createRes = await request(app)
+      .post('/auth/users/create')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        email,
+        firstName: 'Forced',
+        lastName: 'Change',
+        tenantCode: TENANT_CODE,
+      });
+    expect(createRes.status).toBe(201);
+
+    await prisma.user.updateMany({
+      where: { email },
+      data: { passwordHash: await bcrypt.hash(tempPassword, 10), mustChangePassword: true },
+    });
+
+    const loginRes = await loginAs(email, tempPassword);
+    expect(loginRes.body.user.mustChangePassword).toBe(true);
+
+    const changeRes = await request(app)
+      .post('/auth/change-password')
+      .set('Authorization', `Bearer ${loginRes.body.accessToken}`)
+      .send({ newPassword: 'NewPass456!' });
+
+    expect(changeRes.status).toBe(200);
+  });
+
   it('new token after password change has mustChangePassword: false', async () => {
     await request(app)
       .post('/auth/change-password')
@@ -132,6 +165,31 @@ describe('mustChangePassword enforcement', () => {
 
     expect(profileRes.status).toBe(200);
     expect(profileRes.body.user.email).toBe(testUserEmail);
+  });
+});
+
+// ── Self-service registration ─────────────────────────────────────────────────
+describe('POST /auth/register', () => {
+  it('returns mustChangePassword true for new users', async () => {
+    const email = `self-reg-${Date.now()}@test-org.com`;
+    createdUserEmails.push(email);
+
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ email, password: 'Test1234', firstName: 'New', lastName: 'User', tenantCode: TENANT_CODE });
+
+    expect(res.status).toBe(201);
+    expect(res.body.user.mustChangePassword).toBe(true);
+    expect(res.body.user.firstName).toBe('New');
+    expect(res.body.user.lastName).toBe('User');
+  });
+
+  it('returns 400 when first name is missing', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ email: `noname-${Date.now()}@test-org.com`, password: 'Test1234', lastName: 'Only', tenantCode: TENANT_CODE });
+
+    expect(res.status).toBe(400);
   });
 });
 
@@ -156,7 +214,7 @@ describe('createUser role assignment', () => {
       .send({ email, firstName: 'Role', lastName: 'Test', tenantCode: TENANT_CODE, roleId: ADMIN_ROLE_ID });
 
     expect(res.status).toBe(201);
-    expect(res.body.user.role).toMatchObject({ id: ADMIN_ROLE_ID, name: 'admin' });
+    expect(res.body.user.role).toMatchObject({ id: ADMIN_ROLE_ID, name: 'tenant_admin' });
 
     const user = await prisma.user.findFirst({ where: { email } });
     const userRole = await prisma.userRole.findFirst({ where: { userId: user.id } });

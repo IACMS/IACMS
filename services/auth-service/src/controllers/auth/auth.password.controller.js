@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import prisma from '../../config/database.js';
-import { ValidationError, NotFoundError } from '../../../../../shared/common/errors.js';
+import { ValidationError, NotFoundError, UnauthorizedError } from '../../../../../shared/common/errors.js';
 import Logger from '../../../../../shared/common/logger.js';
 import { TOPICS } from '../../../../../shared/utils/eventBus.js';
 import { validatePassword } from '../../utils/validators.js';
@@ -153,6 +153,27 @@ export async function resetPassword(req, res, next) {
 }
 
 /**
+ * GET /auth/password-status
+ * Returns the live `mustChangePassword` flag from the database (not the JWT snapshot).
+ * No `requirePasswordChange` guard — used by the gateway for session/status and first-login flows.
+ */
+export async function getPasswordStatus(req, res, next) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedError('Not authenticated');
+
+    const row = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { mustChangePassword: true },
+    });
+
+    res.json({ mustChangePassword: row?.mustChangePassword ?? false });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * POST /auth/change-password
  * Allows an authenticated user to change their own password (including forced first-login change).
  */
@@ -160,17 +181,25 @@ export async function changePassword(req, res, next) {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword) throw new ValidationError('Current password is required');
     if (!newPassword) throw new ValidationError('New password is required');
-    if (currentPassword === newPassword) throw new ValidationError('New password must be different from current password');
 
     validatePassword(newPassword);
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) throw new NotFoundError('User');
 
-    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!isValid) throw new ValidationError('Current password is incorrect');
+    const forcedFirstLogin = user.mustChangePassword === true;
+
+    if (forcedFirstLogin) {
+      // Temporary password from email is not required — user sets their own password once.
+    } else {
+      if (!currentPassword) throw new ValidationError('Current password is required');
+      if (currentPassword === newPassword) {
+        throw new ValidationError('New password must be different from current password');
+      }
+      const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isValid) throw new ValidationError('Current password is incorrect');
+    }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({

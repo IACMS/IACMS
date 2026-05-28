@@ -1,7 +1,7 @@
 import express from 'express';
 import { login, refreshToken, logout } from '../controllers/auth/auth.session.controller.js';
 import { register, createUser, verifyEmail, resendVerification } from '../controllers/auth/auth.register.controller.js';
-import { forgotPassword, resetPassword, changePassword } from '../controllers/auth/auth.password.controller.js';
+import { forgotPassword, resetPassword, changePassword, getPasswordStatus } from '../controllers/auth/auth.password.controller.js';
 import { getProfile, updateProfile }   from '../controllers/auth/auth.profile.controller.js';
 import {
   listUsers,
@@ -25,13 +25,14 @@ router.post('/reset-password',  resetPassword);
 router.post('/verify-email',    verifyEmail);
 
 // ── Protected routes (require JWT) ───────────────────────────────────────
-// change-password is intentionally excluded from requirePasswordChange so users
-// with mustChangePassword=true can still reach it to complete the required change.
+// change-password and resend-verification are excluded from requirePasswordChange so
+// new accounts can verify email and set a new password before other protected routes.
 router.post('/change-password',        authenticateToken, changePassword);
-router.post('/logout',                 authenticateToken, requirePasswordChange, logout);
+router.get('/password-status',         authenticateToken, getPasswordStatus);
+router.post('/resend-verification',    authenticateToken, resendVerification);
+router.post('/logout',                 authenticateToken, logout);
 router.get('/profile',                 authenticateToken, requirePasswordChange, getProfile);
 router.patch('/profile',               authenticateToken, requirePasswordChange, updateProfile);
-router.post('/resend-verification',    authenticateToken, requirePasswordChange, resendVerification);
 
 // ── Admin: create user ────────────────────────────────────────────────────
 router.post('/users/create',    authenticateToken, requirePasswordChange, createUser);

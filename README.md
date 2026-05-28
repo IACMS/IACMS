@@ -280,6 +280,87 @@ KAFKA_BROKERS=localhost:9092
 
 ---
 
+## Run on your LAN (network / IP access)
+
+Other devices on the same network reach services via your machine’s LAN IP (not `localhost`).
+
+### Option A — all backend services in Docker (recommended)
+
+1. Generate `infrastructure/.env` (CORS, Kafka, email links):
+
+```bash
+npm run network:env
+# or: cd infrastructure && ./setup-network-env.sh
+```
+
+2. Start everything:
+
+```bash
+cd infrastructure
+docker compose up -d
+```
+
+3. From the repo root, migrate/seed if this is a fresh DB:
+
+```bash
+npx prisma migrate deploy
+npx prisma db seed
+```
+
+4. Frontend (in `../client` or your client folder):
+
+```bash
+# client/.env — use your LAN IP from setup-network-env.sh
+VITE_API_URL=http://192.168.x.x:3000
+
+npm run dev -- --host
+```
+
+Open `http://<your-lan-ip>:5173` on any device on the LAN. API gateway: `http://<your-lan-ip>:3000/health`.
+
+Published ports (all bind on `0.0.0.0` on the host):
+
+| Service | Port |
+|---------|------|
+| API Gateway | 3000 |
+| Auth | 3001 |
+| RBAC | 3002 |
+| Case | 3003 |
+| Workflow | 3004 |
+| Referral | 3005 |
+| Audit | 3006 |
+| Integration | 3007 |
+| Notification | 3008 |
+| Postgres | 5433 |
+| Redis | 6379 |
+| Kafka | 9092 |
+
+The UI only needs the gateway (`3000`). Individual service ports are for debugging or direct API calls.
+
+### Option B — infrastructure in Docker, microservices with `npm start`
+
+1. Start infra only:
+
+```bash
+npm run docker:up
+```
+
+2. In `services/api-gateway/.env`, add your LAN origin to CORS (comma-separated):
+
+```env
+CORS_ORIGIN=http://192.168.x.x:5173,http://localhost:5173
+```
+
+3. Start each service in its own terminal (`npm start` or `npm run dev` in `services/*`). Node listens on all interfaces by default.
+
+4. Set `VITE_API_URL=http://192.168.x.x:3000` and run the client with `--host` as above.
+
+### Firewall
+
+Allow inbound TCP on the ports you use (at least `3000` and `5173`).
+
+---
+
 ## Troubleshooting
 
 | Problem | Solution |

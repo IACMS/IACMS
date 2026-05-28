@@ -6,6 +6,27 @@ generator client {
   provider = "prisma-client-js"
 }
 
+/// Per-service clients (outputs relative to this `prisma/` directory). Run `npx prisma generate` from repo root.
+generator clientAuth {
+  provider = "prisma-client-js"
+  output   = "../services/auth-service/src/generated/prisma"
+}
+
+generator clientCase {
+  provider = "prisma-client-js"
+  output   = "../services/case-service/src/generated/prisma"
+}
+
+generator clientWorkflow {
+  provider = "prisma-client-js"
+  output   = "../services/workflow-service/src/generated/prisma"
+}
+
+generator clientReferral {
+  provider = "prisma-client-js"
+  output   = "../services/referral-service/src/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -18,15 +39,19 @@ enum WorkflowStatus {
 }
 
 model Tenant {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String
-  code        String   @unique
-  description String?  @db.Text
-  config      Json?
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                   String   @id @default(uuid()) @db.Uuid
+  name                 String
+  code                 String   @unique
+  description          String?  @db.Text
+  config               Json?
+  isActive             Boolean  @default(true) @map("is_active")
+  /** First user who registered this tenant — tenant administrator bootstrap. */
+  registeredByUserId   String?  @map("registered_by_user_id") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
+  // Relations
+  registeredBy     User?            @relation("TenantRegistrar", fields: [registeredByUserId], references: [id], onDelete: SetNull)
   users            User[]
   roles            Role[]
   workflows        Workflow[]
@@ -85,6 +110,7 @@ model User {
   webhooksCreated       Webhook[]
   integrationsCreated   Integration[]
   userRolesAssigned     UserRole[]       @relation("RoleAssigner")
+  tenantsRegistered     Tenant[]         @relation("TenantRegistrar")
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -179,6 +205,7 @@ model Workflow {
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
+  // Relations
   tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   creator     User?                @relation(fields: [createdBy], references: [id])
   cases       Case[]
@@ -242,7 +269,11 @@ model Case {
   originatingTenantId String?   @map("originating_tenant_id") @db.Uuid
   currentTenantId     String?   @map("current_tenant_id") @db.Uuid
   referralStatus      String    @default("none") @map("referral_status")
+  workflowId          String    @map("workflow_id") @db.Uuid
+  workflowVersion     Int       @default(1) @map("workflow_version")
   caseNumber          String    @map("case_number")
+  currentStepId       String?   @map("current_step_id") @db.Uuid
+  closedAt            DateTime? @map("closed_at")
   title               String
   description         String?   @db.Text
   type                String
@@ -275,8 +306,10 @@ model Case {
   attachments       CaseAttachment[]
 
   @@unique([tenantId, caseNumber])
-  @@index([tenantId])
-  @@index([caseNumber])
+  @@index([tenantId, currentStepId])
+  @@index([tenantId, workflowId, closedAt])
+  @@index([currentTenantId, referralStatus])
+  @@index([originatingTenantId, referralStatus])
   @@index([tenantId, status])
   @@index([tenantId, type])
   @@index([tenantId, assignedTo])
@@ -300,7 +333,7 @@ model CaseHistory {
   fromStepId     String?  @map("from_step_id") @db.Uuid
   toStepId       String   @map("to_step_id") @db.Uuid
   actorId        String   @map("actor_id") @db.Uuid
-  comment        String?
+  comment        String?  @db.Text
   transitionedAt DateTime @default(now()) @map("transitioned_at")
 
   case       Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
@@ -373,8 +406,8 @@ model CaseReferral {
   @@index([fromTenantId])
   @@index([toTenantId])
   @@index([status])
-  @@index([fromTenantId, status])
-  @@index([toTenantId, status])
+  @@index([fromTenantId, status, referredAt(sort: Desc)])
+  @@index([toTenantId, status, referredAt(sort: Desc)])
   @@index([referredAt])
   @@index([caseId, status])
   @@index([toTenantId, status, referredAt(sort: Desc)])
@@ -395,14 +428,18 @@ model CaseAttachment {
   uploadedBy       String    @map("uploaded_by") @db.Uuid
   uploadedAt       DateTime  @default(now()) @map("uploaded_at")
   deletedAt        DateTime? @map("deleted_at")
+  workflowStepId   String?   @map("workflow_step_id") @db.Uuid
 
-  case     Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  // Relations
+  case         Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  workflowStep WorkflowStep? @relation(fields: [workflowStepId], references: [id], onDelete: SetNull)
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   uploader User   @relation(fields: [uploadedBy], references: [id])
 
   @@index([caseId])
   @@index([tenantId])
   @@index([uploadedBy])
+  @@index([workflowStepId])
   @@map("case_attachments")
 }
 

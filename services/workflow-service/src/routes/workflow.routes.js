@@ -4,18 +4,26 @@ import {
   getPublishedWorkflow,
   getWorkflowFull,
   getWorkflow,
+  getFullWorkflow,
+  getPublishedWorkflow,
   createWorkflow,
+  createWorkflowNewVersion,
   updateWorkflow,
   deleteWorkflow,
-  publishWorkflow,
-  newWorkflowVersion,
-  archiveWorkflow,
+  addStep,
+  updateStep,
+  deleteStep,
+  addTransition,
+  updateTransition,
+  deleteTransition,
+  publishWorkflow
 } from '../controllers/workflow.controller.js';
 import { createStep, updateStep, deleteStep } from '../controllers/step.controller.js';
 import { createTransition, deleteTransition } from '../controllers/transition.controller.js';
 
 const router = express.Router();
 
+router.get('/published', getPublishedWorkflow); // Note: /published must come before /:id
 router.get('/', getWorkflows);
 router.get('/published', getPublishedWorkflow);
 router.post('/', createWorkflow);

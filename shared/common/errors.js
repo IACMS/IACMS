@@ -45,7 +45,7 @@ export class ConflictError extends AppError {
 }
 
 export class InvalidTransitionError extends AppError {
-  constructor(message = 'Invalid workflow transition') {
+  constructor(message = 'Invalid transition for current case state') {
     super(message, 400, 'INVALID_TRANSITION');
   }
 }
@@ -63,7 +63,7 @@ export class WorkflowNotPublishedError extends AppError {
 }
 
 export class TenantMismatchError extends AppError {
-  constructor(message = 'Tenant scope mismatch') {
+  constructor(message = 'Tenant mismatch detected') {
     super(message, 403, 'TENANT_MISMATCH');
   }
 }

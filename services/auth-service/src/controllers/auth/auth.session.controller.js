@@ -54,10 +54,10 @@ export async function login(req, res, next) {
       if (!tenant.isActive) throw new UnauthorizedError('Tenant is inactive');
     }
 
-    // Find user
+    // Find user (include role IDs for JWT + downstream workflow RBAC)
     const user = await prisma.user.findFirst({
       where: { email, ...(tenant && { tenantId: tenant.id }) },
-      include: { tenant: true },
+      include: { tenant: true, userRoles: { select: { roleId: true } } },
     });
 
     if (!user) throw new UnauthorizedError('Invalid credentials');
@@ -110,7 +110,8 @@ export async function login(req, res, next) {
       try { await redis.del(lockKey, attemptsKey); } catch { /* no-op */ }
     }
 
-    const { accessToken, refreshToken } = generateTokens(user);
+    const roleIds = user.userRoles.map((ur) => ur.roleId);
+    const { accessToken, refreshToken } = generateTokens(user, roleIds);
 
     await prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } });
 
@@ -148,7 +149,13 @@ export async function login(req, res, next) {
         firstName: user.firstName,
         lastName: user.lastName,
         mustChangePassword: user.mustChangePassword,
-        tenant: { id: user.tenant.id, name: user.tenant.name, code: user.tenant.code },
+        roles: roleIds,
+        tenant: {
+          id: user.tenant.id,
+          name: user.tenant.name,
+          code: user.tenant.code,
+          config: user.tenant.config ?? {},
+        },
       },
       accessToken,
       refreshToken,
@@ -171,12 +178,13 @@ export async function refreshToken(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      include: { tenant: true },
+      include: { tenant: true, userRoles: { select: { roleId: true } } },
     });
 
     if (!user || !user.isActive) throw new UnauthorizedError('Invalid token');
 
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+    const roleIds = user.userRoles.map((ur) => ur.roleId);
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, roleIds);
 
     res.json({ accessToken, refreshToken: newRefreshToken });
   } catch (error) {

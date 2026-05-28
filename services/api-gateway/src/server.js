@@ -12,6 +12,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { authenticate } from './middleware/auth.middleware.js';
+import { enforcePasswordChanged } from './middleware/passwordChangeGate.middleware.js';
 import { createRbacMiddleware } from './middleware/rbac.middleware.js';
 import { apiRateLimiter, authRateLimiter } from './middleware/rateLimit.middleware.js';
 import { createSessionMiddleware, closeSessionStore } from './config/session.config.js';
@@ -48,13 +49,33 @@ const services = {
   notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008',
 };
 
+/** Forward identity to microservices (headers are not reliably inherited from req.headers by the proxy). */
+function forwardProxyIdentity(proxyReq, req) {
+  if (!req.user) return;
+  proxyReq.setHeader('x-user-id', req.user.id);
+  proxyReq.setHeader('x-tenant-id', req.user.tenantId);
+  if (req.user.email) proxyReq.setHeader('x-user-email', req.user.email);
+  if (req.user.roles?.length) {
+    proxyReq.setHeader('x-user-roles', req.user.roles.join(','));
+  }
+}
+
 /**
  * Initialize and start the server
  */
 async function startServer() {
-  // CORS with credentials for session cookies
+  // CORS with credentials for session cookies (comma-separated origins in dev, e.g. Vite 5173 and 5174)
+  const corsOriginEnv = process.env.CORS_ORIGIN || 'http://localhost:5173';
+  const corsOrigins = corsOriginEnv.split(',').map((o) => o.trim()).filter(Boolean);
+  const corsOriginOption =
+    corsOrigins.length === 0
+      ? 'http://localhost:5173'
+      : corsOrigins.length === 1
+        ? corsOrigins[0]
+        : corsOrigins;
+
   app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: corsOriginOption,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
     credentials: true,
@@ -100,17 +121,81 @@ async function startServer() {
   // Authentication middleware
   app.use('/api/v1', authenticate);
 
+  // Until first-login password change completes, block APIs (browser session exposes status / logout separately).
+  app.use('/api/v1', enforcePasswordChanged);
+
   // RBAC middleware
   const rbacMiddleware = createRbacMiddleware(services.rbac);
   app.use('/api/v1', rbacMiddleware);
+
+  /** Platform operators: reachability of downstream services (HTTP /health), not user RBAC. */
+  async function probeDownstreamHealth(url) {
+    const target = url.replace(/\/$/, '');
+    try {
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 5000);
+      const res = await fetch(`${target}/health`, { signal: ac.signal });
+      clearTimeout(timer);
+      return { ok: res.ok, status: res.status, error: null };
+    } catch (e) {
+      const msg = e?.name === 'AbortError' ? 'Request timed out' : String(e?.message || e);
+      return { ok: false, status: 0, error: msg };
+    }
+  }
+
+  app.get('/api/v1/platform/service-probes', async (req, res) => {
+    const definitions = [
+      { key: 'auth', label: 'Auth service', baseUrl: services.auth },
+      { key: 'rbac', label: 'RBAC service', baseUrl: services.rbac },
+      { key: 'case', label: 'Case service', baseUrl: services.case },
+      { key: 'workflow', label: 'Workflow service', baseUrl: services.workflow },
+      { key: 'referral', label: 'Referral service', baseUrl: services.referral },
+      { key: 'audit', label: 'Audit service', baseUrl: services.audit },
+      { key: 'integration', label: 'Integration service', baseUrl: services.integration },
+      { key: 'notification', label: 'Notification service', baseUrl: services.notification },
+    ];
+    const probes = await Promise.all(
+      definitions.map(async (d) => {
+        const r = await probeDownstreamHealth(d.baseUrl);
+        const healthUrl = `${d.baseUrl.replace(/\/$/, '')}/health`;
+        return {
+          key: d.key,
+          label: d.label,
+          target: healthUrl,
+          ok: r.ok,
+          status: r.status,
+          error: r.error,
+        };
+      }),
+    );
+    res.json({
+      at: new Date().toISOString(),
+      gateway: { ok: true, service: 'api-gateway' },
+      probes,
+    });
+  });
 
   // Proxy routes
   app.use('/api/v1/auth', createProxyMiddleware({
     target: services.auth,
     changeOrigin: true,
     pathRewrite: (path) => '/auth' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+    onProxyRes: (proxyRes, req) => {
+      if (req.method !== 'POST' || proxyRes.statusCode !== 200) return;
+      const norm = [
+        typeof req.originalUrl === 'string' ? req.originalUrl.split('?')[0] : '',
+        typeof req.path === 'string' ? req.path : '',
+        typeof req.url === 'string' ? req.url.split('?')[0] : '',
+      ];
+      if (!norm.some((p) => p.endsWith('/change-password'))) return;
+      if (req.session?.user) {
+        req.session.user.mustChangePassword = false;
+        req.session.save((err) => {
+          if (err)
+            console.warn('[Gateway] session save after password change failed:', err.message);
+        });
+      }
     },
     onError: (err, req, res) => {
       console.error('Proxy error (auth):', err.message);
@@ -153,6 +238,28 @@ async function startServer() {
     },
     onError: (err, req, res) => {
       console.error('Proxy error (cases):', err.message);
+      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
+    },
+  }));
+
+  app.use('/api/v1/assignments', createProxyMiddleware({
+    target: services.case,
+    changeOrigin: true,
+    pathRewrite: (path) => '/assignments' + path,
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+    onError: (err, req, res) => {
+      console.error('Proxy error (assignments):', err.message);
+      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
+    },
+  }));
+
+  app.use('/api/v1/attachments', createProxyMiddleware({
+    target: services.case,
+    changeOrigin: true,
+    pathRewrite: (path) => '/attachments' + path,
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+    onError: (err, req, res) => {
+      console.error('Proxy error (attachments):', err.message);
       res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
     },
   }));

@@ -8,6 +8,8 @@
  */
 
 import jwt from 'jsonwebtoken';
+import { fetchMustChangePasswordFromAuth } from '../utils/authPasswordStatus.js';
+import { clearPermissionCache } from './rbac.middleware.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'iacms-dev-secret-key-change-in-production';
 
@@ -25,7 +27,7 @@ const PUBLIC_ROUTES = [
   { method: 'POST', path: '/auth/verify-email' },
   // Session routes (handled at gateway level)
   { method: 'POST', path: '/session/login' },
-  // Tenant validation
+  // Tenant validate is public (login screen). Tenant register requires auth + platform permission (RBAC).
   { method: 'GET', path: '/tenants/validate' },
 ];
 
@@ -60,6 +62,9 @@ function setUserHeaders(req, user) {
   req.headers['x-user-email'] = user.email;
   if (user.firstName) req.headers['x-user-firstname'] = user.firstName;
   if (user.lastName) req.headers['x-user-lastname'] = user.lastName;
+  if (user.roles) {
+    req.headers['x-user-roles'] = Array.isArray(user.roles) ? user.roles.join(',') : user.roles;
+  }
 }
 
 /**
@@ -76,11 +81,45 @@ function validateJwtToken(token) {
   }
 }
 
+function sessionSavePromise(session) {
+  return new Promise((resolve, reject) => {
+    if (!session) return resolve();
+    session.save((err) => (err ? reject(err) : resolve()));
+  });
+}
+
+/** Seconds to trust "DB says must_change=false" without re-querying auth (JWT payload may stay stale). */
+const RECON_NEGATIVE_CACHE_MS = Number(
+  process.env.MUST_CHANGE_NEGATIVE_CACHE_MS || 300_000,
+);
+
+const reconcileFalseUntil = new Map();
+
+/** When session/JWT still say `mustChangePassword`, reconcile with auth DB (fixes stale JWT after change). */
+async function reconcileMustChangePassword(userId, tenantId, flaggedFromPayload) {
+  if (!flaggedFromPayload) return false;
+
+  const key = `${userId}:${tenantId}`;
+  const until = reconcileFalseUntil.get(key);
+  if (until && Date.now() < until) return false;
+
+  const live = await fetchMustChangePasswordFromAuth(userId, tenantId);
+
+  if (live === false) {
+    await clearPermissionCache(userId, tenantId).catch(() => {});
+    reconcileFalseUntil.set(key, Date.now() + RECON_NEGATIVE_CACHE_MS);
+    return false;
+  }
+
+  reconcileFalseUntil.delete(key);
+  return true;
+}
+
 /**
  * Authentication middleware
  * Checks session first, then falls back to JWT
  */
-export function authenticate(req, res, next) {
+export async function authenticate(req, res, next) {
   // Skip authentication for public routes
   if (isPublicRoute(req.method, req.path)) {
     return next();
@@ -89,50 +128,67 @@ export function authenticate(req, res, next) {
   // Strategy 1: Check for valid session (web browser authentication)
   if (req.session && req.session.user) {
     const sessionUser = req.session.user;
-    
-    // Attach user to request
+
+    const prev = Boolean(sessionUser.mustChangePassword);
+    const mustChangePassword = await reconcileMustChangePassword(
+      sessionUser.id,
+      sessionUser.tenantId,
+      prev,
+    );
+
+    if (mustChangePassword !== prev) {
+      sessionUser.mustChangePassword = mustChangePassword;
+      try {
+        await sessionSavePromise(req.session);
+      } catch (e) {
+        console.warn('[Gateway] reconcile mustChangePassword session save failed:', e?.message || e);
+      }
+    }
+
     req.user = {
       id: sessionUser.id,
       tenantId: sessionUser.tenantId,
       email: sessionUser.email,
       firstName: sessionUser.firstName,
       lastName: sessionUser.lastName,
+      roles: Array.isArray(sessionUser.roles) ? sessionUser.roles : [],
+      mustChangePassword,
     };
-    req.authMethod = 'session';
-    
-    // Set headers for downstream services
+
     setUserHeaders(req, req.user);
-    
-    // Touch session to extend expiry (rolling session)
     req.session.lastAccessed = new Date().toISOString();
-    
+
     return next();
   }
 
   // Strategy 2: Fall back to JWT token (API client authentication)
   const token = extractBearerToken(req);
-  
+
   if (token) {
     const result = validateJwtToken(token);
-    
+
     if (result.valid) {
       const decoded = result.payload;
-      
-      // Attach user to request
+      const prev = Boolean(decoded.mustChangePassword);
+      const mustChangePassword = await reconcileMustChangePassword(
+        decoded.id,
+        decoded.tenantId,
+        prev,
+      );
+
       req.user = {
         id: decoded.id,
         tenantId: decoded.tenantId,
         email: decoded.email,
+        roles: Array.isArray(decoded.roles) ? decoded.roles : [],
+        mustChangePassword,
       };
-      req.authMethod = 'jwt';
-      
-      // Set headers for downstream services
+
       setUserHeaders(req, req.user);
-      
+
       return next();
     }
-    
-    // Token provided but invalid
+
     return res.status(401).json({
       error: {
         code: result.error,
@@ -141,7 +197,6 @@ export function authenticate(req, res, next) {
     });
   }
 
-  // No authentication provided
   return res.status(401).json({
     error: {
       code: 'UNAUTHORIZED',
@@ -152,41 +207,62 @@ export function authenticate(req, res, next) {
 
 /**
  * Optional authentication middleware
- * Validates session/token if present, but doesn't require it
  */
-export function optionalAuth(req, res, next) {
+export async function optionalAuth(req, res, next) {
   // Try session first
   if (req.session && req.session.user) {
     const sessionUser = req.session.user;
+    const prev = Boolean(sessionUser.mustChangePassword);
+    const mustChangePassword = await reconcileMustChangePassword(
+      sessionUser.id,
+      sessionUser.tenantId,
+      prev,
+    );
+
+    if (mustChangePassword !== prev) {
+      sessionUser.mustChangePassword = mustChangePassword;
+      try {
+        await sessionSavePromise(req.session);
+      } catch (e) {
+        console.warn('[Gateway] optionalAuth session save failed:', e?.message || e);
+      }
+    }
+
     req.user = {
       id: sessionUser.id,
       tenantId: sessionUser.tenantId,
       email: sessionUser.email,
       firstName: sessionUser.firstName,
       lastName: sessionUser.lastName,
+      roles: Array.isArray(sessionUser.roles) ? sessionUser.roles : [],
+      mustChangePassword,
     };
-    req.authMethod = 'session';
     setUserHeaders(req, req.user);
     return next();
   }
 
-  // Try JWT
   const token = extractBearerToken(req);
   if (token) {
     const result = validateJwtToken(token);
     if (result.valid) {
       const decoded = result.payload;
+      const prev = Boolean(decoded.mustChangePassword);
+      const mustChangePassword = await reconcileMustChangePassword(
+        decoded.id,
+        decoded.tenantId,
+        prev,
+      );
       req.user = {
         id: decoded.id,
         tenantId: decoded.tenantId,
         email: decoded.email,
+        roles: Array.isArray(decoded.roles) ? decoded.roles : [],
+        mustChangePassword,
       };
-      req.authMethod = 'jwt';
       setUserHeaders(req, req.user);
     }
   }
 
-  // Continue regardless of authentication status
   next();
 }
 
