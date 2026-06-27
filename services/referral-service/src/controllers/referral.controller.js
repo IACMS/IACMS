@@ -5,7 +5,14 @@ import {
   ForbiddenError,
   InvalidReferralStateError,
 } from '../../../../shared/common/errors.js';
-import EventBus from '../../../../shared/utils/eventBus.js';
+
+function assertActorTenant(req, expectedTenantId, message) {
+  const actor = tenantHeader(req);
+  if (!actor || actor !== String(expectedTenantId)) {
+    throw new ForbiddenError(message);
+  }
+}
+import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'referral-service');
 
@@ -17,23 +24,48 @@ function userId(req) {
   return String(req.headers['x-user-id']);
 }
 
-/**
- * List referrals visible to this tenant (as sender or receiver).
- * Query filters are scoped to rows involving actorTenantId.
- */
-  NotFoundError,
-  ValidationError,
-  InvalidReferralStateError,
-} from '../../../../shared/common/errors.js';
-import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
-
-const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'referral-service');
-
 function tenantHeader(req) {
   const t = req.headers['x-tenant-id'];
   return t ? String(t) : null;
 }
 
+/** Accept any canonical 8-4-4-4-12 hex id (seed data uses non–RFC-4122 variant bits). */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value) {
+  return typeof value === 'string' && UUID_RE.test(value.trim());
+}
+
+/** Accept case UUID or tenant-scoped case number (e.g. DCS01-2026-0001). */
+async function resolveCaseId(caseRef, fromTenantId) {
+  const raw = String(caseRef || '').trim();
+  if (!raw) throw new ValidationError('caseId is required');
+  if (isUuid(raw)) return raw;
+
+  const kase = await prisma.case.findFirst({
+    where: {
+      caseNumber: raw,
+      deletedAt: null,
+      OR: [
+        { tenantId: fromTenantId },
+        { originatingTenantId: fromTenantId },
+        { currentTenantId: fromTenantId },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!kase) {
+    throw new ValidationError(
+      'Case not found. Use the case UUID from the case page URL, or the full case number (e.g. DCS01-2026-0001).',
+    );
+  }
+  return kase.id;
+}
+
+/**
+ * List referrals visible to this tenant (as sender or receiver).
+ * Query filters are scoped to rows involving actorTenantId.
+ */
 export async function getReferrals(req, res, next) {
   try {
     const actorTenantId = tenantId(req);
@@ -87,82 +119,34 @@ export async function getReferral(req, res, next) {
   }
 }
 
-/**
- * Outbound referral: case must belong to the caller's tenant (from-tenant).
- */
 export async function createReferral(req, res, next) {
   try {
-    const fromTenantId = tenantId(req);
-    const referredBy = userId(req);
-    const body = req.body || {};
-    const { caseId, toTenantId, referralReason, notes, metadata } = body;
-
-    if (!caseId || !toTenantId) {
-      throw new ValidationError('caseId and toTenantId are required');
-    }
-    if (String(toTenantId) === fromTenantId) {
-      throw new ValidationError('toTenantId must differ from your tenant');
-    }
-
-    const caseRow = await prisma.case.findFirst({
-      where: { id: String(caseId), tenantId: fromTenantId, deletedAt: null },
-      select: { id: true, tenantId: true },
-    });
-    if (!caseRow) throw new NotFoundError('Case');
-
-    const targetTenant = await prisma.tenant.findUnique({
-      where: { id: String(toTenantId) },
-      select: { id: true, isActive: true },
-    });
-    if (!targetTenant) throw new NotFoundError('Target tenant');
-    if (!targetTenant.isActive) {
-      throw new ValidationError('Target tenant is not active');
-    }
-
-    const actor = await prisma.user.findFirst({
-      where: { id: referredBy, tenantId: fromTenantId, isActive: true },
-      select: { id: true },
-    });
-    if (!actor) throw new ForbiddenError('User not recognized in this tenant');
-
-    const referral = await prisma.caseReferral.create({
-      data: {
-        caseId: String(caseId),
-        fromTenantId,
-        toTenantId: String(toTenantId),
-        referralReason: referralReason ?? undefined,
-        notes: notes ?? undefined,
-        referredBy,
-        metadata: metadata && typeof metadata === 'object' ? metadata : undefined,
-      },
-      include: {
-        case: true,
-        fromTenant: true,
-        toTenant: true,
-        referrer: true,
-      },
-    });
-
-    await eventBus.publish('referral.created', {
-      referralId: referral.id,
-      caseId: referral.caseId,
-      fromTenantId: referral.fromTenantId,
-      toTenantId: referral.toTenantId,
-    const {
-      caseId, fromTenantId, toTenantId, referralReason, notes,
-      referredBy,
-    } = req.body;
+    const { caseId: caseRef, fromTenantId, toTenantId, referralReason, notes, referredBy } = req.body;
 
     const callerTenant = tenantHeader(req) || fromTenantId;
     if (!callerTenant) throw new ValidationError('x-tenant-id or fromTenantId required');
+    if (!toTenantId || !isUuid(String(toTenantId))) {
+      throw new ValidationError(
+        'Partner organization is invalid. Validate the tenant code first, then submit again.',
+      );
+    }
     const refBy = referredBy || req.headers['x-user-id'];
-    if (!refBy) throw new ValidationError('referredBy or x-user-id required');
+    if (!refBy || !isUuid(String(refBy))) {
+      throw new ValidationError('referredBy must be a valid user UUID.');
+    }
+
+    const resolvedFrom = fromTenantId || callerTenant;
+    if (!isUuid(String(resolvedFrom))) {
+      throw new ValidationError('fromTenantId must be a valid tenant UUID.');
+    }
+
+    const caseId = await resolveCaseId(caseRef, resolvedFrom);
 
     const out = await prisma.$transaction(async tx => {
       const referral = await tx.caseReferral.create({
         data: {
           caseId,
-          fromTenantId: fromTenantId || callerTenant,
+          fromTenantId: resolvedFrom,
           toTenantId,
           referralReason,
           notes,
@@ -170,14 +154,10 @@ export async function createReferral(req, res, next) {
           referredBy: String(refBy),
         },
       });
-
       await tx.case.update({
         where: { id: caseId },
-        data: {
-          referralStatus: 'pending_referral',
-        },
+        data: { referralStatus: 'pending_referral' },
       });
-
       return referral;
     });
 
@@ -215,41 +195,8 @@ export async function createReferral(req, res, next) {
   }
 }
 
-/** Only receiving tenant may accept pending referral. Actor is gateway user ID. */
 export async function acceptReferral(req, res, next) {
   try {
-    const actorTenantId = tenantId(req);
-    const acceptedBy = userId(req);
-
-    const existing = await prisma.caseReferral.findUnique({
-      where: { id: req.params.id },
-      include: { case: true },
-    });
-    if (!existing) throw new NotFoundError('Referral');
-    if (existing.toTenantId !== actorTenantId) {
-      throw new ForbiddenError('Only the receiving tenant can accept this referral');
-    }
-    if (existing.status !== 'pending') {
-      throw new InvalidReferralStateError('Referral is not pending acceptance');
-    }
-
-    const acceptingUser = await prisma.user.findFirst({
-      where: { id: acceptedBy, tenantId: actorTenantId, isActive: true },
-      select: { id: true },
-    });
-    if (!acceptingUser) throw new ForbiddenError('User not recognized in this tenant');
-
-    const referral = await prisma.caseReferral.update({
-      where: { id: req.params.id },
-      data: {
-        status: 'accepted',
-        acceptedBy,
-        acceptedAt: new Date(),
-      },
-      include: {
-        case: true,
-        accepter: true,
-      },
     const { acceptedBy } = req.body;
     const accepterId = acceptedBy || req.headers['x-user-id'];
     if (!accepterId) throw new ValidationError('acceptedBy is required');
@@ -261,16 +208,16 @@ export async function acceptReferral(req, res, next) {
       });
       if (!ref) throw new NotFoundError('Referral');
       if (ref.status !== 'pending') throw new InvalidReferralStateError('Referral must be pending');
+      assertActorTenant(
+        req,
+        ref.toTenantId,
+        'Only the receiving agency can accept this referral.',
+      );
 
       const referral = await tx.caseReferral.update({
         where: { id: ref.id },
-        data: {
-          status: 'accepted',
-          acceptedBy: String(accepterId),
-          acceptedAt: new Date(),
-        },
+        data: { status: 'accepted', acceptedBy: String(accepterId), acceptedAt: new Date() },
       });
-
       await tx.case.update({
         where: { id: ref.caseId },
         data: {
@@ -279,21 +226,17 @@ export async function acceptReferral(req, res, next) {
           referralStatus: 'in_progress',
         },
       });
-
       return referral;
     });
 
-    const payload = {
+    await eventBus.publish(TOPICS.REFERRAL_ACCEPTED, {
       referralId: updated.id,
       caseId: updated.caseId,
-      originatingTenantId: updated.fromTenantId,
-      currentTenantId: updated.toTenantId,
       fromTenantId: updated.fromTenantId,
       toTenantId: updated.toTenantId,
       acceptedBy: String(accepterId),
       acceptedAt: updated.acceptedAt.toISOString(),
-    };
-    await eventBus.publish(TOPICS.REFERRAL_ACCEPTED, payload);
+    });
     await eventBus.publish(TOPICS.AUDIT_LOG, {
       tenantId: updated.fromTenantId,
       relatedTenantId: updated.toTenantId,
@@ -318,38 +261,6 @@ export async function acceptReferral(req, res, next) {
 
 export async function rejectReferral(req, res, next) {
   try {
-    const actorTenantId = tenantId(req);
-    const rejectedBy = userId(req);
-
-    const existing = await prisma.caseReferral.findUnique({
-      where: { id: req.params.id },
-      include: { case: true },
-    });
-    if (!existing) throw new NotFoundError('Referral');
-    if (existing.toTenantId !== actorTenantId) {
-      throw new ForbiddenError('Only the receiving tenant can reject this referral');
-    }
-    if (existing.status !== 'pending') {
-      throw new InvalidReferralStateError('Referral is not pending');
-    }
-
-    const rejectingUser = await prisma.user.findFirst({
-      where: { id: rejectedBy, tenantId: actorTenantId, isActive: true },
-      select: { id: true },
-    });
-    if (!rejectingUser) throw new ForbiddenError('User not recognized in this tenant');
-
-    const referral = await prisma.caseReferral.update({
-      where: { id: req.params.id },
-      data: {
-        status: 'rejected',
-        rejectedBy,
-        rejectedAt: new Date(),
-      },
-      include: {
-        case: true,
-        rejecter: true,
-      },
     const { rejectedBy } = req.body;
     const rejId = rejectedBy || req.headers['x-user-id'];
     if (!rejId) throw new ValidationError('rejectedBy is required');
@@ -361,32 +272,29 @@ export async function rejectReferral(req, res, next) {
       });
       if (!ref) throw new NotFoundError('Referral');
       if (ref.status !== 'pending') throw new InvalidReferralStateError();
+      const actor = tenantHeader(req);
+      if (actor !== ref.toTenantId && actor !== ref.fromTenantId) {
+        throw new ForbiddenError('Only the sending or receiving agency can reject this referral.');
+      }
 
       const referral = await tx.caseReferral.update({
         where: { id: ref.id },
-        data: {
-          status: 'rejected',
-          rejectedBy: String(rejId),
-          rejectedAt: new Date(),
-        },
+        data: { status: 'rejected', rejectedBy: String(rejId), rejectedAt: new Date() },
       });
-
       await tx.case.update({
         where: { id: ref.caseId },
         data: { referralStatus: 'rejected' },
       });
-
       return referral;
     });
 
-    const payload = {
+    await eventBus.publish(TOPICS.REFERRAL_REJECTED, {
       referralId: updated.id,
       caseId: updated.caseId,
       originatingTenantId: updated.fromTenantId,
       currentTenantId: updated.fromTenantId,
       rejectedBy: String(rejId),
-    };
-    await eventBus.publish(TOPICS.REFERRAL_REJECTED, payload);
+    });
     await eventBus.publish(TOPICS.AUDIT_LOG, {
       tenantId: updated.fromTenantId,
       relatedTenantId: updated.toTenantId,
@@ -420,33 +328,28 @@ export async function completeReferral(req, res, next) {
       });
       if (!ref) throw new NotFoundError('Referral');
       if (ref.status !== 'accepted') throw new InvalidReferralStateError('Referral must be accepted');
+      const actor = tenantHeader(req);
+      if (actor !== ref.toTenantId && actor !== ref.fromTenantId) {
+        throw new ForbiddenError('Only agencies involved in this referral can mark it completed.');
+      }
 
       const referral = await tx.caseReferral.update({
         where: { id: ref.id },
-        data: {
-          status: 'completed',
-          completedAt: new Date(),
-        },
+        data: { status: 'completed', completedAt: new Date() },
       });
-
       await tx.case.update({
         where: { id: ref.caseId },
-        data: {
-          currentTenantId: ref.fromTenantId,
-          referralStatus: 'returned',
-        },
+        data: { currentTenantId: ref.fromTenantId, referralStatus: 'returned' },
       });
-
       return referral;
     });
 
-    const payload = {
+    await eventBus.publish(TOPICS.REFERRAL_COMPLETED, {
       referralId: updated.id,
       caseId: updated.caseId,
       originatingTenantId: updated.fromTenantId,
       currentTenantId: updated.fromTenantId,
-    };
-    await eventBus.publish(TOPICS.REFERRAL_COMPLETED, payload);
+    });
     await eventBus.publish(TOPICS.AUDIT_LOG, {
       tenantId: updated.toTenantId,
       relatedTenantId: updated.fromTenantId,

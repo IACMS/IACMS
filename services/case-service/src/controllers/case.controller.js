@@ -1,13 +1,15 @@
 import prisma from '../config/database.js';
-import { NotFoundError, ValidationError, InvalidTransitionError } from '../../../../shared/common/errors.js';
+import { NotFoundError, ValidationError, InvalidTransitionError, TenantMismatchError, WorkflowNotPublishedError } from '../../../../shared/common/errors.js';
 import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
 import {
-  userHasTenantWideCaseAccess,
   findCaseForUser,
   assertCaseReadable,
   assertCaseMutable,
   assertRegistrarMetadataEditAllowed,
 } from '../security/caseAccessPolicy.js';
+import { readableCaseConditions, writableCaseWhere } from '../utils/tenant-scope.js';
+import { generateCaseNumber } from '../utils/case-number.js';
+import { fetchPublishedWorkflow } from '../services/workflow.client.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
 
@@ -136,41 +138,6 @@ function pickAllowedCaseUpdates(body) {
   return out;
 }
 
-async function generateCaseNumber(tenantId) {
-  const year = new Date().getFullYear();
-  // We need to use Prisma to atomicly increment the sequence
-  const sequence = await prisma.caseSequence.upsert({
-    where: {
-      tenantId_year: { tenantId, year }
-    },
-    update: {
-      lastSeq: { increment: 1 }
-    },
-    create: {
-      tenantId,
-      year,
-      lastSeq: 1
-    }
-  });
-
-  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-  const prefix = tenant ? tenant.code : 'UNKNOWN';
-  const paddedSeq = sequence.lastSeq.toString().padStart(4, '0');
-  
-  return `${prefix}-${year}-${paddedSeq}`;
-import {
-  NotFoundError,
-  ValidationError,
-  TenantMismatchError,
-  WorkflowNotPublishedError,
-} from '../../../../shared/common/errors.js';
-import EventBus, { TOPICS } from '../../../../shared/utils/eventBus.js';
-import { readableCaseConditions, writableCaseWhere } from '../utils/tenant-scope.js';
-import { generateCaseNumber } from '../utils/case-number.js';
-import { fetchPublishedWorkflow } from '../services/workflow.client.js';
-
-const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
-
 function tenantId(req) {
   const t = req.headers['x-tenant-id'];
   if (!t) throw new ValidationError('x-tenant-id header required');
@@ -190,45 +157,6 @@ function actorUserId(req, fallback) {
 
 export async function getCases(req, res, next) {
   try {
-    // Enforce tenant filtering based on the gateway header
-    const tenantId = req.headers['x-tenant-id'];
-    const userId = req.headers['x-user-id'];
-    const { status, type, assignedTo } = req.query;
-    
-    if (!tenantId) {
-      throw new ValidationError('Tenant ID is required in headers');
-    }
-
-    if (!userId) throw new ValidationError('User ID is required in headers');
-
-    const isAdmin = await userHasTenantWideCaseAccess(prisma, userId);
-
-    const whereClause = {
-      tenantId, // strict tenant boundary
-      ...(status && { status }),
-      ...(type && { type }),
-      deletedAt: null,
-    };
-
-    if (!isAdmin) {
-      // Non-admins can only see cases they are assigned to or created
-      whereClause.OR = [
-        { assignedTo: userId },
-        { createdBy: userId }
-      ];
-    } else if (assignedTo) {
-      // Admins can filter by assignee
-      whereClause.assignedTo = assignedTo;
-    }
-
-    const cases = await prisma.case.findMany({
-      where: whereClause,
-      include: {
-        tenant: true,
-        assignee: true,
-        creator: true,
-      },
-      orderBy: { createdAt: 'desc' }
     const caller = tenantId(req);
     const { workflowKey, status, assignedTo, page = '1', pageSize = '50' } = req.query;
     const take = Math.min(200, Math.max(1, parseInt(pageSize, 10) || 50));
@@ -263,27 +191,14 @@ export async function getCases(req, res, next) {
 
 export async function getCase(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
+    const caller = tenantId(req);
     const userId = req.headers['x-user-id'];
     if (!userId) throw new ValidationError('User ID is required in headers');
 
-    const isAdmin = await userHasTenantWideCaseAccess(prisma, userId);
-
-    const whereClause = {
-      id: req.params.id,
-      tenantId, // strict tenant boundary
-      deletedAt: null
-    };
-
-    if (!isAdmin) {
-      whereClause.OR = [
-        { assignedTo: userId },
-        { createdBy: userId }
-      ];
-    }
-
-    const case_ = await prisma.case.findFirst({
-      where: whereClause,
+    const case_ = await findCaseForUser(prisma, {
+      tenantId: caller,
+      userId: String(userId),
+      caseId: req.params.id,
       include: {
         tenant: true,
         assignee: true,
@@ -305,7 +220,7 @@ export async function getCase(req, res, next) {
         },
       },
     });
-    
+
     if (!case_) throw new NotFoundError('Case');
     res.json({ case: case_ });
   } catch (e) {
@@ -315,49 +230,6 @@ export async function getCase(req, res, next) {
 
 export async function createCase(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
-    const userId = req.headers['x-user-id'];
-    const { workflowId, title, description, type, priority, metadata } = req.body;
-
-    if (!tenantId || !userId) throw new ValidationError('Tenant ID and User ID are required');
-    if (!workflowId || !title || !type) throw new ValidationError('workflowId, title, and type are required');
-
-    // 1. Validate workflow belongs to this tenant and is published
-    const workflow = await prisma.workflow.findFirst({
-      where: { id: workflowId, tenantId, status: 'PUBLISHED' },
-      include: { steps: true },
-    });
-
-    if (!workflow) throw new NotFoundError('Workflow');
-
-    // 2. Find initial step
-    const initialStep = workflow.steps.find(s => s.isInitial);
-    if (!initialStep) throw new ValidationError('Workflow has no initial step');
-
-    // 3. Generate Case Number
-    const caseNumber = await generateCaseNumber(tenantId);
-
-    // 4. Create the Case
-    const case_ = await prisma.case.create({
-      data: {
-        tenantId,
-        originatingTenantId: tenantId,
-        currentTenantId: tenantId,
-        workflowId,
-        workflowVersion: workflow.version,
-        currentStepId: initialStep.id,
-        caseNumber,
-        title,
-        description,
-        type,
-        priority,
-        metadata,
-        createdBy: userId,
-      },
-      include: {
-        tenant: true,
-        creator: true,
-        currentStep: true
     const caller = tenantId(req);
     const { workflowKey, title, description, data, priority, createdBy } = req.body;
     if (!workflowKey || !title) {
@@ -399,26 +271,6 @@ export async function createCase(req, res, next) {
       include: { currentStep: true, workflow: true, creator: true },
     });
 
-    // 5. Create initial history record
-    await prisma.caseHistory.create({
-      data: {
-        caseId: case_.id,
-        tenantId,
-        toStepId: initialStep.id,
-        actorId: userId,
-        comment: 'Case created and initialized',
-      }
-    });
-
-    await eventBus.publish(TOPICS.CASE_CREATED, { caseId: case_.id, tenantId: case_.tenantId });
-    emitAudit({
-      tenantId,
-      entityType: 'case',
-      entityId: case_.id,
-      action: 'case_created',
-      userId,
-      metadata: { caseNumber: case_.caseNumber, workflowId, title },
-    });
     await prisma.caseHistory.create({
       data: {
         caseId: case_.id,
@@ -465,43 +317,6 @@ export async function createCase(req, res, next) {
 
 export async function updateCase(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
-    const userId = req.headers['x-user-id'];
-
-    const data = pickAllowedCaseUpdates(req.body);
-    if (Object.keys(data).length === 0) {
-      throw new ValidationError('No permitted fields provided for update');
-    }
-
-    const existing = await assertCaseMutable(prisma, req, req.params.id, {
-      select: {
-        id: true,
-        currentStepId: true,
-      },
-    });
-
-    await assertRegistrarMetadataEditAllowed(prisma, req, existing);
-
-    const updated = await prisma.case.updateMany({
-      where: { id: req.params.id, tenantId },
-      data,
-    });
-    if (updated.count === 0) throw new NotFoundError('Case');
-
-    await eventBus.publish(TOPICS.CASE_UPDATED, { caseId: req.params.id });
-    emitAudit({
-      tenantId,
-      entityType: 'case',
-      entityId: req.params.id,
-      action: 'case_updated',
-      userId: userId || null,
-      metadata: { fields: Object.keys(data) },
-    });
-
-    const caseOut = await prisma.case.findUnique({ where: { id: req.params.id } });
-    res.json({ case: caseOut });
-  } catch (error) {
-    next(error);
     const caller = tenantId(req);
     const existing = await prisma.case.findFirst({
       where: writableCaseWhere(req.params.id, caller),
@@ -532,22 +347,10 @@ export async function updateCase(req, res, next) {
 
     const oldValues = {};
     const newValues = {};
-    if (title !== undefined) {
-      oldValues.title = existing.title;
-      newValues.title = case_.title;
-    }
-    if (description !== undefined) {
-      oldValues.description = existing.description ?? null;
-      newValues.description = case_.description ?? null;
-    }
-    if (priority !== undefined) {
-      oldValues.priority = existing.priority;
-      newValues.priority = case_.priority;
-    }
-    if (data !== undefined) {
-      oldValues.dataPresent = Boolean(existing.data);
-      newValues.dataPresent = Boolean(case_.data);
-    }
+    if (title !== undefined) { oldValues.title = existing.title; newValues.title = case_.title; }
+    if (description !== undefined) { oldValues.description = existing.description ?? null; newValues.description = case_.description ?? null; }
+    if (priority !== undefined) { oldValues.priority = existing.priority; newValues.priority = case_.priority; }
+    if (data !== undefined) { oldValues.dataPresent = Boolean(existing.data); newValues.dataPresent = Boolean(case_.data); }
 
     await eventBus.publish(TOPICS.CASE_UPDATED, { caseId: case_.id, tenantId: caller });
     if (Object.keys(oldValues).length > 0) {
@@ -574,25 +377,6 @@ export async function updateCase(req, res, next) {
 
 export async function deleteCase(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
-    const userId = req.headers['x-user-id'];
-
-    await assertCaseMutable(prisma, req, req.params.id, { select: { id: true } });
-
-    const result = await prisma.case.updateMany({
-      where: { id: req.params.id, tenantId },
-      data: { deletedAt: new Date() },
-    });
-
-    if (result.count === 0) throw new NotFoundError('Case');
-
-    emitAudit({
-      tenantId,
-      entityType: 'case',
-      entityId: req.params.id,
-      action: 'case_deleted',
-      userId: userId || null,
-      metadata: {},
     const caller = tenantId(req);
     const existing = await prisma.case.findFirst({
       where: writableCaseWhere(req.params.id, caller),
@@ -689,17 +473,17 @@ export async function executeTransition(req, res, next) {
       throw new ValidationError('Current workflow step is invalid for this case');
     }
 
-    if (fromStep.requiresAttachment) {
+    if (transition.requiresAttachment || fromStep.requiresAttachment) {
       const attCount = await prisma.caseAttachment.count({
         where: {
           caseId,
-          workflowStepId: fromStep.id,
           deletedAt: null,
+          ...(fromStep.requiresAttachment ? { workflowStepId: fromStep.id } : {}),
         },
       });
       if (attCount < 1) {
         throw new ValidationError(
-          'This step requires at least one file attachment before you can move forward. Upload a document linked to this step (Attachments tab).',
+          'This transition requires at least one file attachment before you can move forward. Upload a document on the case (Attachments tab).',
         );
       }
     }

@@ -203,6 +203,19 @@ async function startServer() {
     },
   }));
 
+  app.use('/api/v1/chat', createProxyMiddleware({
+    target: services.auth,
+    changeOrigin: true,
+    pathRewrite: (path) => '/chat' + path,
+    onProxyReq: (proxyReq, req) => {
+      attachDownstreamHeaders(proxyReq, req);
+    },
+    onError: (err, req, res) => {
+      console.error('Proxy error (chat):', err.message);
+      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Auth service unavailable' } });
+    },
+  }));
+
   app.use('/api/v1/tenants', createProxyMiddleware({
     target: services.auth,
     changeOrigin: true,
@@ -226,6 +239,19 @@ async function startServer() {
     onError: (err, req, res) => {
       console.error('Proxy error (rbac):', err.message);
       res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'RBAC service unavailable' } });
+    },
+  }));
+
+  app.use('/api/v1/dashboard', createProxyMiddleware({
+    target: services.case,
+    changeOrigin: true,
+    pathRewrite: (path) => '/dashboard' + path,
+    onProxyReq: (proxyReq, req) => {
+      attachDownstreamHeaders(proxyReq, req);
+    },
+    onError: (err, req, res) => {
+      console.error('Proxy error (dashboard):', err.message);
+      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
     },
   }));
 

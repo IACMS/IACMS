@@ -218,6 +218,7 @@ exports.Prisma.WorkflowStepScalarFieldEnum = {
   isFinal: 'isFinal',
   position: 'position',
   allowedRoleIds: 'allowedRoleIds',
+  requiresAttachment: 'requiresAttachment',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -232,6 +233,9 @@ exports.Prisma.WorkflowTransitionScalarFieldEnum = {
   allowedRoleIds: 'allowedRoleIds',
   requiresComment: 'requiresComment',
   requiresAttachment: 'requiresAttachment',
+  timeLimitType: 'timeLimitType',
+  timeLimitAmount: 'timeLimitAmount',
+  timeLimitUnit: 'timeLimitUnit',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -376,6 +380,15 @@ exports.Prisma.IntegrationScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AgencyChatMessageScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  senderId: 'senderId',
+  recipientId: 'recipientId',
+  body: 'body',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -429,7 +442,8 @@ exports.Prisma.ModelName = {
   CaseAttachment: 'CaseAttachment',
   AuditLog: 'AuditLog',
   Webhook: 'Webhook',
-  Integration: 'Integration'
+  Integration: 'Integration',
+  AgencyChatMessage: 'AgencyChatMessage'
 };
 
 /**

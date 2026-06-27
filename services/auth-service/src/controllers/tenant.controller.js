@@ -85,7 +85,10 @@ async function resolveActorContext(req) {
 }
 
 const BRANDING_KEYS = new Set(['primaryColor', 'secondaryColor', 'logoUrl', 'fontPreference']);
+const LETTER_KEYS = new Set(['letterHeader', 'letterFooter', 'letterAddress', 'letterClosing']);
+const TENANT_CONFIG_KEYS = new Set([...BRANDING_KEYS, ...LETTER_KEYS]);
 const FONT_WHITELIST = new Set(['Inter', 'Roboto', 'Outfit', 'system-ui']);
+const LETTER_TEXT_MAX = 5000;
 
 function validateHexColor(value, fieldName) {
   if (value == null) return null;
@@ -122,13 +125,36 @@ function validateFontPreference(value) {
   return v;
 }
 
-function validateAndPickBrandingConfig(config) {
+function validateLetterText(value, fieldName) {
+  if (value == null) return null;
+  if (typeof value !== 'string') throw new ValidationError(`${fieldName} must be a string`);
+  const v = value.trim();
+  if (v.length > LETTER_TEXT_MAX) {
+    throw new ValidationError(`${fieldName} must be at most ${LETTER_TEXT_MAX} characters`);
+  }
+  return v;
+}
+
+function pickTenantConfigResponse(cfg) {
+  return {
+    primaryColor: cfg.primaryColor ?? null,
+    secondaryColor: cfg.secondaryColor ?? null,
+    logoUrl: cfg.logoUrl ?? null,
+    fontPreference: cfg.fontPreference ?? null,
+    letterHeader: cfg.letterHeader ?? null,
+    letterFooter: cfg.letterFooter ?? null,
+    letterAddress: cfg.letterAddress ?? null,
+    letterClosing: cfg.letterClosing ?? null,
+  };
+}
+
+function validateAndPickTenantConfig(config) {
   if (!config || typeof config !== 'object' || Array.isArray(config)) {
     throw new ValidationError('Config must be an object');
   }
 
   for (const k of Object.keys(config)) {
-    if (!BRANDING_KEYS.has(k)) {
+    if (!TENANT_CONFIG_KEYS.has(k)) {
       throw new ValidationError(`Unknown config field "${k}"`);
     }
   }
@@ -138,6 +164,10 @@ function validateAndPickBrandingConfig(config) {
   if ('secondaryColor' in config) next.secondaryColor = validateHexColor(config.secondaryColor, 'secondaryColor');
   if ('logoUrl' in config) next.logoUrl = validateLogoUrl(config.logoUrl);
   if ('fontPreference' in config) next.fontPreference = validateFontPreference(config.fontPreference);
+  if ('letterHeader' in config) next.letterHeader = validateLetterText(config.letterHeader, 'letterHeader');
+  if ('letterFooter' in config) next.letterFooter = validateLetterText(config.letterFooter, 'letterFooter');
+  if ('letterAddress' in config) next.letterAddress = validateLetterText(config.letterAddress, 'letterAddress');
+  if ('letterClosing' in config) next.letterClosing = validateLetterText(config.letterClosing, 'letterClosing');
   return next;
 }
 
@@ -207,12 +237,7 @@ export async function getTenant(req, res, next) {
         description: tenant.description,
         isActive: tenant.isActive,
         createdAt: tenant.createdAt,
-        config: {
-          primaryColor: cfg.primaryColor ?? null,
-          secondaryColor: cfg.secondaryColor ?? null,
-          logoUrl: cfg.logoUrl ?? null,
-          fontPreference: cfg.fontPreference ?? null,
-        },
+        config: pickTenantConfigResponse(cfg),
       },
     });
   } catch (error) {
@@ -222,9 +247,11 @@ export async function getTenant(req, res, next) {
 
 export async function validateTenant(req, res, next) {
   try {
-    const { code } = req.params;
-    const tenant = await prisma.tenant.findUnique({
-      where: { code },
+    const code = String(req.params.code || '').trim();
+    if (!code) throw new ValidationError('Tenant code is required');
+
+    const tenant = await prisma.tenant.findFirst({
+      where: { code: { equals: code, mode: 'insensitive' } },
       select: {
         id: true,
         name: true,
@@ -265,7 +292,7 @@ export async function updateTenantConfig(req, res, next) {
     }
 
     const { config } = req.body || {};
-    const patch = validateAndPickBrandingConfig(config);
+    const patch = validateAndPickTenantConfig(config);
 
     const tenant = await prisma.tenant.findUnique({ where: { id } });
     if (!tenant) throw new NotFoundError('Tenant');
@@ -292,12 +319,7 @@ export async function updateTenantConfig(req, res, next) {
         id: updated.id,
         name: updated.name,
         code: updated.code,
-        config: {
-          primaryColor: cfg.primaryColor ?? null,
-          secondaryColor: cfg.secondaryColor ?? null,
-          logoUrl: cfg.logoUrl ?? null,
-          fontPreference: cfg.fontPreference ?? null,
-        },
+        config: pickTenantConfigResponse(cfg),
       },
     });
 
