@@ -2,7 +2,11 @@
 -- Locks workflow-definition tables, CaseHistory (from workflow_states),
 -- referral-aware tenant columns, AuditLog.relatedTenantId, case numbering.
 
-CREATE TYPE "WorkflowStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+DO $$ BEGIN
+  CREATE TYPE "WorkflowStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ─── Workflows: key, lifecycle, optional definition ─────────────────────────
 ALTER TABLE "workflows"

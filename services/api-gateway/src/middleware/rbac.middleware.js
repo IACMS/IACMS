@@ -30,6 +30,15 @@ const ROUTE_PERMISSIONS = {
   'GET:/cases/:id/history': 'cases:read',
   'POST:/cases/:id/transitions/:transitionId/execute': 'cases:update',
 
+  // Dashboard (case-service)
+  'GET:/dashboard/tasks': 'cases:read',
+  'GET:/dashboard/reports': 'cases:read',
+
+  // Agency chat (auth-service)
+  'GET:/chat/colleagues': 'cases:read',
+  'GET:/chat/messages': 'cases:read',
+  'POST:/chat/messages': 'cases:read',
+
   // Assignments (case-service mounts /assignments)
   'GET:/assignments': 'cases:read',
   'POST:/assignments': 'cases:assign',
@@ -195,7 +204,7 @@ async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
     try {
       const cached = await redis.get(cacheKey);
       if (cached !== null) {
-        return normalizeRbacEnvelope(JSON.parse(cached));
+        return { ...normalizeRbacEnvelope(JSON.parse(cached)), rbacAvailable: true };
       }
     } catch (err) {
       console.warn('[RBAC] Redis read error, falling back to live fetch:', err.message);

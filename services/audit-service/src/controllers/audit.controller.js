@@ -4,35 +4,118 @@ import EventBus from '../../../../shared/utils/eventBus.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'audit-service');
 
+const SORT_FIELDS = new Set(['createdAt', 'action', 'entityType', 'entityId']);
+
+function parseDate(value, endOfDay = false) {
+  if (!value) return null;
+  const d = new Date(String(value));
+  if (Number.isNaN(d.getTime())) return null;
+  if (endOfDay && String(value).length <= 10) {
+    d.setHours(23, 59, 59, 999);
+  }
+  return d;
+}
+
+function buildTenantScope(tenantId, callerTenant) {
+  const scope = tenantId || callerTenant;
+  if (!scope) return {};
+  return {
+    OR: [{ tenantId: scope }, { relatedTenantId: scope }],
+  };
+}
+
 export async function getAuditLogs(req, res, next) {
   try {
-    const { tenantId, entityType, entityId, userId, action, startDate, endDate } = req.query;
+    const callerTenant = req.headers['x-tenant-id'] ? String(req.headers['x-tenant-id']) : null;
+    const {
+      tenantId,
+      entityType,
+      entityId,
+      userId,
+      action,
+      startDate,
+      endDate,
+      search,
+      sortBy,
+      sortDir,
+    } = req.query;
+
+    const limit = Math.min(500, Math.max(1, parseInt(req.query.limit, 10) || 100));
+    const offset = Math.max(0, parseInt(req.query.offset, 10) || 0);
+
+    // Parse comma-separated action substrings to exclude (e.g. "login,logout,password")
+    const excludeActionsRaw = req.query.excludeActions ? String(req.query.excludeActions) : '';
+    const excludePatterns = excludeActionsRaw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     const where = {
-      ...(tenantId && { tenantId }),
-      ...(entityType && { entityType }),
-      ...(entityId && { entityId }),
-      ...(userId && { userId }),
-      ...(action && { action }),
-      ...(startDate || endDate) && {
-        createdAt: {
-          ...(startDate && { gte: new Date(startDate) }),
-          ...(endDate && { lte: new Date(endDate) }),
-        },
-      },
+      ...buildTenantScope(tenantId ? String(tenantId) : null, callerTenant),
+      ...(entityType && { entityType: String(entityType) }),
+      ...(entityId && { entityId: String(entityId) }),
+      ...(userId && { userId: String(userId) }),
+      ...(action && { action: { contains: String(action), mode: 'insensitive' } }),
+      // Exclude each pattern: a row is kept only when its action does NOT contain the pattern
+      ...(excludePatterns.length > 0 && {
+        AND: excludePatterns.map((pattern) => ({
+          NOT: { action: { contains: pattern, mode: 'insensitive' } },
+        })),
+      }),
     };
-    const logs = await prisma.auditLog.findMany({
-      where,
-      include: {
-        tenant: true,
-        user: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: parseInt(req.query.limit) || 100,
-      skip: parseInt(req.query.offset) || 0,
+
+    const start = parseDate(startDate, false);
+    const end = parseDate(endDate, true);
+    if (start || end) {
+      where.createdAt = {
+        ...(start && { gte: start }),
+        ...(end && { lte: end }),
+      };
+    }
+
+    const q = typeof search === 'string' ? search.trim() : '';
+    if (q) {
+      where.AND = [
+        ...(where.AND ?? []),
+        {
+          OR: [
+            { action: { contains: q, mode: 'insensitive' } },
+            { entityType: { contains: q, mode: 'insensitive' } },
+            { entityId: { contains: q, mode: 'insensitive' } },
+            { user: { email: { contains: q, mode: 'insensitive' } } },
+            { user: { firstName: { contains: q, mode: 'insensitive' } } },
+            { user: { lastName: { contains: q, mode: 'insensitive' } } },
+          ],
+        },
+      ];
+    }
+
+    const field = SORT_FIELDS.has(String(sortBy)) ? String(sortBy) : 'createdAt';
+    const direction = String(sortDir).toLowerCase() === 'asc' ? 'asc' : 'desc';
+
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        include: {
+          tenant: true,
+          relatedTenant: true,
+          user: true,
+        },
+        orderBy: { [field]: direction },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
+
+    res.json({
+      logs,
+      total,
+      limit,
+      offset,
+      sortBy: field,
+      sortDir: direction,
     });
-    res.json({ logs });
   } catch (error) {
     next(error);
   }
@@ -44,6 +127,7 @@ export async function getAuditLog(req, res, next) {
       where: { id: req.params.id },
       include: {
         tenant: true,
+        relatedTenant: true,
         user: true,
       },
     });

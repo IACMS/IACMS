@@ -4,6 +4,7 @@ import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import caseRoutes from './routes/case.routes.js';
 import assignmentRoutes from './routes/assignment.routes.js';
 import attachmentRoutes from './routes/attachment.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 import Logger from '../../../shared/common/logger.js';
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.get('/health', (req, res) => {
 app.use('/cases', caseRoutes);
 app.use('/assignments', assignmentRoutes);
 app.use('/attachments', attachmentRoutes);
+app.use('/dashboard', dashboardRoutes);
 
 app.use(errorHandler);
 

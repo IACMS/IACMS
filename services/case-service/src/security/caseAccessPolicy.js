@@ -4,6 +4,10 @@
  */
 
 import { ValidationError, NotFoundError } from '../../../../shared/common/errors.js';
+import {
+  readableCaseConditions,
+  incomingReferralReadableCondition,
+} from '../utils/tenant-scope.js';
 
 /** Tenant-wide case visibility applies only to `tenant_admin`; `system_admin` is not expanded here by design. */
 export async function userHasTenantWideCaseAccess(prisma, userId) {
@@ -23,10 +27,26 @@ export async function findCaseForUser(prisma, { tenantId, userId, caseId, includ
     throw new ValidationError('Tenant ID and User ID are required in headers');
   }
   const isAdmin = await userHasTenantWideCaseAccess(prisma, userId);
-  const base = { id: caseId, tenantId, deletedAt: null };
+  const visibility = readableCaseConditions(tenantId);
+
   const where = isAdmin
-    ? base
-    : { ...base, OR: [{ assignedTo: userId }, { createdBy: userId }] };
+    ? { id: caseId, ...visibility }
+    : {
+        id: caseId,
+        ...visibility,
+        AND: [
+          {
+            OR: [
+              { assignedTo: userId },
+              { createdBy: userId },
+              { tenantId },
+              { currentTenantId: tenantId },
+              { originatingTenantId: tenantId },
+              incomingReferralReadableCondition(tenantId),
+            ],
+          },
+        ],
+      };
 
   const opts = { where };
   if (include) opts.include = include;

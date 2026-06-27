@@ -53,21 +53,22 @@ model Tenant {
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   // Relations
-  registeredBy     User?            @relation("TenantRegistrar", fields: [registeredByUserId], references: [id], onDelete: SetNull)
+  registeredBy     User?               @relation("TenantRegistrar", fields: [registeredByUserId], references: [id], onDelete: SetNull)
   users            User[]
   roles            Role[]
   workflows        Workflow[]
-  cases            Case[]           @relation("CaseTenant")
-  casesOriginated  Case[]           @relation("CaseOriginatingTenant")
-  casesCurrent     Case[]           @relation("CaseCurrentTenant")
-  referralsFrom    CaseReferral[]   @relation("ReferralFrom")
-  referralsTo      CaseReferral[]   @relation("ReferralTo")
+  cases            Case[]              @relation("CaseTenant")
+  casesOriginated  Case[]              @relation("CaseOriginatingTenant")
+  casesCurrent     Case[]              @relation("CaseCurrentTenant")
+  referralsFrom    CaseReferral[]      @relation("ReferralFrom")
+  referralsTo      CaseReferral[]      @relation("ReferralTo")
   attachments      CaseAttachment[]
   auditLogs        AuditLog[]
-  relatedAuditLogs AuditLog[]       @relation("AuditRelatedTenant")
+  relatedAuditLogs AuditLog[]          @relation("AuditRelatedTenant")
   webhooks         Webhook[]
   integrations     Integration[]
   caseSequences    CaseSequence[]
+  chatMessages     AgencyChatMessage[]
 
   @@index([code])
   @@index([isActive])
@@ -95,15 +96,15 @@ model User {
   createdAt                DateTime  @default(now()) @map("created_at")
   updatedAt                DateTime  @updatedAt @map("updated_at")
 
-  tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  casesCreated          Case[]           @relation("CaseCreator")
-  casesAssigned         Case[]           @relation("CaseAssignee")
-  assignmentsAssignedTo Assignment[]     @relation("AssignmentAssignedTo")
-  assignmentsAssignedBy Assignment[]     @relation("AssignmentAssignedBy")
+  tenant                Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  casesCreated          Case[]              @relation("CaseCreator")
+  casesAssigned         Case[]              @relation("CaseAssignee")
+  assignmentsAssignedTo Assignment[]        @relation("AssignmentAssignedTo")
+  assignmentsAssignedBy Assignment[]        @relation("AssignmentAssignedBy")
   caseHistoryAsActor    CaseHistory[]
-  referralsMade         CaseReferral[]   @relation("ReferralMadeBy")
-  referralsAccepted     CaseReferral[]   @relation("ReferralAcceptedBy")
-  referralsRejected     CaseReferral[]   @relation("ReferralRejectedBy")
+  referralsMade         CaseReferral[]      @relation("ReferralMadeBy")
+  referralsAccepted     CaseReferral[]      @relation("ReferralAcceptedBy")
+  referralsRejected     CaseReferral[]      @relation("ReferralRejectedBy")
   attachments           CaseAttachment[]
   auditLogs             AuditLog[]
   userRoles             UserRole[]
@@ -111,8 +112,10 @@ model User {
   workflowsCreated      Workflow[]
   webhooksCreated       Webhook[]
   integrationsCreated   Integration[]
-  userRolesAssigned     UserRole[]       @relation("RoleAssigner")
-  tenantsRegistered     Tenant[]         @relation("TenantRegistrar")
+  userRolesAssigned     UserRole[]          @relation("RoleAssigner")
+  tenantsRegistered     Tenant[]            @relation("TenantRegistrar")
+  chatMessagesSent      AgencyChatMessage[] @relation("ChatSender")
+  chatMessagesReceived  AgencyChatMessage[] @relation("ChatRecipient")
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -222,17 +225,19 @@ model Workflow {
 }
 
 model WorkflowStep {
-  id             String   @id @default(uuid()) @db.Uuid
-  workflowId     String   @map("workflow_id") @db.Uuid
-  key            String
-  name           String
-  description    String?  @db.Text
-  isInitial      Boolean  @default(false) @map("is_initial")
-  isFinal        Boolean  @default(false) @map("is_final")
-  position       Int      @default(0)
-  allowedRoleIds String[] @default([]) @map("allowed_role_ids") @db.Uuid
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(uuid()) @db.Uuid
+  workflowId         String   @map("workflow_id") @db.Uuid
+  key                String
+  name               String
+  description        String?  @db.Text
+  isInitial          Boolean  @default(false) @map("is_initial")
+  isFinal            Boolean  @default(false) @map("is_final")
+  position           Int      @default(0)
+  allowedRoleIds     String[] @default([]) @map("allowed_role_ids") @db.Uuid
+  /// Step-level gate (legacy); transitions may also set requiresAttachment.
+  requiresAttachment Boolean  @default(false) @map("requires_attachment")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   workflow    Workflow             @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   outgoing    WorkflowTransition[] @relation("TransitionFromStep")
@@ -254,6 +259,9 @@ model WorkflowTransition {
   allowedRoleIds     String[] @default([]) @map("allowed_role_ids") @db.Uuid
   requiresComment    Boolean  @default(false) @map("requires_comment")
   requiresAttachment Boolean  @default(false) @map("requires_attachment")
+  timeLimitType      String   @default("NONE") @map("time_limit_type")
+  timeLimitAmount    Int?     @map("time_limit_amount")
+  timeLimitUnit      String?  @map("time_limit_unit")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
@@ -513,4 +521,25 @@ model Integration {
   @@index([type])
   @@index([isActive])
   @@map("integrations")
+}
+
+/**
+ * In-agency chat: agency-wide channel (recipientId null) or direct messages between colleagues.
+ */
+model AgencyChatMessage {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  senderId    String   @map("sender_id") @db.Uuid
+  recipientId String?  @map("recipient_id") @db.Uuid
+  body        String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sender    User   @relation("ChatSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient User?  @relation("ChatRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, recipientId])
+  @@index([senderId, recipientId])
+  @@map("agency_chat_messages")
 }

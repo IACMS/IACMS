@@ -178,6 +178,7 @@ export async function sessionStatus(req, res) {
         email: u.email,
         firstName: u.firstName,
         lastName: u.lastName,
+        tenantId: u.tenantId,
         tenant: u.tenant,
         mustChangePassword,
       },

@@ -103,6 +103,11 @@ export type Webhook = $Result.DefaultSelection<Prisma.$WebhookPayload>
  * 
  */
 export type Integration = $Result.DefaultSelection<Prisma.$IntegrationPayload>
+/**
+ * Model AgencyChatMessage
+ * * In-agency chat: agency-wide channel (recipientId null) or direct messages between colleagues.
+ */
+export type AgencyChatMessage = $Result.DefaultSelection<Prisma.$AgencyChatMessagePayload>
 
 /**
  * Enums
@@ -419,6 +424,16 @@ export class PrismaClient<
     * ```
     */
   get integration(): Prisma.IntegrationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.agencyChatMessage`: Exposes CRUD operations for the **AgencyChatMessage** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AgencyChatMessages
+    * const agencyChatMessages = await prisma.agencyChatMessage.findMany()
+    * ```
+    */
+  get agencyChatMessage(): Prisma.AgencyChatMessageDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -877,7 +892,8 @@ export namespace Prisma {
     CaseAttachment: 'CaseAttachment',
     AuditLog: 'AuditLog',
     Webhook: 'Webhook',
-    Integration: 'Integration'
+    Integration: 'Integration',
+    AgencyChatMessage: 'AgencyChatMessage'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -896,7 +912,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "tenant" | "user" | "role" | "permission" | "rolePermission" | "userRole" | "workflow" | "workflowStep" | "workflowTransition" | "case" | "caseHistory" | "caseSequence" | "assignment" | "caseReferral" | "caseAttachment" | "auditLog" | "webhook" | "integration"
+      modelProps: "tenant" | "user" | "role" | "permission" | "rolePermission" | "userRole" | "workflow" | "workflowStep" | "workflowTransition" | "case" | "caseHistory" | "caseSequence" | "assignment" | "caseReferral" | "caseAttachment" | "auditLog" | "webhook" | "integration" | "agencyChatMessage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2232,6 +2248,80 @@ export namespace Prisma {
           }
         }
       }
+      AgencyChatMessage: {
+        payload: Prisma.$AgencyChatMessagePayload<ExtArgs>
+        fields: Prisma.AgencyChatMessageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AgencyChatMessageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AgencyChatMessageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>
+          }
+          findFirst: {
+            args: Prisma.AgencyChatMessageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AgencyChatMessageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>
+          }
+          findMany: {
+            args: Prisma.AgencyChatMessageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>[]
+          }
+          create: {
+            args: Prisma.AgencyChatMessageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>
+          }
+          createMany: {
+            args: Prisma.AgencyChatMessageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AgencyChatMessageCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>[]
+          }
+          delete: {
+            args: Prisma.AgencyChatMessageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>
+          }
+          update: {
+            args: Prisma.AgencyChatMessageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>
+          }
+          deleteMany: {
+            args: Prisma.AgencyChatMessageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AgencyChatMessageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AgencyChatMessageUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>[]
+          }
+          upsert: {
+            args: Prisma.AgencyChatMessageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgencyChatMessagePayload>
+          }
+          aggregate: {
+            args: Prisma.AgencyChatMessageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAgencyChatMessage>
+          }
+          groupBy: {
+            args: Prisma.AgencyChatMessageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AgencyChatMessageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AgencyChatMessageCountArgs<ExtArgs>
+            result: $Utils.Optional<AgencyChatMessageCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2346,6 +2436,7 @@ export namespace Prisma {
     auditLog?: AuditLogOmit
     webhook?: WebhookOmit
     integration?: IntegrationOmit
+    agencyChatMessage?: AgencyChatMessageOmit
   }
 
   /* Types for Logging */
@@ -2440,6 +2531,7 @@ export namespace Prisma {
     webhooks: number
     integrations: number
     caseSequences: number
+    chatMessages: number
   }
 
   export type TenantCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2457,6 +2549,7 @@ export namespace Prisma {
     webhooks?: boolean | TenantCountOutputTypeCountWebhooksArgs
     integrations?: boolean | TenantCountOutputTypeCountIntegrationsArgs
     caseSequences?: boolean | TenantCountOutputTypeCountCaseSequencesArgs
+    chatMessages?: boolean | TenantCountOutputTypeCountChatMessagesArgs
   }
 
   // Custom InputTypes
@@ -2568,6 +2661,13 @@ export namespace Prisma {
     where?: CaseSequenceWhereInput
   }
 
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgencyChatMessageWhereInput
+  }
+
 
   /**
    * Count Type UserCountOutputType
@@ -2591,6 +2691,8 @@ export namespace Prisma {
     integrationsCreated: number
     userRolesAssigned: number
     tenantsRegistered: number
+    chatMessagesSent: number
+    chatMessagesReceived: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2611,6 +2713,8 @@ export namespace Prisma {
     integrationsCreated?: boolean | UserCountOutputTypeCountIntegrationsCreatedArgs
     userRolesAssigned?: boolean | UserCountOutputTypeCountUserRolesAssignedArgs
     tenantsRegistered?: boolean | UserCountOutputTypeCountTenantsRegisteredArgs
+    chatMessagesSent?: boolean | UserCountOutputTypeCountChatMessagesSentArgs
+    chatMessagesReceived?: boolean | UserCountOutputTypeCountChatMessagesReceivedArgs
   }
 
   // Custom InputTypes
@@ -2741,6 +2845,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountTenantsRegisteredArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TenantWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountChatMessagesSentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgencyChatMessageWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountChatMessagesReceivedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgencyChatMessageWhereInput
   }
 
 
@@ -3222,6 +3340,7 @@ export namespace Prisma {
     webhooks?: boolean | Tenant$webhooksArgs<ExtArgs>
     integrations?: boolean | Tenant$integrationsArgs<ExtArgs>
     caseSequences?: boolean | Tenant$caseSequencesArgs<ExtArgs>
+    chatMessages?: boolean | Tenant$chatMessagesArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tenant"]>
 
@@ -3280,6 +3399,7 @@ export namespace Prisma {
     webhooks?: boolean | Tenant$webhooksArgs<ExtArgs>
     integrations?: boolean | Tenant$integrationsArgs<ExtArgs>
     caseSequences?: boolean | Tenant$caseSequencesArgs<ExtArgs>
+    chatMessages?: boolean | Tenant$chatMessagesArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TenantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3307,6 +3427,7 @@ export namespace Prisma {
       webhooks: Prisma.$WebhookPayload<ExtArgs>[]
       integrations: Prisma.$IntegrationPayload<ExtArgs>[]
       caseSequences: Prisma.$CaseSequencePayload<ExtArgs>[]
+      chatMessages: Prisma.$AgencyChatMessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3730,6 +3851,7 @@ export namespace Prisma {
     webhooks<T extends Tenant$webhooksArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$webhooksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     integrations<T extends Tenant$integrationsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$integrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     caseSequences<T extends Tenant$caseSequencesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$caseSequencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseSequencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chatMessages<T extends Tenant$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4519,6 +4641,30 @@ export namespace Prisma {
   }
 
   /**
+   * Tenant.chatMessages
+   */
+  export type Tenant$chatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    where?: AgencyChatMessageWhereInput
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    cursor?: AgencyChatMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
+  }
+
+  /**
    * Tenant without action
    */
   export type TenantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4831,6 +4977,8 @@ export namespace Prisma {
     integrationsCreated?: boolean | User$integrationsCreatedArgs<ExtArgs>
     userRolesAssigned?: boolean | User$userRolesAssignedArgs<ExtArgs>
     tenantsRegistered?: boolean | User$tenantsRegisteredArgs<ExtArgs>
+    chatMessagesSent?: boolean | User$chatMessagesSentArgs<ExtArgs>
+    chatMessagesReceived?: boolean | User$chatMessagesReceivedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4922,6 +5070,8 @@ export namespace Prisma {
     integrationsCreated?: boolean | User$integrationsCreatedArgs<ExtArgs>
     userRolesAssigned?: boolean | User$userRolesAssignedArgs<ExtArgs>
     tenantsRegistered?: boolean | User$tenantsRegisteredArgs<ExtArgs>
+    chatMessagesSent?: boolean | User$chatMessagesSentArgs<ExtArgs>
+    chatMessagesReceived?: boolean | User$chatMessagesReceivedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4952,6 +5102,8 @@ export namespace Prisma {
       integrationsCreated: Prisma.$IntegrationPayload<ExtArgs>[]
       userRolesAssigned: Prisma.$UserRolePayload<ExtArgs>[]
       tenantsRegistered: Prisma.$TenantPayload<ExtArgs>[]
+      chatMessagesSent: Prisma.$AgencyChatMessagePayload<ExtArgs>[]
+      chatMessagesReceived: Prisma.$AgencyChatMessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5385,6 +5537,8 @@ export namespace Prisma {
     integrationsCreated<T extends User$integrationsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$integrationsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     userRolesAssigned<T extends User$userRolesAssignedArgs<ExtArgs> = {}>(args?: Subset<T, User$userRolesAssignedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tenantsRegistered<T extends User$tenantsRegisteredArgs<ExtArgs> = {}>(args?: Subset<T, User$tenantsRegisteredArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chatMessagesSent<T extends User$chatMessagesSentArgs<ExtArgs> = {}>(args?: Subset<T, User$chatMessagesSentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chatMessagesReceived<T extends User$chatMessagesReceivedArgs<ExtArgs> = {}>(args?: Subset<T, User$chatMessagesReceivedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6234,6 +6388,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TenantScalarFieldEnum | TenantScalarFieldEnum[]
+  }
+
+  /**
+   * User.chatMessagesSent
+   */
+  export type User$chatMessagesSentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    where?: AgencyChatMessageWhereInput
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    cursor?: AgencyChatMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * User.chatMessagesReceived
+   */
+  export type User$chatMessagesReceivedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    where?: AgencyChatMessageWhereInput
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    cursor?: AgencyChatMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
   }
 
   /**
@@ -12045,6 +12247,7 @@ export namespace Prisma {
     isInitial: boolean | null
     isFinal: boolean | null
     position: number | null
+    requiresAttachment: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12058,6 +12261,7 @@ export namespace Prisma {
     isInitial: boolean | null
     isFinal: boolean | null
     position: number | null
+    requiresAttachment: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12072,6 +12276,7 @@ export namespace Prisma {
     isFinal: number
     position: number
     allowedRoleIds: number
+    requiresAttachment: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -12095,6 +12300,7 @@ export namespace Prisma {
     isInitial?: true
     isFinal?: true
     position?: true
+    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12108,6 +12314,7 @@ export namespace Prisma {
     isInitial?: true
     isFinal?: true
     position?: true
+    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12122,6 +12329,7 @@ export namespace Prisma {
     isFinal?: true
     position?: true
     allowedRoleIds?: true
+    requiresAttachment?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -12223,6 +12431,7 @@ export namespace Prisma {
     isFinal: boolean
     position: number
     allowedRoleIds: string[]
+    requiresAttachment: boolean
     createdAt: Date
     updatedAt: Date
     _count: WorkflowStepCountAggregateOutputType | null
@@ -12256,6 +12465,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: boolean
     allowedRoleIds?: boolean
+    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -12276,6 +12486,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: boolean
     allowedRoleIds?: boolean
+    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -12291,6 +12502,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: boolean
     allowedRoleIds?: boolean
+    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -12306,11 +12518,12 @@ export namespace Prisma {
     isFinal?: boolean
     position?: boolean
     allowedRoleIds?: boolean
+    requiresAttachment?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type WorkflowStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workflowId" | "key" | "name" | "description" | "isInitial" | "isFinal" | "position" | "allowedRoleIds" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowStep"]>
+  export type WorkflowStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workflowId" | "key" | "name" | "description" | "isInitial" | "isFinal" | "position" | "allowedRoleIds" | "requiresAttachment" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowStep"]>
   export type WorkflowStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     outgoing?: boolean | WorkflowStep$outgoingArgs<ExtArgs>
@@ -12345,6 +12558,10 @@ export namespace Prisma {
       isFinal: boolean
       position: number
       allowedRoleIds: string[]
+      /**
+       * Step-level gate (legacy); transitions may also set requiresAttachment.
+       */
+      requiresAttachment: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["workflowStep"]>
@@ -12784,6 +13001,7 @@ export namespace Prisma {
     readonly isFinal: FieldRef<"WorkflowStep", 'Boolean'>
     readonly position: FieldRef<"WorkflowStep", 'Int'>
     readonly allowedRoleIds: FieldRef<"WorkflowStep", 'String[]'>
+    readonly requiresAttachment: FieldRef<"WorkflowStep", 'Boolean'>
     readonly createdAt: FieldRef<"WorkflowStep", 'DateTime'>
     readonly updatedAt: FieldRef<"WorkflowStep", 'DateTime'>
   }
@@ -13302,8 +13520,18 @@ export namespace Prisma {
 
   export type AggregateWorkflowTransition = {
     _count: WorkflowTransitionCountAggregateOutputType | null
+    _avg: WorkflowTransitionAvgAggregateOutputType | null
+    _sum: WorkflowTransitionSumAggregateOutputType | null
     _min: WorkflowTransitionMinAggregateOutputType | null
     _max: WorkflowTransitionMaxAggregateOutputType | null
+  }
+
+  export type WorkflowTransitionAvgAggregateOutputType = {
+    timeLimitAmount: number | null
+  }
+
+  export type WorkflowTransitionSumAggregateOutputType = {
+    timeLimitAmount: number | null
   }
 
   export type WorkflowTransitionMinAggregateOutputType = {
@@ -13315,6 +13543,9 @@ export namespace Prisma {
     description: string | null
     requiresComment: boolean | null
     requiresAttachment: boolean | null
+    timeLimitType: string | null
+    timeLimitAmount: number | null
+    timeLimitUnit: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -13328,6 +13559,9 @@ export namespace Prisma {
     description: string | null
     requiresComment: boolean | null
     requiresAttachment: boolean | null
+    timeLimitType: string | null
+    timeLimitAmount: number | null
+    timeLimitUnit: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -13342,11 +13576,22 @@ export namespace Prisma {
     allowedRoleIds: number
     requiresComment: number
     requiresAttachment: number
+    timeLimitType: number
+    timeLimitAmount: number
+    timeLimitUnit: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
+
+  export type WorkflowTransitionAvgAggregateInputType = {
+    timeLimitAmount?: true
+  }
+
+  export type WorkflowTransitionSumAggregateInputType = {
+    timeLimitAmount?: true
+  }
 
   export type WorkflowTransitionMinAggregateInputType = {
     id?: true
@@ -13357,6 +13602,9 @@ export namespace Prisma {
     description?: true
     requiresComment?: true
     requiresAttachment?: true
+    timeLimitType?: true
+    timeLimitAmount?: true
+    timeLimitUnit?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -13370,6 +13618,9 @@ export namespace Prisma {
     description?: true
     requiresComment?: true
     requiresAttachment?: true
+    timeLimitType?: true
+    timeLimitAmount?: true
+    timeLimitUnit?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -13384,6 +13635,9 @@ export namespace Prisma {
     allowedRoleIds?: true
     requiresComment?: true
     requiresAttachment?: true
+    timeLimitType?: true
+    timeLimitAmount?: true
+    timeLimitUnit?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -13427,6 +13681,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: WorkflowTransitionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WorkflowTransitionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: WorkflowTransitionMinAggregateInputType
@@ -13457,6 +13723,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: WorkflowTransitionCountAggregateInputType | true
+    _avg?: WorkflowTransitionAvgAggregateInputType
+    _sum?: WorkflowTransitionSumAggregateInputType
     _min?: WorkflowTransitionMinAggregateInputType
     _max?: WorkflowTransitionMaxAggregateInputType
   }
@@ -13471,9 +13739,14 @@ export namespace Prisma {
     allowedRoleIds: string[]
     requiresComment: boolean
     requiresAttachment: boolean
+    timeLimitType: string
+    timeLimitAmount: number | null
+    timeLimitUnit: string | null
     createdAt: Date
     updatedAt: Date
     _count: WorkflowTransitionCountAggregateOutputType | null
+    _avg: WorkflowTransitionAvgAggregateOutputType | null
+    _sum: WorkflowTransitionSumAggregateOutputType | null
     _min: WorkflowTransitionMinAggregateOutputType | null
     _max: WorkflowTransitionMaxAggregateOutputType | null
   }
@@ -13502,6 +13775,9 @@ export namespace Prisma {
     allowedRoleIds?: boolean
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: boolean
+    timeLimitAmount?: boolean
+    timeLimitUnit?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -13521,6 +13797,9 @@ export namespace Prisma {
     allowedRoleIds?: boolean
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: boolean
+    timeLimitAmount?: boolean
+    timeLimitUnit?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -13538,6 +13817,9 @@ export namespace Prisma {
     allowedRoleIds?: boolean
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: boolean
+    timeLimitAmount?: boolean
+    timeLimitUnit?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -13555,11 +13837,14 @@ export namespace Prisma {
     allowedRoleIds?: boolean
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: boolean
+    timeLimitAmount?: boolean
+    timeLimitUnit?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type WorkflowTransitionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workflowId" | "fromStepId" | "toStepId" | "name" | "description" | "allowedRoleIds" | "requiresComment" | "requiresAttachment" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTransition"]>
+  export type WorkflowTransitionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "workflowId" | "fromStepId" | "toStepId" | "name" | "description" | "allowedRoleIds" | "requiresComment" | "requiresAttachment" | "timeLimitType" | "timeLimitAmount" | "timeLimitUnit" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTransition"]>
   export type WorkflowTransitionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     fromStep?: boolean | WorkflowStepDefaultArgs<ExtArgs>
@@ -13596,6 +13881,9 @@ export namespace Prisma {
       allowedRoleIds: string[]
       requiresComment: boolean
       requiresAttachment: boolean
+      timeLimitType: string
+      timeLimitAmount: number | null
+      timeLimitUnit: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["workflowTransition"]>
@@ -14034,6 +14322,9 @@ export namespace Prisma {
     readonly allowedRoleIds: FieldRef<"WorkflowTransition", 'String[]'>
     readonly requiresComment: FieldRef<"WorkflowTransition", 'Boolean'>
     readonly requiresAttachment: FieldRef<"WorkflowTransition", 'Boolean'>
+    readonly timeLimitType: FieldRef<"WorkflowTransition", 'String'>
+    readonly timeLimitAmount: FieldRef<"WorkflowTransition", 'Int'>
+    readonly timeLimitUnit: FieldRef<"WorkflowTransition", 'String'>
     readonly createdAt: FieldRef<"WorkflowTransition", 'DateTime'>
     readonly updatedAt: FieldRef<"WorkflowTransition", 'DateTime'>
   }
@@ -25545,6 +25836,1112 @@ export namespace Prisma {
 
 
   /**
+   * Model AgencyChatMessage
+   */
+
+  export type AggregateAgencyChatMessage = {
+    _count: AgencyChatMessageCountAggregateOutputType | null
+    _min: AgencyChatMessageMinAggregateOutputType | null
+    _max: AgencyChatMessageMaxAggregateOutputType | null
+  }
+
+  export type AgencyChatMessageMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    senderId: string | null
+    recipientId: string | null
+    body: string | null
+    createdAt: Date | null
+  }
+
+  export type AgencyChatMessageMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    senderId: string | null
+    recipientId: string | null
+    body: string | null
+    createdAt: Date | null
+  }
+
+  export type AgencyChatMessageCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    senderId: number
+    recipientId: number
+    body: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AgencyChatMessageMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    senderId?: true
+    recipientId?: true
+    body?: true
+    createdAt?: true
+  }
+
+  export type AgencyChatMessageMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    senderId?: true
+    recipientId?: true
+    body?: true
+    createdAt?: true
+  }
+
+  export type AgencyChatMessageCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    senderId?: true
+    recipientId?: true
+    body?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AgencyChatMessageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgencyChatMessage to aggregate.
+     */
+    where?: AgencyChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgencyChatMessages to fetch.
+     */
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AgencyChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgencyChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgencyChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AgencyChatMessages
+    **/
+    _count?: true | AgencyChatMessageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AgencyChatMessageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AgencyChatMessageMaxAggregateInputType
+  }
+
+  export type GetAgencyChatMessageAggregateType<T extends AgencyChatMessageAggregateArgs> = {
+        [P in keyof T & keyof AggregateAgencyChatMessage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAgencyChatMessage[P]>
+      : GetScalarType<T[P], AggregateAgencyChatMessage[P]>
+  }
+
+
+
+
+  export type AgencyChatMessageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgencyChatMessageWhereInput
+    orderBy?: AgencyChatMessageOrderByWithAggregationInput | AgencyChatMessageOrderByWithAggregationInput[]
+    by: AgencyChatMessageScalarFieldEnum[] | AgencyChatMessageScalarFieldEnum
+    having?: AgencyChatMessageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AgencyChatMessageCountAggregateInputType | true
+    _min?: AgencyChatMessageMinAggregateInputType
+    _max?: AgencyChatMessageMaxAggregateInputType
+  }
+
+  export type AgencyChatMessageGroupByOutputType = {
+    id: string
+    tenantId: string
+    senderId: string
+    recipientId: string | null
+    body: string
+    createdAt: Date
+    _count: AgencyChatMessageCountAggregateOutputType | null
+    _min: AgencyChatMessageMinAggregateOutputType | null
+    _max: AgencyChatMessageMaxAggregateOutputType | null
+  }
+
+  type GetAgencyChatMessageGroupByPayload<T extends AgencyChatMessageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AgencyChatMessageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AgencyChatMessageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AgencyChatMessageGroupByOutputType[P]>
+            : GetScalarType<T[P], AgencyChatMessageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AgencyChatMessageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    senderId?: boolean
+    recipientId?: boolean
+    body?: boolean
+    createdAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+    recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+  }, ExtArgs["result"]["agencyChatMessage"]>
+
+  export type AgencyChatMessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    senderId?: boolean
+    recipientId?: boolean
+    body?: boolean
+    createdAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+    recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+  }, ExtArgs["result"]["agencyChatMessage"]>
+
+  export type AgencyChatMessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    senderId?: boolean
+    recipientId?: boolean
+    body?: boolean
+    createdAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+    recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+  }, ExtArgs["result"]["agencyChatMessage"]>
+
+  export type AgencyChatMessageSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    senderId?: boolean
+    recipientId?: boolean
+    body?: boolean
+    createdAt?: boolean
+  }
+
+  export type AgencyChatMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "senderId" | "recipientId" | "body" | "createdAt", ExtArgs["result"]["agencyChatMessage"]>
+  export type AgencyChatMessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+    recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+  }
+  export type AgencyChatMessageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+    recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+  }
+  export type AgencyChatMessageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+    recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+  }
+
+  export type $AgencyChatMessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AgencyChatMessage"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      sender: Prisma.$UserPayload<ExtArgs>
+      recipient: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      senderId: string
+      recipientId: string | null
+      body: string
+      createdAt: Date
+    }, ExtArgs["result"]["agencyChatMessage"]>
+    composites: {}
+  }
+
+  type AgencyChatMessageGetPayload<S extends boolean | null | undefined | AgencyChatMessageDefaultArgs> = $Result.GetResult<Prisma.$AgencyChatMessagePayload, S>
+
+  type AgencyChatMessageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AgencyChatMessageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AgencyChatMessageCountAggregateInputType | true
+    }
+
+  export interface AgencyChatMessageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AgencyChatMessage'], meta: { name: 'AgencyChatMessage' } }
+    /**
+     * Find zero or one AgencyChatMessage that matches the filter.
+     * @param {AgencyChatMessageFindUniqueArgs} args - Arguments to find a AgencyChatMessage
+     * @example
+     * // Get one AgencyChatMessage
+     * const agencyChatMessage = await prisma.agencyChatMessage.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AgencyChatMessageFindUniqueArgs>(args: SelectSubset<T, AgencyChatMessageFindUniqueArgs<ExtArgs>>): Prisma__AgencyChatMessageClient<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AgencyChatMessage that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AgencyChatMessageFindUniqueOrThrowArgs} args - Arguments to find a AgencyChatMessage
+     * @example
+     * // Get one AgencyChatMessage
+     * const agencyChatMessage = await prisma.agencyChatMessage.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AgencyChatMessageFindUniqueOrThrowArgs>(args: SelectSubset<T, AgencyChatMessageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AgencyChatMessageClient<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgencyChatMessage that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgencyChatMessageFindFirstArgs} args - Arguments to find a AgencyChatMessage
+     * @example
+     * // Get one AgencyChatMessage
+     * const agencyChatMessage = await prisma.agencyChatMessage.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AgencyChatMessageFindFirstArgs>(args?: SelectSubset<T, AgencyChatMessageFindFirstArgs<ExtArgs>>): Prisma__AgencyChatMessageClient<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgencyChatMessage that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgencyChatMessageFindFirstOrThrowArgs} args - Arguments to find a AgencyChatMessage
+     * @example
+     * // Get one AgencyChatMessage
+     * const agencyChatMessage = await prisma.agencyChatMessage.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AgencyChatMessageFindFirstOrThrowArgs>(args?: SelectSubset<T, AgencyChatMessageFindFirstOrThrowArgs<ExtArgs>>): Prisma__AgencyChatMessageClient<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AgencyChatMessages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgencyChatMessageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AgencyChatMessages
+     * const agencyChatMessages = await prisma.agencyChatMessage.findMany()
+     * 
+     * // Get first 10 AgencyChatMessages
+     * const agencyChatMessages = await prisma.agencyChatMessage.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const agencyChatMessageWithIdOnly = await prisma.agencyChatMessage.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AgencyChatMessageFindManyArgs>(args?: SelectSubset<T, AgencyChatMessageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AgencyChatMessage.
+     * @param {AgencyChatMessageCreateArgs} args - Arguments to create a AgencyChatMessage.
+     * @example
+     * // Create one AgencyChatMessage
+     * const AgencyChatMessage = await prisma.agencyChatMessage.create({
+     *   data: {
+     *     // ... data to create a AgencyChatMessage
+     *   }
+     * })
+     * 
+     */
+    create<T extends AgencyChatMessageCreateArgs>(args: SelectSubset<T, AgencyChatMessageCreateArgs<ExtArgs>>): Prisma__AgencyChatMessageClient<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AgencyChatMessages.
+     * @param {AgencyChatMessageCreateManyArgs} args - Arguments to create many AgencyChatMessages.
+     * @example
+     * // Create many AgencyChatMessages
+     * const agencyChatMessage = await prisma.agencyChatMessage.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AgencyChatMessageCreateManyArgs>(args?: SelectSubset<T, AgencyChatMessageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AgencyChatMessages and returns the data saved in the database.
+     * @param {AgencyChatMessageCreateManyAndReturnArgs} args - Arguments to create many AgencyChatMessages.
+     * @example
+     * // Create many AgencyChatMessages
+     * const agencyChatMessage = await prisma.agencyChatMessage.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AgencyChatMessages and only return the `id`
+     * const agencyChatMessageWithIdOnly = await prisma.agencyChatMessage.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AgencyChatMessageCreateManyAndReturnArgs>(args?: SelectSubset<T, AgencyChatMessageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AgencyChatMessage.
+     * @param {AgencyChatMessageDeleteArgs} args - Arguments to delete one AgencyChatMessage.
+     * @example
+     * // Delete one AgencyChatMessage
+     * const AgencyChatMessage = await prisma.agencyChatMessage.delete({
+     *   where: {
+     *     // ... filter to delete one AgencyChatMessage
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AgencyChatMessageDeleteArgs>(args: SelectSubset<T, AgencyChatMessageDeleteArgs<ExtArgs>>): Prisma__AgencyChatMessageClient<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AgencyChatMessage.
+     * @param {AgencyChatMessageUpdateArgs} args - Arguments to update one AgencyChatMessage.
+     * @example
+     * // Update one AgencyChatMessage
+     * const agencyChatMessage = await prisma.agencyChatMessage.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AgencyChatMessageUpdateArgs>(args: SelectSubset<T, AgencyChatMessageUpdateArgs<ExtArgs>>): Prisma__AgencyChatMessageClient<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AgencyChatMessages.
+     * @param {AgencyChatMessageDeleteManyArgs} args - Arguments to filter AgencyChatMessages to delete.
+     * @example
+     * // Delete a few AgencyChatMessages
+     * const { count } = await prisma.agencyChatMessage.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AgencyChatMessageDeleteManyArgs>(args?: SelectSubset<T, AgencyChatMessageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgencyChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgencyChatMessageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AgencyChatMessages
+     * const agencyChatMessage = await prisma.agencyChatMessage.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AgencyChatMessageUpdateManyArgs>(args: SelectSubset<T, AgencyChatMessageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgencyChatMessages and returns the data updated in the database.
+     * @param {AgencyChatMessageUpdateManyAndReturnArgs} args - Arguments to update many AgencyChatMessages.
+     * @example
+     * // Update many AgencyChatMessages
+     * const agencyChatMessage = await prisma.agencyChatMessage.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AgencyChatMessages and only return the `id`
+     * const agencyChatMessageWithIdOnly = await prisma.agencyChatMessage.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AgencyChatMessageUpdateManyAndReturnArgs>(args: SelectSubset<T, AgencyChatMessageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AgencyChatMessage.
+     * @param {AgencyChatMessageUpsertArgs} args - Arguments to update or create a AgencyChatMessage.
+     * @example
+     * // Update or create a AgencyChatMessage
+     * const agencyChatMessage = await prisma.agencyChatMessage.upsert({
+     *   create: {
+     *     // ... data to create a AgencyChatMessage
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AgencyChatMessage we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AgencyChatMessageUpsertArgs>(args: SelectSubset<T, AgencyChatMessageUpsertArgs<ExtArgs>>): Prisma__AgencyChatMessageClient<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AgencyChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgencyChatMessageCountArgs} args - Arguments to filter AgencyChatMessages to count.
+     * @example
+     * // Count the number of AgencyChatMessages
+     * const count = await prisma.agencyChatMessage.count({
+     *   where: {
+     *     // ... the filter for the AgencyChatMessages we want to count
+     *   }
+     * })
+    **/
+    count<T extends AgencyChatMessageCountArgs>(
+      args?: Subset<T, AgencyChatMessageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AgencyChatMessageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AgencyChatMessage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgencyChatMessageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AgencyChatMessageAggregateArgs>(args: Subset<T, AgencyChatMessageAggregateArgs>): Prisma.PrismaPromise<GetAgencyChatMessageAggregateType<T>>
+
+    /**
+     * Group by AgencyChatMessage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgencyChatMessageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AgencyChatMessageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AgencyChatMessageGroupByArgs['orderBy'] }
+        : { orderBy?: AgencyChatMessageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AgencyChatMessageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAgencyChatMessageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AgencyChatMessage model
+   */
+  readonly fields: AgencyChatMessageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AgencyChatMessage.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AgencyChatMessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    sender<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    recipient<T extends AgencyChatMessage$recipientArgs<ExtArgs> = {}>(args?: Subset<T, AgencyChatMessage$recipientArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AgencyChatMessage model
+   */
+  interface AgencyChatMessageFieldRefs {
+    readonly id: FieldRef<"AgencyChatMessage", 'String'>
+    readonly tenantId: FieldRef<"AgencyChatMessage", 'String'>
+    readonly senderId: FieldRef<"AgencyChatMessage", 'String'>
+    readonly recipientId: FieldRef<"AgencyChatMessage", 'String'>
+    readonly body: FieldRef<"AgencyChatMessage", 'String'>
+    readonly createdAt: FieldRef<"AgencyChatMessage", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AgencyChatMessage findUnique
+   */
+  export type AgencyChatMessageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which AgencyChatMessage to fetch.
+     */
+    where: AgencyChatMessageWhereUniqueInput
+  }
+
+  /**
+   * AgencyChatMessage findUniqueOrThrow
+   */
+  export type AgencyChatMessageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which AgencyChatMessage to fetch.
+     */
+    where: AgencyChatMessageWhereUniqueInput
+  }
+
+  /**
+   * AgencyChatMessage findFirst
+   */
+  export type AgencyChatMessageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which AgencyChatMessage to fetch.
+     */
+    where?: AgencyChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgencyChatMessages to fetch.
+     */
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgencyChatMessages.
+     */
+    cursor?: AgencyChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgencyChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgencyChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgencyChatMessages.
+     */
+    distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * AgencyChatMessage findFirstOrThrow
+   */
+  export type AgencyChatMessageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which AgencyChatMessage to fetch.
+     */
+    where?: AgencyChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgencyChatMessages to fetch.
+     */
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgencyChatMessages.
+     */
+    cursor?: AgencyChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgencyChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgencyChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgencyChatMessages.
+     */
+    distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * AgencyChatMessage findMany
+   */
+  export type AgencyChatMessageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which AgencyChatMessages to fetch.
+     */
+    where?: AgencyChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgencyChatMessages to fetch.
+     */
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AgencyChatMessages.
+     */
+    cursor?: AgencyChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgencyChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgencyChatMessages.
+     */
+    skip?: number
+    distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * AgencyChatMessage create
+   */
+  export type AgencyChatMessageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AgencyChatMessage.
+     */
+    data: XOR<AgencyChatMessageCreateInput, AgencyChatMessageUncheckedCreateInput>
+  }
+
+  /**
+   * AgencyChatMessage createMany
+   */
+  export type AgencyChatMessageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AgencyChatMessages.
+     */
+    data: AgencyChatMessageCreateManyInput | AgencyChatMessageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AgencyChatMessage createManyAndReturn
+   */
+  export type AgencyChatMessageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * The data used to create many AgencyChatMessages.
+     */
+    data: AgencyChatMessageCreateManyInput | AgencyChatMessageCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgencyChatMessage update
+   */
+  export type AgencyChatMessageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AgencyChatMessage.
+     */
+    data: XOR<AgencyChatMessageUpdateInput, AgencyChatMessageUncheckedUpdateInput>
+    /**
+     * Choose, which AgencyChatMessage to update.
+     */
+    where: AgencyChatMessageWhereUniqueInput
+  }
+
+  /**
+   * AgencyChatMessage updateMany
+   */
+  export type AgencyChatMessageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AgencyChatMessages.
+     */
+    data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyInput>
+    /**
+     * Filter which AgencyChatMessages to update
+     */
+    where?: AgencyChatMessageWhereInput
+    /**
+     * Limit how many AgencyChatMessages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgencyChatMessage updateManyAndReturn
+   */
+  export type AgencyChatMessageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * The data used to update AgencyChatMessages.
+     */
+    data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyInput>
+    /**
+     * Filter which AgencyChatMessages to update
+     */
+    where?: AgencyChatMessageWhereInput
+    /**
+     * Limit how many AgencyChatMessages to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgencyChatMessage upsert
+   */
+  export type AgencyChatMessageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AgencyChatMessage to update in case it exists.
+     */
+    where: AgencyChatMessageWhereUniqueInput
+    /**
+     * In case the AgencyChatMessage found by the `where` argument doesn't exist, create a new AgencyChatMessage with this data.
+     */
+    create: XOR<AgencyChatMessageCreateInput, AgencyChatMessageUncheckedCreateInput>
+    /**
+     * In case the AgencyChatMessage was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AgencyChatMessageUpdateInput, AgencyChatMessageUncheckedUpdateInput>
+  }
+
+  /**
+   * AgencyChatMessage delete
+   */
+  export type AgencyChatMessageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter which AgencyChatMessage to delete.
+     */
+    where: AgencyChatMessageWhereUniqueInput
+  }
+
+  /**
+   * AgencyChatMessage deleteMany
+   */
+  export type AgencyChatMessageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgencyChatMessages to delete
+     */
+    where?: AgencyChatMessageWhereInput
+    /**
+     * Limit how many AgencyChatMessages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgencyChatMessage.recipient
+   */
+  export type AgencyChatMessage$recipientArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * AgencyChatMessage without action
+   */
+  export type AgencyChatMessageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -25676,6 +27073,7 @@ export namespace Prisma {
     isFinal: 'isFinal',
     position: 'position',
     allowedRoleIds: 'allowedRoleIds',
+    requiresAttachment: 'requiresAttachment',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -25693,6 +27091,9 @@ export namespace Prisma {
     allowedRoleIds: 'allowedRoleIds',
     requiresComment: 'requiresComment',
     requiresAttachment: 'requiresAttachment',
+    timeLimitType: 'timeLimitType',
+    timeLimitAmount: 'timeLimitAmount',
+    timeLimitUnit: 'timeLimitUnit',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -25865,6 +27266,18 @@ export namespace Prisma {
   };
 
   export type IntegrationScalarFieldEnum = (typeof IntegrationScalarFieldEnum)[keyof typeof IntegrationScalarFieldEnum]
+
+
+  export const AgencyChatMessageScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    senderId: 'senderId',
+    recipientId: 'recipientId',
+    body: 'body',
+    createdAt: 'createdAt'
+  };
+
+  export type AgencyChatMessageScalarFieldEnum = (typeof AgencyChatMessageScalarFieldEnum)[keyof typeof AgencyChatMessageScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -26042,6 +27455,7 @@ export namespace Prisma {
     webhooks?: WebhookListRelationFilter
     integrations?: IntegrationListRelationFilter
     caseSequences?: CaseSequenceListRelationFilter
+    chatMessages?: AgencyChatMessageListRelationFilter
   }
 
   export type TenantOrderByWithRelationInput = {
@@ -26069,6 +27483,7 @@ export namespace Prisma {
     webhooks?: WebhookOrderByRelationAggregateInput
     integrations?: IntegrationOrderByRelationAggregateInput
     caseSequences?: CaseSequenceOrderByRelationAggregateInput
+    chatMessages?: AgencyChatMessageOrderByRelationAggregateInput
   }
 
   export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -26099,6 +27514,7 @@ export namespace Prisma {
     webhooks?: WebhookListRelationFilter
     integrations?: IntegrationListRelationFilter
     caseSequences?: CaseSequenceListRelationFilter
+    chatMessages?: AgencyChatMessageListRelationFilter
   }, "id" | "code">
 
   export type TenantOrderByWithAggregationInput = {
@@ -26172,6 +27588,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationListRelationFilter
     userRolesAssigned?: UserRoleListRelationFilter
     tenantsRegistered?: TenantListRelationFilter
+    chatMessagesSent?: AgencyChatMessageListRelationFilter
+    chatMessagesReceived?: AgencyChatMessageListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -26212,6 +27630,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationOrderByRelationAggregateInput
     userRolesAssigned?: UserRoleOrderByRelationAggregateInput
     tenantsRegistered?: TenantOrderByRelationAggregateInput
+    chatMessagesSent?: AgencyChatMessageOrderByRelationAggregateInput
+    chatMessagesReceived?: AgencyChatMessageOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -26257,6 +27677,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationListRelationFilter
     userRolesAssigned?: UserRoleListRelationFilter
     tenantsRegistered?: TenantListRelationFilter
+    chatMessagesSent?: AgencyChatMessageListRelationFilter
+    chatMessagesReceived?: AgencyChatMessageListRelationFilter
   }, "id" | "tenantId_email" | "tenantId_username">
 
   export type UserOrderByWithAggregationInput = {
@@ -26699,6 +28121,7 @@ export namespace Prisma {
     isFinal?: BoolFilter<"WorkflowStep"> | boolean
     position?: IntFilter<"WorkflowStep"> | number
     allowedRoleIds?: StringNullableListFilter<"WorkflowStep">
+    requiresAttachment?: BoolFilter<"WorkflowStep"> | boolean
     createdAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
@@ -26718,6 +28141,7 @@ export namespace Prisma {
     isFinal?: SortOrder
     position?: SortOrder
     allowedRoleIds?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workflow?: WorkflowOrderByWithRelationInput
@@ -26741,6 +28165,7 @@ export namespace Prisma {
     isFinal?: BoolFilter<"WorkflowStep"> | boolean
     position?: IntFilter<"WorkflowStep"> | number
     allowedRoleIds?: StringNullableListFilter<"WorkflowStep">
+    requiresAttachment?: BoolFilter<"WorkflowStep"> | boolean
     createdAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
@@ -26760,6 +28185,7 @@ export namespace Prisma {
     isFinal?: SortOrder
     position?: SortOrder
     allowedRoleIds?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: WorkflowStepCountOrderByAggregateInput
@@ -26782,6 +28208,7 @@ export namespace Prisma {
     isFinal?: BoolWithAggregatesFilter<"WorkflowStep"> | boolean
     position?: IntWithAggregatesFilter<"WorkflowStep"> | number
     allowedRoleIds?: StringNullableListFilter<"WorkflowStep">
+    requiresAttachment?: BoolWithAggregatesFilter<"WorkflowStep"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"WorkflowStep"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"WorkflowStep"> | Date | string
   }
@@ -26799,6 +28226,9 @@ export namespace Prisma {
     allowedRoleIds?: StringNullableListFilter<"WorkflowTransition">
     requiresComment?: BoolFilter<"WorkflowTransition"> | boolean
     requiresAttachment?: BoolFilter<"WorkflowTransition"> | boolean
+    timeLimitType?: StringFilter<"WorkflowTransition"> | string
+    timeLimitAmount?: IntNullableFilter<"WorkflowTransition"> | number | null
+    timeLimitUnit?: StringNullableFilter<"WorkflowTransition"> | string | null
     createdAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
@@ -26817,6 +28247,9 @@ export namespace Prisma {
     allowedRoleIds?: SortOrder
     requiresComment?: SortOrder
     requiresAttachment?: SortOrder
+    timeLimitType?: SortOrder
+    timeLimitAmount?: SortOrderInput | SortOrder
+    timeLimitUnit?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workflow?: WorkflowOrderByWithRelationInput
@@ -26839,6 +28272,9 @@ export namespace Prisma {
     allowedRoleIds?: StringNullableListFilter<"WorkflowTransition">
     requiresComment?: BoolFilter<"WorkflowTransition"> | boolean
     requiresAttachment?: BoolFilter<"WorkflowTransition"> | boolean
+    timeLimitType?: StringFilter<"WorkflowTransition"> | string
+    timeLimitAmount?: IntNullableFilter<"WorkflowTransition"> | number | null
+    timeLimitUnit?: StringNullableFilter<"WorkflowTransition"> | string | null
     createdAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
@@ -26857,11 +28293,16 @@ export namespace Prisma {
     allowedRoleIds?: SortOrder
     requiresComment?: SortOrder
     requiresAttachment?: SortOrder
+    timeLimitType?: SortOrder
+    timeLimitAmount?: SortOrderInput | SortOrder
+    timeLimitUnit?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: WorkflowTransitionCountOrderByAggregateInput
+    _avg?: WorkflowTransitionAvgOrderByAggregateInput
     _max?: WorkflowTransitionMaxOrderByAggregateInput
     _min?: WorkflowTransitionMinOrderByAggregateInput
+    _sum?: WorkflowTransitionSumOrderByAggregateInput
   }
 
   export type WorkflowTransitionScalarWhereWithAggregatesInput = {
@@ -26877,6 +28318,9 @@ export namespace Prisma {
     allowedRoleIds?: StringNullableListFilter<"WorkflowTransition">
     requiresComment?: BoolWithAggregatesFilter<"WorkflowTransition"> | boolean
     requiresAttachment?: BoolWithAggregatesFilter<"WorkflowTransition"> | boolean
+    timeLimitType?: StringWithAggregatesFilter<"WorkflowTransition"> | string
+    timeLimitAmount?: IntNullableWithAggregatesFilter<"WorkflowTransition"> | number | null
+    timeLimitUnit?: StringNullableWithAggregatesFilter<"WorkflowTransition"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"WorkflowTransition"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"WorkflowTransition"> | Date | string
   }
@@ -27804,6 +29248,72 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Integration"> | Date | string
   }
 
+  export type AgencyChatMessageWhereInput = {
+    AND?: AgencyChatMessageWhereInput | AgencyChatMessageWhereInput[]
+    OR?: AgencyChatMessageWhereInput[]
+    NOT?: AgencyChatMessageWhereInput | AgencyChatMessageWhereInput[]
+    id?: UuidFilter<"AgencyChatMessage"> | string
+    tenantId?: UuidFilter<"AgencyChatMessage"> | string
+    senderId?: UuidFilter<"AgencyChatMessage"> | string
+    recipientId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    body?: StringFilter<"AgencyChatMessage"> | string
+    createdAt?: DateTimeFilter<"AgencyChatMessage"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
+    recipient?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type AgencyChatMessageOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    senderId?: SortOrder
+    recipientId?: SortOrderInput | SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    sender?: UserOrderByWithRelationInput
+    recipient?: UserOrderByWithRelationInput
+  }
+
+  export type AgencyChatMessageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AgencyChatMessageWhereInput | AgencyChatMessageWhereInput[]
+    OR?: AgencyChatMessageWhereInput[]
+    NOT?: AgencyChatMessageWhereInput | AgencyChatMessageWhereInput[]
+    tenantId?: UuidFilter<"AgencyChatMessage"> | string
+    senderId?: UuidFilter<"AgencyChatMessage"> | string
+    recipientId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    body?: StringFilter<"AgencyChatMessage"> | string
+    createdAt?: DateTimeFilter<"AgencyChatMessage"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
+    recipient?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type AgencyChatMessageOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    senderId?: SortOrder
+    recipientId?: SortOrderInput | SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+    _count?: AgencyChatMessageCountOrderByAggregateInput
+    _max?: AgencyChatMessageMaxOrderByAggregateInput
+    _min?: AgencyChatMessageMinOrderByAggregateInput
+  }
+
+  export type AgencyChatMessageScalarWhereWithAggregatesInput = {
+    AND?: AgencyChatMessageScalarWhereWithAggregatesInput | AgencyChatMessageScalarWhereWithAggregatesInput[]
+    OR?: AgencyChatMessageScalarWhereWithAggregatesInput[]
+    NOT?: AgencyChatMessageScalarWhereWithAggregatesInput | AgencyChatMessageScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"AgencyChatMessage"> | string
+    tenantId?: UuidWithAggregatesFilter<"AgencyChatMessage"> | string
+    senderId?: UuidWithAggregatesFilter<"AgencyChatMessage"> | string
+    recipientId?: UuidNullableWithAggregatesFilter<"AgencyChatMessage"> | string | null
+    body?: StringWithAggregatesFilter<"AgencyChatMessage"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"AgencyChatMessage"> | Date | string
+  }
+
   export type TenantCreateInput = {
     id?: string
     name: string
@@ -27828,6 +29338,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateInput = {
@@ -27854,6 +29365,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUpdateInput = {
@@ -27880,6 +29392,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateInput = {
@@ -27906,6 +29419,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateManyInput = {
@@ -27980,6 +29494,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -28019,6 +29535,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUpdateInput = {
@@ -28058,6 +29576,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -28097,6 +29617,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -28559,6 +30081,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
@@ -28578,6 +30101,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
@@ -28595,6 +30119,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
@@ -28614,6 +30139,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
@@ -28632,6 +30158,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28645,6 +30172,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28659,6 +30187,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28670,6 +30199,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutTransitionsInput
@@ -28688,6 +30220,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     history?: CaseHistoryUncheckedCreateNestedManyWithoutTransitionInput
@@ -28700,6 +30235,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutTransitionsNestedInput
@@ -28718,6 +30256,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     history?: CaseHistoryUncheckedUpdateManyWithoutTransitionNestedInput
@@ -28733,6 +30274,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28744,6 +30288,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28758,6 +30305,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29727,6 +31277,66 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AgencyChatMessageCreateInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutChatMessagesInput
+    sender: UserCreateNestedOneWithoutChatMessagesSentInput
+    recipient?: UserCreateNestedOneWithoutChatMessagesReceivedInput
+  }
+
+  export type AgencyChatMessageUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    senderId: string
+    recipientId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutChatMessagesNestedInput
+    sender?: UserUpdateOneRequiredWithoutChatMessagesSentNestedInput
+    recipient?: UserUpdateOneWithoutChatMessagesReceivedNestedInput
+  }
+
+  export type AgencyChatMessageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageCreateManyInput = {
+    id?: string
+    tenantId: string
+    senderId: string
+    recipientId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -29885,6 +31495,12 @@ export namespace Prisma {
     none?: CaseSequenceWhereInput
   }
 
+  export type AgencyChatMessageListRelationFilter = {
+    every?: AgencyChatMessageWhereInput
+    some?: AgencyChatMessageWhereInput
+    none?: AgencyChatMessageWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -29927,6 +31543,10 @@ export namespace Prisma {
   }
 
   export type CaseSequenceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AgencyChatMessageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -30537,6 +32157,7 @@ export namespace Prisma {
     isFinal?: SortOrder
     position?: SortOrder
     allowedRoleIds?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30554,6 +32175,7 @@ export namespace Prisma {
     isInitial?: SortOrder
     isFinal?: SortOrder
     position?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30567,12 +32189,24 @@ export namespace Prisma {
     isInitial?: SortOrder
     isFinal?: SortOrder
     position?: SortOrder
+    requiresAttachment?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type WorkflowStepSumOrderByAggregateInput = {
     position?: SortOrder
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type WorkflowStepScalarRelationFilter = {
@@ -30596,8 +32230,15 @@ export namespace Prisma {
     allowedRoleIds?: SortOrder
     requiresComment?: SortOrder
     requiresAttachment?: SortOrder
+    timeLimitType?: SortOrder
+    timeLimitAmount?: SortOrder
+    timeLimitUnit?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type WorkflowTransitionAvgOrderByAggregateInput = {
+    timeLimitAmount?: SortOrder
   }
 
   export type WorkflowTransitionMaxOrderByAggregateInput = {
@@ -30609,6 +32250,9 @@ export namespace Prisma {
     description?: SortOrder
     requiresComment?: SortOrder
     requiresAttachment?: SortOrder
+    timeLimitType?: SortOrder
+    timeLimitAmount?: SortOrder
+    timeLimitUnit?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30622,8 +32266,31 @@ export namespace Prisma {
     description?: SortOrder
     requiresComment?: SortOrder
     requiresAttachment?: SortOrder
+    timeLimitType?: SortOrder
+    timeLimitAmount?: SortOrder
+    timeLimitUnit?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type WorkflowTransitionSumOrderByAggregateInput = {
+    timeLimitAmount?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type WorkflowStepNullableScalarRelationFilter = {
@@ -31138,6 +32805,33 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type AgencyChatMessageCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    senderId?: SortOrder
+    recipientId?: SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AgencyChatMessageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    senderId?: SortOrder
+    recipientId?: SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AgencyChatMessageMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    senderId?: SortOrder
+    recipientId?: SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type UserCreateNestedOneWithoutTenantsRegisteredInput = {
     create?: XOR<UserCreateWithoutTenantsRegisteredInput, UserUncheckedCreateWithoutTenantsRegisteredInput>
     connectOrCreate?: UserCreateOrConnectWithoutTenantsRegisteredInput
@@ -31242,6 +32936,13 @@ export namespace Prisma {
     connect?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
   }
 
+  export type AgencyChatMessageCreateNestedManyWithoutTenantInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutTenantInput, AgencyChatMessageUncheckedCreateWithoutTenantInput> | AgencyChatMessageCreateWithoutTenantInput[] | AgencyChatMessageUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutTenantInput | AgencyChatMessageCreateOrConnectWithoutTenantInput[]
+    createMany?: AgencyChatMessageCreateManyTenantInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutTenantInput = {
     create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
@@ -31338,6 +33039,13 @@ export namespace Prisma {
     connectOrCreate?: CaseSequenceCreateOrConnectWithoutTenantInput | CaseSequenceCreateOrConnectWithoutTenantInput[]
     createMany?: CaseSequenceCreateManyTenantInputEnvelope
     connect?: CaseSequenceWhereUniqueInput | CaseSequenceWhereUniqueInput[]
+  }
+
+  export type AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutTenantInput, AgencyChatMessageUncheckedCreateWithoutTenantInput> | AgencyChatMessageCreateWithoutTenantInput[] | AgencyChatMessageUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutTenantInput | AgencyChatMessageCreateOrConnectWithoutTenantInput[]
+    createMany?: AgencyChatMessageCreateManyTenantInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -31562,6 +33270,20 @@ export namespace Prisma {
     deleteMany?: CaseSequenceScalarWhereInput | CaseSequenceScalarWhereInput[]
   }
 
+  export type AgencyChatMessageUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutTenantInput, AgencyChatMessageUncheckedCreateWithoutTenantInput> | AgencyChatMessageCreateWithoutTenantInput[] | AgencyChatMessageUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutTenantInput | AgencyChatMessageCreateOrConnectWithoutTenantInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutTenantInput | AgencyChatMessageUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: AgencyChatMessageCreateManyTenantInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutTenantInput | AgencyChatMessageUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutTenantInput | AgencyChatMessageUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
@@ -31758,6 +33480,20 @@ export namespace Prisma {
     deleteMany?: CaseSequenceScalarWhereInput | CaseSequenceScalarWhereInput[]
   }
 
+  export type AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutTenantInput, AgencyChatMessageUncheckedCreateWithoutTenantInput> | AgencyChatMessageCreateWithoutTenantInput[] | AgencyChatMessageUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutTenantInput | AgencyChatMessageCreateOrConnectWithoutTenantInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutTenantInput | AgencyChatMessageUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: AgencyChatMessageCreateManyTenantInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutTenantInput | AgencyChatMessageUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutTenantInput | AgencyChatMessageUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
   export type TenantCreateNestedOneWithoutUsersInput = {
     create?: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
     connectOrCreate?: TenantCreateOrConnectWithoutUsersInput
@@ -31883,6 +33619,20 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput | TenantWhereUniqueInput[]
   }
 
+  export type AgencyChatMessageCreateNestedManyWithoutSenderInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutSenderInput, AgencyChatMessageUncheckedCreateWithoutSenderInput> | AgencyChatMessageCreateWithoutSenderInput[] | AgencyChatMessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutSenderInput | AgencyChatMessageCreateOrConnectWithoutSenderInput[]
+    createMany?: AgencyChatMessageCreateManySenderInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
+  export type AgencyChatMessageCreateNestedManyWithoutRecipientInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutRecipientInput, AgencyChatMessageUncheckedCreateWithoutRecipientInput> | AgencyChatMessageCreateWithoutRecipientInput[] | AgencyChatMessageUncheckedCreateWithoutRecipientInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientInput | AgencyChatMessageCreateOrConnectWithoutRecipientInput[]
+    createMany?: AgencyChatMessageCreateManyRecipientInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
   export type CaseUncheckedCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CaseCreateWithoutCreatorInput, CaseUncheckedCreateWithoutCreatorInput> | CaseCreateWithoutCreatorInput[] | CaseUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CaseCreateOrConnectWithoutCreatorInput | CaseCreateOrConnectWithoutCreatorInput[]
@@ -32000,6 +33750,20 @@ export namespace Prisma {
     connectOrCreate?: TenantCreateOrConnectWithoutRegisteredByInput | TenantCreateOrConnectWithoutRegisteredByInput[]
     createMany?: TenantCreateManyRegisteredByInputEnvelope
     connect?: TenantWhereUniqueInput | TenantWhereUniqueInput[]
+  }
+
+  export type AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutSenderInput, AgencyChatMessageUncheckedCreateWithoutSenderInput> | AgencyChatMessageCreateWithoutSenderInput[] | AgencyChatMessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutSenderInput | AgencyChatMessageCreateOrConnectWithoutSenderInput[]
+    createMany?: AgencyChatMessageCreateManySenderInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
+  export type AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutRecipientInput, AgencyChatMessageUncheckedCreateWithoutRecipientInput> | AgencyChatMessageCreateWithoutRecipientInput[] | AgencyChatMessageUncheckedCreateWithoutRecipientInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientInput | AgencyChatMessageCreateOrConnectWithoutRecipientInput[]
+    createMany?: AgencyChatMessageCreateManyRecipientInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -32252,6 +34016,34 @@ export namespace Prisma {
     deleteMany?: TenantScalarWhereInput | TenantScalarWhereInput[]
   }
 
+  export type AgencyChatMessageUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutSenderInput, AgencyChatMessageUncheckedCreateWithoutSenderInput> | AgencyChatMessageCreateWithoutSenderInput[] | AgencyChatMessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutSenderInput | AgencyChatMessageCreateOrConnectWithoutSenderInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutSenderInput | AgencyChatMessageUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: AgencyChatMessageCreateManySenderInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutSenderInput | AgencyChatMessageUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutSenderInput | AgencyChatMessageUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
+  export type AgencyChatMessageUpdateManyWithoutRecipientNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutRecipientInput, AgencyChatMessageUncheckedCreateWithoutRecipientInput> | AgencyChatMessageCreateWithoutRecipientInput[] | AgencyChatMessageUncheckedCreateWithoutRecipientInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientInput | AgencyChatMessageCreateOrConnectWithoutRecipientInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientInput | AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientInput[]
+    createMany?: AgencyChatMessageCreateManyRecipientInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientInput | AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutRecipientInput | AgencyChatMessageUpdateManyWithWhereWithoutRecipientInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
   export type CaseUncheckedUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<CaseCreateWithoutCreatorInput, CaseUncheckedCreateWithoutCreatorInput> | CaseCreateWithoutCreatorInput[] | CaseUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CaseCreateOrConnectWithoutCreatorInput | CaseCreateOrConnectWithoutCreatorInput[]
@@ -32488,6 +34280,34 @@ export namespace Prisma {
     update?: TenantUpdateWithWhereUniqueWithoutRegisteredByInput | TenantUpdateWithWhereUniqueWithoutRegisteredByInput[]
     updateMany?: TenantUpdateManyWithWhereWithoutRegisteredByInput | TenantUpdateManyWithWhereWithoutRegisteredByInput[]
     deleteMany?: TenantScalarWhereInput | TenantScalarWhereInput[]
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutSenderInput, AgencyChatMessageUncheckedCreateWithoutSenderInput> | AgencyChatMessageCreateWithoutSenderInput[] | AgencyChatMessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutSenderInput | AgencyChatMessageCreateOrConnectWithoutSenderInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutSenderInput | AgencyChatMessageUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: AgencyChatMessageCreateManySenderInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutSenderInput | AgencyChatMessageUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutSenderInput | AgencyChatMessageUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutRecipientInput, AgencyChatMessageUncheckedCreateWithoutRecipientInput> | AgencyChatMessageCreateWithoutRecipientInput[] | AgencyChatMessageUncheckedCreateWithoutRecipientInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientInput | AgencyChatMessageCreateOrConnectWithoutRecipientInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientInput | AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientInput[]
+    createMany?: AgencyChatMessageCreateManyRecipientInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientInput | AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutRecipientInput | AgencyChatMessageUpdateManyWithWhereWithoutRecipientInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutRolesInput = {
@@ -33118,6 +34938,14 @@ export namespace Prisma {
   export type WorkflowTransitionUpdateallowedRoleIdsInput = {
     set?: string[]
     push?: string | string[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type WorkflowUpdateOneRequiredWithoutTransitionsNestedInput = {
@@ -33802,6 +35630,50 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutIntegrationsCreatedInput, UserUpdateWithoutIntegrationsCreatedInput>, UserUncheckedUpdateWithoutIntegrationsCreatedInput>
   }
 
+  export type TenantCreateNestedOneWithoutChatMessagesInput = {
+    create?: XOR<TenantCreateWithoutChatMessagesInput, TenantUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutChatMessagesInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutChatMessagesSentInput = {
+    create?: XOR<UserCreateWithoutChatMessagesSentInput, UserUncheckedCreateWithoutChatMessagesSentInput>
+    connectOrCreate?: UserCreateOrConnectWithoutChatMessagesSentInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutChatMessagesReceivedInput = {
+    create?: XOR<UserCreateWithoutChatMessagesReceivedInput, UserUncheckedCreateWithoutChatMessagesReceivedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutChatMessagesReceivedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type TenantUpdateOneRequiredWithoutChatMessagesNestedInput = {
+    create?: XOR<TenantCreateWithoutChatMessagesInput, TenantUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutChatMessagesInput
+    upsert?: TenantUpsertWithoutChatMessagesInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutChatMessagesInput, TenantUpdateWithoutChatMessagesInput>, TenantUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutChatMessagesSentNestedInput = {
+    create?: XOR<UserCreateWithoutChatMessagesSentInput, UserUncheckedCreateWithoutChatMessagesSentInput>
+    connectOrCreate?: UserCreateOrConnectWithoutChatMessagesSentInput
+    upsert?: UserUpsertWithoutChatMessagesSentInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutChatMessagesSentInput, UserUpdateWithoutChatMessagesSentInput>, UserUncheckedUpdateWithoutChatMessagesSentInput>
+  }
+
+  export type UserUpdateOneWithoutChatMessagesReceivedNestedInput = {
+    create?: XOR<UserCreateWithoutChatMessagesReceivedInput, UserUncheckedCreateWithoutChatMessagesReceivedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutChatMessagesReceivedInput
+    upsert?: UserUpsertWithoutChatMessagesReceivedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutChatMessagesReceivedInput, UserUpdateWithoutChatMessagesReceivedInput>, UserUncheckedUpdateWithoutChatMessagesReceivedInput>
+  }
+
   export type NestedUuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -34065,6 +35937,33 @@ export namespace Prisma {
     _min?: NestedEnumWorkflowStatusFilter<$PrismaModel>
     _max?: NestedEnumWorkflowStatusFilter<$PrismaModel>
   }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -34125,6 +36024,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutTenantsRegisteredInput = {
@@ -34163,6 +36064,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookUncheckedCreateNestedManyWithoutCreatorInput
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutTenantsRegisteredInput = {
@@ -34206,6 +36109,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutTenantInput = {
@@ -34244,6 +36149,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutTenantInput = {
@@ -34860,6 +36767,32 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type AgencyChatMessageCreateWithoutTenantInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    sender: UserCreateNestedOneWithoutChatMessagesSentInput
+    recipient?: UserCreateNestedOneWithoutChatMessagesReceivedInput
+  }
+
+  export type AgencyChatMessageUncheckedCreateWithoutTenantInput = {
+    id?: string
+    senderId: string
+    recipientId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateOrConnectWithoutTenantInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    create: XOR<AgencyChatMessageCreateWithoutTenantInput, AgencyChatMessageUncheckedCreateWithoutTenantInput>
+  }
+
+  export type AgencyChatMessageCreateManyTenantInputEnvelope = {
+    data: AgencyChatMessageCreateManyTenantInput | AgencyChatMessageCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutTenantsRegisteredInput = {
     update: XOR<UserUpdateWithoutTenantsRegisteredInput, UserUncheckedUpdateWithoutTenantsRegisteredInput>
     create: XOR<UserCreateWithoutTenantsRegisteredInput, UserUncheckedCreateWithoutTenantsRegisteredInput>
@@ -34907,6 +36840,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookUpdateManyWithoutCreatorNestedInput
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTenantsRegisteredInput = {
@@ -34945,6 +36880,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookUncheckedUpdateManyWithoutCreatorNestedInput
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutTenantInput = {
@@ -35368,6 +37305,34 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"CaseSequence"> | Date | string
   }
 
+  export type AgencyChatMessageUpsertWithWhereUniqueWithoutTenantInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    update: XOR<AgencyChatMessageUpdateWithoutTenantInput, AgencyChatMessageUncheckedUpdateWithoutTenantInput>
+    create: XOR<AgencyChatMessageCreateWithoutTenantInput, AgencyChatMessageUncheckedCreateWithoutTenantInput>
+  }
+
+  export type AgencyChatMessageUpdateWithWhereUniqueWithoutTenantInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    data: XOR<AgencyChatMessageUpdateWithoutTenantInput, AgencyChatMessageUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type AgencyChatMessageUpdateManyWithWhereWithoutTenantInput = {
+    where: AgencyChatMessageScalarWhereInput
+    data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type AgencyChatMessageScalarWhereInput = {
+    AND?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+    OR?: AgencyChatMessageScalarWhereInput[]
+    NOT?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+    id?: UuidFilter<"AgencyChatMessage"> | string
+    tenantId?: UuidFilter<"AgencyChatMessage"> | string
+    senderId?: UuidFilter<"AgencyChatMessage"> | string
+    recipientId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    body?: StringFilter<"AgencyChatMessage"> | string
+    createdAt?: DateTimeFilter<"AgencyChatMessage"> | Date | string
+  }
+
   export type TenantCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -35391,6 +37356,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutUsersInput = {
@@ -35416,6 +37382,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutUsersInput = {
@@ -36110,6 +38077,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRegisteredByInput = {
@@ -36135,6 +38103,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRegisteredByInput = {
@@ -36144,6 +38113,58 @@ export namespace Prisma {
 
   export type TenantCreateManyRegisteredByInputEnvelope = {
     data: TenantCreateManyRegisteredByInput | TenantCreateManyRegisteredByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AgencyChatMessageCreateWithoutSenderInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutChatMessagesInput
+    recipient?: UserCreateNestedOneWithoutChatMessagesReceivedInput
+  }
+
+  export type AgencyChatMessageUncheckedCreateWithoutSenderInput = {
+    id?: string
+    tenantId: string
+    recipientId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateOrConnectWithoutSenderInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    create: XOR<AgencyChatMessageCreateWithoutSenderInput, AgencyChatMessageUncheckedCreateWithoutSenderInput>
+  }
+
+  export type AgencyChatMessageCreateManySenderInputEnvelope = {
+    data: AgencyChatMessageCreateManySenderInput | AgencyChatMessageCreateManySenderInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AgencyChatMessageCreateWithoutRecipientInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutChatMessagesInput
+    sender: UserCreateNestedOneWithoutChatMessagesSentInput
+  }
+
+  export type AgencyChatMessageUncheckedCreateWithoutRecipientInput = {
+    id?: string
+    tenantId: string
+    senderId: string
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateOrConnectWithoutRecipientInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    create: XOR<AgencyChatMessageCreateWithoutRecipientInput, AgencyChatMessageUncheckedCreateWithoutRecipientInput>
+  }
+
+  export type AgencyChatMessageCreateManyRecipientInputEnvelope = {
+    data: AgencyChatMessageCreateManyRecipientInput | AgencyChatMessageCreateManyRecipientInput[]
     skipDuplicates?: boolean
   }
 
@@ -36181,6 +38202,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutUsersInput = {
@@ -36206,6 +38228,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CaseUpsertWithWhereUniqueWithoutCreatorInput = {
@@ -36537,6 +38560,38 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Tenant"> | Date | string
   }
 
+  export type AgencyChatMessageUpsertWithWhereUniqueWithoutSenderInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    update: XOR<AgencyChatMessageUpdateWithoutSenderInput, AgencyChatMessageUncheckedUpdateWithoutSenderInput>
+    create: XOR<AgencyChatMessageCreateWithoutSenderInput, AgencyChatMessageUncheckedCreateWithoutSenderInput>
+  }
+
+  export type AgencyChatMessageUpdateWithWhereUniqueWithoutSenderInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    data: XOR<AgencyChatMessageUpdateWithoutSenderInput, AgencyChatMessageUncheckedUpdateWithoutSenderInput>
+  }
+
+  export type AgencyChatMessageUpdateManyWithWhereWithoutSenderInput = {
+    where: AgencyChatMessageScalarWhereInput
+    data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyWithoutSenderInput>
+  }
+
+  export type AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    update: XOR<AgencyChatMessageUpdateWithoutRecipientInput, AgencyChatMessageUncheckedUpdateWithoutRecipientInput>
+    create: XOR<AgencyChatMessageCreateWithoutRecipientInput, AgencyChatMessageUncheckedCreateWithoutRecipientInput>
+  }
+
+  export type AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    data: XOR<AgencyChatMessageUpdateWithoutRecipientInput, AgencyChatMessageUncheckedUpdateWithoutRecipientInput>
+  }
+
+  export type AgencyChatMessageUpdateManyWithWhereWithoutRecipientInput = {
+    where: AgencyChatMessageScalarWhereInput
+    data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyWithoutRecipientInput>
+  }
+
   export type TenantCreateWithoutRolesInput = {
     id?: string
     name: string
@@ -36560,6 +38615,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRolesInput = {
@@ -36585,6 +38641,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRolesInput = {
@@ -36676,6 +38733,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutRolesCreatedInput = {
@@ -36714,6 +38773,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutRolesCreatedInput = {
@@ -36755,6 +38816,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRolesInput = {
@@ -36780,6 +38842,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type RolePermissionUpsertWithWhereUniqueWithoutRoleInput = {
@@ -36871,6 +38934,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRolesCreatedInput = {
@@ -36909,6 +38974,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type RolePermissionCreateWithoutPermissionInput = {
@@ -37101,6 +39168,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutUserRolesInput = {
@@ -37139,6 +39208,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutUserRolesInput = {
@@ -37213,6 +39284,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutUserRolesAssignedInput = {
@@ -37251,6 +39324,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookUncheckedCreateNestedManyWithoutCreatorInput
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutUserRolesAssignedInput = {
@@ -37305,6 +39380,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserRolesInput = {
@@ -37343,6 +39420,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type RoleUpsertWithoutUserRolesInput = {
@@ -37429,6 +39508,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookUpdateManyWithoutCreatorNestedInput
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserRolesAssignedInput = {
@@ -37467,6 +39548,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookUncheckedUpdateManyWithoutCreatorNestedInput
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type TenantCreateWithoutWorkflowsInput = {
@@ -37492,6 +39575,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWorkflowsInput = {
@@ -37517,6 +39601,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWorkflowsInput = {
@@ -37560,6 +39645,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutWorkflowsCreatedInput = {
@@ -37598,6 +39685,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutWorkflowsCreatedInput = {
@@ -37684,6 +39773,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionCreateNestedManyWithoutFromStepInput
@@ -37701,6 +39791,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
@@ -37726,6 +39817,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     fromStep: WorkflowStepCreateNestedOneWithoutOutgoingInput
@@ -37742,6 +39836,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     history?: CaseHistoryUncheckedCreateNestedManyWithoutTransitionInput
@@ -37791,6 +39888,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWorkflowsInput = {
@@ -37816,6 +39914,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutWorkflowsCreatedInput = {
@@ -37865,6 +39964,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkflowsCreatedInput = {
@@ -37903,6 +40004,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type CaseUpsertWithWhereUniqueWithoutWorkflowInput = {
@@ -37950,6 +40053,7 @@ export namespace Prisma {
     isFinal?: BoolFilter<"WorkflowStep"> | boolean
     position?: IntFilter<"WorkflowStep"> | number
     allowedRoleIds?: StringNullableListFilter<"WorkflowStep">
+    requiresAttachment?: BoolFilter<"WorkflowStep"> | boolean
     createdAt?: DateTimeFilter<"WorkflowStep"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowStep"> | Date | string
   }
@@ -37983,6 +40087,9 @@ export namespace Prisma {
     allowedRoleIds?: StringNullableListFilter<"WorkflowTransition">
     requiresComment?: BoolFilter<"WorkflowTransition"> | boolean
     requiresAttachment?: BoolFilter<"WorkflowTransition"> | boolean
+    timeLimitType?: StringFilter<"WorkflowTransition"> | string
+    timeLimitAmount?: IntNullableFilter<"WorkflowTransition"> | number | null
+    timeLimitUnit?: StringNullableFilter<"WorkflowTransition"> | string | null
     createdAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
     updatedAt?: DateTimeFilter<"WorkflowTransition"> | Date | string
   }
@@ -38037,6 +40144,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutTransitionsInput
@@ -38053,6 +40163,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     history?: CaseHistoryUncheckedCreateNestedManyWithoutTransitionInput
@@ -38075,6 +40188,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutTransitionsInput
@@ -38091,6 +40207,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     history?: CaseHistoryUncheckedCreateNestedManyWithoutTransitionInput
@@ -38381,6 +40500,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
@@ -38399,6 +40519,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     incoming?: WorkflowTransitionUncheckedCreateNestedManyWithoutToStepInput
@@ -38420,6 +40541,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
@@ -38438,6 +40560,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
@@ -38551,6 +40674,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
@@ -38569,6 +40693,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     incoming?: WorkflowTransitionUncheckedUpdateManyWithoutToStepNestedInput
@@ -38596,6 +40721,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
@@ -38614,6 +40740,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
@@ -38660,6 +40787,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesInput = {
@@ -38685,6 +40813,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesInput = {
@@ -38715,6 +40844,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesOriginatedInput = {
@@ -38740,6 +40870,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesOriginatedInput = {
@@ -38770,6 +40901,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesCurrentInput = {
@@ -38795,6 +40927,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesCurrentInput = {
@@ -38854,6 +40987,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
@@ -38872,6 +41006,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
@@ -38920,6 +41055,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutCasesAssignedInput = {
@@ -38958,6 +41095,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutCasesAssignedInput = {
@@ -39001,6 +41140,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutCasesCreatedInput = {
@@ -39039,6 +41180,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutCasesCreatedInput = {
@@ -39228,6 +41371,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesInput = {
@@ -39253,6 +41397,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutCasesOriginatedInput = {
@@ -39289,6 +41434,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesOriginatedInput = {
@@ -39314,6 +41460,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutCasesCurrentInput = {
@@ -39350,6 +41497,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesCurrentInput = {
@@ -39375,6 +41523,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type WorkflowUpsertWithoutCasesInput = {
@@ -39446,6 +41595,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
@@ -39464,6 +41614,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
@@ -39518,6 +41669,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCasesAssignedInput = {
@@ -39556,6 +41709,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUpsertWithoutCasesCreatedInput = {
@@ -39605,6 +41760,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCasesCreatedInput = {
@@ -39643,6 +41800,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type CaseHistoryUpsertWithWhereUniqueWithoutCaseInput = {
@@ -39781,6 +41940,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutTransitionsInput
@@ -39798,6 +41960,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39843,6 +42008,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutCaseHistoryAsActorInput = {
@@ -39881,6 +42048,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutCaseHistoryAsActorInput = {
@@ -39977,6 +42146,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutTransitionsNestedInput
@@ -39994,6 +42166,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40045,6 +42220,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCaseHistoryAsActorInput = {
@@ -40083,6 +42260,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type TenantCreateWithoutCaseSequencesInput = {
@@ -40108,6 +42287,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCaseSequencesInput = {
@@ -40133,6 +42313,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCaseSequencesInput = {
@@ -40174,6 +42355,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCaseSequencesInput = {
@@ -40199,6 +42381,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CaseCreateWithoutAssignmentsInput = {
@@ -40302,6 +42485,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutAssignmentsAssignedToInput = {
@@ -40340,6 +42525,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutAssignmentsAssignedToInput = {
@@ -40383,6 +42570,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutAssignmentsAssignedByInput = {
@@ -40421,6 +42610,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutAssignmentsAssignedByInput = {
@@ -40546,6 +42737,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignmentsAssignedToInput = {
@@ -40584,6 +42777,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUpsertWithoutAssignmentsAssignedByInput = {
@@ -40633,6 +42828,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignmentsAssignedByInput = {
@@ -40671,6 +42868,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type CaseCreateWithoutReferralsInput = {
@@ -40761,6 +42960,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutReferralsFromInput = {
@@ -40786,6 +42986,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutReferralsFromInput = {
@@ -40816,6 +43017,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutReferralsToInput = {
@@ -40841,6 +43043,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutReferralsToInput = {
@@ -40884,6 +43087,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutReferralsMadeInput = {
@@ -40922,6 +43127,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutReferralsMadeInput = {
@@ -40965,6 +43172,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutReferralsAcceptedInput = {
@@ -41003,6 +43212,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutReferralsAcceptedInput = {
@@ -41046,6 +43257,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutReferralsRejectedInput = {
@@ -41084,6 +43297,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutReferralsRejectedInput = {
@@ -41196,6 +43411,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutReferralsFromInput = {
@@ -41221,6 +43437,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutReferralsToInput = {
@@ -41257,6 +43474,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutReferralsToInput = {
@@ -41282,6 +43500,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutReferralsMadeInput = {
@@ -41331,6 +43550,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferralsMadeInput = {
@@ -41369,6 +43590,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUpsertWithoutReferralsAcceptedInput = {
@@ -41418,6 +43641,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferralsAcceptedInput = {
@@ -41456,6 +43681,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUpsertWithoutReferralsRejectedInput = {
@@ -41505,6 +43732,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferralsRejectedInput = {
@@ -41543,6 +43772,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type CaseCreateWithoutAttachmentsInput = {
@@ -41619,6 +43850,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutStepsInput
@@ -41637,6 +43869,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     outgoing?: WorkflowTransitionUncheckedCreateNestedManyWithoutFromStepInput
@@ -41672,6 +43905,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAttachmentsInput = {
@@ -41697,6 +43931,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAttachmentsInput = {
@@ -41740,6 +43975,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutAttachmentsInput = {
@@ -41778,6 +44015,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutAttachmentsInput = {
@@ -41876,6 +44115,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutStepsNestedInput
@@ -41894,6 +44134,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
@@ -41935,6 +44176,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAttachmentsInput = {
@@ -41960,6 +44202,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutAttachmentsInput = {
@@ -42009,6 +44252,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAttachmentsInput = {
@@ -42047,6 +44292,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type TenantCreateWithoutAuditLogsInput = {
@@ -42072,6 +44319,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAuditLogsInput = {
@@ -42097,6 +44345,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAuditLogsInput = {
@@ -42127,6 +44376,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRelatedAuditLogsInput = {
@@ -42152,6 +44402,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRelatedAuditLogsInput = {
@@ -42195,6 +44446,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -42233,6 +44486,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -42274,6 +44529,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAuditLogsInput = {
@@ -42299,6 +44555,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutRelatedAuditLogsInput = {
@@ -42335,6 +44592,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRelatedAuditLogsInput = {
@@ -42360,6 +44618,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutAuditLogsInput = {
@@ -42409,6 +44668,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -42447,6 +44708,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type TenantCreateWithoutWebhooksInput = {
@@ -42472,6 +44735,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWebhooksInput = {
@@ -42497,6 +44761,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWebhooksInput = {
@@ -42540,6 +44805,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutWebhooksCreatedInput = {
@@ -42578,6 +44845,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutWebhooksCreatedInput = {
@@ -42619,6 +44888,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWebhooksInput = {
@@ -42644,6 +44914,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutWebhooksCreatedInput = {
@@ -42693,6 +44964,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWebhooksCreatedInput = {
@@ -42731,6 +45004,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type TenantCreateWithoutIntegrationsInput = {
@@ -42756,6 +45031,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutIntegrationsInput = {
@@ -42781,6 +45057,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutIntegrationsInput = {
@@ -42824,6 +45101,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
 
   export type UserUncheckedCreateWithoutIntegrationsCreatedInput = {
@@ -42862,6 +45141,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookUncheckedCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
   }
 
   export type UserCreateOrConnectWithoutIntegrationsCreatedInput = {
@@ -42903,6 +45184,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutIntegrationsInput = {
@@ -42928,6 +45210,7 @@ export namespace Prisma {
     relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutIntegrationsCreatedInput = {
@@ -42977,6 +45260,8 @@ export namespace Prisma {
     webhooksCreated?: WebhookUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutIntegrationsCreatedInput = {
@@ -43015,6 +45300,480 @@ export namespace Prisma {
     webhooksCreated?: WebhookUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+  }
+
+  export type TenantCreateWithoutChatMessagesInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    roles?: RoleCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowCreateNestedManyWithoutTenantInput
+    cases?: CaseCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
+    webhooks?: WebhookCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutChatMessagesInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    registeredByUserId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
+    cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutChatMessagesInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutChatMessagesInput, TenantUncheckedCreateWithoutChatMessagesInput>
+  }
+
+  export type UserCreateWithoutChatMessagesSentInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    casesCreated?: CaseCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+  }
+
+  export type UserUncheckedCreateWithoutChatMessagesSentInput = {
+    id?: string
+    tenantId: string
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    casesCreated?: CaseUncheckedCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleUncheckedCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowUncheckedCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookUncheckedCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+  }
+
+  export type UserCreateOrConnectWithoutChatMessagesSentInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutChatMessagesSentInput, UserUncheckedCreateWithoutChatMessagesSentInput>
+  }
+
+  export type UserCreateWithoutChatMessagesReceivedInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    casesCreated?: CaseCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+  }
+
+  export type UserUncheckedCreateWithoutChatMessagesReceivedInput = {
+    id?: string
+    tenantId: string
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    casesCreated?: CaseUncheckedCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleUncheckedCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowUncheckedCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookUncheckedCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+  }
+
+  export type UserCreateOrConnectWithoutChatMessagesReceivedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutChatMessagesReceivedInput, UserUncheckedCreateWithoutChatMessagesReceivedInput>
+  }
+
+  export type TenantUpsertWithoutChatMessagesInput = {
+    update: XOR<TenantUpdateWithoutChatMessagesInput, TenantUncheckedUpdateWithoutChatMessagesInput>
+    create: XOR<TenantCreateWithoutChatMessagesInput, TenantUncheckedCreateWithoutChatMessagesInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutChatMessagesInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutChatMessagesInput, TenantUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type TenantUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    roles?: RoleUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUpdateManyWithoutTenantNestedInput
+    cases?: CaseUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
+    webhooks?: WebhookUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    registeredByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
+    cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type UserUpsertWithoutChatMessagesSentInput = {
+    update: XOR<UserUpdateWithoutChatMessagesSentInput, UserUncheckedUpdateWithoutChatMessagesSentInput>
+    create: XOR<UserCreateWithoutChatMessagesSentInput, UserUncheckedCreateWithoutChatMessagesSentInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutChatMessagesSentInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutChatMessagesSentInput, UserUncheckedUpdateWithoutChatMessagesSentInput>
+  }
+
+  export type UserUpdateWithoutChatMessagesSentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutChatMessagesSentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    casesCreated?: CaseUncheckedUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUncheckedUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUncheckedUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUncheckedUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+  }
+
+  export type UserUpsertWithoutChatMessagesReceivedInput = {
+    update: XOR<UserUpdateWithoutChatMessagesReceivedInput, UserUncheckedUpdateWithoutChatMessagesReceivedInput>
+    create: XOR<UserCreateWithoutChatMessagesReceivedInput, UserUncheckedCreateWithoutChatMessagesReceivedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutChatMessagesReceivedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutChatMessagesReceivedInput, UserUncheckedUpdateWithoutChatMessagesReceivedInput>
+  }
+
+  export type UserUpdateWithoutChatMessagesReceivedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutChatMessagesReceivedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    casesCreated?: CaseUncheckedUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUncheckedUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUncheckedUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUncheckedUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserCreateManyTenantInput = {
@@ -43258,6 +46017,14 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type AgencyChatMessageCreateManyTenantInput = {
+    id?: string
+    senderId: string
+    recipientId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
   export type UserUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -43294,6 +46061,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTenantInput = {
@@ -43332,6 +46101,8 @@ export namespace Prisma {
     integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutTenantInput = {
@@ -44049,6 +46820,30 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AgencyChatMessageUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sender?: UserUpdateOneRequiredWithoutChatMessagesSentNestedInput
+    recipient?: UserUpdateOneWithoutChatMessagesReceivedNestedInput
+  }
+
+  export type AgencyChatMessageUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CaseCreateManyCreatorInput = {
     id?: string
     tenantId: string
@@ -44297,6 +47092,22 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateManySenderInput = {
+    id?: string
+    tenantId: string
+    recipientId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateManyRecipientInput = {
+    id?: string
+    tenantId: string
+    senderId: string
+    body: string
+    createdAt?: Date | string
   }
 
   export type CaseUpdateWithoutCreatorInput = {
@@ -45065,6 +47876,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRegisteredByInput = {
@@ -45090,6 +47902,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateManyWithoutRegisteredByInput = {
@@ -45101,6 +47914,54 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutChatMessagesNestedInput
+    recipient?: UserUpdateOneWithoutChatMessagesReceivedNestedInput
+  }
+
+  export type AgencyChatMessageUncheckedUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUpdateWithoutRecipientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutChatMessagesNestedInput
+    sender?: UserUpdateOneRequiredWithoutChatMessagesSentNestedInput
+  }
+
+  export type AgencyChatMessageUncheckedUpdateWithoutRecipientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutRecipientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RolePermissionCreateManyRoleInput = {
@@ -45218,6 +48079,7 @@ export namespace Prisma {
     isFinal?: boolean
     position?: number
     allowedRoleIds?: WorkflowStepCreateallowedRoleIdsInput | string[]
+    requiresAttachment?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -45231,6 +48093,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -45330,6 +48195,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUpdateManyWithoutFromStepNestedInput
@@ -45347,6 +48213,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outgoing?: WorkflowTransitionUncheckedUpdateManyWithoutFromStepNestedInput
@@ -45364,6 +48231,7 @@ export namespace Prisma {
     isFinal?: BoolFieldUpdateOperationsInput | boolean
     position?: IntFieldUpdateOperationsInput | number
     allowedRoleIds?: WorkflowStepUpdateallowedRoleIdsInput | string[]
+    requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45375,6 +48243,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fromStep?: WorkflowStepUpdateOneRequiredWithoutOutgoingNestedInput
@@ -45391,6 +48262,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     history?: CaseHistoryUncheckedUpdateManyWithoutTransitionNestedInput
@@ -45405,6 +48279,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45418,6 +48295,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -45431,6 +48311,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionCreateallowedRoleIdsInput | string[]
     requiresComment?: boolean
     requiresAttachment?: boolean
+    timeLimitType?: string
+    timeLimitAmount?: number | null
+    timeLimitUnit?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -45483,6 +48366,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutTransitionsNestedInput
@@ -45499,6 +48385,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     history?: CaseHistoryUncheckedUpdateManyWithoutTransitionNestedInput
@@ -45513,6 +48402,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45524,6 +48416,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutTransitionsNestedInput
@@ -45540,6 +48435,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     history?: CaseHistoryUncheckedUpdateManyWithoutTransitionNestedInput
@@ -45554,6 +48452,9 @@ export namespace Prisma {
     allowedRoleIds?: WorkflowTransitionUpdateallowedRoleIdsInput | string[]
     requiresComment?: BoolFieldUpdateOperationsInput | boolean
     requiresAttachment?: BoolFieldUpdateOperationsInput | boolean
+    timeLimitType?: StringFieldUpdateOperationsInput | string
+    timeLimitAmount?: NullableIntFieldUpdateOperationsInput | number | null
+    timeLimitUnit?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

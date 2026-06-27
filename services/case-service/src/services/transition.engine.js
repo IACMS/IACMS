@@ -8,6 +8,7 @@ import {
   WorkflowNotPublishedError,
 } from '../../../../shared/common/errors.js';
 import { fetchWorkflowFull } from './workflow.client.js';
+import { mutableCaseConditions } from '../utils/tenant-scope.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'case-service');
 
@@ -73,7 +74,11 @@ export async function executeTransition(req, caseId, transitionId) {
 
   const updated = await prisma.$transaction(async tx => {
     const row = await tx.case.findFirst({
-      where: { id: caseId, currentTenantId: tenantId, currentStepId: caseRow.currentStepId, deletedAt: null },
+      where: {
+        id: caseId,
+        ...mutableCaseConditions(tenantId),
+        currentStepId: caseRow.currentStepId,
+      },
     });
     if (!row) throw new NotFoundError('Case');
 
