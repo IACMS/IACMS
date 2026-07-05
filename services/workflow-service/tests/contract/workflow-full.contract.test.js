@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,9 +11,11 @@ const fixture = JSON.parse(
   ),
 );
 
-test('workflow-full fixture shape', () => {
-  assert.equal(typeof fixture.id, 'string');
-  assert.ok(Array.isArray(fixture.steps));
-  assert.ok(Array.isArray(fixture.transitions));
-  assert.equal(fixture.status, 'PUBLISHED');
+describe('workflow-full fixture contract', () => {
+  it('has expected shape', () => {
+    expect(typeof fixture.id).toBe('string');
+    expect(Array.isArray(fixture.steps)).toBe(true);
+    expect(Array.isArray(fixture.transitions)).toBe(true);
+    expect(fixture.status).toBe('PUBLISHED');
+  });
 });

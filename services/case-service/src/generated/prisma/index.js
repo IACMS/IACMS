@@ -448,7 +448,7 @@ const config = {
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../../../../.env"
+    "schemaEnvPath": "../../../../auth-service/.env"
   },
   "relativePath": "../../../../../prisma",
   "clientVersion": "6.19.3",
@@ -476,7 +476,7 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "services/case-service/src/generated/prisma",
+    "../case-service/src/generated/prisma",
     "case-service/src/generated/prisma",
   ]
   
@@ -507,7 +507,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");
-path.join(process.cwd(), "services/case-service/src/generated/prisma/libquery_engine-debian-openssl-3.0.x.so.node")
+path.join(process.cwd(), "../case-service/src/generated/prisma/libquery_engine-debian-openssl-3.0.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "services/case-service/src/generated/prisma/schema.prisma")
+path.join(process.cwd(), "../case-service/src/generated/prisma/schema.prisma")
