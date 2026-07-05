@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,10 +11,12 @@ const fixture = JSON.parse(
   ),
 );
 
-test('case-service consumes workflow fixture contract fields', () => {
-  const stepKeys = new Set(fixture.steps.map(s => s.id));
-  for (const t of fixture.transitions) {
-    assert.ok(stepKeys.has(t.fromStepId));
-    assert.ok(stepKeys.has(t.toStepId));
-  }
+describe('case-service workflow contract', () => {
+  it('consumes workflow fixture contract fields', () => {
+    const stepKeys = new Set(fixture.steps.map((s) => s.id));
+    for (const t of fixture.transitions) {
+      expect(stepKeys.has(t.fromStepId)).toBe(true);
+      expect(stepKeys.has(t.toStepId)).toBe(true);
+    }
+  });
 });

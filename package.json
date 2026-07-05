@@ -33,7 +33,9 @@
     "db:seed": "node prisma/seed.js",
     "db:reset": "npx prisma migrate reset --force",
     "setup": "npm run docker:up && sleep 5 && npm run prisma:migrate && npm run db:seed",
-    "test:gateway": "npm run test -w api-gateway"
+    "test:gateway": "npm run test -w api-gateway",
+    "test:services": "npm run test -w rbac-service -w case-service -w workflow-service -w referral-service -w audit-service -w integration-service -w notification-service -w api-gateway",
+    "test:services:integration": "npm run test:integration -w rbac-service -w case-service -w workflow-service -w referral-service -w audit-service -w integration-service -w notification-service"
   },
   "devDependencies": {
     "prisma": "^6.0.0"
