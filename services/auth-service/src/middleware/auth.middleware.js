@@ -26,6 +26,7 @@ async function attachUserFromGatewayForwardedIdentity(req, res, next) {
     select: {
       id: true,
       tenantId: true,
+      departmentId: true,
       email: true,
       mustChangePassword: true,
       userRoles: { select: { roleId: true } },
@@ -40,6 +41,7 @@ async function attachUserFromGatewayForwardedIdentity(req, res, next) {
   req.user = {
     id: u.id,
     tenantId: u.tenantId,
+    departmentId: u.departmentId ?? null,
     email: u.email,
     mustChangePassword: u.mustChangePassword ?? false,
     roles: u.userRoles.map((r) => r.roleId),

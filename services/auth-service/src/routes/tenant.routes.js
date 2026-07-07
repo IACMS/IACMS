@@ -2,6 +2,7 @@ import express from 'express';
 import {
   listTenants,
   getTenant,
+  listTenantDepartments,
   validateTenant,
   updateTenantConfig,
   registerTenant,
@@ -17,6 +18,7 @@ const router = express.Router();
 router.post('/register', authenticateTokenOptional, registerTenant);
 router.get('/', listTenants);
 router.get('/validate/:code', validateTenant);
+router.get('/:id/departments', listTenantDepartments);
 router.get('/:id', getTenant);
 router.patch('/:id/config', updateTenantConfig);
 

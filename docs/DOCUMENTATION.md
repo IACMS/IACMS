@@ -119,6 +119,7 @@ Handles all identity operations. Not called by users directly — always proxied
 - JWT token refresh
 - User profile management
 - Password change
+- Tenant department lookup and department-aware agency chat
 
 Key files:
 
@@ -153,6 +154,7 @@ Core business logic: case lifecycle management.
 State machine for cases.
 
 - Define workflow templates (states + transitions)
+- Optional department-scoped workflows with tenant-wide fallback
 - Execute state transitions
 - Track transition history in `workflow_states`
 
@@ -161,6 +163,7 @@ State machine for cases.
 Cross-organization case referrals.
 
 - Submit referrals between tenants
+- Route referrals between departments inside or across tenants
 - Accept / reject referrals
 - Track referral status
 
@@ -323,13 +326,9 @@ In short: **Auth Service proves identity**, **API Gateway enforces it**.
 
 ### Multi-Tenancy
 
-Every tenant-aware table has a `tenant_id` column. PostgreSQL Row Level Security (RLS) automatically filters all queries so users only ever see their own tenant's data.
+Every tenant-aware table has a `tenant_id` column. Request handlers enforce tenant isolation explicitly in Prisma queries and, for department-aware flows, may also filter on `department_id` or related department ownership fields.
 
-The tenant context is set before each request:
-
-```javascript
-await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`;
-```
+The API Gateway forwards the authenticated tenant and department context to downstream services. Services should scope reads and writes using those headers plus domain rules for referrals and tenant-wide fallbacks.
 
 ### Tables
 
@@ -346,12 +345,25 @@ await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`;
 | `is_active` | Boolean | |
 | `created_at`, `updated_at` | Timestamp | |
 
+**`departments`** — Organizational sub-units inside a tenant
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID PK | |
+| `tenant_id` | UUID FK → tenants | Owning tenant |
+| `code` | String | Unique per tenant |
+| `name` | String | Unique per tenant |
+| `description` | Text nullable | |
+| `is_active` | Boolean | |
+| `created_at`, `updated_at` | Timestamp | |
+
 **`users`** — User accounts
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | UUID PK | |
 | `tenant_id` | UUID FK → tenants | |
+| `department_id` | UUID FK → departments nullable | User's department within the tenant |
 | `email` | String UNIQUE (per tenant) | |
 | `username` | String UNIQUE (per tenant) | |
 | `password_hash` | String | bcrypt hash |
@@ -401,6 +413,8 @@ await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`;
 | `tenant_id` | UUID FK | Owning tenant |
 | `originating_tenant_id` | UUID FK nullable | Tenant that created the case |
 | `current_tenant_id` | UUID FK nullable | Tenant currently handling it |
+| `originating_department_id` | UUID FK nullable | Department that originated the case |
+| `current_department_id` | UUID FK nullable | Department currently handling the case |
 | `case_number` | String UNIQUE | Format: `ORG-YYYY-XXXXX` |
 | `title` | String | |
 | `type` | String | `criminal`, `civil`, etc. |
@@ -416,6 +430,8 @@ RLS: User can see a case if their tenant owns it, originated it, is currently ha
 
 **`workflows`** — Workflow templates per tenant
 
+`workflows.department_id` is nullable: `NULL` means tenant-wide, while a UUID means the workflow is scoped to one department and should be preferred for callers in that department.
+
 **`workflow_states`** — State transition history per case
 
 **`assignments`** — Case assignment history
@@ -428,7 +444,20 @@ RLS: User can see a case if their tenant owns it, originated it, is currently ha
 |--------|------|-------------|
 | `from_tenant_id` | UUID FK | Referring org |
 | `to_tenant_id` | UUID FK | Receiving org |
+| `from_department_id` | UUID FK nullable | Referring department |
+| `to_department_id` | UUID FK nullable | Receiving department |
 | `status` | String | `pending`, `accepted`, `rejected`, `completed`, `cancelled` |
+
+**`agency_chat_messages`** — Agency-wide, department-wide, and direct chat messages
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `tenant_id` | UUID FK | Owning tenant |
+| `sender_id` | UUID FK → users | Sender |
+| `recipient_id` | UUID FK → users nullable | Direct-message recipient |
+| `department_id` | UUID FK → departments nullable | Department broadcast scope |
+| `recipient_department_id` | UUID FK → departments nullable | DM recipient's department |
+| `body` | Text | Message body |
 
 #### Audit & Integration
 
@@ -772,6 +801,7 @@ When a request is authenticated (session or JWT), the gateway adds these headers
 |--------|-------|
 | `x-user-id` | Authenticated user's UUID |
 | `x-tenant-id` | User's tenant UUID |
+| `x-department-id` | User's department UUID when assigned |
 | `x-user-email` | User's email |
 | `x-user-roles` | Comma-separated roles |
 
@@ -793,9 +823,9 @@ Services should read user identity from these headers, not re-validate tokens.
 
 **1. Start infrastructure containers:**
 
-```powershell
+```bash
 cd infrastructure
-docker-compose up -d postgres zookeeper kafka
+docker compose up -d postgres redis zookeeper kafka
 ```
 
 Wait ~30 seconds for Kafka to initialize, then verify:

@@ -32,6 +32,7 @@ function attachDownstreamHeaders(proxyReq, req) {
   if (!req.user) return;
   proxyReq.setHeader('x-user-id', req.user.id);
   proxyReq.setHeader('x-tenant-id', req.user.tenantId);
+  if (req.user.departmentId) proxyReq.setHeader('x-department-id', req.user.departmentId);
   const roleIds = req.rbacEnvelope?.roleIds;
   if (Array.isArray(roleIds) && roleIds.length) {
     proxyReq.setHeader('x-user-roles', roleIds.join(','));
@@ -54,6 +55,7 @@ function forwardProxyIdentity(proxyReq, req) {
   if (!req.user) return;
   proxyReq.setHeader('x-user-id', req.user.id);
   proxyReq.setHeader('x-tenant-id', req.user.tenantId);
+  if (req.user.departmentId) proxyReq.setHeader('x-department-id', req.user.departmentId);
   if (req.user.email) proxyReq.setHeader('x-user-email', req.user.email);
   if (req.user.roles?.length) {
     proxyReq.setHeader('x-user-roles', req.user.roles.join(','));

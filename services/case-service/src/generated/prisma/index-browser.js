@@ -121,6 +121,17 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.DepartmentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.TenantScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -136,6 +147,7 @@ exports.Prisma.TenantScalarFieldEnum = {
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
+  departmentId: 'departmentId',
   email: 'email',
   username: 'username',
   passwordHash: 'passwordHash',
@@ -194,6 +206,7 @@ exports.Prisma.UserRoleScalarFieldEnum = {
 exports.Prisma.WorkflowScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
+  departmentId: 'departmentId',
   key: 'key',
   name: 'name',
   description: 'description',
@@ -245,6 +258,8 @@ exports.Prisma.CaseScalarFieldEnum = {
   tenantId: 'tenantId',
   originatingTenantId: 'originatingTenantId',
   currentTenantId: 'currentTenantId',
+  originatingDepartmentId: 'originatingDepartmentId',
+  currentDepartmentId: 'currentDepartmentId',
   referralStatus: 'referralStatus',
   workflowId: 'workflowId',
   workflowVersion: 'workflowVersion',
@@ -303,6 +318,8 @@ exports.Prisma.CaseReferralScalarFieldEnum = {
   caseId: 'caseId',
   fromTenantId: 'fromTenantId',
   toTenantId: 'toTenantId',
+  fromDepartmentId: 'fromDepartmentId',
+  toDepartmentId: 'toDepartmentId',
   referralReason: 'referralReason',
   notes: 'notes',
   status: 'status',
@@ -385,6 +402,8 @@ exports.Prisma.AgencyChatMessageScalarFieldEnum = {
   tenantId: 'tenantId',
   senderId: 'senderId',
   recipientId: 'recipientId',
+  departmentId: 'departmentId',
+  recipientDepartmentId: 'recipientDepartmentId',
   body: 'body',
   createdAt: 'createdAt'
 };
@@ -408,15 +427,15 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
 };
 exports.WorkflowStatus = exports.$Enums.WorkflowStatus = {
   DRAFT: 'DRAFT',
@@ -425,6 +444,7 @@ exports.WorkflowStatus = exports.$Enums.WorkflowStatus = {
 };
 
 exports.Prisma.ModelName = {
+  Department: 'Department',
   Tenant: 'Tenant',
   User: 'User',
   Role: 'Role',

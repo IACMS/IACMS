@@ -38,6 +38,33 @@ enum WorkflowStatus {
   ARCHIVED
 }
 
+model Department {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  code        String
+  name        String
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users  User[]
+  casesOriginating Case[] @relation("CaseOriginatingDepartment")
+  casesCurrent     Case[] @relation("CaseCurrentDepartment")
+  referralsFrom    CaseReferral[] @relation("ReferralFromDepartment")
+  referralsTo      CaseReferral[] @relation("ReferralToDepartment")
+  workflows        Workflow[]
+  chatMessages     AgencyChatMessage[]       @relation("ChatDepartment")
+  recipientChatMessages AgencyChatMessage[]  @relation("ChatRecipientDepartment")
+
+  @@unique([tenantId, code])
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("departments")
+}
+
 model Tenant {
   id                   String   @id @default(uuid()) @db.Uuid
   name                 String
@@ -53,6 +80,7 @@ model Tenant {
   // Relations
   registeredBy     User?            @relation("TenantRegistrar", fields: [registeredByUserId], references: [id], onDelete: SetNull)
   users            User[]
+  departments      Department[]
   roles            Role[]
   workflows        Workflow[]
   cases            Case[]           @relation("CaseTenant")
@@ -76,6 +104,7 @@ model Tenant {
 model User {
   id                       String    @id @default(uuid()) @db.Uuid
   tenantId                 String    @map("tenant_id") @db.Uuid
+  departmentId             String?   @map("department_id") @db.Uuid
   email                    String
   username                 String
   passwordHash             String    @map("password_hash")
@@ -95,6 +124,7 @@ model User {
   updatedAt                DateTime  @updatedAt @map("updated_at")
 
   tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department            Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   casesCreated          Case[]           @relation("CaseCreator")
   casesAssigned         Case[]           @relation("CaseAssignee")
   assignmentsAssignedTo Assignment[]     @relation("AssignmentAssignedTo")
@@ -118,6 +148,7 @@ model User {
   @@unique([tenantId, email])
   @@unique([tenantId, username])
   @@index([tenantId])
+  @@index([tenantId, departmentId])
   @@index([email])
   @@index([username])
   @@map("users")
@@ -195,6 +226,7 @@ model UserRole {
 model Workflow {
   id          String         @id @default(uuid()) @db.Uuid
   tenantId    String         @map("tenant_id") @db.Uuid
+  departmentId String?       @map("department_id") @db.Uuid
   key         String
   name        String
   description String?        @db.Text
@@ -210,6 +242,7 @@ model Workflow {
 
   // Relations
   tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department  Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   creator     User?                @relation(fields: [createdBy], references: [id])
   cases       Case[]
   steps       WorkflowStep[]
@@ -217,6 +250,7 @@ model Workflow {
 
   @@unique([tenantId, key, version])
   @@index([tenantId])
+  @@index([tenantId, departmentId])
   @@index([tenantId, key, status])
   @@index([tenantId, isActive])
   @@map("workflows")
@@ -277,6 +311,8 @@ model Case {
   tenantId            String    @map("tenant_id") @db.Uuid
   originatingTenantId String?   @map("originating_tenant_id") @db.Uuid
   currentTenantId     String?   @map("current_tenant_id") @db.Uuid
+  originatingDepartmentId String? @map("originating_department_id") @db.Uuid
+  currentDepartmentId     String? @map("current_department_id") @db.Uuid
   referralStatus      String    @default("none") @map("referral_status")
   workflowId          String    @map("workflow_id") @db.Uuid
   workflowVersion     Int       @default(1) @map("workflow_version")
@@ -301,6 +337,8 @@ model Case {
   tenant            Tenant           @relation("CaseTenant", fields: [tenantId], references: [id], onDelete: Cascade)
   originatingTenant Tenant?          @relation("CaseOriginatingTenant", fields: [originatingTenantId], references: [id])
   currentTenant     Tenant?          @relation("CaseCurrentTenant", fields: [currentTenantId], references: [id])
+  originatingDepartment Department?  @relation("CaseOriginatingDepartment", fields: [originatingDepartmentId], references: [id])
+  currentDepartment     Department?  @relation("CaseCurrentDepartment", fields: [currentDepartmentId], references: [id])
   workflow          Workflow         @relation(fields: [workflowId], references: [id])
   currentStep       WorkflowStep?    @relation("CaseCurrentWorkflowStep", fields: [currentStepId], references: [id])
   assignee          User?            @relation("CaseAssignee", fields: [assignedTo], references: [id])
@@ -315,6 +353,7 @@ model Case {
   @@index([tenantId, workflowId, closedAt])
   @@index([currentTenantId, referralStatus])
   @@index([originatingTenantId, referralStatus])
+  @@index([currentTenantId, currentDepartmentId, referralStatus])
   @@index([tenantId, status])
   @@index([tenantId, type])
   @@index([tenantId, assignedTo])
@@ -384,6 +423,8 @@ model CaseReferral {
   caseId         String    @map("case_id") @db.Uuid
   fromTenantId   String    @map("from_tenant_id") @db.Uuid
   toTenantId     String    @map("to_tenant_id") @db.Uuid
+  fromDepartmentId String? @map("from_department_id") @db.Uuid
+  toDepartmentId   String? @map("to_department_id") @db.Uuid
   referralReason String?   @map("referral_reason") @db.Text
   notes          String?   @db.Text
   status         String    @default("pending")
@@ -399,6 +440,8 @@ model CaseReferral {
   case       Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
   fromTenant Tenant @relation("ReferralFrom", fields: [fromTenantId], references: [id])
   toTenant   Tenant @relation("ReferralTo", fields: [toTenantId], references: [id])
+  fromDepartment Department? @relation("ReferralFromDepartment", fields: [fromDepartmentId], references: [id])
+  toDepartment   Department? @relation("ReferralToDepartment", fields: [toDepartmentId], references: [id])
   referrer   User   @relation("ReferralMadeBy", fields: [referredBy], references: [id])
   accepter   User?  @relation("ReferralAcceptedBy", fields: [acceptedBy], references: [id])
   rejecter   User?  @relation("ReferralRejectedBy", fields: [rejectedBy], references: [id])
@@ -409,6 +452,7 @@ model CaseReferral {
   @@index([status])
   @@index([fromTenantId, status, referredAt(sort: Desc)])
   @@index([toTenantId, status, referredAt(sort: Desc)])
+  @@index([toTenantId, toDepartmentId, status, referredAt(sort: Desc)])
   @@index([referredAt])
   @@index([caseId, status])
   @@map("case_referrals")
@@ -527,15 +571,20 @@ model AgencyChatMessage {
   tenantId    String   @map("tenant_id") @db.Uuid
   senderId    String   @map("sender_id") @db.Uuid
   recipientId String?  @map("recipient_id") @db.Uuid
+  departmentId        String?  @map("department_id") @db.Uuid
+  recipientDepartmentId String? @map("recipient_department_id") @db.Uuid
   body        String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
 
   tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   sender    User   @relation("ChatSender", fields: [senderId], references: [id], onDelete: Cascade)
   recipient User?  @relation("ChatRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+  department        Department? @relation("ChatDepartment", fields: [departmentId], references: [id], onDelete: SetNull)
+  recipientDepartment Department? @relation("ChatRecipientDepartment", fields: [recipientDepartmentId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, createdAt(sort: Desc)])
   @@index([tenantId, recipientId])
+  @@index([tenantId, departmentId, createdAt(sort: Desc)])
   @@index([senderId, recipientId])
   @@map("agency_chat_messages")
 }

@@ -203,7 +203,7 @@ export function validateRegisterRequest(body) {
  * @param headerTenantId - Optional `x-tenant-id` from API gateway (logged-in admin's org)
  */
 export function validateCreateUserRequest(body, headerTenantId) {
-  const { email, firstName, lastName, username, tenantId, tenantCode, roleId } = body || {};
+  const { email, firstName, lastName, username, tenantId, tenantCode, roleId, departmentId } = body || {};
 
   let resolvedTenantId = tenantId;
   const resolvedTenantCode = tenantCode;
@@ -238,6 +238,7 @@ export function validateCreateUserRequest(body, headerTenantId) {
     tenantCode: resolvedTenantCode ? validateTenantCode(resolvedTenantCode) : null,
     tenantId: resolvedTenantId ? validateUUID(String(resolvedTenantId).trim(), 'Tenant ID') : null,
     roleId: roleId ? validateUUID(roleId, 'Role ID') : null,
+    departmentId: departmentId ? validateUUID(departmentId, 'Department ID') : null,
   };
 }
 
