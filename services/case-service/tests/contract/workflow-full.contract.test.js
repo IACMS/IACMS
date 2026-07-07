@@ -13,6 +13,7 @@ const fixture = JSON.parse(
 
 describe('case-service workflow contract', () => {
   it('consumes workflow fixture contract fields', () => {
+    expect(Object.prototype.hasOwnProperty.call(fixture, 'departmentId')).toBe(true);
     const stepKeys = new Set(fixture.steps.map((s) => s.id));
     for (const t of fixture.transitions) {
       expect(stepKeys.has(t.fromStepId)).toBe(true);

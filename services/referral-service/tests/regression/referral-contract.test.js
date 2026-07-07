@@ -19,6 +19,8 @@ describe('CaseReferral event contract regression', () => {
     expect(fixture.status).toBe('pending');
     expect(fixture.fromTenantId).toBeTruthy();
     expect(fixture.toTenantId).toBeTruthy();
+    expect(fixture.fromDepartmentId).toBeTruthy();
+    expect(fixture.toDepartmentId).toBeTruthy();
     expect(fixture.caseId).toBeTruthy();
     expect(fixture.referredBy).toBeTruthy();
   });

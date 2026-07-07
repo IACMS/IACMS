@@ -23,11 +23,15 @@ export async function getProfile(req, res, next) {
         firstName: true,
         lastName: true,
         phone: true,
+        departmentId: true,
         isActive: true,
         isEmailVerified: true,
         mustChangePassword: true,
         lastLogin: true,
         createdAt: true,
+        department: {
+          select: { id: true, code: true, name: true },
+        },
         tenant: {
           select: { id: true, name: true, code: true },
         },

@@ -37,10 +37,12 @@ const prisma = new PrismaClient();
 const redis  = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 const loginAs = makeLoginHelper(app, request);
 const createdUserEmails = [];
+const createdDepartmentIds = [];
 
 let adminToken;
 let adminUserId;
 let testUserId;
+let testDepartmentId;
 const testUserEmail = `mgmt-test-${Date.now()}@test-org.com`;
 
 beforeAll(async () => {
@@ -59,19 +61,43 @@ beforeAll(async () => {
   adminToken  = loginRes.body.accessToken;
   adminUserId = loginRes.body.user.id;
 
+  const tenant = await prisma.tenant.findUnique({ where: { code: TENANT_CODE } });
+  expect(tenant).toBeTruthy();
+  const dept = await prisma.department.create({
+    data: {
+      tenantId: tenant.id,
+      code: `IT-DEPT-${Date.now()}`,
+      name: `Integration Department ${Date.now()}`,
+      description: 'Department created for integration tests',
+      isActive: true,
+    },
+  });
+  testDepartmentId = dept.id;
+  createdDepartmentIds.push(dept.id);
+
   // Create a reusable test user for management operations
   const createRes = await request(app)
     .post('/auth/users/create')
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ email: testUserEmail, firstName: 'Managed', lastName: 'User', tenantCode: TENANT_CODE });
+    .send({
+      email: testUserEmail,
+      firstName: 'Managed',
+      lastName: 'User',
+      tenantCode: TENANT_CODE,
+      departmentId: testDepartmentId,
+    });
 
   expect(createRes.status).toBe(201);
   testUserId = createRes.body.user.id;
+  expect(createRes.body.user.departmentId).toBe(testDepartmentId);
   createdUserEmails.push(testUserEmail);
 });
 
 afterAll(async () => {
   await cleanupUsers(prisma, createdUserEmails);
+  if (createdDepartmentIds.length) {
+    await prisma.department.deleteMany({ where: { id: { in: createdDepartmentIds } } });
+  }
   await prisma.$disconnect();
   await redis.quit();
 });
@@ -86,6 +112,9 @@ describe('GET /auth/users', () => {
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.users)).toBe(true);
     expect(res.body.users.length).toBeGreaterThan(0);
+    const created = res.body.users.find((u) => u.id === testUserId);
+    expect(created?.departmentId).toBe(testDepartmentId);
+    expect(created?.department?.id).toBe(testDepartmentId);
   });
 
   it('returns 401 without token', async () => {
