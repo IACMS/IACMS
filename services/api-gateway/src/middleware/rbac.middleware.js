@@ -105,6 +105,7 @@ const ROUTE_PERMISSIONS = {
   'GET:/referrals/:id': 'referrals:read',
   'POST:/referrals': 'referrals:create',
   'POST:/referrals/:id/accept': 'referrals:update',
+  'POST:/referrals/:id/assign': 'referrals:update',
   'POST:/referrals/:id/reject': 'referrals:update',
   
   // Additional case operations

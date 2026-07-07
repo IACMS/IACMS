@@ -34,6 +34,85 @@ async function getStepEnteredAt(caseId, stepId) {
   return kase?.createdAt ?? new Date();
 }
 
+async function computeSenderProgress(prisma, caseRow) {
+  const referralStatus = String(caseRow.referralStatus || '').toLowerCase();
+  const stageMap = {
+    received: 'Received',
+    assigned: 'Assigned',
+    working: 'Being worked on',
+    near: 'Near completion',
+    completed: 'Completed',
+    rejected: 'Rejected',
+  };
+
+  let range = stageMap.received;
+  let lastUpdatedAt = caseRow.updatedAt ?? null;
+
+  const assignment = await prisma.assignment.findFirst({
+    where: {
+      caseId: caseRow.id,
+      assignmentType: 'referral_assignment',
+      isActive: true,
+    },
+    select: { assignedAt: true },
+    orderBy: { assignedAt: 'desc' },
+  });
+
+  const lastTransition = await prisma.caseHistory.findFirst({
+    where: { caseId: caseRow.id },
+    select: { transitionedAt: true },
+    orderBy: { transitionedAt: 'desc' },
+  });
+
+  const currentStepFinal = caseRow.currentStepId
+    ? await prisma.workflowStep.findFirst({
+        where: { id: caseRow.currentStepId },
+        select: { isFinal: true },
+      })
+    : null;
+
+  if (referralStatus === 'rejected') {
+    range = stageMap.rejected;
+    lastUpdatedAt = caseRow.updatedAt ?? lastUpdatedAt;
+    return { range, lastUpdatedAt };
+  }
+  if (referralStatus === 'returned') {
+    range = stageMap.completed;
+    lastUpdatedAt = caseRow.updatedAt ?? lastUpdatedAt;
+    return { range, lastUpdatedAt };
+  }
+
+  if (referralStatus === 'awaiting_assignment' || referralStatus === 'pending_referral') {
+    range = stageMap.received;
+    lastUpdatedAt = caseRow.updatedAt ?? lastUpdatedAt;
+    return { range, lastUpdatedAt };
+  }
+
+  if (referralStatus === 'in_progress') {
+    if (!assignment) {
+      range = stageMap.assigned;
+      lastUpdatedAt = lastTransition?.transitionedAt ?? lastUpdatedAt;
+      return { range, lastUpdatedAt };
+    }
+
+    const assignedAt = assignment.assignedAt;
+    const transitionedAt = lastTransition?.transitionedAt ?? null;
+
+    if (currentStepFinal?.isFinal) {
+      range = stageMap.near;
+    } else if (transitionedAt && assignedAt && transitionedAt > assignedAt) {
+      range = stageMap.working;
+    } else {
+      range = stageMap.assigned;
+    }
+
+    lastUpdatedAt = transitionedAt ?? lastUpdatedAt;
+    return { range, lastUpdatedAt };
+  }
+
+  return { range, lastUpdatedAt };
+}
+
 /**
  * GET /cases/:id/state — portal-shaped payload (workflowGuide, actions, history).
  */
@@ -51,6 +130,33 @@ export async function getCaseState(req, res, next) {
       },
     });
     if (!caseRow) throw new NotFoundError('Case');
+
+    const heldByAnotherTenant =
+      Boolean(caseRow.currentTenantId) && String(caseRow.currentTenantId) !== caller;
+    const receiverOwnsWorkflow =
+      heldByAnotherTenant &&
+      (String(caseRow.referralStatus || '').toLowerCase() === 'in_progress' ||
+        String(caseRow.referralStatus || '').toLowerCase() === 'awaiting_assignment');
+
+    // Originating/sender tenants should be able to open a referred case while another
+    // agency holds custody, but they must not fetch or see the receiver's private workflow.
+    if (receiverOwnsWorkflow) {
+      const senderProgress = await computeSenderProgress(prisma, caseRow);
+      return res.json({
+        currentStep: null,
+        availableActions: [],
+        history: [],
+        workflowGuide: null,
+        senderProgress: senderProgress
+          ? {
+              range: senderProgress.range,
+              lastUpdatedAt: senderProgress.lastUpdatedAt
+                ? senderProgress.lastUpdatedAt.toISOString()
+                : null,
+            }
+          : null,
+      });
+    }
 
     const full = await fetchWorkflowFull(caseRow.workflowId, caller, forwardHeaders(req));
 
