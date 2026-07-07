@@ -4,6 +4,7 @@ import {
   getReferral,
   createReferral,
   acceptReferral,
+  assignReferral,
   rejectReferral,
   completeReferral,
 } from '../controllers/referral.controller.js';
@@ -17,6 +18,7 @@ router.get('/', getReferrals);
 router.get('/:id', getReferral);
 router.post('/', createReferral);
 router.post('/:id/accept', acceptReferral);
+router.post('/:id/assign', assignReferral);
 router.post('/:id/reject', rejectReferral);
 router.post('/:id/complete', completeReferral);
 
