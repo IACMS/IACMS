@@ -5,6 +5,23 @@ import EventBus from '../../../../shared/utils/eventBus.js';
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'audit-service');
 
 const SORT_FIELDS = new Set(['createdAt', 'action', 'entityType', 'entityId']);
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/** Build Prisma OR filters for free-text audit search (no invalid UUID `contains`). */
+export function buildAuditSearchOr(q) {
+  const or = [
+    { action: { contains: q, mode: 'insensitive' } },
+    { entityType: { contains: q, mode: 'insensitive' } },
+    { user: { email: { contains: q, mode: 'insensitive' } } },
+    { user: { firstName: { contains: q, mode: 'insensitive' } } },
+    { user: { lastName: { contains: q, mode: 'insensitive' } } },
+  ];
+  if (UUID_RE.test(q)) {
+    or.push({ entityId: q });
+    or.push({ userId: q });
+  }
+  return or;
+}
 
 function parseDate(value, endOfDay = false) {
   if (!value) return null;
@@ -77,16 +94,7 @@ export async function getAuditLogs(req, res, next) {
     if (q) {
       where.AND = [
         ...(where.AND ?? []),
-        {
-          OR: [
-            { action: { contains: q, mode: 'insensitive' } },
-            { entityType: { contains: q, mode: 'insensitive' } },
-            { entityId: { contains: q, mode: 'insensitive' } },
-            { user: { email: { contains: q, mode: 'insensitive' } } },
-            { user: { firstName: { contains: q, mode: 'insensitive' } } },
-            { user: { lastName: { contains: q, mode: 'insensitive' } } },
-          ],
-        },
+        { OR: buildAuditSearchOr(q) },
       ];
     }
 

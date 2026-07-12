@@ -16,12 +16,19 @@ export async function getAttachments(req, res, next) {
     const attachments = await prisma.caseAttachment.findMany({
       where: {
         caseId,
-        tenantId,
         deletedAt: null,
       },
       include: {
-        uploader: true,
+        uploader: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
+      orderBy: { uploadedAt: 'desc' },
     });
     res.json({ attachments });
   } catch (error) {
@@ -113,13 +120,12 @@ export async function deleteAttachment(req, res, next) {
     const attachment = await prisma.caseAttachment.findFirst({
       where: {
         id: req.params.id,
-        tenantId,
         deletedAt: null,
       },
-      include: { case: true },
+      select: { id: true, caseId: true },
     });
 
-    if (!attachment || attachment.case.tenantId !== tenantId) {
+    if (!attachment) {
       throw new NotFoundError('Attachment');
     }
 
