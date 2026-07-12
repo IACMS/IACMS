@@ -203,7 +203,10 @@ export async function getCase(req, res, next) {
         tenant: true,
         assignee: true,
         creator: true,
-        attachments: true,
+        attachments: {
+          where: { deletedAt: null },
+          orderBy: { uploadedAt: 'desc' },
+        },
         workflow: {
           select: { id: true, name: true, key: true, version: true, status: true },
         },

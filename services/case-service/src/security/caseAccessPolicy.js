@@ -54,16 +54,18 @@ export async function findCaseForUser(prisma, { tenantId, userId, caseId, includ
   return prisma.case.findFirst(opts);
 }
 
-export async function assertCaseReadable(prisma, req, caseId, include) {
+export async function assertCaseReadable(prisma, req, caseId, options) {
   const tenantId = req.headers['x-tenant-id'];
   const userId = req.headers['x-user-id'];
-  const row = await findCaseForUser(prisma, { tenantId, userId, caseId, include });
+  const include = options?.include;
+  const select = options?.select;
+  const row = await findCaseForUser(prisma, { tenantId, userId, caseId, include, select });
   if (!row) throw new NotFoundError('Case');
   return row;
 }
 
-export async function assertCaseMutable(prisma, req, caseId, include) {
-  return assertCaseReadable(prisma, req, caseId, include);
+export async function assertCaseMutable(prisma, req, caseId, options) {
+  return assertCaseReadable(prisma, req, caseId, options);
 }
 
 /** Steps where non-admins may edit case metadata (aligned with intake / draft). */
