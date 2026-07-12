@@ -14,6 +14,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
 
 /**
+ * Model Department
+ * 
+ */
+export type Department = $Result.DefaultSelection<Prisma.$DepartmentPayload>
+/**
  * Model Tenant
  * 
  */
@@ -134,8 +139,8 @@ export const WorkflowStatus: typeof $Enums.WorkflowStatus
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Tenants
- * const tenants = await prisma.tenant.findMany()
+ * // Fetch zero or more Departments
+ * const departments = await prisma.department.findMany()
  * ```
  *
  *
@@ -155,8 +160,8 @@ export class PrismaClient<
    * @example
    * ```
    * const prisma = new PrismaClient()
-   * // Fetch zero or more Tenants
-   * const tenants = await prisma.tenant.findMany()
+   * // Fetch zero or more Departments
+   * const departments = await prisma.department.findMany()
    * ```
    *
    *
@@ -246,6 +251,16 @@ export class PrismaClient<
   }>>
 
       /**
+   * `prisma.department`: Exposes CRUD operations for the **Department** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Departments
+    * const departments = await prisma.department.findMany()
+    * ```
+    */
+  get department(): Prisma.DepartmentDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.tenant`: Exposes CRUD operations for the **Tenant** model.
     * Example usage:
     * ```ts
@@ -875,6 +890,7 @@ export namespace Prisma {
 
 
   export const ModelName: {
+    Department: 'Department',
     Tenant: 'Tenant',
     User: 'User',
     Role: 'Role',
@@ -912,10 +928,84 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "tenant" | "user" | "role" | "permission" | "rolePermission" | "userRole" | "workflow" | "workflowStep" | "workflowTransition" | "case" | "caseHistory" | "caseSequence" | "assignment" | "caseReferral" | "caseAttachment" | "auditLog" | "webhook" | "integration" | "agencyChatMessage"
+      modelProps: "department" | "tenant" | "user" | "role" | "permission" | "rolePermission" | "userRole" | "workflow" | "workflowStep" | "workflowTransition" | "case" | "caseHistory" | "caseSequence" | "assignment" | "caseReferral" | "caseAttachment" | "auditLog" | "webhook" | "integration" | "agencyChatMessage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
+      Department: {
+        payload: Prisma.$DepartmentPayload<ExtArgs>
+        fields: Prisma.DepartmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DepartmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DepartmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>
+          }
+          findFirst: {
+            args: Prisma.DepartmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DepartmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>
+          }
+          findMany: {
+            args: Prisma.DepartmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>[]
+          }
+          create: {
+            args: Prisma.DepartmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>
+          }
+          createMany: {
+            args: Prisma.DepartmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DepartmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>[]
+          }
+          delete: {
+            args: Prisma.DepartmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>
+          }
+          update: {
+            args: Prisma.DepartmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.DepartmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DepartmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DepartmentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>[]
+          }
+          upsert: {
+            args: Prisma.DepartmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DepartmentPayload>
+          }
+          aggregate: {
+            args: Prisma.DepartmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDepartment>
+          }
+          groupBy: {
+            args: Prisma.DepartmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DepartmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DepartmentCountArgs<ExtArgs>
+            result: $Utils.Optional<DepartmentCountAggregateOutputType> | number
+          }
+        }
+      }
       Tenant: {
         payload: Prisma.$TenantPayload<ExtArgs>
         fields: Prisma.TenantFieldRefs
@@ -2418,6 +2508,7 @@ export namespace Prisma {
     omit?: Prisma.GlobalOmitConfig
   }
   export type GlobalOmitConfig = {
+    department?: DepartmentOmit
     tenant?: TenantOmit
     user?: UserOmit
     role?: RoleOmit
@@ -2513,11 +2604,106 @@ export namespace Prisma {
 
 
   /**
+   * Count Type DepartmentCountOutputType
+   */
+
+  export type DepartmentCountOutputType = {
+    users: number
+    casesOriginating: number
+    casesCurrent: number
+    referralsFrom: number
+    referralsTo: number
+    workflows: number
+    chatMessages: number
+    recipientChatMessages: number
+  }
+
+  export type DepartmentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    users?: boolean | DepartmentCountOutputTypeCountUsersArgs
+    casesOriginating?: boolean | DepartmentCountOutputTypeCountCasesOriginatingArgs
+    casesCurrent?: boolean | DepartmentCountOutputTypeCountCasesCurrentArgs
+    referralsFrom?: boolean | DepartmentCountOutputTypeCountReferralsFromArgs
+    referralsTo?: boolean | DepartmentCountOutputTypeCountReferralsToArgs
+    workflows?: boolean | DepartmentCountOutputTypeCountWorkflowsArgs
+    chatMessages?: boolean | DepartmentCountOutputTypeCountChatMessagesArgs
+    recipientChatMessages?: boolean | DepartmentCountOutputTypeCountRecipientChatMessagesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DepartmentCountOutputType
+     */
+    select?: DepartmentCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
+  }
+
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeCountCasesOriginatingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseWhereInput
+  }
+
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeCountCasesCurrentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseWhereInput
+  }
+
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeCountReferralsFromArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseReferralWhereInput
+  }
+
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeCountReferralsToArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseReferralWhereInput
+  }
+
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeCountWorkflowsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowWhereInput
+  }
+
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeCountChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgencyChatMessageWhereInput
+  }
+
+  /**
+   * DepartmentCountOutputType without action
+   */
+  export type DepartmentCountOutputTypeCountRecipientChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgencyChatMessageWhereInput
+  }
+
+
+  /**
    * Count Type TenantCountOutputType
    */
 
   export type TenantCountOutputType = {
     users: number
+    departments: number
     roles: number
     workflows: number
     cases: number
@@ -2536,6 +2722,7 @@ export namespace Prisma {
 
   export type TenantCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | TenantCountOutputTypeCountUsersArgs
+    departments?: boolean | TenantCountOutputTypeCountDepartmentsArgs
     roles?: boolean | TenantCountOutputTypeCountRolesArgs
     workflows?: boolean | TenantCountOutputTypeCountWorkflowsArgs
     cases?: boolean | TenantCountOutputTypeCountCasesArgs
@@ -2568,6 +2755,13 @@ export namespace Prisma {
    */
   export type TenantCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountDepartmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DepartmentWhereInput
   }
 
   /**
@@ -3134,6 +3328,1329 @@ export namespace Prisma {
    */
 
   /**
+   * Model Department
+   */
+
+  export type AggregateDepartment = {
+    _count: DepartmentCountAggregateOutputType | null
+    _min: DepartmentMinAggregateOutputType | null
+    _max: DepartmentMaxAggregateOutputType | null
+  }
+
+  export type DepartmentMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    code: string | null
+    name: string | null
+    description: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DepartmentMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    code: string | null
+    name: string | null
+    description: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DepartmentCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    code: number
+    name: number
+    description: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type DepartmentMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    code?: true
+    name?: true
+    description?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DepartmentMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    code?: true
+    name?: true
+    description?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DepartmentCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    code?: true
+    name?: true
+    description?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type DepartmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Department to aggregate.
+     */
+    where?: DepartmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Departments to fetch.
+     */
+    orderBy?: DepartmentOrderByWithRelationInput | DepartmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DepartmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Departments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Departments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Departments
+    **/
+    _count?: true | DepartmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DepartmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DepartmentMaxAggregateInputType
+  }
+
+  export type GetDepartmentAggregateType<T extends DepartmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateDepartment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDepartment[P]>
+      : GetScalarType<T[P], AggregateDepartment[P]>
+  }
+
+
+
+
+  export type DepartmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DepartmentWhereInput
+    orderBy?: DepartmentOrderByWithAggregationInput | DepartmentOrderByWithAggregationInput[]
+    by: DepartmentScalarFieldEnum[] | DepartmentScalarFieldEnum
+    having?: DepartmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DepartmentCountAggregateInputType | true
+    _min?: DepartmentMinAggregateInputType
+    _max?: DepartmentMaxAggregateInputType
+  }
+
+  export type DepartmentGroupByOutputType = {
+    id: string
+    tenantId: string
+    code: string
+    name: string
+    description: string | null
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: DepartmentCountAggregateOutputType | null
+    _min: DepartmentMinAggregateOutputType | null
+    _max: DepartmentMaxAggregateOutputType | null
+  }
+
+  type GetDepartmentGroupByPayload<T extends DepartmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DepartmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DepartmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DepartmentGroupByOutputType[P]>
+            : GetScalarType<T[P], DepartmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DepartmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    users?: boolean | Department$usersArgs<ExtArgs>
+    casesOriginating?: boolean | Department$casesOriginatingArgs<ExtArgs>
+    casesCurrent?: boolean | Department$casesCurrentArgs<ExtArgs>
+    referralsFrom?: boolean | Department$referralsFromArgs<ExtArgs>
+    referralsTo?: boolean | Department$referralsToArgs<ExtArgs>
+    workflows?: boolean | Department$workflowsArgs<ExtArgs>
+    chatMessages?: boolean | Department$chatMessagesArgs<ExtArgs>
+    recipientChatMessages?: boolean | Department$recipientChatMessagesArgs<ExtArgs>
+    _count?: boolean | DepartmentCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["department"]>
+
+  export type DepartmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["department"]>
+
+  export type DepartmentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["department"]>
+
+  export type DepartmentSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type DepartmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "code" | "name" | "description" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["department"]>
+  export type DepartmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    users?: boolean | Department$usersArgs<ExtArgs>
+    casesOriginating?: boolean | Department$casesOriginatingArgs<ExtArgs>
+    casesCurrent?: boolean | Department$casesCurrentArgs<ExtArgs>
+    referralsFrom?: boolean | Department$referralsFromArgs<ExtArgs>
+    referralsTo?: boolean | Department$referralsToArgs<ExtArgs>
+    workflows?: boolean | Department$workflowsArgs<ExtArgs>
+    chatMessages?: boolean | Department$chatMessagesArgs<ExtArgs>
+    recipientChatMessages?: boolean | Department$recipientChatMessagesArgs<ExtArgs>
+    _count?: boolean | DepartmentCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type DepartmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+  export type DepartmentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+
+  export type $DepartmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Department"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      users: Prisma.$UserPayload<ExtArgs>[]
+      casesOriginating: Prisma.$CasePayload<ExtArgs>[]
+      casesCurrent: Prisma.$CasePayload<ExtArgs>[]
+      referralsFrom: Prisma.$CaseReferralPayload<ExtArgs>[]
+      referralsTo: Prisma.$CaseReferralPayload<ExtArgs>[]
+      workflows: Prisma.$WorkflowPayload<ExtArgs>[]
+      chatMessages: Prisma.$AgencyChatMessagePayload<ExtArgs>[]
+      recipientChatMessages: Prisma.$AgencyChatMessagePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      code: string
+      name: string
+      description: string | null
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["department"]>
+    composites: {}
+  }
+
+  type DepartmentGetPayload<S extends boolean | null | undefined | DepartmentDefaultArgs> = $Result.GetResult<Prisma.$DepartmentPayload, S>
+
+  type DepartmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DepartmentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DepartmentCountAggregateInputType | true
+    }
+
+  export interface DepartmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Department'], meta: { name: 'Department' } }
+    /**
+     * Find zero or one Department that matches the filter.
+     * @param {DepartmentFindUniqueArgs} args - Arguments to find a Department
+     * @example
+     * // Get one Department
+     * const department = await prisma.department.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DepartmentFindUniqueArgs>(args: SelectSubset<T, DepartmentFindUniqueArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Department that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DepartmentFindUniqueOrThrowArgs} args - Arguments to find a Department
+     * @example
+     * // Get one Department
+     * const department = await prisma.department.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DepartmentFindUniqueOrThrowArgs>(args: SelectSubset<T, DepartmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Department that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartmentFindFirstArgs} args - Arguments to find a Department
+     * @example
+     * // Get one Department
+     * const department = await prisma.department.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DepartmentFindFirstArgs>(args?: SelectSubset<T, DepartmentFindFirstArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Department that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartmentFindFirstOrThrowArgs} args - Arguments to find a Department
+     * @example
+     * // Get one Department
+     * const department = await prisma.department.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DepartmentFindFirstOrThrowArgs>(args?: SelectSubset<T, DepartmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Departments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Departments
+     * const departments = await prisma.department.findMany()
+     * 
+     * // Get first 10 Departments
+     * const departments = await prisma.department.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const departmentWithIdOnly = await prisma.department.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DepartmentFindManyArgs>(args?: SelectSubset<T, DepartmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Department.
+     * @param {DepartmentCreateArgs} args - Arguments to create a Department.
+     * @example
+     * // Create one Department
+     * const Department = await prisma.department.create({
+     *   data: {
+     *     // ... data to create a Department
+     *   }
+     * })
+     * 
+     */
+    create<T extends DepartmentCreateArgs>(args: SelectSubset<T, DepartmentCreateArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Departments.
+     * @param {DepartmentCreateManyArgs} args - Arguments to create many Departments.
+     * @example
+     * // Create many Departments
+     * const department = await prisma.department.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DepartmentCreateManyArgs>(args?: SelectSubset<T, DepartmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Departments and returns the data saved in the database.
+     * @param {DepartmentCreateManyAndReturnArgs} args - Arguments to create many Departments.
+     * @example
+     * // Create many Departments
+     * const department = await prisma.department.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Departments and only return the `id`
+     * const departmentWithIdOnly = await prisma.department.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DepartmentCreateManyAndReturnArgs>(args?: SelectSubset<T, DepartmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Department.
+     * @param {DepartmentDeleteArgs} args - Arguments to delete one Department.
+     * @example
+     * // Delete one Department
+     * const Department = await prisma.department.delete({
+     *   where: {
+     *     // ... filter to delete one Department
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DepartmentDeleteArgs>(args: SelectSubset<T, DepartmentDeleteArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Department.
+     * @param {DepartmentUpdateArgs} args - Arguments to update one Department.
+     * @example
+     * // Update one Department
+     * const department = await prisma.department.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DepartmentUpdateArgs>(args: SelectSubset<T, DepartmentUpdateArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Departments.
+     * @param {DepartmentDeleteManyArgs} args - Arguments to filter Departments to delete.
+     * @example
+     * // Delete a few Departments
+     * const { count } = await prisma.department.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DepartmentDeleteManyArgs>(args?: SelectSubset<T, DepartmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Departments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Departments
+     * const department = await prisma.department.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DepartmentUpdateManyArgs>(args: SelectSubset<T, DepartmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Departments and returns the data updated in the database.
+     * @param {DepartmentUpdateManyAndReturnArgs} args - Arguments to update many Departments.
+     * @example
+     * // Update many Departments
+     * const department = await prisma.department.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Departments and only return the `id`
+     * const departmentWithIdOnly = await prisma.department.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DepartmentUpdateManyAndReturnArgs>(args: SelectSubset<T, DepartmentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Department.
+     * @param {DepartmentUpsertArgs} args - Arguments to update or create a Department.
+     * @example
+     * // Update or create a Department
+     * const department = await prisma.department.upsert({
+     *   create: {
+     *     // ... data to create a Department
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Department we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DepartmentUpsertArgs>(args: SelectSubset<T, DepartmentUpsertArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Departments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartmentCountArgs} args - Arguments to filter Departments to count.
+     * @example
+     * // Count the number of Departments
+     * const count = await prisma.department.count({
+     *   where: {
+     *     // ... the filter for the Departments we want to count
+     *   }
+     * })
+    **/
+    count<T extends DepartmentCountArgs>(
+      args?: Subset<T, DepartmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DepartmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Department.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DepartmentAggregateArgs>(args: Subset<T, DepartmentAggregateArgs>): Prisma.PrismaPromise<GetDepartmentAggregateType<T>>
+
+    /**
+     * Group by Department.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DepartmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DepartmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DepartmentGroupByArgs['orderBy'] }
+        : { orderBy?: DepartmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DepartmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDepartmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Department model
+   */
+  readonly fields: DepartmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Department.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DepartmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    users<T extends Department$usersArgs<ExtArgs> = {}>(args?: Subset<T, Department$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    casesOriginating<T extends Department$casesOriginatingArgs<ExtArgs> = {}>(args?: Subset<T, Department$casesOriginatingArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    casesCurrent<T extends Department$casesCurrentArgs<ExtArgs> = {}>(args?: Subset<T, Department$casesCurrentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    referralsFrom<T extends Department$referralsFromArgs<ExtArgs> = {}>(args?: Subset<T, Department$referralsFromArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    referralsTo<T extends Department$referralsToArgs<ExtArgs> = {}>(args?: Subset<T, Department$referralsToArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    workflows<T extends Department$workflowsArgs<ExtArgs> = {}>(args?: Subset<T, Department$workflowsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chatMessages<T extends Department$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Department$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    recipientChatMessages<T extends Department$recipientChatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Department$recipientChatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Department model
+   */
+  interface DepartmentFieldRefs {
+    readonly id: FieldRef<"Department", 'String'>
+    readonly tenantId: FieldRef<"Department", 'String'>
+    readonly code: FieldRef<"Department", 'String'>
+    readonly name: FieldRef<"Department", 'String'>
+    readonly description: FieldRef<"Department", 'String'>
+    readonly isActive: FieldRef<"Department", 'Boolean'>
+    readonly createdAt: FieldRef<"Department", 'DateTime'>
+    readonly updatedAt: FieldRef<"Department", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Department findUnique
+   */
+  export type DepartmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * Filter, which Department to fetch.
+     */
+    where: DepartmentWhereUniqueInput
+  }
+
+  /**
+   * Department findUniqueOrThrow
+   */
+  export type DepartmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * Filter, which Department to fetch.
+     */
+    where: DepartmentWhereUniqueInput
+  }
+
+  /**
+   * Department findFirst
+   */
+  export type DepartmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * Filter, which Department to fetch.
+     */
+    where?: DepartmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Departments to fetch.
+     */
+    orderBy?: DepartmentOrderByWithRelationInput | DepartmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Departments.
+     */
+    cursor?: DepartmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Departments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Departments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Departments.
+     */
+    distinct?: DepartmentScalarFieldEnum | DepartmentScalarFieldEnum[]
+  }
+
+  /**
+   * Department findFirstOrThrow
+   */
+  export type DepartmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * Filter, which Department to fetch.
+     */
+    where?: DepartmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Departments to fetch.
+     */
+    orderBy?: DepartmentOrderByWithRelationInput | DepartmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Departments.
+     */
+    cursor?: DepartmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Departments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Departments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Departments.
+     */
+    distinct?: DepartmentScalarFieldEnum | DepartmentScalarFieldEnum[]
+  }
+
+  /**
+   * Department findMany
+   */
+  export type DepartmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * Filter, which Departments to fetch.
+     */
+    where?: DepartmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Departments to fetch.
+     */
+    orderBy?: DepartmentOrderByWithRelationInput | DepartmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Departments.
+     */
+    cursor?: DepartmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Departments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Departments.
+     */
+    skip?: number
+    distinct?: DepartmentScalarFieldEnum | DepartmentScalarFieldEnum[]
+  }
+
+  /**
+   * Department create
+   */
+  export type DepartmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Department.
+     */
+    data: XOR<DepartmentCreateInput, DepartmentUncheckedCreateInput>
+  }
+
+  /**
+   * Department createMany
+   */
+  export type DepartmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Departments.
+     */
+    data: DepartmentCreateManyInput | DepartmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Department createManyAndReturn
+   */
+  export type DepartmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * The data used to create many Departments.
+     */
+    data: DepartmentCreateManyInput | DepartmentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Department update
+   */
+  export type DepartmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Department.
+     */
+    data: XOR<DepartmentUpdateInput, DepartmentUncheckedUpdateInput>
+    /**
+     * Choose, which Department to update.
+     */
+    where: DepartmentWhereUniqueInput
+  }
+
+  /**
+   * Department updateMany
+   */
+  export type DepartmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Departments.
+     */
+    data: XOR<DepartmentUpdateManyMutationInput, DepartmentUncheckedUpdateManyInput>
+    /**
+     * Filter which Departments to update
+     */
+    where?: DepartmentWhereInput
+    /**
+     * Limit how many Departments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Department updateManyAndReturn
+   */
+  export type DepartmentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * The data used to update Departments.
+     */
+    data: XOR<DepartmentUpdateManyMutationInput, DepartmentUncheckedUpdateManyInput>
+    /**
+     * Filter which Departments to update
+     */
+    where?: DepartmentWhereInput
+    /**
+     * Limit how many Departments to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Department upsert
+   */
+  export type DepartmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Department to update in case it exists.
+     */
+    where: DepartmentWhereUniqueInput
+    /**
+     * In case the Department found by the `where` argument doesn't exist, create a new Department with this data.
+     */
+    create: XOR<DepartmentCreateInput, DepartmentUncheckedCreateInput>
+    /**
+     * In case the Department was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DepartmentUpdateInput, DepartmentUncheckedUpdateInput>
+  }
+
+  /**
+   * Department delete
+   */
+  export type DepartmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    /**
+     * Filter which Department to delete.
+     */
+    where: DepartmentWhereUniqueInput
+  }
+
+  /**
+   * Department deleteMany
+   */
+  export type DepartmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Departments to delete
+     */
+    where?: DepartmentWhereInput
+    /**
+     * Limit how many Departments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Department.users
+   */
+  export type Department$usersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * Department.casesOriginating
+   */
+  export type Department$casesOriginatingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Case
+     */
+    select?: CaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Case
+     */
+    omit?: CaseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseInclude<ExtArgs> | null
+    where?: CaseWhereInput
+    orderBy?: CaseOrderByWithRelationInput | CaseOrderByWithRelationInput[]
+    cursor?: CaseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CaseScalarFieldEnum | CaseScalarFieldEnum[]
+  }
+
+  /**
+   * Department.casesCurrent
+   */
+  export type Department$casesCurrentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Case
+     */
+    select?: CaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Case
+     */
+    omit?: CaseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseInclude<ExtArgs> | null
+    where?: CaseWhereInput
+    orderBy?: CaseOrderByWithRelationInput | CaseOrderByWithRelationInput[]
+    cursor?: CaseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CaseScalarFieldEnum | CaseScalarFieldEnum[]
+  }
+
+  /**
+   * Department.referralsFrom
+   */
+  export type Department$referralsFromArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseReferral
+     */
+    select?: CaseReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseReferral
+     */
+    omit?: CaseReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseReferralInclude<ExtArgs> | null
+    where?: CaseReferralWhereInput
+    orderBy?: CaseReferralOrderByWithRelationInput | CaseReferralOrderByWithRelationInput[]
+    cursor?: CaseReferralWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CaseReferralScalarFieldEnum | CaseReferralScalarFieldEnum[]
+  }
+
+  /**
+   * Department.referralsTo
+   */
+  export type Department$referralsToArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseReferral
+     */
+    select?: CaseReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseReferral
+     */
+    omit?: CaseReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseReferralInclude<ExtArgs> | null
+    where?: CaseReferralWhereInput
+    orderBy?: CaseReferralOrderByWithRelationInput | CaseReferralOrderByWithRelationInput[]
+    cursor?: CaseReferralWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CaseReferralScalarFieldEnum | CaseReferralScalarFieldEnum[]
+  }
+
+  /**
+   * Department.workflows
+   */
+  export type Department$workflowsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Workflow
+     */
+    select?: WorkflowSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Workflow
+     */
+    omit?: WorkflowOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowInclude<ExtArgs> | null
+    where?: WorkflowWhereInput
+    orderBy?: WorkflowOrderByWithRelationInput | WorkflowOrderByWithRelationInput[]
+    cursor?: WorkflowWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkflowScalarFieldEnum | WorkflowScalarFieldEnum[]
+  }
+
+  /**
+   * Department.chatMessages
+   */
+  export type Department$chatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    where?: AgencyChatMessageWhereInput
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    cursor?: AgencyChatMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * Department.recipientChatMessages
+   */
+  export type Department$recipientChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgencyChatMessage
+     */
+    select?: AgencyChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgencyChatMessage
+     */
+    omit?: AgencyChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgencyChatMessageInclude<ExtArgs> | null
+    where?: AgencyChatMessageWhereInput
+    orderBy?: AgencyChatMessageOrderByWithRelationInput | AgencyChatMessageOrderByWithRelationInput[]
+    cursor?: AgencyChatMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * Department without action
+   */
+  export type DepartmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Tenant
    */
 
@@ -3327,6 +4844,7 @@ export namespace Prisma {
     updatedAt?: boolean
     registeredBy?: boolean | Tenant$registeredByArgs<ExtArgs>
     users?: boolean | Tenant$usersArgs<ExtArgs>
+    departments?: boolean | Tenant$departmentsArgs<ExtArgs>
     roles?: boolean | Tenant$rolesArgs<ExtArgs>
     workflows?: boolean | Tenant$workflowsArgs<ExtArgs>
     cases?: boolean | Tenant$casesArgs<ExtArgs>
@@ -3386,6 +4904,7 @@ export namespace Prisma {
   export type TenantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     registeredBy?: boolean | Tenant$registeredByArgs<ExtArgs>
     users?: boolean | Tenant$usersArgs<ExtArgs>
+    departments?: boolean | Tenant$departmentsArgs<ExtArgs>
     roles?: boolean | Tenant$rolesArgs<ExtArgs>
     workflows?: boolean | Tenant$workflowsArgs<ExtArgs>
     cases?: boolean | Tenant$casesArgs<ExtArgs>
@@ -3414,6 +4933,7 @@ export namespace Prisma {
     objects: {
       registeredBy: Prisma.$UserPayload<ExtArgs> | null
       users: Prisma.$UserPayload<ExtArgs>[]
+      departments: Prisma.$DepartmentPayload<ExtArgs>[]
       roles: Prisma.$RolePayload<ExtArgs>[]
       workflows: Prisma.$WorkflowPayload<ExtArgs>[]
       cases: Prisma.$CasePayload<ExtArgs>[]
@@ -3838,6 +5358,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     registeredBy<T extends Tenant$registeredByArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$registeredByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     users<T extends Tenant$usersArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    departments<T extends Tenant$departmentsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$departmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     roles<T extends Tenant$rolesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     workflows<T extends Tenant$workflowsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$workflowsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     cases<T extends Tenant$casesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$casesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4329,6 +5850,30 @@ export namespace Prisma {
   }
 
   /**
+   * Tenant.departments
+   */
+  export type Tenant$departmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
+    orderBy?: DepartmentOrderByWithRelationInput | DepartmentOrderByWithRelationInput[]
+    cursor?: DepartmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DepartmentScalarFieldEnum | DepartmentScalarFieldEnum[]
+  }
+
+  /**
    * Tenant.roles
    */
   export type Tenant$rolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4696,6 +6241,7 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     id: string | null
     tenantId: string | null
+    departmentId: string | null
     email: string | null
     username: string | null
     passwordHash: string | null
@@ -4718,6 +6264,7 @@ export namespace Prisma {
   export type UserMaxAggregateOutputType = {
     id: string | null
     tenantId: string | null
+    departmentId: string | null
     email: string | null
     username: string | null
     passwordHash: string | null
@@ -4740,6 +6287,7 @@ export namespace Prisma {
   export type UserCountAggregateOutputType = {
     id: number
     tenantId: number
+    departmentId: number
     email: number
     username: number
     passwordHash: number
@@ -4764,6 +6312,7 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     id?: true
     tenantId?: true
+    departmentId?: true
     email?: true
     username?: true
     passwordHash?: true
@@ -4786,6 +6335,7 @@ export namespace Prisma {
   export type UserMaxAggregateInputType = {
     id?: true
     tenantId?: true
+    departmentId?: true
     email?: true
     username?: true
     passwordHash?: true
@@ -4808,6 +6358,7 @@ export namespace Prisma {
   export type UserCountAggregateInputType = {
     id?: true
     tenantId?: true
+    departmentId?: true
     email?: true
     username?: true
     passwordHash?: true
@@ -4903,6 +6454,7 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     tenantId: string
+    departmentId: string | null
     email: string
     username: string
     passwordHash: string
@@ -4942,6 +6494,7 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    departmentId?: boolean
     email?: boolean
     username?: boolean
     passwordHash?: boolean
@@ -4960,6 +6513,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | User$departmentArgs<ExtArgs>
     casesCreated?: boolean | User$casesCreatedArgs<ExtArgs>
     casesAssigned?: boolean | User$casesAssignedArgs<ExtArgs>
     assignmentsAssignedTo?: boolean | User$assignmentsAssignedToArgs<ExtArgs>
@@ -4985,6 +6539,7 @@ export namespace Prisma {
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    departmentId?: boolean
     email?: boolean
     username?: boolean
     passwordHash?: boolean
@@ -5003,11 +6558,13 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | User$departmentArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    departmentId?: boolean
     email?: boolean
     username?: boolean
     passwordHash?: boolean
@@ -5026,11 +6583,13 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | User$departmentArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
     id?: boolean
     tenantId?: boolean
+    departmentId?: boolean
     email?: boolean
     username?: boolean
     passwordHash?: boolean
@@ -5050,9 +6609,10 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "email" | "username" | "passwordHash" | "firstName" | "lastName" | "phone" | "nationalId" | "isActive" | "isEmailVerified" | "mustChangePassword" | "resetPasswordToken" | "resetPasswordExpires" | "emailVerificationToken" | "emailVerificationExpires" | "lastLogin" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "departmentId" | "email" | "username" | "passwordHash" | "firstName" | "lastName" | "phone" | "nationalId" | "isActive" | "isEmailVerified" | "mustChangePassword" | "resetPasswordToken" | "resetPasswordExpires" | "emailVerificationToken" | "emailVerificationExpires" | "lastLogin" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | User$departmentArgs<ExtArgs>
     casesCreated?: boolean | User$casesCreatedArgs<ExtArgs>
     casesAssigned?: boolean | User$casesAssignedArgs<ExtArgs>
     assignmentsAssignedTo?: boolean | User$assignmentsAssignedToArgs<ExtArgs>
@@ -5076,15 +6636,18 @@ export namespace Prisma {
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | User$departmentArgs<ExtArgs>
   }
   export type UserIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | User$departmentArgs<ExtArgs>
   }
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
       tenant: Prisma.$TenantPayload<ExtArgs>
+      department: Prisma.$DepartmentPayload<ExtArgs> | null
       casesCreated: Prisma.$CasePayload<ExtArgs>[]
       casesAssigned: Prisma.$CasePayload<ExtArgs>[]
       assignmentsAssignedTo: Prisma.$AssignmentPayload<ExtArgs>[]
@@ -5108,6 +6671,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       tenantId: string
+      departmentId: string | null
       email: string
       username: string
       passwordHash: string
@@ -5520,6 +7084,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    department<T extends User$departmentArgs<ExtArgs> = {}>(args?: Subset<T, User$departmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     casesCreated<T extends User$casesCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$casesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     casesAssigned<T extends User$casesAssignedArgs<ExtArgs> = {}>(args?: Subset<T, User$casesAssignedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     assignmentsAssignedTo<T extends User$assignmentsAssignedToArgs<ExtArgs> = {}>(args?: Subset<T, User$assignmentsAssignedToArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -5570,6 +7135,7 @@ export namespace Prisma {
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
     readonly tenantId: FieldRef<"User", 'String'>
+    readonly departmentId: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly username: FieldRef<"User", 'String'>
     readonly passwordHash: FieldRef<"User", 'String'>
@@ -5980,6 +7546,25 @@ export namespace Prisma {
      * Limit how many Users to delete.
      */
     limit?: number
+  }
+
+  /**
+   * User.department
+   */
+  export type User$departmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
   }
 
   /**
@@ -10923,6 +12508,7 @@ export namespace Prisma {
   export type WorkflowMinAggregateOutputType = {
     id: string | null
     tenantId: string | null
+    departmentId: string | null
     key: string | null
     name: string | null
     description: string | null
@@ -10939,6 +12525,7 @@ export namespace Prisma {
   export type WorkflowMaxAggregateOutputType = {
     id: string | null
     tenantId: string | null
+    departmentId: string | null
     key: string | null
     name: string | null
     description: string | null
@@ -10955,6 +12542,7 @@ export namespace Prisma {
   export type WorkflowCountAggregateOutputType = {
     id: number
     tenantId: number
+    departmentId: number
     key: number
     name: number
     description: number
@@ -10982,6 +12570,7 @@ export namespace Prisma {
   export type WorkflowMinAggregateInputType = {
     id?: true
     tenantId?: true
+    departmentId?: true
     key?: true
     name?: true
     description?: true
@@ -10998,6 +12587,7 @@ export namespace Prisma {
   export type WorkflowMaxAggregateInputType = {
     id?: true
     tenantId?: true
+    departmentId?: true
     key?: true
     name?: true
     description?: true
@@ -11014,6 +12604,7 @@ export namespace Prisma {
   export type WorkflowCountAggregateInputType = {
     id?: true
     tenantId?: true
+    departmentId?: true
     key?: true
     name?: true
     description?: true
@@ -11118,6 +12709,7 @@ export namespace Prisma {
   export type WorkflowGroupByOutputType = {
     id: string
     tenantId: string
+    departmentId: string | null
     key: string
     name: string
     description: string | null
@@ -11154,6 +12746,7 @@ export namespace Prisma {
   export type WorkflowSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    departmentId?: boolean
     key?: boolean
     name?: boolean
     description?: boolean
@@ -11167,6 +12760,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | Workflow$departmentArgs<ExtArgs>
     creator?: boolean | Workflow$creatorArgs<ExtArgs>
     cases?: boolean | Workflow$casesArgs<ExtArgs>
     steps?: boolean | Workflow$stepsArgs<ExtArgs>
@@ -11177,6 +12771,7 @@ export namespace Prisma {
   export type WorkflowSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    departmentId?: boolean
     key?: boolean
     name?: boolean
     description?: boolean
@@ -11190,12 +12785,14 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | Workflow$departmentArgs<ExtArgs>
     creator?: boolean | Workflow$creatorArgs<ExtArgs>
   }, ExtArgs["result"]["workflow"]>
 
   export type WorkflowSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     tenantId?: boolean
+    departmentId?: boolean
     key?: boolean
     name?: boolean
     description?: boolean
@@ -11209,12 +12806,14 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | Workflow$departmentArgs<ExtArgs>
     creator?: boolean | Workflow$creatorArgs<ExtArgs>
   }, ExtArgs["result"]["workflow"]>
 
   export type WorkflowSelectScalar = {
     id?: boolean
     tenantId?: boolean
+    departmentId?: boolean
     key?: boolean
     name?: boolean
     description?: boolean
@@ -11229,9 +12828,10 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type WorkflowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "key" | "name" | "description" | "definition" | "version" | "status" | "publishedAt" | "isActive" | "isDefault" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["workflow"]>
+  export type WorkflowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "departmentId" | "key" | "name" | "description" | "definition" | "version" | "status" | "publishedAt" | "isActive" | "isDefault" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["workflow"]>
   export type WorkflowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | Workflow$departmentArgs<ExtArgs>
     creator?: boolean | Workflow$creatorArgs<ExtArgs>
     cases?: boolean | Workflow$casesArgs<ExtArgs>
     steps?: boolean | Workflow$stepsArgs<ExtArgs>
@@ -11240,10 +12840,12 @@ export namespace Prisma {
   }
   export type WorkflowIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | Workflow$departmentArgs<ExtArgs>
     creator?: boolean | Workflow$creatorArgs<ExtArgs>
   }
   export type WorkflowIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    department?: boolean | Workflow$departmentArgs<ExtArgs>
     creator?: boolean | Workflow$creatorArgs<ExtArgs>
   }
 
@@ -11251,6 +12853,7 @@ export namespace Prisma {
     name: "Workflow"
     objects: {
       tenant: Prisma.$TenantPayload<ExtArgs>
+      department: Prisma.$DepartmentPayload<ExtArgs> | null
       creator: Prisma.$UserPayload<ExtArgs> | null
       cases: Prisma.$CasePayload<ExtArgs>[]
       steps: Prisma.$WorkflowStepPayload<ExtArgs>[]
@@ -11259,6 +12862,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       tenantId: string
+      departmentId: string | null
       key: string
       name: string
       description: string | null
@@ -11666,6 +13270,7 @@ export namespace Prisma {
   export interface Prisma__WorkflowClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    department<T extends Workflow$departmentArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$departmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     creator<T extends Workflow$creatorArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$creatorArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     cases<T extends Workflow$casesArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$casesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     steps<T extends Workflow$stepsArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11701,6 +13306,7 @@ export namespace Prisma {
   interface WorkflowFieldRefs {
     readonly id: FieldRef<"Workflow", 'String'>
     readonly tenantId: FieldRef<"Workflow", 'String'>
+    readonly departmentId: FieldRef<"Workflow", 'String'>
     readonly key: FieldRef<"Workflow", 'String'>
     readonly name: FieldRef<"Workflow", 'String'>
     readonly description: FieldRef<"Workflow", 'String'>
@@ -12106,6 +13712,25 @@ export namespace Prisma {
      * Limit how many Workflows to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Workflow.department
+   */
+  export type Workflow$departmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
   }
 
   /**
@@ -14790,6 +16415,8 @@ export namespace Prisma {
     tenantId: string | null
     originatingTenantId: string | null
     currentTenantId: string | null
+    originatingDepartmentId: string | null
+    currentDepartmentId: string | null
     referralStatus: string | null
     workflowId: string | null
     workflowVersion: number | null
@@ -14815,6 +16442,8 @@ export namespace Prisma {
     tenantId: string | null
     originatingTenantId: string | null
     currentTenantId: string | null
+    originatingDepartmentId: string | null
+    currentDepartmentId: string | null
     referralStatus: string | null
     workflowId: string | null
     workflowVersion: number | null
@@ -14840,6 +16469,8 @@ export namespace Prisma {
     tenantId: number
     originatingTenantId: number
     currentTenantId: number
+    originatingDepartmentId: number
+    currentDepartmentId: number
     referralStatus: number
     workflowId: number
     workflowVersion: number
@@ -14877,6 +16508,8 @@ export namespace Prisma {
     tenantId?: true
     originatingTenantId?: true
     currentTenantId?: true
+    originatingDepartmentId?: true
+    currentDepartmentId?: true
     referralStatus?: true
     workflowId?: true
     workflowVersion?: true
@@ -14902,6 +16535,8 @@ export namespace Prisma {
     tenantId?: true
     originatingTenantId?: true
     currentTenantId?: true
+    originatingDepartmentId?: true
+    currentDepartmentId?: true
     referralStatus?: true
     workflowId?: true
     workflowVersion?: true
@@ -14927,6 +16562,8 @@ export namespace Prisma {
     tenantId?: true
     originatingTenantId?: true
     currentTenantId?: true
+    originatingDepartmentId?: true
+    currentDepartmentId?: true
     referralStatus?: true
     workflowId?: true
     workflowVersion?: true
@@ -15041,6 +16678,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId: string | null
     currentTenantId: string | null
+    originatingDepartmentId: string | null
+    currentDepartmentId: string | null
     referralStatus: string
     workflowId: string
     workflowVersion: number
@@ -15087,6 +16726,8 @@ export namespace Prisma {
     tenantId?: boolean
     originatingTenantId?: boolean
     currentTenantId?: boolean
+    originatingDepartmentId?: boolean
+    currentDepartmentId?: boolean
     referralStatus?: boolean
     workflowId?: boolean
     workflowVersion?: boolean
@@ -15110,6 +16751,8 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     originatingTenant?: boolean | Case$originatingTenantArgs<ExtArgs>
     currentTenant?: boolean | Case$currentTenantArgs<ExtArgs>
+    originatingDepartment?: boolean | Case$originatingDepartmentArgs<ExtArgs>
+    currentDepartment?: boolean | Case$currentDepartmentArgs<ExtArgs>
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     currentStep?: boolean | Case$currentStepArgs<ExtArgs>
     assignee?: boolean | Case$assigneeArgs<ExtArgs>
@@ -15126,6 +16769,8 @@ export namespace Prisma {
     tenantId?: boolean
     originatingTenantId?: boolean
     currentTenantId?: boolean
+    originatingDepartmentId?: boolean
+    currentDepartmentId?: boolean
     referralStatus?: boolean
     workflowId?: boolean
     workflowVersion?: boolean
@@ -15149,6 +16794,8 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     originatingTenant?: boolean | Case$originatingTenantArgs<ExtArgs>
     currentTenant?: boolean | Case$currentTenantArgs<ExtArgs>
+    originatingDepartment?: boolean | Case$originatingDepartmentArgs<ExtArgs>
+    currentDepartment?: boolean | Case$currentDepartmentArgs<ExtArgs>
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     currentStep?: boolean | Case$currentStepArgs<ExtArgs>
     assignee?: boolean | Case$assigneeArgs<ExtArgs>
@@ -15160,6 +16807,8 @@ export namespace Prisma {
     tenantId?: boolean
     originatingTenantId?: boolean
     currentTenantId?: boolean
+    originatingDepartmentId?: boolean
+    currentDepartmentId?: boolean
     referralStatus?: boolean
     workflowId?: boolean
     workflowVersion?: boolean
@@ -15183,6 +16832,8 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     originatingTenant?: boolean | Case$originatingTenantArgs<ExtArgs>
     currentTenant?: boolean | Case$currentTenantArgs<ExtArgs>
+    originatingDepartment?: boolean | Case$originatingDepartmentArgs<ExtArgs>
+    currentDepartment?: boolean | Case$currentDepartmentArgs<ExtArgs>
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     currentStep?: boolean | Case$currentStepArgs<ExtArgs>
     assignee?: boolean | Case$assigneeArgs<ExtArgs>
@@ -15194,6 +16845,8 @@ export namespace Prisma {
     tenantId?: boolean
     originatingTenantId?: boolean
     currentTenantId?: boolean
+    originatingDepartmentId?: boolean
+    currentDepartmentId?: boolean
     referralStatus?: boolean
     workflowId?: boolean
     workflowVersion?: boolean
@@ -15216,11 +16869,13 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type CaseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "originatingTenantId" | "currentTenantId" | "referralStatus" | "workflowId" | "workflowVersion" | "caseNumber" | "currentStepId" | "closedAt" | "title" | "description" | "type" | "priority" | "status" | "data" | "assignedTo" | "createdBy" | "metadata" | "dueDate" | "resolvedAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["case"]>
+  export type CaseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "originatingTenantId" | "currentTenantId" | "originatingDepartmentId" | "currentDepartmentId" | "referralStatus" | "workflowId" | "workflowVersion" | "caseNumber" | "currentStepId" | "closedAt" | "title" | "description" | "type" | "priority" | "status" | "data" | "assignedTo" | "createdBy" | "metadata" | "dueDate" | "resolvedAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["case"]>
   export type CaseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     originatingTenant?: boolean | Case$originatingTenantArgs<ExtArgs>
     currentTenant?: boolean | Case$currentTenantArgs<ExtArgs>
+    originatingDepartment?: boolean | Case$originatingDepartmentArgs<ExtArgs>
+    currentDepartment?: boolean | Case$currentDepartmentArgs<ExtArgs>
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     currentStep?: boolean | Case$currentStepArgs<ExtArgs>
     assignee?: boolean | Case$assigneeArgs<ExtArgs>
@@ -15235,6 +16890,8 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     originatingTenant?: boolean | Case$originatingTenantArgs<ExtArgs>
     currentTenant?: boolean | Case$currentTenantArgs<ExtArgs>
+    originatingDepartment?: boolean | Case$originatingDepartmentArgs<ExtArgs>
+    currentDepartment?: boolean | Case$currentDepartmentArgs<ExtArgs>
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     currentStep?: boolean | Case$currentStepArgs<ExtArgs>
     assignee?: boolean | Case$assigneeArgs<ExtArgs>
@@ -15244,6 +16901,8 @@ export namespace Prisma {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     originatingTenant?: boolean | Case$originatingTenantArgs<ExtArgs>
     currentTenant?: boolean | Case$currentTenantArgs<ExtArgs>
+    originatingDepartment?: boolean | Case$originatingDepartmentArgs<ExtArgs>
+    currentDepartment?: boolean | Case$currentDepartmentArgs<ExtArgs>
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     currentStep?: boolean | Case$currentStepArgs<ExtArgs>
     assignee?: boolean | Case$assigneeArgs<ExtArgs>
@@ -15256,6 +16915,8 @@ export namespace Prisma {
       tenant: Prisma.$TenantPayload<ExtArgs>
       originatingTenant: Prisma.$TenantPayload<ExtArgs> | null
       currentTenant: Prisma.$TenantPayload<ExtArgs> | null
+      originatingDepartment: Prisma.$DepartmentPayload<ExtArgs> | null
+      currentDepartment: Prisma.$DepartmentPayload<ExtArgs> | null
       workflow: Prisma.$WorkflowPayload<ExtArgs>
       currentStep: Prisma.$WorkflowStepPayload<ExtArgs> | null
       assignee: Prisma.$UserPayload<ExtArgs> | null
@@ -15270,6 +16931,8 @@ export namespace Prisma {
       tenantId: string
       originatingTenantId: string | null
       currentTenantId: string | null
+      originatingDepartmentId: string | null
+      currentDepartmentId: string | null
       referralStatus: string
       workflowId: string
       workflowVersion: number
@@ -15687,6 +17350,8 @@ export namespace Prisma {
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     originatingTenant<T extends Case$originatingTenantArgs<ExtArgs> = {}>(args?: Subset<T, Case$originatingTenantArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     currentTenant<T extends Case$currentTenantArgs<ExtArgs> = {}>(args?: Subset<T, Case$currentTenantArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    originatingDepartment<T extends Case$originatingDepartmentArgs<ExtArgs> = {}>(args?: Subset<T, Case$originatingDepartmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    currentDepartment<T extends Case$currentDepartmentArgs<ExtArgs> = {}>(args?: Subset<T, Case$currentDepartmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     workflow<T extends WorkflowDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowDefaultArgs<ExtArgs>>): Prisma__WorkflowClient<$Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     currentStep<T extends Case$currentStepArgs<ExtArgs> = {}>(args?: Subset<T, Case$currentStepArgs<ExtArgs>>): Prisma__WorkflowStepClient<$Result.GetResult<Prisma.$WorkflowStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     assignee<T extends Case$assigneeArgs<ExtArgs> = {}>(args?: Subset<T, Case$assigneeArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -15728,6 +17393,8 @@ export namespace Prisma {
     readonly tenantId: FieldRef<"Case", 'String'>
     readonly originatingTenantId: FieldRef<"Case", 'String'>
     readonly currentTenantId: FieldRef<"Case", 'String'>
+    readonly originatingDepartmentId: FieldRef<"Case", 'String'>
+    readonly currentDepartmentId: FieldRef<"Case", 'String'>
     readonly referralStatus: FieldRef<"Case", 'String'>
     readonly workflowId: FieldRef<"Case", 'String'>
     readonly workflowVersion: FieldRef<"Case", 'Int'>
@@ -16179,6 +17846,44 @@ export namespace Prisma {
      */
     include?: TenantInclude<ExtArgs> | null
     where?: TenantWhereInput
+  }
+
+  /**
+   * Case.originatingDepartment
+   */
+  export type Case$originatingDepartmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
+  }
+
+  /**
+   * Case.currentDepartment
+   */
+  export type Case$currentDepartmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
   }
 
   /**
@@ -19703,6 +21408,8 @@ export namespace Prisma {
     caseId: string | null
     fromTenantId: string | null
     toTenantId: string | null
+    fromDepartmentId: string | null
+    toDepartmentId: string | null
     referralReason: string | null
     notes: string | null
     status: string | null
@@ -19720,6 +21427,8 @@ export namespace Prisma {
     caseId: string | null
     fromTenantId: string | null
     toTenantId: string | null
+    fromDepartmentId: string | null
+    toDepartmentId: string | null
     referralReason: string | null
     notes: string | null
     status: string | null
@@ -19737,6 +21446,8 @@ export namespace Prisma {
     caseId: number
     fromTenantId: number
     toTenantId: number
+    fromDepartmentId: number
+    toDepartmentId: number
     referralReason: number
     notes: number
     status: number
@@ -19757,6 +21468,8 @@ export namespace Prisma {
     caseId?: true
     fromTenantId?: true
     toTenantId?: true
+    fromDepartmentId?: true
+    toDepartmentId?: true
     referralReason?: true
     notes?: true
     status?: true
@@ -19774,6 +21487,8 @@ export namespace Prisma {
     caseId?: true
     fromTenantId?: true
     toTenantId?: true
+    fromDepartmentId?: true
+    toDepartmentId?: true
     referralReason?: true
     notes?: true
     status?: true
@@ -19791,6 +21506,8 @@ export namespace Prisma {
     caseId?: true
     fromTenantId?: true
     toTenantId?: true
+    fromDepartmentId?: true
+    toDepartmentId?: true
     referralReason?: true
     notes?: true
     status?: true
@@ -19882,6 +21599,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId: string | null
+    toDepartmentId: string | null
     referralReason: string | null
     notes: string | null
     status: string
@@ -19917,6 +21636,8 @@ export namespace Prisma {
     caseId?: boolean
     fromTenantId?: boolean
     toTenantId?: boolean
+    fromDepartmentId?: boolean
+    toDepartmentId?: boolean
     referralReason?: boolean
     notes?: boolean
     status?: boolean
@@ -19931,6 +21652,8 @@ export namespace Prisma {
     case?: boolean | CaseDefaultArgs<ExtArgs>
     fromTenant?: boolean | TenantDefaultArgs<ExtArgs>
     toTenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fromDepartment?: boolean | CaseReferral$fromDepartmentArgs<ExtArgs>
+    toDepartment?: boolean | CaseReferral$toDepartmentArgs<ExtArgs>
     referrer?: boolean | UserDefaultArgs<ExtArgs>
     accepter?: boolean | CaseReferral$accepterArgs<ExtArgs>
     rejecter?: boolean | CaseReferral$rejecterArgs<ExtArgs>
@@ -19941,6 +21664,8 @@ export namespace Prisma {
     caseId?: boolean
     fromTenantId?: boolean
     toTenantId?: boolean
+    fromDepartmentId?: boolean
+    toDepartmentId?: boolean
     referralReason?: boolean
     notes?: boolean
     status?: boolean
@@ -19955,6 +21680,8 @@ export namespace Prisma {
     case?: boolean | CaseDefaultArgs<ExtArgs>
     fromTenant?: boolean | TenantDefaultArgs<ExtArgs>
     toTenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fromDepartment?: boolean | CaseReferral$fromDepartmentArgs<ExtArgs>
+    toDepartment?: boolean | CaseReferral$toDepartmentArgs<ExtArgs>
     referrer?: boolean | UserDefaultArgs<ExtArgs>
     accepter?: boolean | CaseReferral$accepterArgs<ExtArgs>
     rejecter?: boolean | CaseReferral$rejecterArgs<ExtArgs>
@@ -19965,6 +21692,8 @@ export namespace Prisma {
     caseId?: boolean
     fromTenantId?: boolean
     toTenantId?: boolean
+    fromDepartmentId?: boolean
+    toDepartmentId?: boolean
     referralReason?: boolean
     notes?: boolean
     status?: boolean
@@ -19979,6 +21708,8 @@ export namespace Prisma {
     case?: boolean | CaseDefaultArgs<ExtArgs>
     fromTenant?: boolean | TenantDefaultArgs<ExtArgs>
     toTenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fromDepartment?: boolean | CaseReferral$fromDepartmentArgs<ExtArgs>
+    toDepartment?: boolean | CaseReferral$toDepartmentArgs<ExtArgs>
     referrer?: boolean | UserDefaultArgs<ExtArgs>
     accepter?: boolean | CaseReferral$accepterArgs<ExtArgs>
     rejecter?: boolean | CaseReferral$rejecterArgs<ExtArgs>
@@ -19989,6 +21720,8 @@ export namespace Prisma {
     caseId?: boolean
     fromTenantId?: boolean
     toTenantId?: boolean
+    fromDepartmentId?: boolean
+    toDepartmentId?: boolean
     referralReason?: boolean
     notes?: boolean
     status?: boolean
@@ -20002,11 +21735,13 @@ export namespace Prisma {
     metadata?: boolean
   }
 
-  export type CaseReferralOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "caseId" | "fromTenantId" | "toTenantId" | "referralReason" | "notes" | "status" | "referredBy" | "acceptedBy" | "rejectedBy" | "referredAt" | "acceptedAt" | "rejectedAt" | "completedAt" | "metadata", ExtArgs["result"]["caseReferral"]>
+  export type CaseReferralOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "caseId" | "fromTenantId" | "toTenantId" | "fromDepartmentId" | "toDepartmentId" | "referralReason" | "notes" | "status" | "referredBy" | "acceptedBy" | "rejectedBy" | "referredAt" | "acceptedAt" | "rejectedAt" | "completedAt" | "metadata", ExtArgs["result"]["caseReferral"]>
   export type CaseReferralInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     case?: boolean | CaseDefaultArgs<ExtArgs>
     fromTenant?: boolean | TenantDefaultArgs<ExtArgs>
     toTenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fromDepartment?: boolean | CaseReferral$fromDepartmentArgs<ExtArgs>
+    toDepartment?: boolean | CaseReferral$toDepartmentArgs<ExtArgs>
     referrer?: boolean | UserDefaultArgs<ExtArgs>
     accepter?: boolean | CaseReferral$accepterArgs<ExtArgs>
     rejecter?: boolean | CaseReferral$rejecterArgs<ExtArgs>
@@ -20015,6 +21750,8 @@ export namespace Prisma {
     case?: boolean | CaseDefaultArgs<ExtArgs>
     fromTenant?: boolean | TenantDefaultArgs<ExtArgs>
     toTenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fromDepartment?: boolean | CaseReferral$fromDepartmentArgs<ExtArgs>
+    toDepartment?: boolean | CaseReferral$toDepartmentArgs<ExtArgs>
     referrer?: boolean | UserDefaultArgs<ExtArgs>
     accepter?: boolean | CaseReferral$accepterArgs<ExtArgs>
     rejecter?: boolean | CaseReferral$rejecterArgs<ExtArgs>
@@ -20023,6 +21760,8 @@ export namespace Prisma {
     case?: boolean | CaseDefaultArgs<ExtArgs>
     fromTenant?: boolean | TenantDefaultArgs<ExtArgs>
     toTenant?: boolean | TenantDefaultArgs<ExtArgs>
+    fromDepartment?: boolean | CaseReferral$fromDepartmentArgs<ExtArgs>
+    toDepartment?: boolean | CaseReferral$toDepartmentArgs<ExtArgs>
     referrer?: boolean | UserDefaultArgs<ExtArgs>
     accepter?: boolean | CaseReferral$accepterArgs<ExtArgs>
     rejecter?: boolean | CaseReferral$rejecterArgs<ExtArgs>
@@ -20034,6 +21773,8 @@ export namespace Prisma {
       case: Prisma.$CasePayload<ExtArgs>
       fromTenant: Prisma.$TenantPayload<ExtArgs>
       toTenant: Prisma.$TenantPayload<ExtArgs>
+      fromDepartment: Prisma.$DepartmentPayload<ExtArgs> | null
+      toDepartment: Prisma.$DepartmentPayload<ExtArgs> | null
       referrer: Prisma.$UserPayload<ExtArgs>
       accepter: Prisma.$UserPayload<ExtArgs> | null
       rejecter: Prisma.$UserPayload<ExtArgs> | null
@@ -20043,6 +21784,8 @@ export namespace Prisma {
       caseId: string
       fromTenantId: string
       toTenantId: string
+      fromDepartmentId: string | null
+      toDepartmentId: string | null
       referralReason: string | null
       notes: string | null
       status: string
@@ -20451,6 +22194,8 @@ export namespace Prisma {
     case<T extends CaseDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CaseDefaultArgs<ExtArgs>>): Prisma__CaseClient<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     fromTenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     toTenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    fromDepartment<T extends CaseReferral$fromDepartmentArgs<ExtArgs> = {}>(args?: Subset<T, CaseReferral$fromDepartmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    toDepartment<T extends CaseReferral$toDepartmentArgs<ExtArgs> = {}>(args?: Subset<T, CaseReferral$toDepartmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     referrer<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     accepter<T extends CaseReferral$accepterArgs<ExtArgs> = {}>(args?: Subset<T, CaseReferral$accepterArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     rejecter<T extends CaseReferral$rejecterArgs<ExtArgs> = {}>(args?: Subset<T, CaseReferral$rejecterArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -20487,6 +22232,8 @@ export namespace Prisma {
     readonly caseId: FieldRef<"CaseReferral", 'String'>
     readonly fromTenantId: FieldRef<"CaseReferral", 'String'>
     readonly toTenantId: FieldRef<"CaseReferral", 'String'>
+    readonly fromDepartmentId: FieldRef<"CaseReferral", 'String'>
+    readonly toDepartmentId: FieldRef<"CaseReferral", 'String'>
     readonly referralReason: FieldRef<"CaseReferral", 'String'>
     readonly notes: FieldRef<"CaseReferral", 'String'>
     readonly status: FieldRef<"CaseReferral", 'String'>
@@ -20891,6 +22638,44 @@ export namespace Prisma {
      * Limit how many CaseReferrals to delete.
      */
     limit?: number
+  }
+
+  /**
+   * CaseReferral.fromDepartment
+   */
+  export type CaseReferral$fromDepartmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
+  }
+
+  /**
+   * CaseReferral.toDepartment
+   */
+  export type CaseReferral$toDepartmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
   }
 
   /**
@@ -25850,6 +27635,8 @@ export namespace Prisma {
     tenantId: string | null
     senderId: string | null
     recipientId: string | null
+    departmentId: string | null
+    recipientDepartmentId: string | null
     body: string | null
     createdAt: Date | null
   }
@@ -25859,6 +27646,8 @@ export namespace Prisma {
     tenantId: string | null
     senderId: string | null
     recipientId: string | null
+    departmentId: string | null
+    recipientDepartmentId: string | null
     body: string | null
     createdAt: Date | null
   }
@@ -25868,6 +27657,8 @@ export namespace Prisma {
     tenantId: number
     senderId: number
     recipientId: number
+    departmentId: number
+    recipientDepartmentId: number
     body: number
     createdAt: number
     _all: number
@@ -25879,6 +27670,8 @@ export namespace Prisma {
     tenantId?: true
     senderId?: true
     recipientId?: true
+    departmentId?: true
+    recipientDepartmentId?: true
     body?: true
     createdAt?: true
   }
@@ -25888,6 +27681,8 @@ export namespace Prisma {
     tenantId?: true
     senderId?: true
     recipientId?: true
+    departmentId?: true
+    recipientDepartmentId?: true
     body?: true
     createdAt?: true
   }
@@ -25897,6 +27692,8 @@ export namespace Prisma {
     tenantId?: true
     senderId?: true
     recipientId?: true
+    departmentId?: true
+    recipientDepartmentId?: true
     body?: true
     createdAt?: true
     _all?: true
@@ -25979,6 +27776,8 @@ export namespace Prisma {
     tenantId: string
     senderId: string
     recipientId: string | null
+    departmentId: string | null
+    recipientDepartmentId: string | null
     body: string
     createdAt: Date
     _count: AgencyChatMessageCountAggregateOutputType | null
@@ -26005,11 +27804,15 @@ export namespace Prisma {
     tenantId?: boolean
     senderId?: boolean
     recipientId?: boolean
+    departmentId?: boolean
+    recipientDepartmentId?: boolean
     body?: boolean
     createdAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
     recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+    department?: boolean | AgencyChatMessage$departmentArgs<ExtArgs>
+    recipientDepartment?: boolean | AgencyChatMessage$recipientDepartmentArgs<ExtArgs>
   }, ExtArgs["result"]["agencyChatMessage"]>
 
   export type AgencyChatMessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -26017,11 +27820,15 @@ export namespace Prisma {
     tenantId?: boolean
     senderId?: boolean
     recipientId?: boolean
+    departmentId?: boolean
+    recipientDepartmentId?: boolean
     body?: boolean
     createdAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
     recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+    department?: boolean | AgencyChatMessage$departmentArgs<ExtArgs>
+    recipientDepartment?: boolean | AgencyChatMessage$recipientDepartmentArgs<ExtArgs>
   }, ExtArgs["result"]["agencyChatMessage"]>
 
   export type AgencyChatMessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -26029,11 +27836,15 @@ export namespace Prisma {
     tenantId?: boolean
     senderId?: boolean
     recipientId?: boolean
+    departmentId?: boolean
+    recipientDepartmentId?: boolean
     body?: boolean
     createdAt?: boolean
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
     recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+    department?: boolean | AgencyChatMessage$departmentArgs<ExtArgs>
+    recipientDepartment?: boolean | AgencyChatMessage$recipientDepartmentArgs<ExtArgs>
   }, ExtArgs["result"]["agencyChatMessage"]>
 
   export type AgencyChatMessageSelectScalar = {
@@ -26041,25 +27852,33 @@ export namespace Prisma {
     tenantId?: boolean
     senderId?: boolean
     recipientId?: boolean
+    departmentId?: boolean
+    recipientDepartmentId?: boolean
     body?: boolean
     createdAt?: boolean
   }
 
-  export type AgencyChatMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "senderId" | "recipientId" | "body" | "createdAt", ExtArgs["result"]["agencyChatMessage"]>
+  export type AgencyChatMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "senderId" | "recipientId" | "departmentId" | "recipientDepartmentId" | "body" | "createdAt", ExtArgs["result"]["agencyChatMessage"]>
   export type AgencyChatMessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
     recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+    department?: boolean | AgencyChatMessage$departmentArgs<ExtArgs>
+    recipientDepartment?: boolean | AgencyChatMessage$recipientDepartmentArgs<ExtArgs>
   }
   export type AgencyChatMessageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
     recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+    department?: boolean | AgencyChatMessage$departmentArgs<ExtArgs>
+    recipientDepartment?: boolean | AgencyChatMessage$recipientDepartmentArgs<ExtArgs>
   }
   export type AgencyChatMessageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
     recipient?: boolean | AgencyChatMessage$recipientArgs<ExtArgs>
+    department?: boolean | AgencyChatMessage$departmentArgs<ExtArgs>
+    recipientDepartment?: boolean | AgencyChatMessage$recipientDepartmentArgs<ExtArgs>
   }
 
   export type $AgencyChatMessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -26068,12 +27887,16 @@ export namespace Prisma {
       tenant: Prisma.$TenantPayload<ExtArgs>
       sender: Prisma.$UserPayload<ExtArgs>
       recipient: Prisma.$UserPayload<ExtArgs> | null
+      department: Prisma.$DepartmentPayload<ExtArgs> | null
+      recipientDepartment: Prisma.$DepartmentPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       tenantId: string
       senderId: string
       recipientId: string | null
+      departmentId: string | null
+      recipientDepartmentId: string | null
       body: string
       createdAt: Date
     }, ExtArgs["result"]["agencyChatMessage"]>
@@ -26473,6 +28296,8 @@ export namespace Prisma {
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     sender<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     recipient<T extends AgencyChatMessage$recipientArgs<ExtArgs> = {}>(args?: Subset<T, AgencyChatMessage$recipientArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    department<T extends AgencyChatMessage$departmentArgs<ExtArgs> = {}>(args?: Subset<T, AgencyChatMessage$departmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    recipientDepartment<T extends AgencyChatMessage$recipientDepartmentArgs<ExtArgs> = {}>(args?: Subset<T, AgencyChatMessage$recipientDepartmentArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -26506,6 +28331,8 @@ export namespace Prisma {
     readonly tenantId: FieldRef<"AgencyChatMessage", 'String'>
     readonly senderId: FieldRef<"AgencyChatMessage", 'String'>
     readonly recipientId: FieldRef<"AgencyChatMessage", 'String'>
+    readonly departmentId: FieldRef<"AgencyChatMessage", 'String'>
+    readonly recipientDepartmentId: FieldRef<"AgencyChatMessage", 'String'>
     readonly body: FieldRef<"AgencyChatMessage", 'String'>
     readonly createdAt: FieldRef<"AgencyChatMessage", 'DateTime'>
   }
@@ -26923,6 +28750,44 @@ export namespace Prisma {
   }
 
   /**
+   * AgencyChatMessage.department
+   */
+  export type AgencyChatMessage$departmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
+  }
+
+  /**
+   * AgencyChatMessage.recipientDepartment
+   */
+  export type AgencyChatMessage$recipientDepartmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Department
+     */
+    select?: DepartmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Department
+     */
+    omit?: DepartmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DepartmentInclude<ExtArgs> | null
+    where?: DepartmentWhereInput
+  }
+
+  /**
    * AgencyChatMessage without action
    */
   export type AgencyChatMessageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -26955,6 +28820,20 @@ export namespace Prisma {
   export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+  export const DepartmentScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    code: 'code',
+    name: 'name',
+    description: 'description',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type DepartmentScalarFieldEnum = (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum]
+
+
   export const TenantScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -26973,6 +28852,7 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
+    departmentId: 'departmentId',
     email: 'email',
     username: 'username',
     passwordHash: 'passwordHash',
@@ -27046,6 +28926,7 @@ export namespace Prisma {
   export const WorkflowScalarFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
+    departmentId: 'departmentId',
     key: 'key',
     name: 'name',
     description: 'description',
@@ -27106,6 +28987,8 @@ export namespace Prisma {
     tenantId: 'tenantId',
     originatingTenantId: 'originatingTenantId',
     currentTenantId: 'currentTenantId',
+    originatingDepartmentId: 'originatingDepartmentId',
+    currentDepartmentId: 'currentDepartmentId',
     referralStatus: 'referralStatus',
     workflowId: 'workflowId',
     workflowVersion: 'workflowVersion',
@@ -27176,6 +29059,8 @@ export namespace Prisma {
     caseId: 'caseId',
     fromTenantId: 'fromTenantId',
     toTenantId: 'toTenantId',
+    fromDepartmentId: 'fromDepartmentId',
+    toDepartmentId: 'toDepartmentId',
     referralReason: 'referralReason',
     notes: 'notes',
     status: 'status',
@@ -27273,6 +29158,8 @@ export namespace Prisma {
     tenantId: 'tenantId',
     senderId: 'senderId',
     recipientId: 'recipientId',
+    departmentId: 'departmentId',
+    recipientDepartmentId: 'recipientDepartmentId',
     body: 'body',
     createdAt: 'createdAt'
   };
@@ -27311,6 +29198,14 @@ export namespace Prisma {
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
   export const JsonNullValueFilter: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull,
@@ -27318,14 +29213,6 @@ export namespace Prisma {
   };
 
   export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
-
-
-  export const NullsOrder: {
-    first: 'first',
-    last: 'last'
-  };
-
-  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -27348,20 +29235,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Json'
-   */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-  /**
-   * Reference to a field of type 'QueryMode'
-   */
-  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
-    
-
-
-  /**
    * Reference to a field of type 'Boolean'
    */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
@@ -27379,6 +29252,20 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -27427,6 +29314,102 @@ export namespace Prisma {
    */
 
 
+  export type DepartmentWhereInput = {
+    AND?: DepartmentWhereInput | DepartmentWhereInput[]
+    OR?: DepartmentWhereInput[]
+    NOT?: DepartmentWhereInput | DepartmentWhereInput[]
+    id?: UuidFilter<"Department"> | string
+    tenantId?: UuidFilter<"Department"> | string
+    code?: StringFilter<"Department"> | string
+    name?: StringFilter<"Department"> | string
+    description?: StringNullableFilter<"Department"> | string | null
+    isActive?: BoolFilter<"Department"> | boolean
+    createdAt?: DateTimeFilter<"Department"> | Date | string
+    updatedAt?: DateTimeFilter<"Department"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    users?: UserListRelationFilter
+    casesOriginating?: CaseListRelationFilter
+    casesCurrent?: CaseListRelationFilter
+    referralsFrom?: CaseReferralListRelationFilter
+    referralsTo?: CaseReferralListRelationFilter
+    workflows?: WorkflowListRelationFilter
+    chatMessages?: AgencyChatMessageListRelationFilter
+    recipientChatMessages?: AgencyChatMessageListRelationFilter
+  }
+
+  export type DepartmentOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    users?: UserOrderByRelationAggregateInput
+    casesOriginating?: CaseOrderByRelationAggregateInput
+    casesCurrent?: CaseOrderByRelationAggregateInput
+    referralsFrom?: CaseReferralOrderByRelationAggregateInput
+    referralsTo?: CaseReferralOrderByRelationAggregateInput
+    workflows?: WorkflowOrderByRelationAggregateInput
+    chatMessages?: AgencyChatMessageOrderByRelationAggregateInput
+    recipientChatMessages?: AgencyChatMessageOrderByRelationAggregateInput
+  }
+
+  export type DepartmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    tenantId_code?: DepartmentTenantIdCodeCompoundUniqueInput
+    tenantId_name?: DepartmentTenantIdNameCompoundUniqueInput
+    AND?: DepartmentWhereInput | DepartmentWhereInput[]
+    OR?: DepartmentWhereInput[]
+    NOT?: DepartmentWhereInput | DepartmentWhereInput[]
+    tenantId?: UuidFilter<"Department"> | string
+    code?: StringFilter<"Department"> | string
+    name?: StringFilter<"Department"> | string
+    description?: StringNullableFilter<"Department"> | string | null
+    isActive?: BoolFilter<"Department"> | boolean
+    createdAt?: DateTimeFilter<"Department"> | Date | string
+    updatedAt?: DateTimeFilter<"Department"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    users?: UserListRelationFilter
+    casesOriginating?: CaseListRelationFilter
+    casesCurrent?: CaseListRelationFilter
+    referralsFrom?: CaseReferralListRelationFilter
+    referralsTo?: CaseReferralListRelationFilter
+    workflows?: WorkflowListRelationFilter
+    chatMessages?: AgencyChatMessageListRelationFilter
+    recipientChatMessages?: AgencyChatMessageListRelationFilter
+  }, "id" | "tenantId_code" | "tenantId_name">
+
+  export type DepartmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: DepartmentCountOrderByAggregateInput
+    _max?: DepartmentMaxOrderByAggregateInput
+    _min?: DepartmentMinOrderByAggregateInput
+  }
+
+  export type DepartmentScalarWhereWithAggregatesInput = {
+    AND?: DepartmentScalarWhereWithAggregatesInput | DepartmentScalarWhereWithAggregatesInput[]
+    OR?: DepartmentScalarWhereWithAggregatesInput[]
+    NOT?: DepartmentScalarWhereWithAggregatesInput | DepartmentScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"Department"> | string
+    tenantId?: UuidWithAggregatesFilter<"Department"> | string
+    code?: StringWithAggregatesFilter<"Department"> | string
+    name?: StringWithAggregatesFilter<"Department"> | string
+    description?: StringNullableWithAggregatesFilter<"Department"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Department"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"Department"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Department"> | Date | string
+  }
+
   export type TenantWhereInput = {
     AND?: TenantWhereInput | TenantWhereInput[]
     OR?: TenantWhereInput[]
@@ -27442,6 +29425,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Tenant"> | Date | string
     registeredBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     users?: UserListRelationFilter
+    departments?: DepartmentListRelationFilter
     roles?: RoleListRelationFilter
     workflows?: WorkflowListRelationFilter
     cases?: CaseListRelationFilter
@@ -27470,6 +29454,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     registeredBy?: UserOrderByWithRelationInput
     users?: UserOrderByRelationAggregateInput
+    departments?: DepartmentOrderByRelationAggregateInput
     roles?: RoleOrderByRelationAggregateInput
     workflows?: WorkflowOrderByRelationAggregateInput
     cases?: CaseOrderByRelationAggregateInput
@@ -27501,6 +29486,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Tenant"> | Date | string
     registeredBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     users?: UserListRelationFilter
+    departments?: DepartmentListRelationFilter
     roles?: RoleListRelationFilter
     workflows?: WorkflowListRelationFilter
     cases?: CaseListRelationFilter
@@ -27553,6 +29539,7 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: UuidFilter<"User"> | string
     tenantId?: UuidFilter<"User"> | string
+    departmentId?: UuidNullableFilter<"User"> | string | null
     email?: StringFilter<"User"> | string
     username?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
@@ -27571,6 +29558,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     casesCreated?: CaseListRelationFilter
     casesAssigned?: CaseListRelationFilter
     assignmentsAssignedTo?: AssignmentListRelationFilter
@@ -27595,6 +29583,7 @@ export namespace Prisma {
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrderInput | SortOrder
     email?: SortOrder
     username?: SortOrder
     passwordHash?: SortOrder
@@ -27613,6 +29602,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
+    department?: DepartmentOrderByWithRelationInput
     casesCreated?: CaseOrderByRelationAggregateInput
     casesAssigned?: CaseOrderByRelationAggregateInput
     assignmentsAssignedTo?: AssignmentOrderByRelationAggregateInput
@@ -27642,6 +29632,7 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     tenantId?: UuidFilter<"User"> | string
+    departmentId?: UuidNullableFilter<"User"> | string | null
     email?: StringFilter<"User"> | string
     username?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
@@ -27660,6 +29651,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     casesCreated?: CaseListRelationFilter
     casesAssigned?: CaseListRelationFilter
     assignmentsAssignedTo?: AssignmentListRelationFilter
@@ -27684,6 +29676,7 @@ export namespace Prisma {
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrderInput | SortOrder
     email?: SortOrder
     username?: SortOrder
     passwordHash?: SortOrder
@@ -27712,6 +29705,7 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"User"> | string
     tenantId?: UuidWithAggregatesFilter<"User"> | string
+    departmentId?: UuidNullableWithAggregatesFilter<"User"> | string | null
     email?: StringWithAggregatesFilter<"User"> | string
     username?: StringWithAggregatesFilter<"User"> | string
     passwordHash?: StringWithAggregatesFilter<"User"> | string
@@ -27999,6 +29993,7 @@ export namespace Prisma {
     NOT?: WorkflowWhereInput | WorkflowWhereInput[]
     id?: UuidFilter<"Workflow"> | string
     tenantId?: UuidFilter<"Workflow"> | string
+    departmentId?: UuidNullableFilter<"Workflow"> | string | null
     key?: StringFilter<"Workflow"> | string
     name?: StringFilter<"Workflow"> | string
     description?: StringNullableFilter<"Workflow"> | string | null
@@ -28012,6 +30007,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Workflow"> | Date | string
     updatedAt?: DateTimeFilter<"Workflow"> | Date | string
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     creator?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     cases?: CaseListRelationFilter
     steps?: WorkflowStepListRelationFilter
@@ -28021,6 +30017,7 @@ export namespace Prisma {
   export type WorkflowOrderByWithRelationInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrderInput | SortOrder
     key?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
@@ -28034,6 +30031,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
+    department?: DepartmentOrderByWithRelationInput
     creator?: UserOrderByWithRelationInput
     cases?: CaseOrderByRelationAggregateInput
     steps?: WorkflowStepOrderByRelationAggregateInput
@@ -28047,6 +30045,7 @@ export namespace Prisma {
     OR?: WorkflowWhereInput[]
     NOT?: WorkflowWhereInput | WorkflowWhereInput[]
     tenantId?: UuidFilter<"Workflow"> | string
+    departmentId?: UuidNullableFilter<"Workflow"> | string | null
     key?: StringFilter<"Workflow"> | string
     name?: StringFilter<"Workflow"> | string
     description?: StringNullableFilter<"Workflow"> | string | null
@@ -28060,6 +30059,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Workflow"> | Date | string
     updatedAt?: DateTimeFilter<"Workflow"> | Date | string
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     creator?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     cases?: CaseListRelationFilter
     steps?: WorkflowStepListRelationFilter
@@ -28069,6 +30069,7 @@ export namespace Prisma {
   export type WorkflowOrderByWithAggregationInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrderInput | SortOrder
     key?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
@@ -28094,6 +30095,7 @@ export namespace Prisma {
     NOT?: WorkflowScalarWhereWithAggregatesInput | WorkflowScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"Workflow"> | string
     tenantId?: UuidWithAggregatesFilter<"Workflow"> | string
+    departmentId?: UuidNullableWithAggregatesFilter<"Workflow"> | string | null
     key?: StringWithAggregatesFilter<"Workflow"> | string
     name?: StringWithAggregatesFilter<"Workflow"> | string
     description?: StringNullableWithAggregatesFilter<"Workflow"> | string | null
@@ -28333,6 +30335,8 @@ export namespace Prisma {
     tenantId?: UuidFilter<"Case"> | string
     originatingTenantId?: UuidNullableFilter<"Case"> | string | null
     currentTenantId?: UuidNullableFilter<"Case"> | string | null
+    originatingDepartmentId?: UuidNullableFilter<"Case"> | string | null
+    currentDepartmentId?: UuidNullableFilter<"Case"> | string | null
     referralStatus?: StringFilter<"Case"> | string
     workflowId?: UuidFilter<"Case"> | string
     workflowVersion?: IntFilter<"Case"> | number
@@ -28356,6 +30360,8 @@ export namespace Prisma {
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     originatingTenant?: XOR<TenantNullableScalarRelationFilter, TenantWhereInput> | null
     currentTenant?: XOR<TenantNullableScalarRelationFilter, TenantWhereInput> | null
+    originatingDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
+    currentDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
     currentStep?: XOR<WorkflowStepNullableScalarRelationFilter, WorkflowStepWhereInput> | null
     assignee?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -28371,6 +30377,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     originatingTenantId?: SortOrderInput | SortOrder
     currentTenantId?: SortOrderInput | SortOrder
+    originatingDepartmentId?: SortOrderInput | SortOrder
+    currentDepartmentId?: SortOrderInput | SortOrder
     referralStatus?: SortOrder
     workflowId?: SortOrder
     workflowVersion?: SortOrder
@@ -28394,6 +30402,8 @@ export namespace Prisma {
     tenant?: TenantOrderByWithRelationInput
     originatingTenant?: TenantOrderByWithRelationInput
     currentTenant?: TenantOrderByWithRelationInput
+    originatingDepartment?: DepartmentOrderByWithRelationInput
+    currentDepartment?: DepartmentOrderByWithRelationInput
     workflow?: WorkflowOrderByWithRelationInput
     currentStep?: WorkflowStepOrderByWithRelationInput
     assignee?: UserOrderByWithRelationInput
@@ -28413,6 +30423,8 @@ export namespace Prisma {
     tenantId?: UuidFilter<"Case"> | string
     originatingTenantId?: UuidNullableFilter<"Case"> | string | null
     currentTenantId?: UuidNullableFilter<"Case"> | string | null
+    originatingDepartmentId?: UuidNullableFilter<"Case"> | string | null
+    currentDepartmentId?: UuidNullableFilter<"Case"> | string | null
     referralStatus?: StringFilter<"Case"> | string
     workflowId?: UuidFilter<"Case"> | string
     workflowVersion?: IntFilter<"Case"> | number
@@ -28436,6 +30448,8 @@ export namespace Prisma {
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     originatingTenant?: XOR<TenantNullableScalarRelationFilter, TenantWhereInput> | null
     currentTenant?: XOR<TenantNullableScalarRelationFilter, TenantWhereInput> | null
+    originatingDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
+    currentDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     workflow?: XOR<WorkflowScalarRelationFilter, WorkflowWhereInput>
     currentStep?: XOR<WorkflowStepNullableScalarRelationFilter, WorkflowStepWhereInput> | null
     assignee?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -28451,6 +30465,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     originatingTenantId?: SortOrderInput | SortOrder
     currentTenantId?: SortOrderInput | SortOrder
+    originatingDepartmentId?: SortOrderInput | SortOrder
+    currentDepartmentId?: SortOrderInput | SortOrder
     referralStatus?: SortOrder
     workflowId?: SortOrder
     workflowVersion?: SortOrder
@@ -28486,6 +30502,8 @@ export namespace Prisma {
     tenantId?: UuidWithAggregatesFilter<"Case"> | string
     originatingTenantId?: UuidNullableWithAggregatesFilter<"Case"> | string | null
     currentTenantId?: UuidNullableWithAggregatesFilter<"Case"> | string | null
+    originatingDepartmentId?: UuidNullableWithAggregatesFilter<"Case"> | string | null
+    currentDepartmentId?: UuidNullableWithAggregatesFilter<"Case"> | string | null
     referralStatus?: StringWithAggregatesFilter<"Case"> | string
     workflowId?: UuidWithAggregatesFilter<"Case"> | string
     workflowVersion?: IntWithAggregatesFilter<"Case"> | number
@@ -28731,6 +30749,8 @@ export namespace Prisma {
     caseId?: UuidFilter<"CaseReferral"> | string
     fromTenantId?: UuidFilter<"CaseReferral"> | string
     toTenantId?: UuidFilter<"CaseReferral"> | string
+    fromDepartmentId?: UuidNullableFilter<"CaseReferral"> | string | null
+    toDepartmentId?: UuidNullableFilter<"CaseReferral"> | string | null
     referralReason?: StringNullableFilter<"CaseReferral"> | string | null
     notes?: StringNullableFilter<"CaseReferral"> | string | null
     status?: StringFilter<"CaseReferral"> | string
@@ -28745,6 +30765,8 @@ export namespace Prisma {
     case?: XOR<CaseScalarRelationFilter, CaseWhereInput>
     fromTenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     toTenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    fromDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
+    toDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     referrer?: XOR<UserScalarRelationFilter, UserWhereInput>
     accepter?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     rejecter?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -28755,6 +30777,8 @@ export namespace Prisma {
     caseId?: SortOrder
     fromTenantId?: SortOrder
     toTenantId?: SortOrder
+    fromDepartmentId?: SortOrderInput | SortOrder
+    toDepartmentId?: SortOrderInput | SortOrder
     referralReason?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     status?: SortOrder
@@ -28769,6 +30793,8 @@ export namespace Prisma {
     case?: CaseOrderByWithRelationInput
     fromTenant?: TenantOrderByWithRelationInput
     toTenant?: TenantOrderByWithRelationInput
+    fromDepartment?: DepartmentOrderByWithRelationInput
+    toDepartment?: DepartmentOrderByWithRelationInput
     referrer?: UserOrderByWithRelationInput
     accepter?: UserOrderByWithRelationInput
     rejecter?: UserOrderByWithRelationInput
@@ -28782,6 +30808,8 @@ export namespace Prisma {
     caseId?: UuidFilter<"CaseReferral"> | string
     fromTenantId?: UuidFilter<"CaseReferral"> | string
     toTenantId?: UuidFilter<"CaseReferral"> | string
+    fromDepartmentId?: UuidNullableFilter<"CaseReferral"> | string | null
+    toDepartmentId?: UuidNullableFilter<"CaseReferral"> | string | null
     referralReason?: StringNullableFilter<"CaseReferral"> | string | null
     notes?: StringNullableFilter<"CaseReferral"> | string | null
     status?: StringFilter<"CaseReferral"> | string
@@ -28796,6 +30824,8 @@ export namespace Prisma {
     case?: XOR<CaseScalarRelationFilter, CaseWhereInput>
     fromTenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     toTenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    fromDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
+    toDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     referrer?: XOR<UserScalarRelationFilter, UserWhereInput>
     accepter?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     rejecter?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -28806,6 +30836,8 @@ export namespace Prisma {
     caseId?: SortOrder
     fromTenantId?: SortOrder
     toTenantId?: SortOrder
+    fromDepartmentId?: SortOrderInput | SortOrder
+    toDepartmentId?: SortOrderInput | SortOrder
     referralReason?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     status?: SortOrder
@@ -28830,6 +30862,8 @@ export namespace Prisma {
     caseId?: UuidWithAggregatesFilter<"CaseReferral"> | string
     fromTenantId?: UuidWithAggregatesFilter<"CaseReferral"> | string
     toTenantId?: UuidWithAggregatesFilter<"CaseReferral"> | string
+    fromDepartmentId?: UuidNullableWithAggregatesFilter<"CaseReferral"> | string | null
+    toDepartmentId?: UuidNullableWithAggregatesFilter<"CaseReferral"> | string | null
     referralReason?: StringNullableWithAggregatesFilter<"CaseReferral"> | string | null
     notes?: StringNullableWithAggregatesFilter<"CaseReferral"> | string | null
     status?: StringWithAggregatesFilter<"CaseReferral"> | string
@@ -29256,11 +31290,15 @@ export namespace Prisma {
     tenantId?: UuidFilter<"AgencyChatMessage"> | string
     senderId?: UuidFilter<"AgencyChatMessage"> | string
     recipientId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    departmentId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    recipientDepartmentId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
     body?: StringFilter<"AgencyChatMessage"> | string
     createdAt?: DateTimeFilter<"AgencyChatMessage"> | Date | string
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     sender?: XOR<UserScalarRelationFilter, UserWhereInput>
     recipient?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
+    recipientDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
   }
 
   export type AgencyChatMessageOrderByWithRelationInput = {
@@ -29268,11 +31306,15 @@ export namespace Prisma {
     tenantId?: SortOrder
     senderId?: SortOrder
     recipientId?: SortOrderInput | SortOrder
+    departmentId?: SortOrderInput | SortOrder
+    recipientDepartmentId?: SortOrderInput | SortOrder
     body?: SortOrder
     createdAt?: SortOrder
     tenant?: TenantOrderByWithRelationInput
     sender?: UserOrderByWithRelationInput
     recipient?: UserOrderByWithRelationInput
+    department?: DepartmentOrderByWithRelationInput
+    recipientDepartment?: DepartmentOrderByWithRelationInput
   }
 
   export type AgencyChatMessageWhereUniqueInput = Prisma.AtLeast<{
@@ -29283,11 +31325,15 @@ export namespace Prisma {
     tenantId?: UuidFilter<"AgencyChatMessage"> | string
     senderId?: UuidFilter<"AgencyChatMessage"> | string
     recipientId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    departmentId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    recipientDepartmentId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
     body?: StringFilter<"AgencyChatMessage"> | string
     createdAt?: DateTimeFilter<"AgencyChatMessage"> | Date | string
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     sender?: XOR<UserScalarRelationFilter, UserWhereInput>
     recipient?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
+    recipientDepartment?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
   }, "id">
 
   export type AgencyChatMessageOrderByWithAggregationInput = {
@@ -29295,6 +31341,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     senderId?: SortOrder
     recipientId?: SortOrderInput | SortOrder
+    departmentId?: SortOrderInput | SortOrder
+    recipientDepartmentId?: SortOrderInput | SortOrder
     body?: SortOrder
     createdAt?: SortOrder
     _count?: AgencyChatMessageCountOrderByAggregateInput
@@ -29310,8 +31358,118 @@ export namespace Prisma {
     tenantId?: UuidWithAggregatesFilter<"AgencyChatMessage"> | string
     senderId?: UuidWithAggregatesFilter<"AgencyChatMessage"> | string
     recipientId?: UuidNullableWithAggregatesFilter<"AgencyChatMessage"> | string | null
+    departmentId?: UuidNullableWithAggregatesFilter<"AgencyChatMessage"> | string | null
+    recipientDepartmentId?: UuidNullableWithAggregatesFilter<"AgencyChatMessage"> | string | null
     body?: StringWithAggregatesFilter<"AgencyChatMessage"> | string
     createdAt?: DateTimeWithAggregatesFilter<"AgencyChatMessage"> | Date | string
+  }
+
+  export type DepartmentCreateInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentCreateManyInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DepartmentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DepartmentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TenantCreateInput = {
@@ -29325,6 +31483,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -29352,6 +31511,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -29379,6 +31539,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -29406,6 +31567,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -29477,6 +31639,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -29501,6 +31664,7 @@ export namespace Prisma {
   export type UserUncheckedCreateInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -29559,6 +31723,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -29583,6 +31748,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -29624,6 +31790,7 @@ export namespace Prisma {
   export type UserCreateManyInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -29667,6 +31834,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -29957,6 +32125,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutWorkflowsInput
+    department?: DepartmentCreateNestedOneWithoutWorkflowsInput
     creator?: UserCreateNestedOneWithoutWorkflowsCreatedInput
     cases?: CaseCreateNestedManyWithoutWorkflowInput
     steps?: WorkflowStepCreateNestedManyWithoutWorkflowInput
@@ -29966,6 +32135,7 @@ export namespace Prisma {
   export type WorkflowUncheckedCreateInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -29997,6 +32167,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutWorkflowsNestedInput
+    department?: DepartmentUpdateOneWithoutWorkflowsNestedInput
     creator?: UserUpdateOneWithoutWorkflowsCreatedNestedInput
     cases?: CaseUpdateManyWithoutWorkflowNestedInput
     steps?: WorkflowStepUpdateManyWithoutWorkflowNestedInput
@@ -30006,6 +32177,7 @@ export namespace Prisma {
   export type WorkflowUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30026,6 +32198,7 @@ export namespace Prisma {
   export type WorkflowCreateManyInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -30058,6 +32231,7 @@ export namespace Prisma {
   export type WorkflowUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30333,6 +32507,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -30348,6 +32524,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -30395,6 +32573,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -30410,6 +32590,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -30441,6 +32623,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -30488,6 +32672,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -30733,6 +32919,8 @@ export namespace Prisma {
     case: CaseCreateNestedOneWithoutReferralsInput
     fromTenant: TenantCreateNestedOneWithoutReferralsFromInput
     toTenant: TenantCreateNestedOneWithoutReferralsToInput
+    fromDepartment?: DepartmentCreateNestedOneWithoutReferralsFromInput
+    toDepartment?: DepartmentCreateNestedOneWithoutReferralsToInput
     referrer: UserCreateNestedOneWithoutReferralsMadeInput
     accepter?: UserCreateNestedOneWithoutReferralsAcceptedInput
     rejecter?: UserCreateNestedOneWithoutReferralsRejectedInput
@@ -30743,6 +32931,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -30769,6 +32959,8 @@ export namespace Prisma {
     case?: CaseUpdateOneRequiredWithoutReferralsNestedInput
     fromTenant?: TenantUpdateOneRequiredWithoutReferralsFromNestedInput
     toTenant?: TenantUpdateOneRequiredWithoutReferralsToNestedInput
+    fromDepartment?: DepartmentUpdateOneWithoutReferralsFromNestedInput
+    toDepartment?: DepartmentUpdateOneWithoutReferralsToNestedInput
     referrer?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
     accepter?: UserUpdateOneWithoutReferralsAcceptedNestedInput
     rejecter?: UserUpdateOneWithoutReferralsRejectedNestedInput
@@ -30779,6 +32971,8 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -30797,6 +32991,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -30827,6 +33023,8 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -31284,6 +33482,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutChatMessagesInput
     sender: UserCreateNestedOneWithoutChatMessagesSentInput
     recipient?: UserCreateNestedOneWithoutChatMessagesReceivedInput
+    department?: DepartmentCreateNestedOneWithoutChatMessagesInput
+    recipientDepartment?: DepartmentCreateNestedOneWithoutRecipientChatMessagesInput
   }
 
   export type AgencyChatMessageUncheckedCreateInput = {
@@ -31291,6 +33491,8 @@ export namespace Prisma {
     tenantId: string
     senderId: string
     recipientId?: string | null
+    departmentId?: string | null
+    recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
   }
@@ -31302,6 +33504,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutChatMessagesNestedInput
     sender?: UserUpdateOneRequiredWithoutChatMessagesSentNestedInput
     recipient?: UserUpdateOneWithoutChatMessagesReceivedNestedInput
+    department?: DepartmentUpdateOneWithoutChatMessagesNestedInput
+    recipientDepartment?: DepartmentUpdateOneWithoutRecipientChatMessagesNestedInput
   }
 
   export type AgencyChatMessageUncheckedUpdateInput = {
@@ -31309,6 +33513,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
     recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31318,6 +33524,8 @@ export namespace Prisma {
     tenantId: string
     senderId: string
     recipientId?: string | null
+    departmentId?: string | null
+    recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
   }
@@ -31333,6 +33541,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
     recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31378,45 +33588,10 @@ export namespace Prisma {
     mode?: QueryMode
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type BoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type UuidNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -31430,27 +33605,15 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
+  export type TenantScalarRelationFilter = {
+    is?: TenantWhereInput
+    isNot?: TenantWhereInput
   }
 
   export type UserListRelationFilter = {
     every?: UserWhereInput
     some?: UserWhereInput
     none?: UserWhereInput
-  }
-
-  export type RoleListRelationFilter = {
-    every?: RoleWhereInput
-    some?: RoleWhereInput
-    none?: RoleWhereInput
-  }
-
-  export type WorkflowListRelationFilter = {
-    every?: WorkflowWhereInput
-    some?: WorkflowWhereInput
-    none?: WorkflowWhereInput
   }
 
   export type CaseListRelationFilter = {
@@ -31465,34 +33628,10 @@ export namespace Prisma {
     none?: CaseReferralWhereInput
   }
 
-  export type CaseAttachmentListRelationFilter = {
-    every?: CaseAttachmentWhereInput
-    some?: CaseAttachmentWhereInput
-    none?: CaseAttachmentWhereInput
-  }
-
-  export type AuditLogListRelationFilter = {
-    every?: AuditLogWhereInput
-    some?: AuditLogWhereInput
-    none?: AuditLogWhereInput
-  }
-
-  export type WebhookListRelationFilter = {
-    every?: WebhookWhereInput
-    some?: WebhookWhereInput
-    none?: WebhookWhereInput
-  }
-
-  export type IntegrationListRelationFilter = {
-    every?: IntegrationWhereInput
-    some?: IntegrationWhereInput
-    none?: IntegrationWhereInput
-  }
-
-  export type CaseSequenceListRelationFilter = {
-    every?: CaseSequenceWhereInput
-    some?: CaseSequenceWhereInput
-    none?: CaseSequenceWhereInput
+  export type WorkflowListRelationFilter = {
+    every?: WorkflowWhereInput
+    some?: WorkflowWhereInput
+    none?: WorkflowWhereInput
   }
 
   export type AgencyChatMessageListRelationFilter = {
@@ -31510,14 +33649,6 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type RoleOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type WorkflowOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type CaseOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -31526,23 +33657,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type CaseAttachmentOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type AuditLogOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type WebhookOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type IntegrationOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type CaseSequenceOrderByRelationAggregateInput = {
+  export type WorkflowOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -31550,36 +33665,45 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type TenantCountOrderByAggregateInput = {
+  export type DepartmentTenantIdCodeCompoundUniqueInput = {
+    tenantId: string
+    code: string
+  }
+
+  export type DepartmentTenantIdNameCompoundUniqueInput = {
+    tenantId: string
+    name: string
+  }
+
+  export type DepartmentCountOrderByAggregateInput = {
     id?: SortOrder
-    name?: SortOrder
+    tenantId?: SortOrder
     code?: SortOrder
+    name?: SortOrder
     description?: SortOrder
-    config?: SortOrder
     isActive?: SortOrder
-    registeredByUserId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
-  export type TenantMaxOrderByAggregateInput = {
+  export type DepartmentMaxOrderByAggregateInput = {
     id?: SortOrder
-    name?: SortOrder
+    tenantId?: SortOrder
     code?: SortOrder
+    name?: SortOrder
     description?: SortOrder
     isActive?: SortOrder
-    registeredByUserId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
-  export type TenantMinOrderByAggregateInput = {
+  export type DepartmentMinOrderByAggregateInput = {
     id?: SortOrder
-    name?: SortOrder
+    tenantId?: SortOrder
     code?: SortOrder
+    name?: SortOrder
     description?: SortOrder
     isActive?: SortOrder
-    registeredByUserId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31634,6 +33758,172 @@ export namespace Prisma {
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type UuidNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type DepartmentListRelationFilter = {
+    every?: DepartmentWhereInput
+    some?: DepartmentWhereInput
+    none?: DepartmentWhereInput
+  }
+
+  export type RoleListRelationFilter = {
+    every?: RoleWhereInput
+    some?: RoleWhereInput
+    none?: RoleWhereInput
+  }
+
+  export type CaseAttachmentListRelationFilter = {
+    every?: CaseAttachmentWhereInput
+    some?: CaseAttachmentWhereInput
+    none?: CaseAttachmentWhereInput
+  }
+
+  export type AuditLogListRelationFilter = {
+    every?: AuditLogWhereInput
+    some?: AuditLogWhereInput
+    none?: AuditLogWhereInput
+  }
+
+  export type WebhookListRelationFilter = {
+    every?: WebhookWhereInput
+    some?: WebhookWhereInput
+    none?: WebhookWhereInput
+  }
+
+  export type IntegrationListRelationFilter = {
+    every?: IntegrationWhereInput
+    some?: IntegrationWhereInput
+    none?: IntegrationWhereInput
+  }
+
+  export type CaseSequenceListRelationFilter = {
+    every?: CaseSequenceWhereInput
+    some?: CaseSequenceWhereInput
+    none?: CaseSequenceWhereInput
+  }
+
+  export type DepartmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type RoleOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CaseAttachmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AuditLogOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WebhookOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type IntegrationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CaseSequenceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TenantCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    description?: SortOrder
+    config?: SortOrder
+    isActive?: SortOrder
+    registeredByUserId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TenantMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    description?: SortOrder
+    isActive?: SortOrder
+    registeredByUserId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TenantMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    description?: SortOrder
+    isActive?: SortOrder
+    registeredByUserId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
@@ -31661,14 +33951,6 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
   export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -31684,20 +33966,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -31709,9 +33977,9 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
-  export type TenantScalarRelationFilter = {
-    is?: TenantWhereInput
-    isNot?: TenantWhereInput
+  export type DepartmentNullableScalarRelationFilter = {
+    is?: DepartmentWhereInput | null
+    isNot?: DepartmentWhereInput | null
   }
 
   export type AssignmentListRelationFilter = {
@@ -31767,6 +34035,7 @@ export namespace Prisma {
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrder
     email?: SortOrder
     username?: SortOrder
     passwordHash?: SortOrder
@@ -31789,6 +34058,7 @@ export namespace Prisma {
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrder
     email?: SortOrder
     username?: SortOrder
     passwordHash?: SortOrder
@@ -31811,6 +34081,7 @@ export namespace Prisma {
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrder
     email?: SortOrder
     username?: SortOrder
     passwordHash?: SortOrder
@@ -32049,6 +34320,7 @@ export namespace Prisma {
   export type WorkflowCountOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrder
     key?: SortOrder
     name?: SortOrder
     description?: SortOrder
@@ -32070,6 +34342,7 @@ export namespace Prisma {
   export type WorkflowMaxOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrder
     key?: SortOrder
     name?: SortOrder
     description?: SortOrder
@@ -32086,6 +34359,7 @@ export namespace Prisma {
   export type WorkflowMinOrderByAggregateInput = {
     id?: SortOrder
     tenantId?: SortOrder
+    departmentId?: SortOrder
     key?: SortOrder
     name?: SortOrder
     description?: SortOrder
@@ -32308,6 +34582,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     originatingTenantId?: SortOrder
     currentTenantId?: SortOrder
+    originatingDepartmentId?: SortOrder
+    currentDepartmentId?: SortOrder
     referralStatus?: SortOrder
     workflowId?: SortOrder
     workflowVersion?: SortOrder
@@ -32339,6 +34615,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     originatingTenantId?: SortOrder
     currentTenantId?: SortOrder
+    originatingDepartmentId?: SortOrder
+    currentDepartmentId?: SortOrder
     referralStatus?: SortOrder
     workflowId?: SortOrder
     workflowVersion?: SortOrder
@@ -32364,6 +34642,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     originatingTenantId?: SortOrder
     currentTenantId?: SortOrder
+    originatingDepartmentId?: SortOrder
+    currentDepartmentId?: SortOrder
     referralStatus?: SortOrder
     workflowId?: SortOrder
     workflowVersion?: SortOrder
@@ -32511,6 +34791,8 @@ export namespace Prisma {
     caseId?: SortOrder
     fromTenantId?: SortOrder
     toTenantId?: SortOrder
+    fromDepartmentId?: SortOrder
+    toDepartmentId?: SortOrder
     referralReason?: SortOrder
     notes?: SortOrder
     status?: SortOrder
@@ -32529,6 +34811,8 @@ export namespace Prisma {
     caseId?: SortOrder
     fromTenantId?: SortOrder
     toTenantId?: SortOrder
+    fromDepartmentId?: SortOrder
+    toDepartmentId?: SortOrder
     referralReason?: SortOrder
     notes?: SortOrder
     status?: SortOrder
@@ -32546,6 +34830,8 @@ export namespace Prisma {
     caseId?: SortOrder
     fromTenantId?: SortOrder
     toTenantId?: SortOrder
+    fromDepartmentId?: SortOrder
+    toDepartmentId?: SortOrder
     referralReason?: SortOrder
     notes?: SortOrder
     status?: SortOrder
@@ -32810,6 +35096,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     senderId?: SortOrder
     recipientId?: SortOrder
+    departmentId?: SortOrder
+    recipientDepartmentId?: SortOrder
     body?: SortOrder
     createdAt?: SortOrder
   }
@@ -32819,6 +35107,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     senderId?: SortOrder
     recipientId?: SortOrder
+    departmentId?: SortOrder
+    recipientDepartmentId?: SortOrder
     body?: SortOrder
     createdAt?: SortOrder
   }
@@ -32828,8 +35118,376 @@ export namespace Prisma {
     tenantId?: SortOrder
     senderId?: SortOrder
     recipientId?: SortOrder
+    departmentId?: SortOrder
+    recipientDepartmentId?: SortOrder
     body?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type TenantCreateNestedOneWithoutDepartmentsInput = {
+    create?: XOR<TenantCreateWithoutDepartmentsInput, TenantUncheckedCreateWithoutDepartmentsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutDepartmentsInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type UserCreateNestedManyWithoutDepartmentInput = {
+    create?: XOR<UserCreateWithoutDepartmentInput, UserUncheckedCreateWithoutDepartmentInput> | UserCreateWithoutDepartmentInput[] | UserUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutDepartmentInput | UserCreateOrConnectWithoutDepartmentInput[]
+    createMany?: UserCreateManyDepartmentInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type CaseCreateNestedManyWithoutOriginatingDepartmentInput = {
+    create?: XOR<CaseCreateWithoutOriginatingDepartmentInput, CaseUncheckedCreateWithoutOriginatingDepartmentInput> | CaseCreateWithoutOriginatingDepartmentInput[] | CaseUncheckedCreateWithoutOriginatingDepartmentInput[]
+    connectOrCreate?: CaseCreateOrConnectWithoutOriginatingDepartmentInput | CaseCreateOrConnectWithoutOriginatingDepartmentInput[]
+    createMany?: CaseCreateManyOriginatingDepartmentInputEnvelope
+    connect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+  }
+
+  export type CaseCreateNestedManyWithoutCurrentDepartmentInput = {
+    create?: XOR<CaseCreateWithoutCurrentDepartmentInput, CaseUncheckedCreateWithoutCurrentDepartmentInput> | CaseCreateWithoutCurrentDepartmentInput[] | CaseUncheckedCreateWithoutCurrentDepartmentInput[]
+    connectOrCreate?: CaseCreateOrConnectWithoutCurrentDepartmentInput | CaseCreateOrConnectWithoutCurrentDepartmentInput[]
+    createMany?: CaseCreateManyCurrentDepartmentInputEnvelope
+    connect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+  }
+
+  export type CaseReferralCreateNestedManyWithoutFromDepartmentInput = {
+    create?: XOR<CaseReferralCreateWithoutFromDepartmentInput, CaseReferralUncheckedCreateWithoutFromDepartmentInput> | CaseReferralCreateWithoutFromDepartmentInput[] | CaseReferralUncheckedCreateWithoutFromDepartmentInput[]
+    connectOrCreate?: CaseReferralCreateOrConnectWithoutFromDepartmentInput | CaseReferralCreateOrConnectWithoutFromDepartmentInput[]
+    createMany?: CaseReferralCreateManyFromDepartmentInputEnvelope
+    connect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+  }
+
+  export type CaseReferralCreateNestedManyWithoutToDepartmentInput = {
+    create?: XOR<CaseReferralCreateWithoutToDepartmentInput, CaseReferralUncheckedCreateWithoutToDepartmentInput> | CaseReferralCreateWithoutToDepartmentInput[] | CaseReferralUncheckedCreateWithoutToDepartmentInput[]
+    connectOrCreate?: CaseReferralCreateOrConnectWithoutToDepartmentInput | CaseReferralCreateOrConnectWithoutToDepartmentInput[]
+    createMany?: CaseReferralCreateManyToDepartmentInputEnvelope
+    connect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+  }
+
+  export type WorkflowCreateNestedManyWithoutDepartmentInput = {
+    create?: XOR<WorkflowCreateWithoutDepartmentInput, WorkflowUncheckedCreateWithoutDepartmentInput> | WorkflowCreateWithoutDepartmentInput[] | WorkflowUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: WorkflowCreateOrConnectWithoutDepartmentInput | WorkflowCreateOrConnectWithoutDepartmentInput[]
+    createMany?: WorkflowCreateManyDepartmentInputEnvelope
+    connect?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+  }
+
+  export type AgencyChatMessageCreateNestedManyWithoutDepartmentInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutDepartmentInput, AgencyChatMessageUncheckedCreateWithoutDepartmentInput> | AgencyChatMessageCreateWithoutDepartmentInput[] | AgencyChatMessageUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutDepartmentInput | AgencyChatMessageCreateOrConnectWithoutDepartmentInput[]
+    createMany?: AgencyChatMessageCreateManyDepartmentInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
+  export type AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutRecipientDepartmentInput, AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput> | AgencyChatMessageCreateWithoutRecipientDepartmentInput[] | AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput | AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput[]
+    createMany?: AgencyChatMessageCreateManyRecipientDepartmentInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutDepartmentInput = {
+    create?: XOR<UserCreateWithoutDepartmentInput, UserUncheckedCreateWithoutDepartmentInput> | UserCreateWithoutDepartmentInput[] | UserUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutDepartmentInput | UserCreateOrConnectWithoutDepartmentInput[]
+    createMany?: UserCreateManyDepartmentInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput = {
+    create?: XOR<CaseCreateWithoutOriginatingDepartmentInput, CaseUncheckedCreateWithoutOriginatingDepartmentInput> | CaseCreateWithoutOriginatingDepartmentInput[] | CaseUncheckedCreateWithoutOriginatingDepartmentInput[]
+    connectOrCreate?: CaseCreateOrConnectWithoutOriginatingDepartmentInput | CaseCreateOrConnectWithoutOriginatingDepartmentInput[]
+    createMany?: CaseCreateManyOriginatingDepartmentInputEnvelope
+    connect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+  }
+
+  export type CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput = {
+    create?: XOR<CaseCreateWithoutCurrentDepartmentInput, CaseUncheckedCreateWithoutCurrentDepartmentInput> | CaseCreateWithoutCurrentDepartmentInput[] | CaseUncheckedCreateWithoutCurrentDepartmentInput[]
+    connectOrCreate?: CaseCreateOrConnectWithoutCurrentDepartmentInput | CaseCreateOrConnectWithoutCurrentDepartmentInput[]
+    createMany?: CaseCreateManyCurrentDepartmentInputEnvelope
+    connect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+  }
+
+  export type CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput = {
+    create?: XOR<CaseReferralCreateWithoutFromDepartmentInput, CaseReferralUncheckedCreateWithoutFromDepartmentInput> | CaseReferralCreateWithoutFromDepartmentInput[] | CaseReferralUncheckedCreateWithoutFromDepartmentInput[]
+    connectOrCreate?: CaseReferralCreateOrConnectWithoutFromDepartmentInput | CaseReferralCreateOrConnectWithoutFromDepartmentInput[]
+    createMany?: CaseReferralCreateManyFromDepartmentInputEnvelope
+    connect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+  }
+
+  export type CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput = {
+    create?: XOR<CaseReferralCreateWithoutToDepartmentInput, CaseReferralUncheckedCreateWithoutToDepartmentInput> | CaseReferralCreateWithoutToDepartmentInput[] | CaseReferralUncheckedCreateWithoutToDepartmentInput[]
+    connectOrCreate?: CaseReferralCreateOrConnectWithoutToDepartmentInput | CaseReferralCreateOrConnectWithoutToDepartmentInput[]
+    createMany?: CaseReferralCreateManyToDepartmentInputEnvelope
+    connect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+  }
+
+  export type WorkflowUncheckedCreateNestedManyWithoutDepartmentInput = {
+    create?: XOR<WorkflowCreateWithoutDepartmentInput, WorkflowUncheckedCreateWithoutDepartmentInput> | WorkflowCreateWithoutDepartmentInput[] | WorkflowUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: WorkflowCreateOrConnectWithoutDepartmentInput | WorkflowCreateOrConnectWithoutDepartmentInput[]
+    createMany?: WorkflowCreateManyDepartmentInputEnvelope
+    connect?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+  }
+
+  export type AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutDepartmentInput, AgencyChatMessageUncheckedCreateWithoutDepartmentInput> | AgencyChatMessageCreateWithoutDepartmentInput[] | AgencyChatMessageUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutDepartmentInput | AgencyChatMessageCreateOrConnectWithoutDepartmentInput[]
+    createMany?: AgencyChatMessageCreateManyDepartmentInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
+  export type AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutRecipientDepartmentInput, AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput> | AgencyChatMessageCreateWithoutRecipientDepartmentInput[] | AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput | AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput[]
+    createMany?: AgencyChatMessageCreateManyRecipientDepartmentInputEnvelope
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
+  export type StringFieldUpdateOperationsInput = {
+    set?: string
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type DateTimeFieldUpdateOperationsInput = {
+    set?: Date | string
+  }
+
+  export type TenantUpdateOneRequiredWithoutDepartmentsNestedInput = {
+    create?: XOR<TenantCreateWithoutDepartmentsInput, TenantUncheckedCreateWithoutDepartmentsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutDepartmentsInput
+    upsert?: TenantUpsertWithoutDepartmentsInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutDepartmentsInput, TenantUpdateWithoutDepartmentsInput>, TenantUncheckedUpdateWithoutDepartmentsInput>
+  }
+
+  export type UserUpdateManyWithoutDepartmentNestedInput = {
+    create?: XOR<UserCreateWithoutDepartmentInput, UserUncheckedCreateWithoutDepartmentInput> | UserCreateWithoutDepartmentInput[] | UserUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutDepartmentInput | UserCreateOrConnectWithoutDepartmentInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutDepartmentInput | UserUpsertWithWhereUniqueWithoutDepartmentInput[]
+    createMany?: UserCreateManyDepartmentInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutDepartmentInput | UserUpdateWithWhereUniqueWithoutDepartmentInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutDepartmentInput | UserUpdateManyWithWhereWithoutDepartmentInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type CaseUpdateManyWithoutOriginatingDepartmentNestedInput = {
+    create?: XOR<CaseCreateWithoutOriginatingDepartmentInput, CaseUncheckedCreateWithoutOriginatingDepartmentInput> | CaseCreateWithoutOriginatingDepartmentInput[] | CaseUncheckedCreateWithoutOriginatingDepartmentInput[]
+    connectOrCreate?: CaseCreateOrConnectWithoutOriginatingDepartmentInput | CaseCreateOrConnectWithoutOriginatingDepartmentInput[]
+    upsert?: CaseUpsertWithWhereUniqueWithoutOriginatingDepartmentInput | CaseUpsertWithWhereUniqueWithoutOriginatingDepartmentInput[]
+    createMany?: CaseCreateManyOriginatingDepartmentInputEnvelope
+    set?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    disconnect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    delete?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    connect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    update?: CaseUpdateWithWhereUniqueWithoutOriginatingDepartmentInput | CaseUpdateWithWhereUniqueWithoutOriginatingDepartmentInput[]
+    updateMany?: CaseUpdateManyWithWhereWithoutOriginatingDepartmentInput | CaseUpdateManyWithWhereWithoutOriginatingDepartmentInput[]
+    deleteMany?: CaseScalarWhereInput | CaseScalarWhereInput[]
+  }
+
+  export type CaseUpdateManyWithoutCurrentDepartmentNestedInput = {
+    create?: XOR<CaseCreateWithoutCurrentDepartmentInput, CaseUncheckedCreateWithoutCurrentDepartmentInput> | CaseCreateWithoutCurrentDepartmentInput[] | CaseUncheckedCreateWithoutCurrentDepartmentInput[]
+    connectOrCreate?: CaseCreateOrConnectWithoutCurrentDepartmentInput | CaseCreateOrConnectWithoutCurrentDepartmentInput[]
+    upsert?: CaseUpsertWithWhereUniqueWithoutCurrentDepartmentInput | CaseUpsertWithWhereUniqueWithoutCurrentDepartmentInput[]
+    createMany?: CaseCreateManyCurrentDepartmentInputEnvelope
+    set?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    disconnect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    delete?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    connect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    update?: CaseUpdateWithWhereUniqueWithoutCurrentDepartmentInput | CaseUpdateWithWhereUniqueWithoutCurrentDepartmentInput[]
+    updateMany?: CaseUpdateManyWithWhereWithoutCurrentDepartmentInput | CaseUpdateManyWithWhereWithoutCurrentDepartmentInput[]
+    deleteMany?: CaseScalarWhereInput | CaseScalarWhereInput[]
+  }
+
+  export type CaseReferralUpdateManyWithoutFromDepartmentNestedInput = {
+    create?: XOR<CaseReferralCreateWithoutFromDepartmentInput, CaseReferralUncheckedCreateWithoutFromDepartmentInput> | CaseReferralCreateWithoutFromDepartmentInput[] | CaseReferralUncheckedCreateWithoutFromDepartmentInput[]
+    connectOrCreate?: CaseReferralCreateOrConnectWithoutFromDepartmentInput | CaseReferralCreateOrConnectWithoutFromDepartmentInput[]
+    upsert?: CaseReferralUpsertWithWhereUniqueWithoutFromDepartmentInput | CaseReferralUpsertWithWhereUniqueWithoutFromDepartmentInput[]
+    createMany?: CaseReferralCreateManyFromDepartmentInputEnvelope
+    set?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    disconnect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    delete?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    connect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    update?: CaseReferralUpdateWithWhereUniqueWithoutFromDepartmentInput | CaseReferralUpdateWithWhereUniqueWithoutFromDepartmentInput[]
+    updateMany?: CaseReferralUpdateManyWithWhereWithoutFromDepartmentInput | CaseReferralUpdateManyWithWhereWithoutFromDepartmentInput[]
+    deleteMany?: CaseReferralScalarWhereInput | CaseReferralScalarWhereInput[]
+  }
+
+  export type CaseReferralUpdateManyWithoutToDepartmentNestedInput = {
+    create?: XOR<CaseReferralCreateWithoutToDepartmentInput, CaseReferralUncheckedCreateWithoutToDepartmentInput> | CaseReferralCreateWithoutToDepartmentInput[] | CaseReferralUncheckedCreateWithoutToDepartmentInput[]
+    connectOrCreate?: CaseReferralCreateOrConnectWithoutToDepartmentInput | CaseReferralCreateOrConnectWithoutToDepartmentInput[]
+    upsert?: CaseReferralUpsertWithWhereUniqueWithoutToDepartmentInput | CaseReferralUpsertWithWhereUniqueWithoutToDepartmentInput[]
+    createMany?: CaseReferralCreateManyToDepartmentInputEnvelope
+    set?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    disconnect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    delete?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    connect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    update?: CaseReferralUpdateWithWhereUniqueWithoutToDepartmentInput | CaseReferralUpdateWithWhereUniqueWithoutToDepartmentInput[]
+    updateMany?: CaseReferralUpdateManyWithWhereWithoutToDepartmentInput | CaseReferralUpdateManyWithWhereWithoutToDepartmentInput[]
+    deleteMany?: CaseReferralScalarWhereInput | CaseReferralScalarWhereInput[]
+  }
+
+  export type WorkflowUpdateManyWithoutDepartmentNestedInput = {
+    create?: XOR<WorkflowCreateWithoutDepartmentInput, WorkflowUncheckedCreateWithoutDepartmentInput> | WorkflowCreateWithoutDepartmentInput[] | WorkflowUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: WorkflowCreateOrConnectWithoutDepartmentInput | WorkflowCreateOrConnectWithoutDepartmentInput[]
+    upsert?: WorkflowUpsertWithWhereUniqueWithoutDepartmentInput | WorkflowUpsertWithWhereUniqueWithoutDepartmentInput[]
+    createMany?: WorkflowCreateManyDepartmentInputEnvelope
+    set?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+    disconnect?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+    delete?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+    connect?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+    update?: WorkflowUpdateWithWhereUniqueWithoutDepartmentInput | WorkflowUpdateWithWhereUniqueWithoutDepartmentInput[]
+    updateMany?: WorkflowUpdateManyWithWhereWithoutDepartmentInput | WorkflowUpdateManyWithWhereWithoutDepartmentInput[]
+    deleteMany?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
+  }
+
+  export type AgencyChatMessageUpdateManyWithoutDepartmentNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutDepartmentInput, AgencyChatMessageUncheckedCreateWithoutDepartmentInput> | AgencyChatMessageCreateWithoutDepartmentInput[] | AgencyChatMessageUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutDepartmentInput | AgencyChatMessageCreateOrConnectWithoutDepartmentInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutDepartmentInput | AgencyChatMessageUpsertWithWhereUniqueWithoutDepartmentInput[]
+    createMany?: AgencyChatMessageCreateManyDepartmentInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutDepartmentInput | AgencyChatMessageUpdateWithWhereUniqueWithoutDepartmentInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutDepartmentInput | AgencyChatMessageUpdateManyWithWhereWithoutDepartmentInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
+  export type AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutRecipientDepartmentInput, AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput> | AgencyChatMessageCreateWithoutRecipientDepartmentInput[] | AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput | AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientDepartmentInput | AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientDepartmentInput[]
+    createMany?: AgencyChatMessageCreateManyRecipientDepartmentInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientDepartmentInput | AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientDepartmentInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutRecipientDepartmentInput | AgencyChatMessageUpdateManyWithWhereWithoutRecipientDepartmentInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
+  export type UserUncheckedUpdateManyWithoutDepartmentNestedInput = {
+    create?: XOR<UserCreateWithoutDepartmentInput, UserUncheckedCreateWithoutDepartmentInput> | UserCreateWithoutDepartmentInput[] | UserUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutDepartmentInput | UserCreateOrConnectWithoutDepartmentInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutDepartmentInput | UserUpsertWithWhereUniqueWithoutDepartmentInput[]
+    createMany?: UserCreateManyDepartmentInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutDepartmentInput | UserUpdateWithWhereUniqueWithoutDepartmentInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutDepartmentInput | UserUpdateManyWithWhereWithoutDepartmentInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput = {
+    create?: XOR<CaseCreateWithoutOriginatingDepartmentInput, CaseUncheckedCreateWithoutOriginatingDepartmentInput> | CaseCreateWithoutOriginatingDepartmentInput[] | CaseUncheckedCreateWithoutOriginatingDepartmentInput[]
+    connectOrCreate?: CaseCreateOrConnectWithoutOriginatingDepartmentInput | CaseCreateOrConnectWithoutOriginatingDepartmentInput[]
+    upsert?: CaseUpsertWithWhereUniqueWithoutOriginatingDepartmentInput | CaseUpsertWithWhereUniqueWithoutOriginatingDepartmentInput[]
+    createMany?: CaseCreateManyOriginatingDepartmentInputEnvelope
+    set?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    disconnect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    delete?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    connect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    update?: CaseUpdateWithWhereUniqueWithoutOriginatingDepartmentInput | CaseUpdateWithWhereUniqueWithoutOriginatingDepartmentInput[]
+    updateMany?: CaseUpdateManyWithWhereWithoutOriginatingDepartmentInput | CaseUpdateManyWithWhereWithoutOriginatingDepartmentInput[]
+    deleteMany?: CaseScalarWhereInput | CaseScalarWhereInput[]
+  }
+
+  export type CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput = {
+    create?: XOR<CaseCreateWithoutCurrentDepartmentInput, CaseUncheckedCreateWithoutCurrentDepartmentInput> | CaseCreateWithoutCurrentDepartmentInput[] | CaseUncheckedCreateWithoutCurrentDepartmentInput[]
+    connectOrCreate?: CaseCreateOrConnectWithoutCurrentDepartmentInput | CaseCreateOrConnectWithoutCurrentDepartmentInput[]
+    upsert?: CaseUpsertWithWhereUniqueWithoutCurrentDepartmentInput | CaseUpsertWithWhereUniqueWithoutCurrentDepartmentInput[]
+    createMany?: CaseCreateManyCurrentDepartmentInputEnvelope
+    set?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    disconnect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    delete?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    connect?: CaseWhereUniqueInput | CaseWhereUniqueInput[]
+    update?: CaseUpdateWithWhereUniqueWithoutCurrentDepartmentInput | CaseUpdateWithWhereUniqueWithoutCurrentDepartmentInput[]
+    updateMany?: CaseUpdateManyWithWhereWithoutCurrentDepartmentInput | CaseUpdateManyWithWhereWithoutCurrentDepartmentInput[]
+    deleteMany?: CaseScalarWhereInput | CaseScalarWhereInput[]
+  }
+
+  export type CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput = {
+    create?: XOR<CaseReferralCreateWithoutFromDepartmentInput, CaseReferralUncheckedCreateWithoutFromDepartmentInput> | CaseReferralCreateWithoutFromDepartmentInput[] | CaseReferralUncheckedCreateWithoutFromDepartmentInput[]
+    connectOrCreate?: CaseReferralCreateOrConnectWithoutFromDepartmentInput | CaseReferralCreateOrConnectWithoutFromDepartmentInput[]
+    upsert?: CaseReferralUpsertWithWhereUniqueWithoutFromDepartmentInput | CaseReferralUpsertWithWhereUniqueWithoutFromDepartmentInput[]
+    createMany?: CaseReferralCreateManyFromDepartmentInputEnvelope
+    set?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    disconnect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    delete?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    connect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    update?: CaseReferralUpdateWithWhereUniqueWithoutFromDepartmentInput | CaseReferralUpdateWithWhereUniqueWithoutFromDepartmentInput[]
+    updateMany?: CaseReferralUpdateManyWithWhereWithoutFromDepartmentInput | CaseReferralUpdateManyWithWhereWithoutFromDepartmentInput[]
+    deleteMany?: CaseReferralScalarWhereInput | CaseReferralScalarWhereInput[]
+  }
+
+  export type CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput = {
+    create?: XOR<CaseReferralCreateWithoutToDepartmentInput, CaseReferralUncheckedCreateWithoutToDepartmentInput> | CaseReferralCreateWithoutToDepartmentInput[] | CaseReferralUncheckedCreateWithoutToDepartmentInput[]
+    connectOrCreate?: CaseReferralCreateOrConnectWithoutToDepartmentInput | CaseReferralCreateOrConnectWithoutToDepartmentInput[]
+    upsert?: CaseReferralUpsertWithWhereUniqueWithoutToDepartmentInput | CaseReferralUpsertWithWhereUniqueWithoutToDepartmentInput[]
+    createMany?: CaseReferralCreateManyToDepartmentInputEnvelope
+    set?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    disconnect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    delete?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    connect?: CaseReferralWhereUniqueInput | CaseReferralWhereUniqueInput[]
+    update?: CaseReferralUpdateWithWhereUniqueWithoutToDepartmentInput | CaseReferralUpdateWithWhereUniqueWithoutToDepartmentInput[]
+    updateMany?: CaseReferralUpdateManyWithWhereWithoutToDepartmentInput | CaseReferralUpdateManyWithWhereWithoutToDepartmentInput[]
+    deleteMany?: CaseReferralScalarWhereInput | CaseReferralScalarWhereInput[]
+  }
+
+  export type WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput = {
+    create?: XOR<WorkflowCreateWithoutDepartmentInput, WorkflowUncheckedCreateWithoutDepartmentInput> | WorkflowCreateWithoutDepartmentInput[] | WorkflowUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: WorkflowCreateOrConnectWithoutDepartmentInput | WorkflowCreateOrConnectWithoutDepartmentInput[]
+    upsert?: WorkflowUpsertWithWhereUniqueWithoutDepartmentInput | WorkflowUpsertWithWhereUniqueWithoutDepartmentInput[]
+    createMany?: WorkflowCreateManyDepartmentInputEnvelope
+    set?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+    disconnect?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+    delete?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+    connect?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+    update?: WorkflowUpdateWithWhereUniqueWithoutDepartmentInput | WorkflowUpdateWithWhereUniqueWithoutDepartmentInput[]
+    updateMany?: WorkflowUpdateManyWithWhereWithoutDepartmentInput | WorkflowUpdateManyWithWhereWithoutDepartmentInput[]
+    deleteMany?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutDepartmentInput, AgencyChatMessageUncheckedCreateWithoutDepartmentInput> | AgencyChatMessageCreateWithoutDepartmentInput[] | AgencyChatMessageUncheckedCreateWithoutDepartmentInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutDepartmentInput | AgencyChatMessageCreateOrConnectWithoutDepartmentInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutDepartmentInput | AgencyChatMessageUpsertWithWhereUniqueWithoutDepartmentInput[]
+    createMany?: AgencyChatMessageCreateManyDepartmentInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutDepartmentInput | AgencyChatMessageUpdateWithWhereUniqueWithoutDepartmentInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutDepartmentInput | AgencyChatMessageUpdateManyWithWhereWithoutDepartmentInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput = {
+    create?: XOR<AgencyChatMessageCreateWithoutRecipientDepartmentInput, AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput> | AgencyChatMessageCreateWithoutRecipientDepartmentInput[] | AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput[]
+    connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput | AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput[]
+    upsert?: AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientDepartmentInput | AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientDepartmentInput[]
+    createMany?: AgencyChatMessageCreateManyRecipientDepartmentInputEnvelope
+    set?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    disconnect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    delete?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+    update?: AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientDepartmentInput | AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientDepartmentInput[]
+    updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutRecipientDepartmentInput | AgencyChatMessageUpdateManyWithWhereWithoutRecipientDepartmentInput[]
+    deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutTenantsRegisteredInput = {
@@ -32843,6 +35501,13 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
     createMany?: UserCreateManyTenantInputEnvelope
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type DepartmentCreateNestedManyWithoutTenantInput = {
+    create?: XOR<DepartmentCreateWithoutTenantInput, DepartmentUncheckedCreateWithoutTenantInput> | DepartmentCreateWithoutTenantInput[] | DepartmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DepartmentCreateOrConnectWithoutTenantInput | DepartmentCreateOrConnectWithoutTenantInput[]
+    createMany?: DepartmentCreateManyTenantInputEnvelope
+    connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
   }
 
   export type RoleCreateNestedManyWithoutTenantInput = {
@@ -32950,6 +35615,13 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
+  export type DepartmentUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<DepartmentCreateWithoutTenantInput, DepartmentUncheckedCreateWithoutTenantInput> | DepartmentCreateWithoutTenantInput[] | DepartmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DepartmentCreateOrConnectWithoutTenantInput | DepartmentCreateOrConnectWithoutTenantInput[]
+    createMany?: DepartmentCreateManyTenantInputEnvelope
+    connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+  }
+
   export type RoleUncheckedCreateNestedManyWithoutTenantInput = {
     create?: XOR<RoleCreateWithoutTenantInput, RoleUncheckedCreateWithoutTenantInput> | RoleCreateWithoutTenantInput[] | RoleUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: RoleCreateOrConnectWithoutTenantInput | RoleCreateOrConnectWithoutTenantInput[]
@@ -33048,22 +35720,6 @@ export namespace Prisma {
     connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
   }
 
-  export type StringFieldUpdateOperationsInput = {
-    set?: string
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
-  export type DateTimeFieldUpdateOperationsInput = {
-    set?: Date | string
-  }
-
   export type UserUpdateOneWithoutTenantsRegisteredNestedInput = {
     create?: XOR<UserCreateWithoutTenantsRegisteredInput, UserUncheckedCreateWithoutTenantsRegisteredInput>
     connectOrCreate?: UserCreateOrConnectWithoutTenantsRegisteredInput
@@ -33086,6 +35742,20 @@ export namespace Prisma {
     update?: UserUpdateWithWhereUniqueWithoutTenantInput | UserUpdateWithWhereUniqueWithoutTenantInput[]
     updateMany?: UserUpdateManyWithWhereWithoutTenantInput | UserUpdateManyWithWhereWithoutTenantInput[]
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type DepartmentUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<DepartmentCreateWithoutTenantInput, DepartmentUncheckedCreateWithoutTenantInput> | DepartmentCreateWithoutTenantInput[] | DepartmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DepartmentCreateOrConnectWithoutTenantInput | DepartmentCreateOrConnectWithoutTenantInput[]
+    upsert?: DepartmentUpsertWithWhereUniqueWithoutTenantInput | DepartmentUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: DepartmentCreateManyTenantInputEnvelope
+    set?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    disconnect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    delete?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    update?: DepartmentUpdateWithWhereUniqueWithoutTenantInput | DepartmentUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: DepartmentUpdateManyWithWhereWithoutTenantInput | DepartmentUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
   }
 
   export type RoleUpdateManyWithoutTenantNestedInput = {
@@ -33298,6 +35968,20 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
+  export type DepartmentUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<DepartmentCreateWithoutTenantInput, DepartmentUncheckedCreateWithoutTenantInput> | DepartmentCreateWithoutTenantInput[] | DepartmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: DepartmentCreateOrConnectWithoutTenantInput | DepartmentCreateOrConnectWithoutTenantInput[]
+    upsert?: DepartmentUpsertWithWhereUniqueWithoutTenantInput | DepartmentUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: DepartmentCreateManyTenantInputEnvelope
+    set?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    disconnect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    delete?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    connect?: DepartmentWhereUniqueInput | DepartmentWhereUniqueInput[]
+    update?: DepartmentUpdateWithWhereUniqueWithoutTenantInput | DepartmentUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: DepartmentUpdateManyWithWhereWithoutTenantInput | DepartmentUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+  }
+
   export type RoleUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<RoleCreateWithoutTenantInput, RoleUncheckedCreateWithoutTenantInput> | RoleCreateWithoutTenantInput[] | RoleUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: RoleCreateOrConnectWithoutTenantInput | RoleCreateOrConnectWithoutTenantInput[]
@@ -33498,6 +36182,12 @@ export namespace Prisma {
     create?: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
     connectOrCreate?: TenantCreateOrConnectWithoutUsersInput
     connect?: TenantWhereUniqueInput
+  }
+
+  export type DepartmentCreateNestedOneWithoutUsersInput = {
+    create?: XOR<DepartmentCreateWithoutUsersInput, DepartmentUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutUsersInput
+    connect?: DepartmentWhereUniqueInput
   }
 
   export type CaseCreateNestedManyWithoutCreatorInput = {
@@ -33776,6 +36466,16 @@ export namespace Prisma {
     upsert?: TenantUpsertWithoutUsersInput
     connect?: TenantWhereUniqueInput
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutUsersInput, TenantUpdateWithoutUsersInput>, TenantUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type DepartmentUpdateOneWithoutUsersNestedInput = {
+    create?: XOR<DepartmentCreateWithoutUsersInput, DepartmentUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutUsersInput
+    upsert?: DepartmentUpsertWithoutUsersInput
+    disconnect?: DepartmentWhereInput | boolean
+    delete?: DepartmentWhereInput | boolean
+    connect?: DepartmentWhereUniqueInput
+    update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutUsersInput, DepartmentUpdateWithoutUsersInput>, DepartmentUncheckedUpdateWithoutUsersInput>
   }
 
   export type CaseUpdateManyWithoutCreatorNestedInput = {
@@ -34546,6 +37246,12 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput
   }
 
+  export type DepartmentCreateNestedOneWithoutWorkflowsInput = {
+    create?: XOR<DepartmentCreateWithoutWorkflowsInput, DepartmentUncheckedCreateWithoutWorkflowsInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutWorkflowsInput
+    connect?: DepartmentWhereUniqueInput
+  }
+
   export type UserCreateNestedOneWithoutWorkflowsCreatedInput = {
     create?: XOR<UserCreateWithoutWorkflowsCreatedInput, UserUncheckedCreateWithoutWorkflowsCreatedInput>
     connectOrCreate?: UserCreateOrConnectWithoutWorkflowsCreatedInput
@@ -34612,6 +37318,16 @@ export namespace Prisma {
     upsert?: TenantUpsertWithoutWorkflowsInput
     connect?: TenantWhereUniqueInput
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutWorkflowsInput, TenantUpdateWithoutWorkflowsInput>, TenantUncheckedUpdateWithoutWorkflowsInput>
+  }
+
+  export type DepartmentUpdateOneWithoutWorkflowsNestedInput = {
+    create?: XOR<DepartmentCreateWithoutWorkflowsInput, DepartmentUncheckedCreateWithoutWorkflowsInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutWorkflowsInput
+    upsert?: DepartmentUpsertWithoutWorkflowsInput
+    disconnect?: DepartmentWhereInput | boolean
+    delete?: DepartmentWhereInput | boolean
+    connect?: DepartmentWhereUniqueInput
+    update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutWorkflowsInput, DepartmentUpdateWithoutWorkflowsInput>, DepartmentUncheckedUpdateWithoutWorkflowsInput>
   }
 
   export type UserUpdateOneWithoutWorkflowsCreatedNestedInput = {
@@ -35018,6 +37734,18 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput
   }
 
+  export type DepartmentCreateNestedOneWithoutCasesOriginatingInput = {
+    create?: XOR<DepartmentCreateWithoutCasesOriginatingInput, DepartmentUncheckedCreateWithoutCasesOriginatingInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutCasesOriginatingInput
+    connect?: DepartmentWhereUniqueInput
+  }
+
+  export type DepartmentCreateNestedOneWithoutCasesCurrentInput = {
+    create?: XOR<DepartmentCreateWithoutCasesCurrentInput, DepartmentUncheckedCreateWithoutCasesCurrentInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutCasesCurrentInput
+    connect?: DepartmentWhereUniqueInput
+  }
+
   export type WorkflowCreateNestedOneWithoutCasesInput = {
     create?: XOR<WorkflowCreateWithoutCasesInput, WorkflowUncheckedCreateWithoutCasesInput>
     connectOrCreate?: WorkflowCreateOrConnectWithoutCasesInput
@@ -35124,6 +37852,26 @@ export namespace Prisma {
     delete?: TenantWhereInput | boolean
     connect?: TenantWhereUniqueInput
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutCasesCurrentInput, TenantUpdateWithoutCasesCurrentInput>, TenantUncheckedUpdateWithoutCasesCurrentInput>
+  }
+
+  export type DepartmentUpdateOneWithoutCasesOriginatingNestedInput = {
+    create?: XOR<DepartmentCreateWithoutCasesOriginatingInput, DepartmentUncheckedCreateWithoutCasesOriginatingInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutCasesOriginatingInput
+    upsert?: DepartmentUpsertWithoutCasesOriginatingInput
+    disconnect?: DepartmentWhereInput | boolean
+    delete?: DepartmentWhereInput | boolean
+    connect?: DepartmentWhereUniqueInput
+    update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutCasesOriginatingInput, DepartmentUpdateWithoutCasesOriginatingInput>, DepartmentUncheckedUpdateWithoutCasesOriginatingInput>
+  }
+
+  export type DepartmentUpdateOneWithoutCasesCurrentNestedInput = {
+    create?: XOR<DepartmentCreateWithoutCasesCurrentInput, DepartmentUncheckedCreateWithoutCasesCurrentInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutCasesCurrentInput
+    upsert?: DepartmentUpsertWithoutCasesCurrentInput
+    disconnect?: DepartmentWhereInput | boolean
+    delete?: DepartmentWhereInput | boolean
+    connect?: DepartmentWhereUniqueInput
+    update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutCasesCurrentInput, DepartmentUpdateWithoutCasesCurrentInput>, DepartmentUncheckedUpdateWithoutCasesCurrentInput>
   }
 
   export type WorkflowUpdateOneRequiredWithoutCasesNestedInput = {
@@ -35392,6 +38140,18 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput
   }
 
+  export type DepartmentCreateNestedOneWithoutReferralsFromInput = {
+    create?: XOR<DepartmentCreateWithoutReferralsFromInput, DepartmentUncheckedCreateWithoutReferralsFromInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutReferralsFromInput
+    connect?: DepartmentWhereUniqueInput
+  }
+
+  export type DepartmentCreateNestedOneWithoutReferralsToInput = {
+    create?: XOR<DepartmentCreateWithoutReferralsToInput, DepartmentUncheckedCreateWithoutReferralsToInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutReferralsToInput
+    connect?: DepartmentWhereUniqueInput
+  }
+
   export type UserCreateNestedOneWithoutReferralsMadeInput = {
     create?: XOR<UserCreateWithoutReferralsMadeInput, UserUncheckedCreateWithoutReferralsMadeInput>
     connectOrCreate?: UserCreateOrConnectWithoutReferralsMadeInput
@@ -35432,6 +38192,26 @@ export namespace Prisma {
     upsert?: TenantUpsertWithoutReferralsToInput
     connect?: TenantWhereUniqueInput
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutReferralsToInput, TenantUpdateWithoutReferralsToInput>, TenantUncheckedUpdateWithoutReferralsToInput>
+  }
+
+  export type DepartmentUpdateOneWithoutReferralsFromNestedInput = {
+    create?: XOR<DepartmentCreateWithoutReferralsFromInput, DepartmentUncheckedCreateWithoutReferralsFromInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutReferralsFromInput
+    upsert?: DepartmentUpsertWithoutReferralsFromInput
+    disconnect?: DepartmentWhereInput | boolean
+    delete?: DepartmentWhereInput | boolean
+    connect?: DepartmentWhereUniqueInput
+    update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutReferralsFromInput, DepartmentUpdateWithoutReferralsFromInput>, DepartmentUncheckedUpdateWithoutReferralsFromInput>
+  }
+
+  export type DepartmentUpdateOneWithoutReferralsToNestedInput = {
+    create?: XOR<DepartmentCreateWithoutReferralsToInput, DepartmentUncheckedCreateWithoutReferralsToInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutReferralsToInput
+    upsert?: DepartmentUpsertWithoutReferralsToInput
+    disconnect?: DepartmentWhereInput | boolean
+    delete?: DepartmentWhereInput | boolean
+    connect?: DepartmentWhereUniqueInput
+    update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutReferralsToInput, DepartmentUpdateWithoutReferralsToInput>, DepartmentUncheckedUpdateWithoutReferralsToInput>
   }
 
   export type UserUpdateOneRequiredWithoutReferralsMadeNestedInput = {
@@ -35648,6 +38428,18 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type DepartmentCreateNestedOneWithoutChatMessagesInput = {
+    create?: XOR<DepartmentCreateWithoutChatMessagesInput, DepartmentUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutChatMessagesInput
+    connect?: DepartmentWhereUniqueInput
+  }
+
+  export type DepartmentCreateNestedOneWithoutRecipientChatMessagesInput = {
+    create?: XOR<DepartmentCreateWithoutRecipientChatMessagesInput, DepartmentUncheckedCreateWithoutRecipientChatMessagesInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutRecipientChatMessagesInput
+    connect?: DepartmentWhereUniqueInput
+  }
+
   export type TenantUpdateOneRequiredWithoutChatMessagesNestedInput = {
     create?: XOR<TenantCreateWithoutChatMessagesInput, TenantUncheckedCreateWithoutChatMessagesInput>
     connectOrCreate?: TenantCreateOrConnectWithoutChatMessagesInput
@@ -35672,6 +38464,26 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutChatMessagesReceivedInput, UserUpdateWithoutChatMessagesReceivedInput>, UserUncheckedUpdateWithoutChatMessagesReceivedInput>
+  }
+
+  export type DepartmentUpdateOneWithoutChatMessagesNestedInput = {
+    create?: XOR<DepartmentCreateWithoutChatMessagesInput, DepartmentUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutChatMessagesInput
+    upsert?: DepartmentUpsertWithoutChatMessagesInput
+    disconnect?: DepartmentWhereInput | boolean
+    delete?: DepartmentWhereInput | boolean
+    connect?: DepartmentWhereUniqueInput
+    update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutChatMessagesInput, DepartmentUpdateWithoutChatMessagesInput>, DepartmentUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type DepartmentUpdateOneWithoutRecipientChatMessagesNestedInput = {
+    create?: XOR<DepartmentCreateWithoutRecipientChatMessagesInput, DepartmentUncheckedCreateWithoutRecipientChatMessagesInput>
+    connectOrCreate?: DepartmentCreateOrConnectWithoutRecipientChatMessagesInput
+    upsert?: DepartmentUpsertWithoutRecipientChatMessagesInput
+    disconnect?: DepartmentWhereInput | boolean
+    delete?: DepartmentWhereInput | boolean
+    connect?: DepartmentWhereUniqueInput
+    update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutRecipientChatMessagesInput, DepartmentUpdateWithoutRecipientChatMessagesInput>, DepartmentUncheckedUpdateWithoutRecipientChatMessagesInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -35716,17 +38528,6 @@ export namespace Prisma {
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedUuidNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -35809,6 +38610,39 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedUuidNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
+  }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -35833,14 +38667,6 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
   export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -35853,20 +38679,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
-  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -35988,7 +38800,66 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type UserCreateWithoutTenantsRegisteredInput = {
+  export type TenantCreateWithoutDepartmentsInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    roles?: RoleCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowCreateNestedManyWithoutTenantInput
+    cases?: CaseCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
+    webhooks?: WebhookCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutDepartmentsInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    registeredByUserId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
+    cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutDepartmentsInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutDepartmentsInput, TenantUncheckedCreateWithoutDepartmentsInput>
+  }
+
+  export type UserCreateWithoutDepartmentInput = {
     id?: string
     email: string
     username: string
@@ -36024,6 +38895,762 @@ export namespace Prisma {
     webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
     integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+  }
+
+  export type UserUncheckedCreateWithoutDepartmentInput = {
+    id?: string
+    tenantId: string
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    casesCreated?: CaseUncheckedCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleUncheckedCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowUncheckedCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookUncheckedCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+  }
+
+  export type UserCreateOrConnectWithoutDepartmentInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutDepartmentInput, UserUncheckedCreateWithoutDepartmentInput>
+  }
+
+  export type UserCreateManyDepartmentInputEnvelope = {
+    data: UserCreateManyDepartmentInput | UserCreateManyDepartmentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CaseCreateWithoutOriginatingDepartmentInput = {
+    id?: string
+    referralStatus?: string
+    workflowVersion?: number
+    caseNumber: string
+    closedAt?: Date | string | null
+    title: string
+    description?: string | null
+    type: string
+    priority?: string
+    status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: Date | string | null
+    resolvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    tenant: TenantCreateNestedOneWithoutCasesInput
+    originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
+    currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
+    workflow: WorkflowCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
+    assignee?: UserCreateNestedOneWithoutCasesAssignedInput
+    creator: UserCreateNestedOneWithoutCasesCreatedInput
+    history?: CaseHistoryCreateNestedManyWithoutCaseInput
+    assignments?: AssignmentCreateNestedManyWithoutCaseInput
+    referrals?: CaseReferralCreateNestedManyWithoutCaseInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutCaseInput
+  }
+
+  export type CaseUncheckedCreateWithoutOriginatingDepartmentInput = {
+    id?: string
+    tenantId: string
+    originatingTenantId?: string | null
+    currentTenantId?: string | null
+    currentDepartmentId?: string | null
+    referralStatus?: string
+    workflowId: string
+    workflowVersion?: number
+    caseNumber: string
+    currentStepId?: string | null
+    closedAt?: Date | string | null
+    title: string
+    description?: string | null
+    type: string
+    priority?: string
+    status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    assignedTo?: string | null
+    createdBy: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: Date | string | null
+    resolvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    history?: CaseHistoryUncheckedCreateNestedManyWithoutCaseInput
+    assignments?: AssignmentUncheckedCreateNestedManyWithoutCaseInput
+    referrals?: CaseReferralUncheckedCreateNestedManyWithoutCaseInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutCaseInput
+  }
+
+  export type CaseCreateOrConnectWithoutOriginatingDepartmentInput = {
+    where: CaseWhereUniqueInput
+    create: XOR<CaseCreateWithoutOriginatingDepartmentInput, CaseUncheckedCreateWithoutOriginatingDepartmentInput>
+  }
+
+  export type CaseCreateManyOriginatingDepartmentInputEnvelope = {
+    data: CaseCreateManyOriginatingDepartmentInput | CaseCreateManyOriginatingDepartmentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CaseCreateWithoutCurrentDepartmentInput = {
+    id?: string
+    referralStatus?: string
+    workflowVersion?: number
+    caseNumber: string
+    closedAt?: Date | string | null
+    title: string
+    description?: string | null
+    type: string
+    priority?: string
+    status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: Date | string | null
+    resolvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    tenant: TenantCreateNestedOneWithoutCasesInput
+    originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
+    currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    workflow: WorkflowCreateNestedOneWithoutCasesInput
+    currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
+    assignee?: UserCreateNestedOneWithoutCasesAssignedInput
+    creator: UserCreateNestedOneWithoutCasesCreatedInput
+    history?: CaseHistoryCreateNestedManyWithoutCaseInput
+    assignments?: AssignmentCreateNestedManyWithoutCaseInput
+    referrals?: CaseReferralCreateNestedManyWithoutCaseInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutCaseInput
+  }
+
+  export type CaseUncheckedCreateWithoutCurrentDepartmentInput = {
+    id?: string
+    tenantId: string
+    originatingTenantId?: string | null
+    currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    referralStatus?: string
+    workflowId: string
+    workflowVersion?: number
+    caseNumber: string
+    currentStepId?: string | null
+    closedAt?: Date | string | null
+    title: string
+    description?: string | null
+    type: string
+    priority?: string
+    status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    assignedTo?: string | null
+    createdBy: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: Date | string | null
+    resolvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    history?: CaseHistoryUncheckedCreateNestedManyWithoutCaseInput
+    assignments?: AssignmentUncheckedCreateNestedManyWithoutCaseInput
+    referrals?: CaseReferralUncheckedCreateNestedManyWithoutCaseInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutCaseInput
+  }
+
+  export type CaseCreateOrConnectWithoutCurrentDepartmentInput = {
+    where: CaseWhereUniqueInput
+    create: XOR<CaseCreateWithoutCurrentDepartmentInput, CaseUncheckedCreateWithoutCurrentDepartmentInput>
+  }
+
+  export type CaseCreateManyCurrentDepartmentInputEnvelope = {
+    data: CaseCreateManyCurrentDepartmentInput | CaseCreateManyCurrentDepartmentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CaseReferralCreateWithoutFromDepartmentInput = {
+    id?: string
+    referralReason?: string | null
+    notes?: string | null
+    status?: string
+    referredAt?: Date | string
+    acceptedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    case: CaseCreateNestedOneWithoutReferralsInput
+    fromTenant: TenantCreateNestedOneWithoutReferralsFromInput
+    toTenant: TenantCreateNestedOneWithoutReferralsToInput
+    toDepartment?: DepartmentCreateNestedOneWithoutReferralsToInput
+    referrer: UserCreateNestedOneWithoutReferralsMadeInput
+    accepter?: UserCreateNestedOneWithoutReferralsAcceptedInput
+    rejecter?: UserCreateNestedOneWithoutReferralsRejectedInput
+  }
+
+  export type CaseReferralUncheckedCreateWithoutFromDepartmentInput = {
+    id?: string
+    caseId: string
+    fromTenantId: string
+    toTenantId: string
+    toDepartmentId?: string | null
+    referralReason?: string | null
+    notes?: string | null
+    status?: string
+    referredBy: string
+    acceptedBy?: string | null
+    rejectedBy?: string | null
+    referredAt?: Date | string
+    acceptedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type CaseReferralCreateOrConnectWithoutFromDepartmentInput = {
+    where: CaseReferralWhereUniqueInput
+    create: XOR<CaseReferralCreateWithoutFromDepartmentInput, CaseReferralUncheckedCreateWithoutFromDepartmentInput>
+  }
+
+  export type CaseReferralCreateManyFromDepartmentInputEnvelope = {
+    data: CaseReferralCreateManyFromDepartmentInput | CaseReferralCreateManyFromDepartmentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CaseReferralCreateWithoutToDepartmentInput = {
+    id?: string
+    referralReason?: string | null
+    notes?: string | null
+    status?: string
+    referredAt?: Date | string
+    acceptedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    case: CaseCreateNestedOneWithoutReferralsInput
+    fromTenant: TenantCreateNestedOneWithoutReferralsFromInput
+    toTenant: TenantCreateNestedOneWithoutReferralsToInput
+    fromDepartment?: DepartmentCreateNestedOneWithoutReferralsFromInput
+    referrer: UserCreateNestedOneWithoutReferralsMadeInput
+    accepter?: UserCreateNestedOneWithoutReferralsAcceptedInput
+    rejecter?: UserCreateNestedOneWithoutReferralsRejectedInput
+  }
+
+  export type CaseReferralUncheckedCreateWithoutToDepartmentInput = {
+    id?: string
+    caseId: string
+    fromTenantId: string
+    toTenantId: string
+    fromDepartmentId?: string | null
+    referralReason?: string | null
+    notes?: string | null
+    status?: string
+    referredBy: string
+    acceptedBy?: string | null
+    rejectedBy?: string | null
+    referredAt?: Date | string
+    acceptedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type CaseReferralCreateOrConnectWithoutToDepartmentInput = {
+    where: CaseReferralWhereUniqueInput
+    create: XOR<CaseReferralCreateWithoutToDepartmentInput, CaseReferralUncheckedCreateWithoutToDepartmentInput>
+  }
+
+  export type CaseReferralCreateManyToDepartmentInputEnvelope = {
+    data: CaseReferralCreateManyToDepartmentInput | CaseReferralCreateManyToDepartmentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkflowCreateWithoutDepartmentInput = {
+    id?: string
+    key: string
+    name: string
+    description?: string | null
+    definition?: NullableJsonNullValueInput | InputJsonValue
+    version?: number
+    status?: $Enums.WorkflowStatus
+    publishedAt?: Date | string | null
+    isActive?: boolean
+    isDefault?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutWorkflowsInput
+    creator?: UserCreateNestedOneWithoutWorkflowsCreatedInput
+    cases?: CaseCreateNestedManyWithoutWorkflowInput
+    steps?: WorkflowStepCreateNestedManyWithoutWorkflowInput
+    transitions?: WorkflowTransitionCreateNestedManyWithoutWorkflowInput
+  }
+
+  export type WorkflowUncheckedCreateWithoutDepartmentInput = {
+    id?: string
+    tenantId: string
+    key: string
+    name: string
+    description?: string | null
+    definition?: NullableJsonNullValueInput | InputJsonValue
+    version?: number
+    status?: $Enums.WorkflowStatus
+    publishedAt?: Date | string | null
+    isActive?: boolean
+    isDefault?: boolean
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    cases?: CaseUncheckedCreateNestedManyWithoutWorkflowInput
+    steps?: WorkflowStepUncheckedCreateNestedManyWithoutWorkflowInput
+    transitions?: WorkflowTransitionUncheckedCreateNestedManyWithoutWorkflowInput
+  }
+
+  export type WorkflowCreateOrConnectWithoutDepartmentInput = {
+    where: WorkflowWhereUniqueInput
+    create: XOR<WorkflowCreateWithoutDepartmentInput, WorkflowUncheckedCreateWithoutDepartmentInput>
+  }
+
+  export type WorkflowCreateManyDepartmentInputEnvelope = {
+    data: WorkflowCreateManyDepartmentInput | WorkflowCreateManyDepartmentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AgencyChatMessageCreateWithoutDepartmentInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutChatMessagesInput
+    sender: UserCreateNestedOneWithoutChatMessagesSentInput
+    recipient?: UserCreateNestedOneWithoutChatMessagesReceivedInput
+    recipientDepartment?: DepartmentCreateNestedOneWithoutRecipientChatMessagesInput
+  }
+
+  export type AgencyChatMessageUncheckedCreateWithoutDepartmentInput = {
+    id?: string
+    tenantId: string
+    senderId: string
+    recipientId?: string | null
+    recipientDepartmentId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateOrConnectWithoutDepartmentInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    create: XOR<AgencyChatMessageCreateWithoutDepartmentInput, AgencyChatMessageUncheckedCreateWithoutDepartmentInput>
+  }
+
+  export type AgencyChatMessageCreateManyDepartmentInputEnvelope = {
+    data: AgencyChatMessageCreateManyDepartmentInput | AgencyChatMessageCreateManyDepartmentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AgencyChatMessageCreateWithoutRecipientDepartmentInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutChatMessagesInput
+    sender: UserCreateNestedOneWithoutChatMessagesSentInput
+    recipient?: UserCreateNestedOneWithoutChatMessagesReceivedInput
+    department?: DepartmentCreateNestedOneWithoutChatMessagesInput
+  }
+
+  export type AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput = {
+    id?: string
+    tenantId: string
+    senderId: string
+    recipientId?: string | null
+    departmentId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateOrConnectWithoutRecipientDepartmentInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    create: XOR<AgencyChatMessageCreateWithoutRecipientDepartmentInput, AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput>
+  }
+
+  export type AgencyChatMessageCreateManyRecipientDepartmentInputEnvelope = {
+    data: AgencyChatMessageCreateManyRecipientDepartmentInput | AgencyChatMessageCreateManyRecipientDepartmentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TenantUpsertWithoutDepartmentsInput = {
+    update: XOR<TenantUpdateWithoutDepartmentsInput, TenantUncheckedUpdateWithoutDepartmentsInput>
+    create: XOR<TenantCreateWithoutDepartmentsInput, TenantUncheckedCreateWithoutDepartmentsInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutDepartmentsInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutDepartmentsInput, TenantUncheckedUpdateWithoutDepartmentsInput>
+  }
+
+  export type TenantUpdateWithoutDepartmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    roles?: RoleUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUpdateManyWithoutTenantNestedInput
+    cases?: CaseUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
+    webhooks?: WebhookUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutDepartmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    registeredByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
+    cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type UserUpsertWithWhereUniqueWithoutDepartmentInput = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutDepartmentInput, UserUncheckedUpdateWithoutDepartmentInput>
+    create: XOR<UserCreateWithoutDepartmentInput, UserUncheckedCreateWithoutDepartmentInput>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutDepartmentInput = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutDepartmentInput, UserUncheckedUpdateWithoutDepartmentInput>
+  }
+
+  export type UserUpdateManyWithWhereWithoutDepartmentInput = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutDepartmentInput>
+  }
+
+  export type UserScalarWhereInput = {
+    AND?: UserScalarWhereInput | UserScalarWhereInput[]
+    OR?: UserScalarWhereInput[]
+    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
+    id?: UuidFilter<"User"> | string
+    tenantId?: UuidFilter<"User"> | string
+    departmentId?: UuidNullableFilter<"User"> | string | null
+    email?: StringFilter<"User"> | string
+    username?: StringFilter<"User"> | string
+    passwordHash?: StringFilter<"User"> | string
+    firstName?: StringFilter<"User"> | string
+    lastName?: StringFilter<"User"> | string
+    phone?: StringNullableFilter<"User"> | string | null
+    nationalId?: StringNullableFilter<"User"> | string | null
+    isActive?: BoolFilter<"User"> | boolean
+    isEmailVerified?: BoolFilter<"User"> | boolean
+    mustChangePassword?: BoolFilter<"User"> | boolean
+    resetPasswordToken?: StringNullableFilter<"User"> | string | null
+    resetPasswordExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    emailVerificationToken?: StringNullableFilter<"User"> | string | null
+    emailVerificationExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    lastLogin?: DateTimeNullableFilter<"User"> | Date | string | null
+    createdAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeFilter<"User"> | Date | string
+  }
+
+  export type CaseUpsertWithWhereUniqueWithoutOriginatingDepartmentInput = {
+    where: CaseWhereUniqueInput
+    update: XOR<CaseUpdateWithoutOriginatingDepartmentInput, CaseUncheckedUpdateWithoutOriginatingDepartmentInput>
+    create: XOR<CaseCreateWithoutOriginatingDepartmentInput, CaseUncheckedCreateWithoutOriginatingDepartmentInput>
+  }
+
+  export type CaseUpdateWithWhereUniqueWithoutOriginatingDepartmentInput = {
+    where: CaseWhereUniqueInput
+    data: XOR<CaseUpdateWithoutOriginatingDepartmentInput, CaseUncheckedUpdateWithoutOriginatingDepartmentInput>
+  }
+
+  export type CaseUpdateManyWithWhereWithoutOriginatingDepartmentInput = {
+    where: CaseScalarWhereInput
+    data: XOR<CaseUpdateManyMutationInput, CaseUncheckedUpdateManyWithoutOriginatingDepartmentInput>
+  }
+
+  export type CaseScalarWhereInput = {
+    AND?: CaseScalarWhereInput | CaseScalarWhereInput[]
+    OR?: CaseScalarWhereInput[]
+    NOT?: CaseScalarWhereInput | CaseScalarWhereInput[]
+    id?: UuidFilter<"Case"> | string
+    tenantId?: UuidFilter<"Case"> | string
+    originatingTenantId?: UuidNullableFilter<"Case"> | string | null
+    currentTenantId?: UuidNullableFilter<"Case"> | string | null
+    originatingDepartmentId?: UuidNullableFilter<"Case"> | string | null
+    currentDepartmentId?: UuidNullableFilter<"Case"> | string | null
+    referralStatus?: StringFilter<"Case"> | string
+    workflowId?: UuidFilter<"Case"> | string
+    workflowVersion?: IntFilter<"Case"> | number
+    caseNumber?: StringFilter<"Case"> | string
+    currentStepId?: UuidNullableFilter<"Case"> | string | null
+    closedAt?: DateTimeNullableFilter<"Case"> | Date | string | null
+    title?: StringFilter<"Case"> | string
+    description?: StringNullableFilter<"Case"> | string | null
+    type?: StringFilter<"Case"> | string
+    priority?: StringFilter<"Case"> | string
+    status?: StringFilter<"Case"> | string
+    data?: JsonNullableFilter<"Case">
+    assignedTo?: UuidNullableFilter<"Case"> | string | null
+    createdBy?: UuidFilter<"Case"> | string
+    metadata?: JsonNullableFilter<"Case">
+    dueDate?: DateTimeNullableFilter<"Case"> | Date | string | null
+    resolvedAt?: DateTimeNullableFilter<"Case"> | Date | string | null
+    createdAt?: DateTimeFilter<"Case"> | Date | string
+    updatedAt?: DateTimeFilter<"Case"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"Case"> | Date | string | null
+  }
+
+  export type CaseUpsertWithWhereUniqueWithoutCurrentDepartmentInput = {
+    where: CaseWhereUniqueInput
+    update: XOR<CaseUpdateWithoutCurrentDepartmentInput, CaseUncheckedUpdateWithoutCurrentDepartmentInput>
+    create: XOR<CaseCreateWithoutCurrentDepartmentInput, CaseUncheckedCreateWithoutCurrentDepartmentInput>
+  }
+
+  export type CaseUpdateWithWhereUniqueWithoutCurrentDepartmentInput = {
+    where: CaseWhereUniqueInput
+    data: XOR<CaseUpdateWithoutCurrentDepartmentInput, CaseUncheckedUpdateWithoutCurrentDepartmentInput>
+  }
+
+  export type CaseUpdateManyWithWhereWithoutCurrentDepartmentInput = {
+    where: CaseScalarWhereInput
+    data: XOR<CaseUpdateManyMutationInput, CaseUncheckedUpdateManyWithoutCurrentDepartmentInput>
+  }
+
+  export type CaseReferralUpsertWithWhereUniqueWithoutFromDepartmentInput = {
+    where: CaseReferralWhereUniqueInput
+    update: XOR<CaseReferralUpdateWithoutFromDepartmentInput, CaseReferralUncheckedUpdateWithoutFromDepartmentInput>
+    create: XOR<CaseReferralCreateWithoutFromDepartmentInput, CaseReferralUncheckedCreateWithoutFromDepartmentInput>
+  }
+
+  export type CaseReferralUpdateWithWhereUniqueWithoutFromDepartmentInput = {
+    where: CaseReferralWhereUniqueInput
+    data: XOR<CaseReferralUpdateWithoutFromDepartmentInput, CaseReferralUncheckedUpdateWithoutFromDepartmentInput>
+  }
+
+  export type CaseReferralUpdateManyWithWhereWithoutFromDepartmentInput = {
+    where: CaseReferralScalarWhereInput
+    data: XOR<CaseReferralUpdateManyMutationInput, CaseReferralUncheckedUpdateManyWithoutFromDepartmentInput>
+  }
+
+  export type CaseReferralScalarWhereInput = {
+    AND?: CaseReferralScalarWhereInput | CaseReferralScalarWhereInput[]
+    OR?: CaseReferralScalarWhereInput[]
+    NOT?: CaseReferralScalarWhereInput | CaseReferralScalarWhereInput[]
+    id?: UuidFilter<"CaseReferral"> | string
+    caseId?: UuidFilter<"CaseReferral"> | string
+    fromTenantId?: UuidFilter<"CaseReferral"> | string
+    toTenantId?: UuidFilter<"CaseReferral"> | string
+    fromDepartmentId?: UuidNullableFilter<"CaseReferral"> | string | null
+    toDepartmentId?: UuidNullableFilter<"CaseReferral"> | string | null
+    referralReason?: StringNullableFilter<"CaseReferral"> | string | null
+    notes?: StringNullableFilter<"CaseReferral"> | string | null
+    status?: StringFilter<"CaseReferral"> | string
+    referredBy?: UuidFilter<"CaseReferral"> | string
+    acceptedBy?: UuidNullableFilter<"CaseReferral"> | string | null
+    rejectedBy?: UuidNullableFilter<"CaseReferral"> | string | null
+    referredAt?: DateTimeFilter<"CaseReferral"> | Date | string
+    acceptedAt?: DateTimeNullableFilter<"CaseReferral"> | Date | string | null
+    rejectedAt?: DateTimeNullableFilter<"CaseReferral"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"CaseReferral"> | Date | string | null
+    metadata?: JsonNullableFilter<"CaseReferral">
+  }
+
+  export type CaseReferralUpsertWithWhereUniqueWithoutToDepartmentInput = {
+    where: CaseReferralWhereUniqueInput
+    update: XOR<CaseReferralUpdateWithoutToDepartmentInput, CaseReferralUncheckedUpdateWithoutToDepartmentInput>
+    create: XOR<CaseReferralCreateWithoutToDepartmentInput, CaseReferralUncheckedCreateWithoutToDepartmentInput>
+  }
+
+  export type CaseReferralUpdateWithWhereUniqueWithoutToDepartmentInput = {
+    where: CaseReferralWhereUniqueInput
+    data: XOR<CaseReferralUpdateWithoutToDepartmentInput, CaseReferralUncheckedUpdateWithoutToDepartmentInput>
+  }
+
+  export type CaseReferralUpdateManyWithWhereWithoutToDepartmentInput = {
+    where: CaseReferralScalarWhereInput
+    data: XOR<CaseReferralUpdateManyMutationInput, CaseReferralUncheckedUpdateManyWithoutToDepartmentInput>
+  }
+
+  export type WorkflowUpsertWithWhereUniqueWithoutDepartmentInput = {
+    where: WorkflowWhereUniqueInput
+    update: XOR<WorkflowUpdateWithoutDepartmentInput, WorkflowUncheckedUpdateWithoutDepartmentInput>
+    create: XOR<WorkflowCreateWithoutDepartmentInput, WorkflowUncheckedCreateWithoutDepartmentInput>
+  }
+
+  export type WorkflowUpdateWithWhereUniqueWithoutDepartmentInput = {
+    where: WorkflowWhereUniqueInput
+    data: XOR<WorkflowUpdateWithoutDepartmentInput, WorkflowUncheckedUpdateWithoutDepartmentInput>
+  }
+
+  export type WorkflowUpdateManyWithWhereWithoutDepartmentInput = {
+    where: WorkflowScalarWhereInput
+    data: XOR<WorkflowUpdateManyMutationInput, WorkflowUncheckedUpdateManyWithoutDepartmentInput>
+  }
+
+  export type WorkflowScalarWhereInput = {
+    AND?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
+    OR?: WorkflowScalarWhereInput[]
+    NOT?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
+    id?: UuidFilter<"Workflow"> | string
+    tenantId?: UuidFilter<"Workflow"> | string
+    departmentId?: UuidNullableFilter<"Workflow"> | string | null
+    key?: StringFilter<"Workflow"> | string
+    name?: StringFilter<"Workflow"> | string
+    description?: StringNullableFilter<"Workflow"> | string | null
+    definition?: JsonNullableFilter<"Workflow">
+    version?: IntFilter<"Workflow"> | number
+    status?: EnumWorkflowStatusFilter<"Workflow"> | $Enums.WorkflowStatus
+    publishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
+    isActive?: BoolFilter<"Workflow"> | boolean
+    isDefault?: BoolFilter<"Workflow"> | boolean
+    createdBy?: UuidNullableFilter<"Workflow"> | string | null
+    createdAt?: DateTimeFilter<"Workflow"> | Date | string
+    updatedAt?: DateTimeFilter<"Workflow"> | Date | string
+  }
+
+  export type AgencyChatMessageUpsertWithWhereUniqueWithoutDepartmentInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    update: XOR<AgencyChatMessageUpdateWithoutDepartmentInput, AgencyChatMessageUncheckedUpdateWithoutDepartmentInput>
+    create: XOR<AgencyChatMessageCreateWithoutDepartmentInput, AgencyChatMessageUncheckedCreateWithoutDepartmentInput>
+  }
+
+  export type AgencyChatMessageUpdateWithWhereUniqueWithoutDepartmentInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    data: XOR<AgencyChatMessageUpdateWithoutDepartmentInput, AgencyChatMessageUncheckedUpdateWithoutDepartmentInput>
+  }
+
+  export type AgencyChatMessageUpdateManyWithWhereWithoutDepartmentInput = {
+    where: AgencyChatMessageScalarWhereInput
+    data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyWithoutDepartmentInput>
+  }
+
+  export type AgencyChatMessageScalarWhereInput = {
+    AND?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+    OR?: AgencyChatMessageScalarWhereInput[]
+    NOT?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+    id?: UuidFilter<"AgencyChatMessage"> | string
+    tenantId?: UuidFilter<"AgencyChatMessage"> | string
+    senderId?: UuidFilter<"AgencyChatMessage"> | string
+    recipientId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    departmentId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    recipientDepartmentId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
+    body?: StringFilter<"AgencyChatMessage"> | string
+    createdAt?: DateTimeFilter<"AgencyChatMessage"> | Date | string
+  }
+
+  export type AgencyChatMessageUpsertWithWhereUniqueWithoutRecipientDepartmentInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    update: XOR<AgencyChatMessageUpdateWithoutRecipientDepartmentInput, AgencyChatMessageUncheckedUpdateWithoutRecipientDepartmentInput>
+    create: XOR<AgencyChatMessageCreateWithoutRecipientDepartmentInput, AgencyChatMessageUncheckedCreateWithoutRecipientDepartmentInput>
+  }
+
+  export type AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientDepartmentInput = {
+    where: AgencyChatMessageWhereUniqueInput
+    data: XOR<AgencyChatMessageUpdateWithoutRecipientDepartmentInput, AgencyChatMessageUncheckedUpdateWithoutRecipientDepartmentInput>
+  }
+
+  export type AgencyChatMessageUpdateManyWithWhereWithoutRecipientDepartmentInput = {
+    where: AgencyChatMessageScalarWhereInput
+    data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentInput>
+  }
+
+  export type UserCreateWithoutTenantsRegisteredInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    casesCreated?: CaseCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
   }
@@ -36031,6 +39658,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTenantsRegisteredInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -36092,6 +39720,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -36115,6 +39744,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutTenantInput = {
     id?: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -36160,6 +39790,52 @@ export namespace Prisma {
 
   export type UserCreateManyTenantInputEnvelope = {
     data: UserCreateManyTenantInput | UserCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DepartmentCreateWithoutTenantInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutTenantInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutTenantInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutTenantInput, DepartmentUncheckedCreateWithoutTenantInput>
+  }
+
+  export type DepartmentCreateManyTenantInputEnvelope = {
+    data: DepartmentCreateManyTenantInput | DepartmentCreateManyTenantInput[]
     skipDuplicates?: boolean
   }
 
@@ -36212,6 +39888,7 @@ export namespace Prisma {
     isDefault?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    department?: DepartmentCreateNestedOneWithoutWorkflowsInput
     creator?: UserCreateNestedOneWithoutWorkflowsCreatedInput
     cases?: CaseCreateNestedManyWithoutWorkflowInput
     steps?: WorkflowStepCreateNestedManyWithoutWorkflowInput
@@ -36220,6 +39897,7 @@ export namespace Prisma {
 
   export type WorkflowUncheckedCreateWithoutTenantInput = {
     id?: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -36267,6 +39945,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -36281,6 +39961,8 @@ export namespace Prisma {
     id?: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -36337,6 +40019,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     tenant: TenantCreateNestedOneWithoutCasesInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -36351,6 +40035,8 @@ export namespace Prisma {
     id?: string
     tenantId: string
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -36407,6 +40093,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -36421,6 +40109,8 @@ export namespace Prisma {
     id?: string
     tenantId: string
     originatingTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -36469,6 +40159,8 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     case: CaseCreateNestedOneWithoutReferralsInput
     toTenant: TenantCreateNestedOneWithoutReferralsToInput
+    fromDepartment?: DepartmentCreateNestedOneWithoutReferralsFromInput
+    toDepartment?: DepartmentCreateNestedOneWithoutReferralsToInput
     referrer: UserCreateNestedOneWithoutReferralsMadeInput
     accepter?: UserCreateNestedOneWithoutReferralsAcceptedInput
     rejecter?: UserCreateNestedOneWithoutReferralsRejectedInput
@@ -36478,6 +40170,8 @@ export namespace Prisma {
     id?: string
     caseId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -36513,6 +40207,8 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     case: CaseCreateNestedOneWithoutReferralsInput
     fromTenant: TenantCreateNestedOneWithoutReferralsFromInput
+    fromDepartment?: DepartmentCreateNestedOneWithoutReferralsFromInput
+    toDepartment?: DepartmentCreateNestedOneWithoutReferralsToInput
     referrer: UserCreateNestedOneWithoutReferralsMadeInput
     accepter?: UserCreateNestedOneWithoutReferralsAcceptedInput
     rejecter?: UserCreateNestedOneWithoutReferralsRejectedInput
@@ -36522,6 +40218,8 @@ export namespace Prisma {
     id?: string
     caseId: string
     fromTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -36773,12 +40471,16 @@ export namespace Prisma {
     createdAt?: Date | string
     sender: UserCreateNestedOneWithoutChatMessagesSentInput
     recipient?: UserCreateNestedOneWithoutChatMessagesReceivedInput
+    department?: DepartmentCreateNestedOneWithoutChatMessagesInput
+    recipientDepartment?: DepartmentCreateNestedOneWithoutRecipientChatMessagesInput
   }
 
   export type AgencyChatMessageUncheckedCreateWithoutTenantInput = {
     id?: string
     senderId: string
     recipientId?: string | null
+    departmentId?: string | null
+    recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
   }
@@ -36824,6 +40526,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -36847,6 +40550,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTenantsRegisteredInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -36900,29 +40604,34 @@ export namespace Prisma {
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutTenantInput>
   }
 
-  export type UserScalarWhereInput = {
-    AND?: UserScalarWhereInput | UserScalarWhereInput[]
-    OR?: UserScalarWhereInput[]
-    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
-    id?: UuidFilter<"User"> | string
-    tenantId?: UuidFilter<"User"> | string
-    email?: StringFilter<"User"> | string
-    username?: StringFilter<"User"> | string
-    passwordHash?: StringFilter<"User"> | string
-    firstName?: StringFilter<"User"> | string
-    lastName?: StringFilter<"User"> | string
-    phone?: StringNullableFilter<"User"> | string | null
-    nationalId?: StringNullableFilter<"User"> | string | null
-    isActive?: BoolFilter<"User"> | boolean
-    isEmailVerified?: BoolFilter<"User"> | boolean
-    mustChangePassword?: BoolFilter<"User"> | boolean
-    resetPasswordToken?: StringNullableFilter<"User"> | string | null
-    resetPasswordExpires?: DateTimeNullableFilter<"User"> | Date | string | null
-    emailVerificationToken?: StringNullableFilter<"User"> | string | null
-    emailVerificationExpires?: DateTimeNullableFilter<"User"> | Date | string | null
-    lastLogin?: DateTimeNullableFilter<"User"> | Date | string | null
-    createdAt?: DateTimeFilter<"User"> | Date | string
-    updatedAt?: DateTimeFilter<"User"> | Date | string
+  export type DepartmentUpsertWithWhereUniqueWithoutTenantInput = {
+    where: DepartmentWhereUniqueInput
+    update: XOR<DepartmentUpdateWithoutTenantInput, DepartmentUncheckedUpdateWithoutTenantInput>
+    create: XOR<DepartmentCreateWithoutTenantInput, DepartmentUncheckedCreateWithoutTenantInput>
+  }
+
+  export type DepartmentUpdateWithWhereUniqueWithoutTenantInput = {
+    where: DepartmentWhereUniqueInput
+    data: XOR<DepartmentUpdateWithoutTenantInput, DepartmentUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type DepartmentUpdateManyWithWhereWithoutTenantInput = {
+    where: DepartmentScalarWhereInput
+    data: XOR<DepartmentUpdateManyMutationInput, DepartmentUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type DepartmentScalarWhereInput = {
+    AND?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+    OR?: DepartmentScalarWhereInput[]
+    NOT?: DepartmentScalarWhereInput | DepartmentScalarWhereInput[]
+    id?: UuidFilter<"Department"> | string
+    tenantId?: UuidFilter<"Department"> | string
+    code?: StringFilter<"Department"> | string
+    name?: StringFilter<"Department"> | string
+    description?: StringNullableFilter<"Department"> | string | null
+    isActive?: BoolFilter<"Department"> | boolean
+    createdAt?: DateTimeFilter<"Department"> | Date | string
+    updatedAt?: DateTimeFilter<"Department"> | Date | string
   }
 
   export type RoleUpsertWithWhereUniqueWithoutTenantInput = {
@@ -36972,26 +40681,6 @@ export namespace Prisma {
     data: XOR<WorkflowUpdateManyMutationInput, WorkflowUncheckedUpdateManyWithoutTenantInput>
   }
 
-  export type WorkflowScalarWhereInput = {
-    AND?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
-    OR?: WorkflowScalarWhereInput[]
-    NOT?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
-    id?: UuidFilter<"Workflow"> | string
-    tenantId?: UuidFilter<"Workflow"> | string
-    key?: StringFilter<"Workflow"> | string
-    name?: StringFilter<"Workflow"> | string
-    description?: StringNullableFilter<"Workflow"> | string | null
-    definition?: JsonNullableFilter<"Workflow">
-    version?: IntFilter<"Workflow"> | number
-    status?: EnumWorkflowStatusFilter<"Workflow"> | $Enums.WorkflowStatus
-    publishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
-    isActive?: BoolFilter<"Workflow"> | boolean
-    isDefault?: BoolFilter<"Workflow"> | boolean
-    createdBy?: UuidNullableFilter<"Workflow"> | string | null
-    createdAt?: DateTimeFilter<"Workflow"> | Date | string
-    updatedAt?: DateTimeFilter<"Workflow"> | Date | string
-  }
-
   export type CaseUpsertWithWhereUniqueWithoutTenantInput = {
     where: CaseWhereUniqueInput
     update: XOR<CaseUpdateWithoutTenantInput, CaseUncheckedUpdateWithoutTenantInput>
@@ -37006,36 +40695,6 @@ export namespace Prisma {
   export type CaseUpdateManyWithWhereWithoutTenantInput = {
     where: CaseScalarWhereInput
     data: XOR<CaseUpdateManyMutationInput, CaseUncheckedUpdateManyWithoutTenantInput>
-  }
-
-  export type CaseScalarWhereInput = {
-    AND?: CaseScalarWhereInput | CaseScalarWhereInput[]
-    OR?: CaseScalarWhereInput[]
-    NOT?: CaseScalarWhereInput | CaseScalarWhereInput[]
-    id?: UuidFilter<"Case"> | string
-    tenantId?: UuidFilter<"Case"> | string
-    originatingTenantId?: UuidNullableFilter<"Case"> | string | null
-    currentTenantId?: UuidNullableFilter<"Case"> | string | null
-    referralStatus?: StringFilter<"Case"> | string
-    workflowId?: UuidFilter<"Case"> | string
-    workflowVersion?: IntFilter<"Case"> | number
-    caseNumber?: StringFilter<"Case"> | string
-    currentStepId?: UuidNullableFilter<"Case"> | string | null
-    closedAt?: DateTimeNullableFilter<"Case"> | Date | string | null
-    title?: StringFilter<"Case"> | string
-    description?: StringNullableFilter<"Case"> | string | null
-    type?: StringFilter<"Case"> | string
-    priority?: StringFilter<"Case"> | string
-    status?: StringFilter<"Case"> | string
-    data?: JsonNullableFilter<"Case">
-    assignedTo?: UuidNullableFilter<"Case"> | string | null
-    createdBy?: UuidFilter<"Case"> | string
-    metadata?: JsonNullableFilter<"Case">
-    dueDate?: DateTimeNullableFilter<"Case"> | Date | string | null
-    resolvedAt?: DateTimeNullableFilter<"Case"> | Date | string | null
-    createdAt?: DateTimeFilter<"Case"> | Date | string
-    updatedAt?: DateTimeFilter<"Case"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"Case"> | Date | string | null
   }
 
   export type CaseUpsertWithWhereUniqueWithoutOriginatingTenantInput = {
@@ -37084,27 +40743,6 @@ export namespace Prisma {
   export type CaseReferralUpdateManyWithWhereWithoutFromTenantInput = {
     where: CaseReferralScalarWhereInput
     data: XOR<CaseReferralUpdateManyMutationInput, CaseReferralUncheckedUpdateManyWithoutFromTenantInput>
-  }
-
-  export type CaseReferralScalarWhereInput = {
-    AND?: CaseReferralScalarWhereInput | CaseReferralScalarWhereInput[]
-    OR?: CaseReferralScalarWhereInput[]
-    NOT?: CaseReferralScalarWhereInput | CaseReferralScalarWhereInput[]
-    id?: UuidFilter<"CaseReferral"> | string
-    caseId?: UuidFilter<"CaseReferral"> | string
-    fromTenantId?: UuidFilter<"CaseReferral"> | string
-    toTenantId?: UuidFilter<"CaseReferral"> | string
-    referralReason?: StringNullableFilter<"CaseReferral"> | string | null
-    notes?: StringNullableFilter<"CaseReferral"> | string | null
-    status?: StringFilter<"CaseReferral"> | string
-    referredBy?: UuidFilter<"CaseReferral"> | string
-    acceptedBy?: UuidNullableFilter<"CaseReferral"> | string | null
-    rejectedBy?: UuidNullableFilter<"CaseReferral"> | string | null
-    referredAt?: DateTimeFilter<"CaseReferral"> | Date | string
-    acceptedAt?: DateTimeNullableFilter<"CaseReferral"> | Date | string | null
-    rejectedAt?: DateTimeNullableFilter<"CaseReferral"> | Date | string | null
-    completedAt?: DateTimeNullableFilter<"CaseReferral"> | Date | string | null
-    metadata?: JsonNullableFilter<"CaseReferral">
   }
 
   export type CaseReferralUpsertWithWhereUniqueWithoutToTenantInput = {
@@ -37321,18 +40959,6 @@ export namespace Prisma {
     data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyWithoutTenantInput>
   }
 
-  export type AgencyChatMessageScalarWhereInput = {
-    AND?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
-    OR?: AgencyChatMessageScalarWhereInput[]
-    NOT?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
-    id?: UuidFilter<"AgencyChatMessage"> | string
-    tenantId?: UuidFilter<"AgencyChatMessage"> | string
-    senderId?: UuidFilter<"AgencyChatMessage"> | string
-    recipientId?: UuidNullableFilter<"AgencyChatMessage"> | string | null
-    body?: StringFilter<"AgencyChatMessage"> | string
-    createdAt?: DateTimeFilter<"AgencyChatMessage"> | Date | string
-  }
-
   export type TenantCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -37343,6 +40969,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -37369,6 +40996,7 @@ export namespace Prisma {
     registeredByUserId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -37388,6 +41016,47 @@ export namespace Prisma {
   export type TenantCreateOrConnectWithoutUsersInput = {
     where: TenantWhereUniqueInput
     create: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
+  }
+
+  export type DepartmentCreateWithoutUsersInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutUsersInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutUsersInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutUsersInput, DepartmentUncheckedCreateWithoutUsersInput>
   }
 
   export type CaseCreateWithoutCreatorInput = {
@@ -37411,6 +41080,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -37425,6 +41096,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -37481,6 +41154,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
@@ -37495,6 +41170,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -37639,6 +41316,8 @@ export namespace Prisma {
     case: CaseCreateNestedOneWithoutReferralsInput
     fromTenant: TenantCreateNestedOneWithoutReferralsFromInput
     toTenant: TenantCreateNestedOneWithoutReferralsToInput
+    fromDepartment?: DepartmentCreateNestedOneWithoutReferralsFromInput
+    toDepartment?: DepartmentCreateNestedOneWithoutReferralsToInput
     accepter?: UserCreateNestedOneWithoutReferralsAcceptedInput
     rejecter?: UserCreateNestedOneWithoutReferralsRejectedInput
   }
@@ -37648,6 +41327,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -37683,6 +41364,8 @@ export namespace Prisma {
     case: CaseCreateNestedOneWithoutReferralsInput
     fromTenant: TenantCreateNestedOneWithoutReferralsFromInput
     toTenant: TenantCreateNestedOneWithoutReferralsToInput
+    fromDepartment?: DepartmentCreateNestedOneWithoutReferralsFromInput
+    toDepartment?: DepartmentCreateNestedOneWithoutReferralsToInput
     referrer: UserCreateNestedOneWithoutReferralsMadeInput
     rejecter?: UserCreateNestedOneWithoutReferralsRejectedInput
   }
@@ -37692,6 +41375,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -37727,6 +41412,8 @@ export namespace Prisma {
     case: CaseCreateNestedOneWithoutReferralsInput
     fromTenant: TenantCreateNestedOneWithoutReferralsFromInput
     toTenant: TenantCreateNestedOneWithoutReferralsToInput
+    fromDepartment?: DepartmentCreateNestedOneWithoutReferralsFromInput
+    toDepartment?: DepartmentCreateNestedOneWithoutReferralsToInput
     referrer: UserCreateNestedOneWithoutReferralsMadeInput
     accepter?: UserCreateNestedOneWithoutReferralsAcceptedInput
   }
@@ -37736,6 +41423,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -37914,6 +41603,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutWorkflowsInput
+    department?: DepartmentCreateNestedOneWithoutWorkflowsInput
     cases?: CaseCreateNestedManyWithoutWorkflowInput
     steps?: WorkflowStepCreateNestedManyWithoutWorkflowInput
     transitions?: WorkflowTransitionCreateNestedManyWithoutWorkflowInput
@@ -37922,6 +41612,7 @@ export namespace Prisma {
   export type WorkflowUncheckedCreateWithoutCreatorInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -38064,6 +41755,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -38090,6 +41782,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -38122,12 +41815,16 @@ export namespace Prisma {
     createdAt?: Date | string
     tenant: TenantCreateNestedOneWithoutChatMessagesInput
     recipient?: UserCreateNestedOneWithoutChatMessagesReceivedInput
+    department?: DepartmentCreateNestedOneWithoutChatMessagesInput
+    recipientDepartment?: DepartmentCreateNestedOneWithoutRecipientChatMessagesInput
   }
 
   export type AgencyChatMessageUncheckedCreateWithoutSenderInput = {
     id?: string
     tenantId: string
     recipientId?: string | null
+    departmentId?: string | null
+    recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
   }
@@ -38148,12 +41845,16 @@ export namespace Prisma {
     createdAt?: Date | string
     tenant: TenantCreateNestedOneWithoutChatMessagesInput
     sender: UserCreateNestedOneWithoutChatMessagesSentInput
+    department?: DepartmentCreateNestedOneWithoutChatMessagesInput
+    recipientDepartment?: DepartmentCreateNestedOneWithoutRecipientChatMessagesInput
   }
 
   export type AgencyChatMessageUncheckedCreateWithoutRecipientInput = {
     id?: string
     tenantId: string
     senderId: string
+    departmentId?: string | null
+    recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
   }
@@ -38189,6 +41890,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -38215,6 +41917,7 @@ export namespace Prisma {
     registeredByUserId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -38229,6 +41932,53 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type DepartmentUpsertWithoutUsersInput = {
+    update: XOR<DepartmentUpdateWithoutUsersInput, DepartmentUncheckedUpdateWithoutUsersInput>
+    create: XOR<DepartmentCreateWithoutUsersInput, DepartmentUncheckedCreateWithoutUsersInput>
+    where?: DepartmentWhereInput
+  }
+
+  export type DepartmentUpdateToOneWithWhereWithoutUsersInput = {
+    where?: DepartmentWhereInput
+    data: XOR<DepartmentUpdateWithoutUsersInput, DepartmentUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type DepartmentUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
   }
 
   export type CaseUpsertWithWhereUniqueWithoutCreatorInput = {
@@ -38603,6 +42353,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
     casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
@@ -38629,6 +42380,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
     casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
@@ -38717,6 +42469,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -38740,6 +42493,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutRolesCreatedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -38804,6 +42558,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
     casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
@@ -38830,6 +42585,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
     casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
@@ -38918,6 +42674,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -38941,6 +42698,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutRolesCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -39152,6 +42910,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -39175,6 +42934,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutUserRolesInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -39268,6 +43028,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -39291,6 +43052,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutUserRolesAssignedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -39364,6 +43126,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -39387,6 +43150,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutUserRolesInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -39492,6 +43256,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -39515,6 +43280,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutUserRolesAssignedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -39563,6 +43329,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
     casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
@@ -39589,6 +43356,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
     casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
@@ -39607,6 +43375,47 @@ export namespace Prisma {
   export type TenantCreateOrConnectWithoutWorkflowsInput = {
     where: TenantWhereUniqueInput
     create: XOR<TenantCreateWithoutWorkflowsInput, TenantUncheckedCreateWithoutWorkflowsInput>
+  }
+
+  export type DepartmentCreateWithoutWorkflowsInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutWorkflowsInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutWorkflowsInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutWorkflowsInput, DepartmentUncheckedCreateWithoutWorkflowsInput>
   }
 
   export type UserCreateWithoutWorkflowsCreatedInput = {
@@ -39629,6 +43438,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -39652,6 +43462,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutWorkflowsCreatedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -39715,6 +43526,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
@@ -39729,6 +43542,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowVersion?: number
     caseNumber: string
@@ -39876,6 +43691,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
     casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
@@ -39902,6 +43718,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
     casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
@@ -39915,6 +43732,53 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type DepartmentUpsertWithoutWorkflowsInput = {
+    update: XOR<DepartmentUpdateWithoutWorkflowsInput, DepartmentUncheckedUpdateWithoutWorkflowsInput>
+    create: XOR<DepartmentCreateWithoutWorkflowsInput, DepartmentUncheckedCreateWithoutWorkflowsInput>
+    where?: DepartmentWhereInput
+  }
+
+  export type DepartmentUpdateToOneWithWhereWithoutWorkflowsInput = {
+    where?: DepartmentWhereInput
+    data: XOR<DepartmentUpdateWithoutWorkflowsInput, DepartmentUncheckedUpdateWithoutWorkflowsInput>
+  }
+
+  export type DepartmentUpdateWithoutWorkflowsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutWorkflowsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
   }
 
   export type UserUpsertWithoutWorkflowsCreatedInput = {
@@ -39948,6 +43812,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -39971,6 +43836,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutWorkflowsCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -40108,6 +43974,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutWorkflowsInput
+    department?: DepartmentCreateNestedOneWithoutWorkflowsInput
     creator?: UserCreateNestedOneWithoutWorkflowsCreatedInput
     cases?: CaseCreateNestedManyWithoutWorkflowInput
     transitions?: WorkflowTransitionCreateNestedManyWithoutWorkflowInput
@@ -40116,6 +43983,7 @@ export namespace Prisma {
   export type WorkflowUncheckedCreateWithoutStepsInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -40246,6 +44114,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
     creator: UserCreateNestedOneWithoutCasesCreatedInput
@@ -40260,6 +44130,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -40360,6 +44232,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutWorkflowsNestedInput
+    department?: DepartmentUpdateOneWithoutWorkflowsNestedInput
     creator?: UserUpdateOneWithoutWorkflowsCreatedNestedInput
     cases?: CaseUpdateManyWithoutWorkflowNestedInput
     transitions?: WorkflowTransitionUpdateManyWithoutWorkflowNestedInput
@@ -40368,6 +44241,7 @@ export namespace Prisma {
   export type WorkflowUncheckedUpdateWithoutStepsInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40462,6 +44336,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutWorkflowsInput
+    department?: DepartmentCreateNestedOneWithoutWorkflowsInput
     creator?: UserCreateNestedOneWithoutWorkflowsCreatedInput
     cases?: CaseCreateNestedManyWithoutWorkflowInput
     steps?: WorkflowStepCreateNestedManyWithoutWorkflowInput
@@ -40470,6 +44345,7 @@ export namespace Prisma {
   export type WorkflowUncheckedCreateWithoutTransitionsInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -40630,6 +44506,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutWorkflowsNestedInput
+    department?: DepartmentUpdateOneWithoutWorkflowsNestedInput
     creator?: UserUpdateOneWithoutWorkflowsCreatedNestedInput
     cases?: CaseUpdateManyWithoutWorkflowNestedInput
     steps?: WorkflowStepUpdateManyWithoutWorkflowNestedInput
@@ -40638,6 +44515,7 @@ export namespace Prisma {
   export type WorkflowUncheckedUpdateWithoutTransitionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40775,6 +44653,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
@@ -40801,6 +44680,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
@@ -40832,6 +44712,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -40858,6 +44739,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -40889,6 +44771,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -40915,6 +44798,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -40935,6 +44819,88 @@ export namespace Prisma {
     create: XOR<TenantCreateWithoutCasesCurrentInput, TenantUncheckedCreateWithoutCasesCurrentInput>
   }
 
+  export type DepartmentCreateWithoutCasesOriginatingInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutCasesOriginatingInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutCasesOriginatingInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutCasesOriginatingInput, DepartmentUncheckedCreateWithoutCasesOriginatingInput>
+  }
+
+  export type DepartmentCreateWithoutCasesCurrentInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutCasesCurrentInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutCasesCurrentInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutCasesCurrentInput, DepartmentUncheckedCreateWithoutCasesCurrentInput>
+  }
+
   export type WorkflowCreateWithoutCasesInput = {
     id?: string
     key: string
@@ -40949,6 +44915,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutWorkflowsInput
+    department?: DepartmentCreateNestedOneWithoutWorkflowsInput
     creator?: UserCreateNestedOneWithoutWorkflowsCreatedInput
     steps?: WorkflowStepCreateNestedManyWithoutWorkflowInput
     transitions?: WorkflowTransitionCreateNestedManyWithoutWorkflowInput
@@ -40957,6 +44924,7 @@ export namespace Prisma {
   export type WorkflowUncheckedCreateWithoutCasesInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -41039,6 +45007,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
@@ -41062,6 +45031,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutCasesAssignedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -41124,6 +45094,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
@@ -41147,6 +45118,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutCasesCreatedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -41265,6 +45237,8 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     fromTenant: TenantCreateNestedOneWithoutReferralsFromInput
     toTenant: TenantCreateNestedOneWithoutReferralsToInput
+    fromDepartment?: DepartmentCreateNestedOneWithoutReferralsFromInput
+    toDepartment?: DepartmentCreateNestedOneWithoutReferralsToInput
     referrer: UserCreateNestedOneWithoutReferralsMadeInput
     accepter?: UserCreateNestedOneWithoutReferralsAcceptedInput
     rejecter?: UserCreateNestedOneWithoutReferralsRejectedInput
@@ -41274,6 +45248,8 @@ export namespace Prisma {
     id?: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -41359,6 +45335,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
@@ -41385,6 +45362,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
@@ -41422,6 +45400,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -41448,6 +45427,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -41485,6 +45465,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -41511,6 +45492,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -41524,6 +45506,100 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type DepartmentUpsertWithoutCasesOriginatingInput = {
+    update: XOR<DepartmentUpdateWithoutCasesOriginatingInput, DepartmentUncheckedUpdateWithoutCasesOriginatingInput>
+    create: XOR<DepartmentCreateWithoutCasesOriginatingInput, DepartmentUncheckedCreateWithoutCasesOriginatingInput>
+    where?: DepartmentWhereInput
+  }
+
+  export type DepartmentUpdateToOneWithWhereWithoutCasesOriginatingInput = {
+    where?: DepartmentWhereInput
+    data: XOR<DepartmentUpdateWithoutCasesOriginatingInput, DepartmentUncheckedUpdateWithoutCasesOriginatingInput>
+  }
+
+  export type DepartmentUpdateWithoutCasesOriginatingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutCasesOriginatingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUpsertWithoutCasesCurrentInput = {
+    update: XOR<DepartmentUpdateWithoutCasesCurrentInput, DepartmentUncheckedUpdateWithoutCasesCurrentInput>
+    create: XOR<DepartmentCreateWithoutCasesCurrentInput, DepartmentUncheckedCreateWithoutCasesCurrentInput>
+    where?: DepartmentWhereInput
+  }
+
+  export type DepartmentUpdateToOneWithWhereWithoutCasesCurrentInput = {
+    where?: DepartmentWhereInput
+    data: XOR<DepartmentUpdateWithoutCasesCurrentInput, DepartmentUncheckedUpdateWithoutCasesCurrentInput>
+  }
+
+  export type DepartmentUpdateWithoutCasesCurrentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutCasesCurrentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
   }
 
   export type WorkflowUpsertWithoutCasesInput = {
@@ -41551,6 +45627,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutWorkflowsNestedInput
+    department?: DepartmentUpdateOneWithoutWorkflowsNestedInput
     creator?: UserUpdateOneWithoutWorkflowsCreatedNestedInput
     steps?: WorkflowStepUpdateManyWithoutWorkflowNestedInput
     transitions?: WorkflowTransitionUpdateManyWithoutWorkflowNestedInput
@@ -41559,6 +45636,7 @@ export namespace Prisma {
   export type WorkflowUncheckedUpdateWithoutCasesInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41653,6 +45731,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
@@ -41676,6 +45755,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutCasesAssignedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -41744,6 +45824,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
@@ -41767,6 +45848,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutCasesCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -41889,6 +45971,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -41903,6 +45987,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -41992,6 +46078,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -42015,6 +46102,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutCaseHistoryAsActorInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -42089,6 +46177,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -42103,6 +46193,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -42204,6 +46296,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -42227,6 +46320,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutCaseHistoryAsActorInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -42275,6 +46369,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -42301,6 +46396,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -42343,6 +46439,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -42369,6 +46466,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -42405,6 +46503,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -42419,6 +46519,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -42469,6 +46571,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
@@ -42492,6 +46595,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAssignmentsAssignedToInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -42554,6 +46658,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -42577,6 +46682,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAssignmentsAssignedByInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -42651,6 +46757,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -42665,6 +46773,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -42721,6 +46831,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
@@ -42744,6 +46855,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAssignmentsAssignedToInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -42812,6 +46924,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -42835,6 +46948,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAssignmentsAssignedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -42893,6 +47007,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -42907,6 +47023,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -42948,6 +47066,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -42974,6 +47093,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -43005,6 +47125,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -43031,6 +47152,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -43049,6 +47171,88 @@ export namespace Prisma {
   export type TenantCreateOrConnectWithoutReferralsToInput = {
     where: TenantWhereUniqueInput
     create: XOR<TenantCreateWithoutReferralsToInput, TenantUncheckedCreateWithoutReferralsToInput>
+  }
+
+  export type DepartmentCreateWithoutReferralsFromInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutReferralsFromInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutReferralsFromInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutReferralsFromInput, DepartmentUncheckedCreateWithoutReferralsFromInput>
+  }
+
+  export type DepartmentCreateWithoutReferralsToInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutReferralsToInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutReferralsToInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutReferralsToInput, DepartmentUncheckedCreateWithoutReferralsToInput>
   }
 
   export type UserCreateWithoutReferralsMadeInput = {
@@ -43071,6 +47275,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -43094,6 +47299,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutReferralsMadeInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -43156,6 +47362,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -43179,6 +47386,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutReferralsAcceptedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -43241,6 +47449,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -43264,6 +47473,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutReferralsRejectedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -43338,6 +47548,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -43352,6 +47564,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -43399,6 +47613,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -43425,6 +47640,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -43462,6 +47678,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -43488,6 +47705,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -43501,6 +47719,100 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type DepartmentUpsertWithoutReferralsFromInput = {
+    update: XOR<DepartmentUpdateWithoutReferralsFromInput, DepartmentUncheckedUpdateWithoutReferralsFromInput>
+    create: XOR<DepartmentCreateWithoutReferralsFromInput, DepartmentUncheckedCreateWithoutReferralsFromInput>
+    where?: DepartmentWhereInput
+  }
+
+  export type DepartmentUpdateToOneWithWhereWithoutReferralsFromInput = {
+    where?: DepartmentWhereInput
+    data: XOR<DepartmentUpdateWithoutReferralsFromInput, DepartmentUncheckedUpdateWithoutReferralsFromInput>
+  }
+
+  export type DepartmentUpdateWithoutReferralsFromInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutReferralsFromInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUpsertWithoutReferralsToInput = {
+    update: XOR<DepartmentUpdateWithoutReferralsToInput, DepartmentUncheckedUpdateWithoutReferralsToInput>
+    create: XOR<DepartmentCreateWithoutReferralsToInput, DepartmentUncheckedCreateWithoutReferralsToInput>
+    where?: DepartmentWhereInput
+  }
+
+  export type DepartmentUpdateToOneWithWhereWithoutReferralsToInput = {
+    where?: DepartmentWhereInput
+    data: XOR<DepartmentUpdateWithoutReferralsToInput, DepartmentUncheckedUpdateWithoutReferralsToInput>
+  }
+
+  export type DepartmentUpdateWithoutReferralsToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutReferralsToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
   }
 
   export type UserUpsertWithoutReferralsMadeInput = {
@@ -43534,6 +47846,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -43557,6 +47870,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutReferralsMadeInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -43625,6 +47939,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -43648,6 +47963,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutReferralsAcceptedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -43716,6 +48032,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -43739,6 +48056,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutReferralsRejectedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -43797,6 +48115,8 @@ export namespace Prisma {
     tenant: TenantCreateNestedOneWithoutCasesInput
     originatingTenant?: TenantCreateNestedOneWithoutCasesOriginatedInput
     currentTenant?: TenantCreateNestedOneWithoutCasesCurrentInput
+    originatingDepartment?: DepartmentCreateNestedOneWithoutCasesOriginatingInput
+    currentDepartment?: DepartmentCreateNestedOneWithoutCasesCurrentInput
     workflow: WorkflowCreateNestedOneWithoutCasesInput
     currentStep?: WorkflowStepCreateNestedOneWithoutCasesHereInput
     assignee?: UserCreateNestedOneWithoutCasesAssignedInput
@@ -43811,6 +48131,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -43893,6 +48215,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -43919,6 +48242,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -43959,6 +48283,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -43982,6 +48307,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAttachmentsInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -44056,6 +48382,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -44070,6 +48398,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -44164,6 +48494,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -44190,6 +48521,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -44236,6 +48568,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -44259,6 +48592,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAttachmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -44307,6 +48641,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -44333,6 +48668,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -44364,6 +48700,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -44390,6 +48727,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -44430,6 +48768,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -44453,6 +48792,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAuditLogsInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -44517,6 +48857,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -44543,6 +48884,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -44580,6 +48922,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -44606,6 +48949,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -44652,6 +48996,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -44675,6 +49020,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -44723,6 +49069,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -44749,6 +49096,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -44789,6 +49137,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -44812,6 +49161,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutWebhooksCreatedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -44876,6 +49226,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -44902,6 +49253,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -44948,6 +49300,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -44971,6 +49324,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutWebhooksCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -45019,6 +49373,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -45045,6 +49400,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -45085,6 +49441,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -45108,6 +49465,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutIntegrationsCreatedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -45172,6 +49530,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -45198,6 +49557,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -45244,6 +49604,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -45267,6 +49628,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutIntegrationsCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -45315,6 +49677,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
     users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
     roles?: RoleCreateNestedManyWithoutTenantInput
     workflows?: WorkflowCreateNestedManyWithoutTenantInput
     cases?: CaseCreateNestedManyWithoutTenantInput
@@ -45341,6 +49704,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
     roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
     workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
     cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
@@ -45381,6 +49745,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -45404,6 +49769,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutChatMessagesSentInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -45466,6 +49832,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
     casesCreated?: CaseCreateNestedManyWithoutCreatorInput
     casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
     assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
@@ -45489,6 +49856,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutChatMessagesReceivedInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     email: string
     username: string
     passwordHash: string
@@ -45531,6 +49899,88 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutChatMessagesReceivedInput, UserUncheckedCreateWithoutChatMessagesReceivedInput>
   }
 
+  export type DepartmentCreateWithoutChatMessagesInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutChatMessagesInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    recipientChatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutChatMessagesInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutChatMessagesInput, DepartmentUncheckedCreateWithoutChatMessagesInput>
+  }
+
+  export type DepartmentCreateWithoutRecipientChatMessagesInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutDepartmentsInput
+    users?: UserCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutDepartmentInput
+  }
+
+  export type DepartmentUncheckedCreateWithoutRecipientChatMessagesInput = {
+    id?: string
+    tenantId: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutDepartmentInput
+    casesOriginating?: CaseUncheckedCreateNestedManyWithoutOriginatingDepartmentInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentDepartmentInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromDepartmentInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToDepartmentInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutDepartmentInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutDepartmentInput
+  }
+
+  export type DepartmentCreateOrConnectWithoutRecipientChatMessagesInput = {
+    where: DepartmentWhereUniqueInput
+    create: XOR<DepartmentCreateWithoutRecipientChatMessagesInput, DepartmentUncheckedCreateWithoutRecipientChatMessagesInput>
+  }
+
   export type TenantUpsertWithoutChatMessagesInput = {
     update: XOR<TenantUpdateWithoutChatMessagesInput, TenantUncheckedUpdateWithoutChatMessagesInput>
     create: XOR<TenantCreateWithoutChatMessagesInput, TenantUncheckedCreateWithoutChatMessagesInput>
@@ -45553,6 +50003,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -45579,6 +50030,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -45625,6 +50077,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -45648,6 +50101,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutChatMessagesSentInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -45716,6 +50170,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -45739,6 +50194,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutChatMessagesReceivedInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -45776,8 +50232,103 @@ export namespace Prisma {
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
   }
 
-  export type UserCreateManyTenantInput = {
+  export type DepartmentUpsertWithoutChatMessagesInput = {
+    update: XOR<DepartmentUpdateWithoutChatMessagesInput, DepartmentUncheckedUpdateWithoutChatMessagesInput>
+    create: XOR<DepartmentCreateWithoutChatMessagesInput, DepartmentUncheckedCreateWithoutChatMessagesInput>
+    where?: DepartmentWhereInput
+  }
+
+  export type DepartmentUpdateToOneWithWhereWithoutChatMessagesInput = {
+    where?: DepartmentWhereInput
+    data: XOR<DepartmentUpdateWithoutChatMessagesInput, DepartmentUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type DepartmentUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUpsertWithoutRecipientChatMessagesInput = {
+    update: XOR<DepartmentUpdateWithoutRecipientChatMessagesInput, DepartmentUncheckedUpdateWithoutRecipientChatMessagesInput>
+    create: XOR<DepartmentCreateWithoutRecipientChatMessagesInput, DepartmentUncheckedCreateWithoutRecipientChatMessagesInput>
+    where?: DepartmentWhereInput
+  }
+
+  export type DepartmentUpdateToOneWithWhereWithoutRecipientChatMessagesInput = {
+    where?: DepartmentWhereInput
+    data: XOR<DepartmentUpdateWithoutRecipientChatMessagesInput, DepartmentUncheckedUpdateWithoutRecipientChatMessagesInput>
+  }
+
+  export type DepartmentUpdateWithoutRecipientChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutDepartmentsNestedInput
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutRecipientChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+  }
+
+  export type UserCreateManyDepartmentInput = {
     id?: string
+    tenantId: string
     email: string
     username: string
     passwordHash: string
@@ -45797,6 +50348,688 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type CaseCreateManyOriginatingDepartmentInput = {
+    id?: string
+    tenantId: string
+    originatingTenantId?: string | null
+    currentTenantId?: string | null
+    currentDepartmentId?: string | null
+    referralStatus?: string
+    workflowId: string
+    workflowVersion?: number
+    caseNumber: string
+    currentStepId?: string | null
+    closedAt?: Date | string | null
+    title: string
+    description?: string | null
+    type: string
+    priority?: string
+    status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    assignedTo?: string | null
+    createdBy: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: Date | string | null
+    resolvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type CaseCreateManyCurrentDepartmentInput = {
+    id?: string
+    tenantId: string
+    originatingTenantId?: string | null
+    currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    referralStatus?: string
+    workflowId: string
+    workflowVersion?: number
+    caseNumber: string
+    currentStepId?: string | null
+    closedAt?: Date | string | null
+    title: string
+    description?: string | null
+    type: string
+    priority?: string
+    status?: string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    assignedTo?: string | null
+    createdBy: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: Date | string | null
+    resolvedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type CaseReferralCreateManyFromDepartmentInput = {
+    id?: string
+    caseId: string
+    fromTenantId: string
+    toTenantId: string
+    toDepartmentId?: string | null
+    referralReason?: string | null
+    notes?: string | null
+    status?: string
+    referredBy: string
+    acceptedBy?: string | null
+    rejectedBy?: string | null
+    referredAt?: Date | string
+    acceptedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type CaseReferralCreateManyToDepartmentInput = {
+    id?: string
+    caseId: string
+    fromTenantId: string
+    toTenantId: string
+    fromDepartmentId?: string | null
+    referralReason?: string | null
+    notes?: string | null
+    status?: string
+    referredBy: string
+    acceptedBy?: string | null
+    rejectedBy?: string | null
+    referredAt?: Date | string
+    acceptedAt?: Date | string | null
+    rejectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type WorkflowCreateManyDepartmentInput = {
+    id?: string
+    tenantId: string
+    key: string
+    name: string
+    description?: string | null
+    definition?: NullableJsonNullValueInput | InputJsonValue
+    version?: number
+    status?: $Enums.WorkflowStatus
+    publishedAt?: Date | string | null
+    isActive?: boolean
+    isDefault?: boolean
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateManyDepartmentInput = {
+    id?: string
+    tenantId: string
+    senderId: string
+    recipientId?: string | null
+    recipientDepartmentId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type AgencyChatMessageCreateManyRecipientDepartmentInput = {
+    id?: string
+    tenantId: string
+    senderId: string
+    recipientId?: string | null
+    departmentId?: string | null
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type UserUpdateWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    casesCreated?: CaseUncheckedUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUncheckedUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUncheckedUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUncheckedUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+  }
+
+  export type UserUncheckedUpdateManyWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CaseUpdateWithoutOriginatingDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referralStatus?: StringFieldUpdateOperationsInput | string
+    workflowVersion?: IntFieldUpdateOperationsInput | number
+    caseNumber?: StringFieldUpdateOperationsInput | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
+    originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
+    currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
+    workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
+    assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
+    creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
+    history?: CaseHistoryUpdateManyWithoutCaseNestedInput
+    assignments?: AssignmentUpdateManyWithoutCaseNestedInput
+    referrals?: CaseReferralUpdateManyWithoutCaseNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutCaseNestedInput
+  }
+
+  export type CaseUncheckedUpdateWithoutOriginatingDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    referralStatus?: StringFieldUpdateOperationsInput | string
+    workflowId?: StringFieldUpdateOperationsInput | string
+    workflowVersion?: IntFieldUpdateOperationsInput | number
+    caseNumber?: StringFieldUpdateOperationsInput | string
+    currentStepId?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    history?: CaseHistoryUncheckedUpdateManyWithoutCaseNestedInput
+    assignments?: AssignmentUncheckedUpdateManyWithoutCaseNestedInput
+    referrals?: CaseReferralUncheckedUpdateManyWithoutCaseNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutCaseNestedInput
+  }
+
+  export type CaseUncheckedUpdateManyWithoutOriginatingDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    referralStatus?: StringFieldUpdateOperationsInput | string
+    workflowId?: StringFieldUpdateOperationsInput | string
+    workflowVersion?: IntFieldUpdateOperationsInput | number
+    caseNumber?: StringFieldUpdateOperationsInput | string
+    currentStepId?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CaseUpdateWithoutCurrentDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referralStatus?: StringFieldUpdateOperationsInput | string
+    workflowVersion?: IntFieldUpdateOperationsInput | number
+    caseNumber?: StringFieldUpdateOperationsInput | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
+    originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
+    currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
+    currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
+    assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
+    creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
+    history?: CaseHistoryUpdateManyWithoutCaseNestedInput
+    assignments?: AssignmentUpdateManyWithoutCaseNestedInput
+    referrals?: CaseReferralUpdateManyWithoutCaseNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutCaseNestedInput
+  }
+
+  export type CaseUncheckedUpdateWithoutCurrentDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    referralStatus?: StringFieldUpdateOperationsInput | string
+    workflowId?: StringFieldUpdateOperationsInput | string
+    workflowVersion?: IntFieldUpdateOperationsInput | number
+    caseNumber?: StringFieldUpdateOperationsInput | string
+    currentStepId?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    history?: CaseHistoryUncheckedUpdateManyWithoutCaseNestedInput
+    assignments?: AssignmentUncheckedUpdateManyWithoutCaseNestedInput
+    referrals?: CaseReferralUncheckedUpdateManyWithoutCaseNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutCaseNestedInput
+  }
+
+  export type CaseUncheckedUpdateManyWithoutCurrentDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    referralStatus?: StringFieldUpdateOperationsInput | string
+    workflowId?: StringFieldUpdateOperationsInput | string
+    workflowVersion?: IntFieldUpdateOperationsInput | number
+    caseNumber?: StringFieldUpdateOperationsInput | string
+    currentStepId?: NullableStringFieldUpdateOperationsInput | string | null
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    data?: NullableJsonNullValueInput | InputJsonValue
+    assignedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CaseReferralUpdateWithoutFromDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referralReason?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    referredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    case?: CaseUpdateOneRequiredWithoutReferralsNestedInput
+    fromTenant?: TenantUpdateOneRequiredWithoutReferralsFromNestedInput
+    toTenant?: TenantUpdateOneRequiredWithoutReferralsToNestedInput
+    toDepartment?: DepartmentUpdateOneWithoutReferralsToNestedInput
+    referrer?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
+    accepter?: UserUpdateOneWithoutReferralsAcceptedNestedInput
+    rejecter?: UserUpdateOneWithoutReferralsRejectedNestedInput
+  }
+
+  export type CaseReferralUncheckedUpdateWithoutFromDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    fromTenantId?: StringFieldUpdateOperationsInput | string
+    toTenantId?: StringFieldUpdateOperationsInput | string
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    referralReason?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    referredBy?: StringFieldUpdateOperationsInput | string
+    acceptedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    referredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type CaseReferralUncheckedUpdateManyWithoutFromDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    fromTenantId?: StringFieldUpdateOperationsInput | string
+    toTenantId?: StringFieldUpdateOperationsInput | string
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    referralReason?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    referredBy?: StringFieldUpdateOperationsInput | string
+    acceptedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    referredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type CaseReferralUpdateWithoutToDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referralReason?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    referredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    case?: CaseUpdateOneRequiredWithoutReferralsNestedInput
+    fromTenant?: TenantUpdateOneRequiredWithoutReferralsFromNestedInput
+    toTenant?: TenantUpdateOneRequiredWithoutReferralsToNestedInput
+    fromDepartment?: DepartmentUpdateOneWithoutReferralsFromNestedInput
+    referrer?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
+    accepter?: UserUpdateOneWithoutReferralsAcceptedNestedInput
+    rejecter?: UserUpdateOneWithoutReferralsRejectedNestedInput
+  }
+
+  export type CaseReferralUncheckedUpdateWithoutToDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    fromTenantId?: StringFieldUpdateOperationsInput | string
+    toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    referralReason?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    referredBy?: StringFieldUpdateOperationsInput | string
+    acceptedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    referredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type CaseReferralUncheckedUpdateManyWithoutToDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    fromTenantId?: StringFieldUpdateOperationsInput | string
+    toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    referralReason?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    referredBy?: StringFieldUpdateOperationsInput | string
+    acceptedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    rejectedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    referredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type WorkflowUpdateWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    definition?: NullableJsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutWorkflowsNestedInput
+    creator?: UserUpdateOneWithoutWorkflowsCreatedNestedInput
+    cases?: CaseUpdateManyWithoutWorkflowNestedInput
+    steps?: WorkflowStepUpdateManyWithoutWorkflowNestedInput
+    transitions?: WorkflowTransitionUpdateManyWithoutWorkflowNestedInput
+  }
+
+  export type WorkflowUncheckedUpdateWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    definition?: NullableJsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    cases?: CaseUncheckedUpdateManyWithoutWorkflowNestedInput
+    steps?: WorkflowStepUncheckedUpdateManyWithoutWorkflowNestedInput
+    transitions?: WorkflowTransitionUncheckedUpdateManyWithoutWorkflowNestedInput
+  }
+
+  export type WorkflowUncheckedUpdateManyWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    definition?: NullableJsonNullValueInput | InputJsonValue
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUpdateWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutChatMessagesNestedInput
+    sender?: UserUpdateOneRequiredWithoutChatMessagesSentNestedInput
+    recipient?: UserUpdateOneWithoutChatMessagesReceivedNestedInput
+    recipientDepartment?: DepartmentUpdateOneWithoutRecipientChatMessagesNestedInput
+  }
+
+  export type AgencyChatMessageUncheckedUpdateWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUpdateWithoutRecipientDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutChatMessagesNestedInput
+    sender?: UserUpdateOneRequiredWithoutChatMessagesSentNestedInput
+    recipient?: UserUpdateOneWithoutChatMessagesReceivedNestedInput
+    department?: DepartmentUpdateOneWithoutChatMessagesNestedInput
+  }
+
+  export type AgencyChatMessageUncheckedUpdateWithoutRecipientDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateManyTenantInput = {
+    id?: string
+    departmentId?: string | null
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DepartmentCreateManyTenantInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type RoleCreateManyTenantInput = {
     id?: string
     name: string
@@ -45810,6 +51043,7 @@ export namespace Prisma {
 
   export type WorkflowCreateManyTenantInput = {
     id?: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -45828,6 +51062,8 @@ export namespace Prisma {
     id?: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -45854,6 +51090,8 @@ export namespace Prisma {
     id?: string
     tenantId: string
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -45880,6 +51118,8 @@ export namespace Prisma {
     id?: string
     tenantId: string
     originatingTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -45906,6 +51146,8 @@ export namespace Prisma {
     id?: string
     caseId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -45923,6 +51165,8 @@ export namespace Prisma {
     id?: string
     caseId: string
     fromTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -46021,6 +51265,8 @@ export namespace Prisma {
     id?: string
     senderId: string
     recipientId?: string | null
+    departmentId?: string | null
+    recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
   }
@@ -46044,6 +51290,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
     casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
     casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
     assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
@@ -46067,6 +51314,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -46107,6 +51355,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateManyWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -46122,6 +51371,52 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DepartmentUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutDepartmentNestedInput
+    casesOriginating?: CaseUncheckedUpdateManyWithoutOriginatingDepartmentNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentDepartmentNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromDepartmentNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToDepartmentNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutDepartmentNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
+    recipientChatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientDepartmentNestedInput
+  }
+
+  export type DepartmentUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46176,6 +51471,7 @@ export namespace Prisma {
     isDefault?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    department?: DepartmentUpdateOneWithoutWorkflowsNestedInput
     creator?: UserUpdateOneWithoutWorkflowsCreatedNestedInput
     cases?: CaseUpdateManyWithoutWorkflowNestedInput
     steps?: WorkflowStepUpdateManyWithoutWorkflowNestedInput
@@ -46184,6 +51480,7 @@ export namespace Prisma {
 
   export type WorkflowUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -46203,6 +51500,7 @@ export namespace Prisma {
 
   export type WorkflowUncheckedUpdateManyWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -46237,6 +51535,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -46251,6 +51551,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -46281,6 +51583,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -46323,6 +51627,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -46337,6 +51643,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -46367,6 +51675,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -46409,6 +51719,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -46423,6 +51735,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -46453,6 +51767,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -46487,6 +51803,8 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     case?: CaseUpdateOneRequiredWithoutReferralsNestedInput
     toTenant?: TenantUpdateOneRequiredWithoutReferralsToNestedInput
+    fromDepartment?: DepartmentUpdateOneWithoutReferralsFromNestedInput
+    toDepartment?: DepartmentUpdateOneWithoutReferralsToNestedInput
     referrer?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
     accepter?: UserUpdateOneWithoutReferralsAcceptedNestedInput
     rejecter?: UserUpdateOneWithoutReferralsRejectedNestedInput
@@ -46496,6 +51814,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -46513,6 +51833,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -46538,6 +51860,8 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     case?: CaseUpdateOneRequiredWithoutReferralsNestedInput
     fromTenant?: TenantUpdateOneRequiredWithoutReferralsFromNestedInput
+    fromDepartment?: DepartmentUpdateOneWithoutReferralsFromNestedInput
+    toDepartment?: DepartmentUpdateOneWithoutReferralsToNestedInput
     referrer?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
     accepter?: UserUpdateOneWithoutReferralsAcceptedNestedInput
     rejecter?: UserUpdateOneWithoutReferralsRejectedNestedInput
@@ -46547,6 +51871,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -46564,6 +51890,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -46826,12 +52154,16 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sender?: UserUpdateOneRequiredWithoutChatMessagesSentNestedInput
     recipient?: UserUpdateOneWithoutChatMessagesReceivedNestedInput
+    department?: DepartmentUpdateOneWithoutChatMessagesNestedInput
+    recipientDepartment?: DepartmentUpdateOneWithoutRecipientChatMessagesNestedInput
   }
 
   export type AgencyChatMessageUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
     recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46840,6 +52172,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
     recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46849,6 +52183,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -46875,6 +52211,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -46934,6 +52272,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -46951,6 +52291,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -46968,6 +52310,8 @@ export namespace Prisma {
     caseId: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -47032,6 +52376,7 @@ export namespace Prisma {
   export type WorkflowCreateManyCreatorInput = {
     id?: string
     tenantId: string
+    departmentId?: string | null
     key: string
     name: string
     description?: string | null
@@ -47098,6 +52443,8 @@ export namespace Prisma {
     id?: string
     tenantId: string
     recipientId?: string | null
+    departmentId?: string | null
+    recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
   }
@@ -47106,6 +52453,8 @@ export namespace Prisma {
     id?: string
     tenantId: string
     senderId: string
+    departmentId?: string | null
+    recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
   }
@@ -47131,6 +52480,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
@@ -47145,6 +52496,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -47175,6 +52528,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -47217,6 +52572,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
@@ -47231,6 +52588,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -47261,6 +52620,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -47394,6 +52755,8 @@ export namespace Prisma {
     case?: CaseUpdateOneRequiredWithoutReferralsNestedInput
     fromTenant?: TenantUpdateOneRequiredWithoutReferralsFromNestedInput
     toTenant?: TenantUpdateOneRequiredWithoutReferralsToNestedInput
+    fromDepartment?: DepartmentUpdateOneWithoutReferralsFromNestedInput
+    toDepartment?: DepartmentUpdateOneWithoutReferralsToNestedInput
     accepter?: UserUpdateOneWithoutReferralsAcceptedNestedInput
     rejecter?: UserUpdateOneWithoutReferralsRejectedNestedInput
   }
@@ -47403,6 +52766,8 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -47420,6 +52785,8 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -47445,6 +52812,8 @@ export namespace Prisma {
     case?: CaseUpdateOneRequiredWithoutReferralsNestedInput
     fromTenant?: TenantUpdateOneRequiredWithoutReferralsFromNestedInput
     toTenant?: TenantUpdateOneRequiredWithoutReferralsToNestedInput
+    fromDepartment?: DepartmentUpdateOneWithoutReferralsFromNestedInput
+    toDepartment?: DepartmentUpdateOneWithoutReferralsToNestedInput
     referrer?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
     rejecter?: UserUpdateOneWithoutReferralsRejectedNestedInput
   }
@@ -47454,6 +52823,8 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -47471,6 +52842,8 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -47496,6 +52869,8 @@ export namespace Prisma {
     case?: CaseUpdateOneRequiredWithoutReferralsNestedInput
     fromTenant?: TenantUpdateOneRequiredWithoutReferralsFromNestedInput
     toTenant?: TenantUpdateOneRequiredWithoutReferralsToNestedInput
+    fromDepartment?: DepartmentUpdateOneWithoutReferralsFromNestedInput
+    toDepartment?: DepartmentUpdateOneWithoutReferralsToNestedInput
     referrer?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
     accepter?: UserUpdateOneWithoutReferralsAcceptedNestedInput
   }
@@ -47505,6 +52880,8 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -47522,6 +52899,8 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -47699,6 +53078,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutWorkflowsNestedInput
+    department?: DepartmentUpdateOneWithoutWorkflowsNestedInput
     cases?: CaseUpdateManyWithoutWorkflowNestedInput
     steps?: WorkflowStepUpdateManyWithoutWorkflowNestedInput
     transitions?: WorkflowTransitionUpdateManyWithoutWorkflowNestedInput
@@ -47707,6 +53087,7 @@ export namespace Prisma {
   export type WorkflowUncheckedUpdateWithoutCreatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47726,6 +53107,7 @@ export namespace Prisma {
   export type WorkflowUncheckedUpdateManyWithoutCreatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     key?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47863,6 +53245,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
     roles?: RoleUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUpdateManyWithoutTenantNestedInput
     cases?: CaseUpdateManyWithoutTenantNestedInput
@@ -47889,6 +53272,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
     roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
     workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
     cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
@@ -47922,12 +53306,16 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutChatMessagesNestedInput
     recipient?: UserUpdateOneWithoutChatMessagesReceivedNestedInput
+    department?: DepartmentUpdateOneWithoutChatMessagesNestedInput
+    recipientDepartment?: DepartmentUpdateOneWithoutRecipientChatMessagesNestedInput
   }
 
   export type AgencyChatMessageUncheckedUpdateWithoutSenderInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -47936,6 +53324,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     recipientId?: NullableStringFieldUpdateOperationsInput | string | null
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -47946,12 +53336,16 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutChatMessagesNestedInput
     sender?: UserUpdateOneRequiredWithoutChatMessagesSentNestedInput
+    department?: DepartmentUpdateOneWithoutChatMessagesNestedInput
+    recipientDepartment?: DepartmentUpdateOneWithoutRecipientChatMessagesNestedInput
   }
 
   export type AgencyChatMessageUncheckedUpdateWithoutRecipientInput = {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -47960,6 +53354,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     tenantId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -48049,6 +53445,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowVersion?: number
     caseNumber: string
@@ -48121,6 +53519,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     currentStep?: WorkflowStepUpdateOneWithoutCasesHereNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
@@ -48135,6 +53535,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
     caseNumber?: StringFieldUpdateOperationsInput | string
@@ -48165,6 +53567,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
     caseNumber?: StringFieldUpdateOperationsInput | string
@@ -48323,6 +53727,8 @@ export namespace Prisma {
     tenantId: string
     originatingTenantId?: string | null
     currentTenantId?: string | null
+    originatingDepartmentId?: string | null
+    currentDepartmentId?: string | null
     referralStatus?: string
     workflowId: string
     workflowVersion?: number
@@ -48480,6 +53886,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneRequiredWithoutCasesNestedInput
     originatingTenant?: TenantUpdateOneWithoutCasesOriginatedNestedInput
     currentTenant?: TenantUpdateOneWithoutCasesCurrentNestedInput
+    originatingDepartment?: DepartmentUpdateOneWithoutCasesOriginatingNestedInput
+    currentDepartment?: DepartmentUpdateOneWithoutCasesCurrentNestedInput
     workflow?: WorkflowUpdateOneRequiredWithoutCasesNestedInput
     assignee?: UserUpdateOneWithoutCasesAssignedNestedInput
     creator?: UserUpdateOneRequiredWithoutCasesCreatedNestedInput
@@ -48494,6 +53902,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -48524,6 +53934,8 @@ export namespace Prisma {
     tenantId?: StringFieldUpdateOperationsInput | string
     originatingTenantId?: NullableStringFieldUpdateOperationsInput | string | null
     currentTenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    originatingDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralStatus?: StringFieldUpdateOperationsInput | string
     workflowId?: StringFieldUpdateOperationsInput | string
     workflowVersion?: IntFieldUpdateOperationsInput | number
@@ -48660,6 +54072,8 @@ export namespace Prisma {
     id?: string
     fromTenantId: string
     toTenantId: string
+    fromDepartmentId?: string | null
+    toDepartmentId?: string | null
     referralReason?: string | null
     notes?: string | null
     status?: string
@@ -48766,6 +54180,8 @@ export namespace Prisma {
     metadata?: NullableJsonNullValueInput | InputJsonValue
     fromTenant?: TenantUpdateOneRequiredWithoutReferralsFromNestedInput
     toTenant?: TenantUpdateOneRequiredWithoutReferralsToNestedInput
+    fromDepartment?: DepartmentUpdateOneWithoutReferralsFromNestedInput
+    toDepartment?: DepartmentUpdateOneWithoutReferralsToNestedInput
     referrer?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
     accepter?: UserUpdateOneWithoutReferralsAcceptedNestedInput
     rejecter?: UserUpdateOneWithoutReferralsRejectedNestedInput
@@ -48775,6 +54191,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
@@ -48792,6 +54210,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     fromTenantId?: StringFieldUpdateOperationsInput | string
     toTenantId?: StringFieldUpdateOperationsInput | string
+    fromDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    toDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     referralReason?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string

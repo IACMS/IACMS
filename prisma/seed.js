@@ -168,6 +168,14 @@ function makeEmail(tenantCode, localPart) {
   return `${localPart}@${tenantCode.toLowerCase()}.gov.example`;
 }
 
+function seededDepartmentsForTenant(tenant) {
+  return [
+    { code: `${tenant.code}-INTAKE`, name: 'Intake Department', description: 'Receives and triages new work.' },
+    { code: `${tenant.code}-CASE`, name: 'Case Management Department', description: 'Owns active case handling and assignments.' },
+    { code: `${tenant.code}-LEGAL`, name: 'Legal and Escalations Department', description: 'Handles escalations, approvals, and legal coordination.' },
+  ];
+}
+
 async function clearDatabase() {
   console.log('Clearing existing data (dev only)...');
   await prisma.$transaction([
@@ -186,6 +194,7 @@ async function clearDatabase() {
     prisma.userRole.deleteMany(),
     prisma.rolePermission.deleteMany(),
     prisma.user.deleteMany(),
+    prisma.department.deleteMany(),
     prisma.role.deleteMany(),
     prisma.permission.deleteMany(),
     prisma.tenant.deleteMany(),
@@ -513,6 +522,28 @@ async function main() {
   }
   console.log(`✅ Created ${TENANTS.length} operational tenants\n`);
 
+  console.log('Creating departments for each operational tenant...');
+  const departmentsByTenant = new Map();
+  for (const tenant of TENANTS) {
+    const defs = seededDepartmentsForTenant(tenant);
+    const created = [];
+    for (const def of defs) {
+      created.push(
+        await prisma.department.create({
+          data: {
+            tenantId: tenant.id,
+            code: def.code,
+            name: def.name,
+            description: def.description,
+            isActive: true,
+          },
+        }),
+      );
+    }
+    departmentsByTenant.set(tenant.id, created);
+  }
+  console.log('✅ Departments created\n');
+
   console.log('Creating platform user...');
   const passwordHash = await bcrypt.hash('password123', 10);
   const platformUser = await prisma.user.create({
@@ -563,19 +594,22 @@ async function main() {
     await assignPermissionsToRole(intakeRole.id, rolePermissions.intake_specialist);
 
     const staff = [
-      { local: 'admin', first: 'Dana', last: 'Reed', roles: [ROLE_TENANT_ADMIN_ID] },
-      { local: 'supervisor', first: 'Noah', last: 'Brooks', roles: [ROLE_CASE_MANAGER_ID] },
-      { local: 'intake', first: 'Maya', last: 'Patel', roles: [intakeRole.id] },
-      { local: 'case.manager1', first: 'Ethan', last: 'Kim', roles: [ROLE_CASE_MANAGER_ID] },
-      { local: 'case.manager2', first: 'Sara', last: 'Lopez', roles: [ROLE_CASE_MANAGER_ID] },
-      { local: 'viewer', first: 'Ivy', last: 'Chen', roles: [ROLE_VIEWER_ID] },
+      { local: 'admin', first: 'Dana', last: 'Reed', roles: [ROLE_TENANT_ADMIN_ID], deptIdx: 2 },
+      { local: 'supervisor', first: 'Noah', last: 'Brooks', roles: [ROLE_CASE_MANAGER_ID], deptIdx: 1 },
+      { local: 'intake', first: 'Maya', last: 'Patel', roles: [intakeRole.id], deptIdx: 0 },
+      { local: 'case.manager1', first: 'Ethan', last: 'Kim', roles: [ROLE_CASE_MANAGER_ID], deptIdx: 1 },
+      { local: 'case.manager2', first: 'Sara', last: 'Lopez', roles: [ROLE_CASE_MANAGER_ID], deptIdx: 1 },
+      { local: 'viewer', first: 'Ivy', last: 'Chen', roles: [ROLE_VIEWER_ID], deptIdx: 0 },
     ];
+
+    const tenantDepartments = departmentsByTenant.get(tenant.id) ?? [];
 
     for (const s of staff) {
       const email = makeEmail(tenant.code, s.local);
       const user = await prisma.user.create({
         data: {
           tenantId: tenant.id,
+          departmentId: tenantDepartments[s.deptIdx]?.id ?? null,
           email,
           username: s.local.replace(/\./g, '_'),
           passwordHash,
@@ -648,6 +682,8 @@ async function main() {
   if (!fromAdmin || !fromManager) throw new Error('Missing expected users for DCS-01');
   const fromDefaultWorkflow = workflowsByTenant.get(fromTenant.id)?.find((w) => w.workflow.isDefault);
   if (!fromDefaultWorkflow) throw new Error('Missing default workflow for DCS-01');
+  const fromDepartments = departmentsByTenant.get(fromTenant.id) ?? [];
+  const fromCaseDept = fromDepartments[1]?.id ?? null;
 
   const referralTargets = ['CPS-GCPD', 'PUBLIC-HOSP', 'LEGAL-AID'].map((code) => TENANTS.find((t) => t.code === code));
   if (referralTargets.some((t) => !t)) throw new Error('Missing referral target tenant(s)');
@@ -685,6 +721,8 @@ async function main() {
         tenantId: fromTenant.id,
         originatingTenantId: fromTenant.id,
         currentTenantId: spec.toTenant.id,
+        originatingDepartmentId: fromCaseDept,
+        currentDepartmentId: departmentsByTenant.get(spec.toTenant.id)?.[0]?.id ?? null,
         referralStatus: spec.status,
         workflowId: fromDefaultWorkflow.workflow.id,
         workflowVersion: 1,
@@ -730,6 +768,8 @@ async function main() {
         caseId: c.id,
         fromTenantId: fromTenant.id,
         toTenantId: spec.toTenant.id,
+        fromDepartmentId: fromCaseDept,
+        toDepartmentId: departmentsByTenant.get(spec.toTenant.id)?.[0]?.id ?? null,
         referralReason: spec.reason,
         notes: 'Seeded referral notes: includes consent and contact instructions.',
         status: spec.status,
