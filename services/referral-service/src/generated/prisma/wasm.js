@@ -428,7 +428,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/e/code/IACMS/Current/IACMS/services/referral-service/src/generated/prisma",
+      "value": "/home/bishi/Desktop/IACMS/services/referral-service/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -442,7 +442,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/e/code/IACMS/Current/IACMS/prisma/schema.prisma",
+    "sourceFilePath": "/home/bishi/Desktop/IACMS/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
