@@ -36,6 +36,87 @@ function isUuid(value) {
   return typeof value === 'string' && UUID_RE.test(value.trim());
 }
 
+function parseMetadata(metadata) {
+  return metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {};
+}
+
+function mergeMetadata(existing, patch) {
+  return { ...parseMetadata(existing), ...patch };
+}
+
+function isoOrNull(value) {
+  return value ? new Date(value).toISOString() : null;
+}
+
+async function getPublishedWorkflowByKey(tx, tenantId, key) {
+  return tx.workflow.findFirst({
+    where: { tenantId, key, status: 'PUBLISHED' },
+    include: {
+      steps: {
+        orderBy: [{ position: 'asc' }, { key: 'asc' }],
+      },
+    },
+    orderBy: { version: 'desc' },
+  });
+}
+
+function getInitialStep(workflow) {
+  return workflow?.steps?.find((step) => step.isInitial) ?? null;
+}
+
+async function deactivateActiveAssignments(tx, caseId) {
+  await tx.assignment.updateMany({
+    where: { caseId, isActive: true },
+    data: { isActive: false, unassignedAt: new Date() },
+  });
+}
+
+function buildReferralProgress(referral) {
+  const metadata = parseMetadata(referral.metadata);
+  const caseRow = referral.case ?? {};
+  const referralStatus = String(referral.status || '').toLowerCase();
+  const caseReferralStatus = String(caseRow.referralStatus || '').toLowerCase();
+  const caseStatus = String(caseRow.status || '').toLowerCase();
+  const hasReceiverAssignment = Boolean(
+    metadata.receivingAssignedWorkflowId || caseRow.assignedTo,
+  );
+  const movedBeyondAssignedInitialStep = Boolean(
+    metadata.receivingAssignedInitialStepId &&
+      caseRow.currentStepId &&
+      String(metadata.receivingAssignedInitialStepId) !== String(caseRow.currentStepId),
+  );
+
+  let range = 'Received';
+  if (referralStatus === 'rejected') {
+    range = 'Rejected';
+  } else if (referralStatus === 'completed') {
+    range = 'Completed';
+  } else if (caseReferralStatus === 'awaiting_assignment' || referralStatus === 'pending') {
+    range = 'Received';
+  } else if (caseStatus.includes('resolved') || caseStatus.includes('closed')) {
+    range = 'Near completion';
+  } else if (caseReferralStatus === 'in_progress' && hasReceiverAssignment) {
+    range = movedBeyondAssignedInitialStep ? 'Being worked on' : 'Assigned';
+  } else if (hasReceiverAssignment) {
+    range = 'Assigned';
+  }
+
+  return {
+    range,
+    lastUpdatedAt:
+      isoOrNull(caseRow.updatedAt) ||
+      isoOrNull(referral.completedAt) ||
+      isoOrNull(referral.rejectedAt) ||
+      isoOrNull(referral.acceptedAt) ||
+      isoOrNull(referral.referredAt),
+  };
+}
+
+function withProgress(referral, actorTenantId) {
+  if (!referral || referral.fromTenantId !== actorTenantId) return referral;
+  return { ...referral, progress: buildReferralProgress(referral) };
+}
+
 /** Accept case UUID or tenant-scoped case number (e.g. DCS01-2026-0001). */
 async function resolveCaseId(caseRef, fromTenantId) {
   const raw = String(caseRef || '').trim();
@@ -89,7 +170,7 @@ export async function getReferrals(req, res, next) {
       },
       orderBy: { referredAt: 'desc' },
     });
-    res.json({ referrals });
+    res.json({ referrals: referrals.map((referral) => withProgress(referral, actorTenantId)) });
   } catch (error) {
     next(error);
   }
@@ -113,7 +194,7 @@ export async function getReferral(req, res, next) {
     if (referral.fromTenantId !== actorTenantId && referral.toTenantId !== actorTenantId) {
       throw new NotFoundError('Referral');
     }
-    res.json({ referral });
+    res.json({ referral: withProgress(referral, actorTenantId) });
   } catch (error) {
     next(error);
   }
@@ -214,16 +295,47 @@ export async function acceptReferral(req, res, next) {
         'Only the receiving agency can accept this referral.',
       );
 
+      const placeholderWorkflow = await getPublishedWorkflowByKey(tx, ref.toTenantId, 'referral-intake');
+      if (!placeholderWorkflow) {
+        throw new ValidationError(
+          'Receiving agency is missing the referral-intake workflow. Reseed or create it before accepting referrals.',
+        );
+      }
+      const placeholderInitialStep = getInitialStep(placeholderWorkflow);
+      if (!placeholderInitialStep) {
+        throw new ValidationError('referral-intake workflow must have an initial step.');
+      }
+
+      const metadata = mergeMetadata(ref.metadata, {
+        originWorkflowId: ref.case.workflowId,
+        originWorkflowVersion: ref.case.workflowVersion,
+        originCurrentStepId: ref.case.currentStepId,
+        originAssignedTo: ref.case.assignedTo,
+        placeholderWorkflowId: placeholderWorkflow.id,
+        placeholderWorkflowVersion: placeholderWorkflow.version,
+        placeholderCurrentStepId: placeholderInitialStep.id,
+      });
+
       const referral = await tx.caseReferral.update({
         where: { id: ref.id },
-        data: { status: 'accepted', acceptedBy: String(accepterId), acceptedAt: new Date() },
+        data: {
+          status: 'accepted',
+          acceptedBy: String(accepterId),
+          acceptedAt: new Date(),
+          metadata,
+        },
       });
+      await deactivateActiveAssignments(tx, ref.caseId);
       await tx.case.update({
         where: { id: ref.caseId },
         data: {
           currentTenantId: ref.toTenantId,
           originatingTenantId: ref.case.originatingTenantId ?? ref.fromTenantId,
-          referralStatus: 'in_progress',
+          referralStatus: 'awaiting_assignment',
+          workflowId: placeholderWorkflow.id,
+          workflowVersion: placeholderWorkflow.version,
+          currentStepId: placeholderInitialStep.id,
+          assignedTo: null,
         },
       });
       return referral;
@@ -245,13 +357,117 @@ export async function acceptReferral(req, res, next) {
       action: 'referral.accept',
       userId: String(accepterId),
       oldValues: { status: 'pending' },
-      newValues: { status: 'accepted', caseCurrentTenantId: updated.toTenantId },
+      newValues: {
+        status: 'accepted',
+        caseCurrentTenantId: updated.toTenantId,
+        caseReferralStatus: 'awaiting_assignment',
+      },
       metadata: { acceptedAt: updated.acceptedAt.toISOString() },
     });
 
     const referral = await prisma.caseReferral.findUnique({
       where: { id: updated.id },
       include: { case: true, accepter: true },
+    });
+    res.json({ referral });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function assignReferral(req, res, next) {
+  try {
+    const { workflowId, assignedToUserId } = req.body || {};
+    const actorTenant = tenantHeader(req);
+    const actorId = userId(req);
+    if (!actorTenant) throw new ValidationError('x-tenant-id header required');
+    if (!actorId) throw new ValidationError('x-user-id header required');
+    if (!workflowId || !isUuid(String(workflowId))) throw new ValidationError('workflowId is required');
+    if (!assignedToUserId || !isUuid(String(assignedToUserId))) {
+      throw new ValidationError('assignedToUserId is required');
+    }
+
+    const updated = await prisma.$transaction(async tx => {
+      const ref = await tx.caseReferral.findUnique({
+        where: { id: req.params.id },
+        include: { case: true },
+      });
+      if (!ref) throw new NotFoundError('Referral');
+      if (ref.status !== 'accepted') {
+        throw new InvalidReferralStateError('Referral must be accepted before assignment.');
+      }
+      assertActorTenant(req, ref.toTenantId, 'Only the receiving agency can assign this referral.');
+
+      const workflow = await tx.workflow.findFirst({
+        where: { id: String(workflowId), tenantId: ref.toTenantId, status: 'PUBLISHED' },
+        include: { steps: { orderBy: [{ position: 'asc' }, { key: 'asc' }] } },
+      });
+      if (!workflow) throw new NotFoundError('Workflow');
+      const initialStep = getInitialStep(workflow);
+      if (!initialStep) throw new ValidationError('Selected workflow must have an initial step.');
+
+      const assignee = await tx.user.findFirst({
+        where: { id: String(assignedToUserId), tenantId: ref.toTenantId, isActive: true },
+        select: { id: true },
+      });
+      if (!assignee) throw new ValidationError('Assigned user must be active and belong to the receiving agency.');
+
+      const metadata = mergeMetadata(ref.metadata, {
+        receivingAssignedWorkflowId: workflow.id,
+        receivingAssignedWorkflowVersion: workflow.version,
+        receivingAssignedAt: new Date().toISOString(),
+        receivingAssignedInitialStepId: initialStep.id,
+      });
+
+      await deactivateActiveAssignments(tx, ref.caseId);
+      await tx.assignment.create({
+        data: {
+          caseId: ref.caseId,
+          assignedTo: assignee.id,
+          assignedBy: actorId,
+          assignmentType: 'referral_assignment',
+          notes: 'Assigned by receiving agency after accepting referral.',
+          isActive: true,
+        },
+      });
+
+      await tx.case.update({
+        where: { id: ref.caseId },
+        data: {
+          workflowId: workflow.id,
+          workflowVersion: workflow.version,
+          currentStepId: initialStep.id,
+          assignedTo: assignee.id,
+          referralStatus: 'in_progress',
+        },
+      });
+
+      const referral = await tx.caseReferral.update({
+        where: { id: ref.id },
+        data: { metadata },
+      });
+
+      return referral;
+    });
+
+    await eventBus.publish(TOPICS.AUDIT_LOG, {
+      tenantId: updated.toTenantId,
+      relatedTenantId: updated.fromTenantId,
+      entityType: 'referral',
+      entityId: updated.id,
+      action: 'referral.assign',
+      userId: String(actorId),
+      oldValues: { caseReferralStatus: 'awaiting_assignment' },
+      newValues: {
+        caseReferralStatus: 'in_progress',
+        workflowId: String(workflowId),
+        assignedToUserId: String(assignedToUserId),
+      },
+    });
+
+    const referral = await prisma.caseReferral.findUnique({
+      where: { id: updated.id },
+      include: { case: true, fromTenant: true, toTenant: true, accepter: true },
     });
     res.json({ referral });
   } catch (error) {
@@ -333,13 +549,38 @@ export async function completeReferral(req, res, next) {
         throw new ForbiddenError('Only agencies involved in this referral can mark it completed.');
       }
 
+      const metadata = parseMetadata(ref.metadata);
+      if (!metadata.originWorkflowId) {
+        throw new ValidationError('Referral is missing original workflow information and cannot be returned safely.');
+      }
+
       const referral = await tx.caseReferral.update({
         where: { id: ref.id },
         data: { status: 'completed', completedAt: new Date() },
       });
+      await deactivateActiveAssignments(tx, ref.caseId);
+      if (metadata.originAssignedTo) {
+        await tx.assignment.create({
+          data: {
+            caseId: ref.caseId,
+            assignedTo: String(metadata.originAssignedTo),
+            assignedBy: String(actorId),
+            assignmentType: 'referral_return',
+            notes: 'Original assignment restored when referral returned to sender.',
+            isActive: true,
+          },
+        });
+      }
       await tx.case.update({
         where: { id: ref.caseId },
-        data: { currentTenantId: ref.fromTenantId, referralStatus: 'returned' },
+        data: {
+          currentTenantId: ref.fromTenantId,
+          referralStatus: 'returned',
+          workflowId: String(metadata.originWorkflowId),
+          workflowVersion: Number(metadata.originWorkflowVersion || 1),
+          currentStepId: metadata.originCurrentStepId ? String(metadata.originCurrentStepId) : null,
+          assignedTo: metadata.originAssignedTo ? String(metadata.originAssignedTo) : null,
+        },
       });
       return referral;
     });

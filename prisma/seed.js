@@ -78,6 +78,10 @@ const ROLE_SYSTEM_ADMIN_ID = '99999999-9999-9999-9999-999999999991';
 const ROLE_CASE_MANAGER_ID = '66666666-6666-6666-6666-666666666666';
 const ROLE_VIEWER_ID = '77777777-7777-7777-7777-777777777777';
 
+/** Matches shared/contracts/__fixtures__/workflow-full.example.json */
+const FIXTURE_WORKFLOW_ID = '88888888-8888-8888-8888-888888888888';
+const FIXTURE_TENANT_ID = TENANTS[0].id;
+
 const permissions = [
   { resource: 'cases', action: 'create', description: 'Create new cases' },
   { resource: 'cases', action: 'read', description: 'View cases' },
@@ -358,6 +362,40 @@ async function createWorkflow({ tenantId, createdBy, key, name, description, isD
   return { workflow, steps: { stepIntake, stepAssessment, stepReview, stepAction, stepClosed } };
 }
 
+async function createReferralIntakeWorkflow({ tenantId, createdBy }) {
+  const workflow = await prisma.workflow.create({
+    data: {
+      tenantId,
+      key: 'referral-intake',
+      name: 'Referral Intake',
+      description: 'Temporary holding workflow for inbound referrals awaiting local assignment.',
+      definition: { seeded: true, referralIntake: true },
+      version: 1,
+      status: 'PUBLISHED',
+      publishedAt: new Date(),
+      isActive: true,
+      isDefault: false,
+      createdBy,
+    },
+  });
+
+  const stepAwaitingAssignment = await prisma.workflowStep.create({
+    data: {
+      workflowId: workflow.id,
+      key: 'awaiting-assignment',
+      name: 'Awaiting Assignment',
+      description: 'Receiving agency must choose a local workflow and assignee before work begins.',
+      isInitial: true,
+      isFinal: false,
+      position: 0,
+      allowedRoleIds: [],
+      requiresAttachment: false,
+    },
+  });
+
+  return { workflow, steps: { stepAwaitingAssignment } };
+}
+
 async function main() {
   console.log('🌱 Starting portal seed...\n');
 
@@ -584,6 +622,12 @@ async function main() {
       });
       tenantWorkflows.push(created);
     }
+    tenantWorkflows.push(
+      await createReferralIntakeWorkflow({
+        tenantId: tenant.id,
+        createdBy: adminUser.id,
+      }),
+    );
     workflowsByTenant.set(tenant.id, tenantWorkflows);
   }
   console.log('✅ Workflows created\n');
@@ -712,21 +756,17 @@ async function main() {
   }
 
   console.log('✅ Cases and referrals created\n');
-  await prisma.userRole.upsert({
-    where: { userId_roleId: { userId: VIEWER_USER_ID, roleId: VIEWER_ROLE_ID } },
-    update: {},
-    create: {
-      userId: VIEWER_USER_ID,
-      roleId: VIEWER_ROLE_ID,
-    },
-  });
-  console.log(`✅ Roles assigned to users\n`);
 
   // 7. Published workflow matching shared/contracts/__fixtures__/workflow-full.example.json
   console.log('Creating published workflow standard-case…');
-  await prisma.workflowTransition.deleteMany({ where: { workflowId: WORKFLOW_ID } }).catch(() => {});
-  await prisma.workflowStep.deleteMany({ where: { workflowId: WORKFLOW_ID } }).catch(() => {});
-  await prisma.workflow.deleteMany({ where: { id: WORKFLOW_ID } }).catch(() => {});
+  const fixtureAdmin = await prisma.user.findFirst({
+    where: { tenantId: FIXTURE_TENANT_ID, email: makeEmail(TENANTS[0].code, 'admin') },
+  });
+  if (!fixtureAdmin) throw new Error(`Fixture tenant admin missing for ${TENANTS[0].code}`);
+
+  await prisma.workflowTransition.deleteMany({ where: { workflowId: FIXTURE_WORKFLOW_ID } }).catch(() => {});
+  await prisma.workflowStep.deleteMany({ where: { workflowId: FIXTURE_WORKFLOW_ID } }).catch(() => {});
+  await prisma.workflow.deleteMany({ where: { id: FIXTURE_WORKFLOW_ID } }).catch(() => {});
 
   const wfFixture = JSON.parse(
     readFileSync(
@@ -737,8 +777,8 @@ async function main() {
 
   await prisma.workflow.create({
     data: {
-      id: WORKFLOW_ID,
-      tenantId: TENANT_ID,
+      id: FIXTURE_WORKFLOW_ID,
+      tenantId: FIXTURE_TENANT_ID,
       key: wfFixture.key,
       name: 'Standard Case Flow',
       description: 'Seed workflow (Draft → Review → Approval → Closed)',
@@ -748,7 +788,7 @@ async function main() {
       definition: wfFixture,
       isActive: true,
       isDefault: true,
-      createdBy: ADMIN_USER_ID,
+      createdBy: fixtureAdmin.id,
       steps: {
         create: wfFixture.steps.map(s => ({
           id: s.id,
@@ -767,7 +807,7 @@ async function main() {
   await prisma.workflowTransition.createMany({
     data: wfFixture.transitions.map(t => ({
       id: t.id,
-      workflowId: WORKFLOW_ID,
+      workflowId: FIXTURE_WORKFLOW_ID,
       name: t.name,
       description: t.description,
       fromStepId: t.fromStepId,
