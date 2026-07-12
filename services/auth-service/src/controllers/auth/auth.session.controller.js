@@ -148,6 +148,7 @@ export async function login(req, res, next) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        departmentId: user.departmentId ?? null,
         mustChangePassword: user.mustChangePassword,
         roles: roleIds,
         tenant: {

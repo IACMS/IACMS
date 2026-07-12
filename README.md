@@ -177,6 +177,7 @@ POST   /api/v1/rbac/user-roles/assign
 
 GET    /api/v1/workflows
 GET    /api/v1/referrals
+GET    /api/v1/tenants/:id/departments
 GET    /api/v1/audit
 GET    /api/v1/integrations
 GET    /api/v1/notifications

@@ -14,6 +14,7 @@ const fixture = JSON.parse(
 describe('workflow-full fixture contract', () => {
   it('has expected shape', () => {
     expect(typeof fixture.id).toBe('string');
+    expect(Object.prototype.hasOwnProperty.call(fixture, 'departmentId')).toBe(true);
     expect(Array.isArray(fixture.steps)).toBe(true);
     expect(Array.isArray(fixture.transitions)).toBe(true);
     expect(fixture.status).toBe('PUBLISHED');

@@ -144,6 +144,11 @@ function tenantId(req) {
   return String(t);
 }
 
+function departmentId(req) {
+  const d = req.headers['x-department-id'];
+  return d ? String(d) : null;
+}
+
 function forwardHeaders(req) {
   const h = {};
   if (req.headers['x-user-id']) h['x-user-id'] = String(req.headers['x-user-id']);
@@ -240,6 +245,7 @@ export async function createCase(req, res, next) {
     }
     const actorId = String(req.headers['x-user-id'] || createdBy || '');
     if (!actorId) throw new ValidationError('x-user-id header required');
+    const actorDept = departmentId(req);
 
     let full;
     try {
@@ -258,6 +264,8 @@ export async function createCase(req, res, next) {
         tenantId: caller,
         originatingTenantId: caller,
         currentTenantId: caller,
+        originatingDepartmentId: actorDept,
+        currentDepartmentId: actorDept,
         referralStatus: 'none',
         caseNumber,
         title,

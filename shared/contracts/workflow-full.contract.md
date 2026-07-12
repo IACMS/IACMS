@@ -8,6 +8,7 @@ Shape (canonical JSON):
 
 - `id` (uuid): workflow row id  
 - `tenantId` (uuid)  
+- `departmentId` (uuid|null): `null` for tenant-wide workflows, otherwise the owning department scope  
 - `key` (string): stable workflow key (`tenantId` + `key` identifies a lineage)  
 - `version` (int): immutable published revision number  
 - `status`: `DRAFT` | `PUBLISHED` | `ARCHIVED`  

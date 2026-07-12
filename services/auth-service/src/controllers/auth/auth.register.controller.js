@@ -120,6 +120,7 @@ export async function register(req, res, next) {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
+        departmentId: user.departmentId ?? null,
         isEmailVerified: false,
         mustChangePassword: true,
         tenant: { id: user.tenant.id, name: user.tenant.name, code: user.tenant.code },
@@ -226,7 +227,7 @@ export async function resendVerification(req, res, next) {
 export async function createUser(req, res, next) {
   try {
     const actorTenantId = req.headers['x-tenant-id'] || req.user?.tenantId;
-    const { email, firstName, lastName, username, tenantCode, tenantId, roleId } = validateCreateUserRequest(
+    const { email, firstName, lastName, username, tenantCode, tenantId, roleId, departmentId } = validateCreateUserRequest(
       req.body,
       actorTenantId,
     );
@@ -244,6 +245,17 @@ export async function createUser(req, res, next) {
       throw new ValidationError('Cannot create users for another organization');
     }
     if (!tenant.isActive) throw new ValidationError('Cannot create user for inactive tenant');
+
+    let department = null;
+    if (departmentId) {
+      department = await prisma.department.findFirst({
+        where: { id: departmentId, tenantId: tenant.id, isActive: true },
+        select: { id: true, name: true, code: true },
+      });
+      if (!department) {
+        throw new ValidationError('Department must belong to the same organization and be active');
+      }
+    }
 
     // Duplicate check
     const existing = await prisma.user.findFirst({
@@ -268,6 +280,7 @@ export async function createUser(req, res, next) {
         firstName,
         lastName,
         tenantId: tenant.id,
+        departmentId: department?.id ?? null,
         isActive: true,
         mustChangePassword: true,
       },
@@ -312,7 +325,7 @@ export async function createUser(req, res, next) {
               action: 'user_created_by_admin',
               userId: req.headers['x-user-id'] || null,
               oldValues: null,
-              newValues: { channel: 'admin_created', roleId: roleId || null },
+              newValues: { channel: 'admin_created', roleId: roleId || null, departmentId: department?.id ?? null },
               metadata: {},
             },
             req,
@@ -331,6 +344,7 @@ export async function createUser(req, res, next) {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
+        departmentId: user.departmentId ?? null,
         mustChangePassword: user.mustChangePassword,
         role: assignedRole,
         tenant: { id: user.tenant.id, name: user.tenant.name, code: user.tenant.code },

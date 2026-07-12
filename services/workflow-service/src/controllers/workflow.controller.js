@@ -15,6 +15,11 @@ function tenantId(req) {
   return t;
 }
 
+function departmentId(req) {
+  const d = req.headers['x-department-id'];
+  return d ? String(d) : null;
+}
+
 function auditActor(req) {
   const u = req.headers['x-user-id'];
   return u ? String(u) : null;
@@ -28,6 +33,7 @@ function toFullJson(wf) {
   return {
     id: wf.id,
     tenantId: wf.tenantId,
+    departmentId: wf.departmentId ?? null,
     name: wf.name,
     key: wf.key,
     version: wf.version,
@@ -104,11 +110,13 @@ export async function getWorkflows(req, res, next) {
   try {
     const tenant = tenantId(req);
     const { status, key } = req.query;
+    const dept = req.headers['x-department-id'] ? String(req.headers['x-department-id']) : null;
     const workflows = await prisma.workflow.findMany({
       where: {
         tenantId: tenant,
         ...(status && { status }),
         ...(key && { key }),
+        ...(dept ? { OR: [{ departmentId: null }, { departmentId: dept }] } : {}),
       },
       include: { creator: true },
       orderBy: [{ key: 'asc' }, { version: 'desc' }],
@@ -124,9 +132,15 @@ export async function getPublishedWorkflow(req, res, next) {
     const { key, tenantId: qTenant } = req.query;
     if (!key) throw new ValidationError('key query param required');
     const tenant = String(qTenant || tenantId(req));
+    const dept = req.headers['x-department-id'] ? String(req.headers['x-department-id']) : null;
     const wf = await prisma.workflow.findFirst({
-      where: { tenantId: tenant, key, status: 'PUBLISHED' },
-      orderBy: { version: 'desc' },
+      where: {
+        tenantId: tenant,
+        key,
+        status: 'PUBLISHED',
+        ...(dept ? { OR: [{ departmentId: null }, { departmentId: dept }] } : {}),
+      },
+      orderBy: [{ departmentId: 'desc' }, { version: 'desc' }],
       include: {
         steps: { orderBy: [{ position: 'asc' }, { key: 'asc' }] },
         transitions: true,
@@ -181,6 +195,7 @@ export async function getWorkflow(req, res, next) {
 export async function createWorkflow(req, res, next) {
   try {
     const tenant = tenantId(req);
+    const dept = req.body.departmentId ?? departmentId(req) ?? null;
     const { key, name, description, createdBy } = req.body;
     if (!key || !name) throw new ValidationError('key and name are required');
 
@@ -201,6 +216,7 @@ export async function createWorkflow(req, res, next) {
         key,
         name,
         description,
+        departmentId: dept,
         version: nextVersion,
         status: 'DRAFT',
         definition: req.body.definition ?? null,

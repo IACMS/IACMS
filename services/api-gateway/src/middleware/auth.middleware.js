@@ -59,6 +59,7 @@ function extractBearerToken(req) {
 function setUserHeaders(req, user) {
   req.headers['x-user-id'] = user.id;
   req.headers['x-tenant-id'] = user.tenantId;
+  if (user.departmentId) req.headers['x-department-id'] = user.departmentId;
   req.headers['x-user-email'] = user.email;
   if (user.firstName) req.headers['x-user-firstname'] = user.firstName;
   if (user.lastName) req.headers['x-user-lastname'] = user.lastName;
@@ -148,6 +149,7 @@ export async function authenticate(req, res, next) {
     req.user = {
       id: sessionUser.id,
       tenantId: sessionUser.tenantId,
+      departmentId: sessionUser.departmentId ?? null,
       email: sessionUser.email,
       firstName: sessionUser.firstName,
       lastName: sessionUser.lastName,
@@ -179,6 +181,7 @@ export async function authenticate(req, res, next) {
       req.user = {
         id: decoded.id,
         tenantId: decoded.tenantId,
+        departmentId: decoded.departmentId ?? null,
         email: decoded.email,
         roles: Array.isArray(decoded.roles) ? decoded.roles : [],
         mustChangePassword,

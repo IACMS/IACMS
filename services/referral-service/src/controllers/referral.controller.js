@@ -24,6 +24,11 @@ function userId(req) {
   return String(req.headers['x-user-id']);
 }
 
+function departmentHeader(req) {
+  const d = req.headers['x-department-id'];
+  return d ? String(d) : null;
+}
+
 function tenantHeader(req) {
   const t = req.headers['x-tenant-id'];
   return t ? String(t) : null;
@@ -202,7 +207,16 @@ export async function getReferral(req, res, next) {
 
 export async function createReferral(req, res, next) {
   try {
-    const { caseId: caseRef, fromTenantId, toTenantId, referralReason, notes, referredBy } = req.body;
+    const {
+      caseId: caseRef,
+      fromTenantId,
+      toTenantId,
+      fromDepartmentId,
+      toDepartmentId,
+      referralReason,
+      notes,
+      referredBy,
+    } = req.body;
 
     const callerTenant = tenantHeader(req) || fromTenantId;
     if (!callerTenant) throw new ValidationError('x-tenant-id or fromTenantId required');
@@ -221,14 +235,41 @@ export async function createReferral(req, res, next) {
       throw new ValidationError('fromTenantId must be a valid tenant UUID.');
     }
 
+    const resolvedFromDept = fromDepartmentId || departmentHeader(req);
+    if (!resolvedFromDept || !isUuid(String(resolvedFromDept))) {
+      throw new ValidationError('fromDepartmentId is required (or provide x-department-id header).');
+    }
+    if (!toDepartmentId || !isUuid(String(toDepartmentId))) {
+      throw new ValidationError('toDepartmentId is required and must be a valid department UUID.');
+    }
+
     const caseId = await resolveCaseId(caseRef, resolvedFrom);
 
     const out = await prisma.$transaction(async tx => {
+      const kase = await tx.case.findUnique({
+        where: { id: caseId },
+        select: {
+          id: true,
+          currentTenantId: true,
+          currentDepartmentId: true,
+          tenantId: true,
+        },
+      });
+      if (!kase) throw new NotFoundError('Case');
+      if (String(kase.currentTenantId || kase.tenantId) !== String(resolvedFrom)) {
+        throw new ForbiddenError('You can only refer cases currently held by your agency.');
+      }
+      if (kase.currentDepartmentId && String(kase.currentDepartmentId) !== String(resolvedFromDept)) {
+        throw new ForbiddenError('You can only refer cases currently held by your department.');
+      }
+
       const referral = await tx.caseReferral.create({
         data: {
           caseId,
           fromTenantId: resolvedFrom,
           toTenantId,
+          fromDepartmentId: String(resolvedFromDept),
+          toDepartmentId: String(toDepartmentId),
           referralReason,
           notes,
           status: 'pending',
@@ -249,6 +290,8 @@ export async function createReferral(req, res, next) {
       currentTenantId: out.toTenantId,
       fromTenantId: out.fromTenantId,
       toTenantId: out.toTenantId,
+      fromDepartmentId: out.fromDepartmentId,
+      toDepartmentId: out.toDepartmentId,
       status: 'pending',
       referredBy: String(refBy),
       referredAt: out.referredAt.toISOString(),
@@ -281,6 +324,7 @@ export async function acceptReferral(req, res, next) {
     const { acceptedBy } = req.body;
     const accepterId = acceptedBy || req.headers['x-user-id'];
     if (!accepterId) throw new ValidationError('acceptedBy is required');
+    const receiverDept = departmentHeader(req);
 
     const updated = await prisma.$transaction(async tx => {
       const ref = await tx.caseReferral.findUnique({
@@ -294,6 +338,12 @@ export async function acceptReferral(req, res, next) {
         ref.toTenantId,
         'Only the receiving agency can accept this referral.',
       );
+      if (!ref.toDepartmentId) {
+        throw new ValidationError('Referral is missing toDepartmentId and cannot be accepted.');
+      }
+      if (receiverDept && String(receiverDept) !== String(ref.toDepartmentId)) {
+        throw new ForbiddenError('You can only accept referrals addressed to your department.');
+      }
 
       const placeholderWorkflow = await getPublishedWorkflowByKey(tx, ref.toTenantId, 'referral-intake');
       if (!placeholderWorkflow) {
@@ -311,6 +361,7 @@ export async function acceptReferral(req, res, next) {
         originWorkflowVersion: ref.case.workflowVersion,
         originCurrentStepId: ref.case.currentStepId,
         originAssignedTo: ref.case.assignedTo,
+        originDepartmentId: ref.case.currentDepartmentId ?? ref.case.originatingDepartmentId ?? null,
         placeholderWorkflowId: placeholderWorkflow.id,
         placeholderWorkflowVersion: placeholderWorkflow.version,
         placeholderCurrentStepId: placeholderInitialStep.id,
@@ -331,6 +382,9 @@ export async function acceptReferral(req, res, next) {
         data: {
           currentTenantId: ref.toTenantId,
           originatingTenantId: ref.case.originatingTenantId ?? ref.fromTenantId,
+          currentDepartmentId: ref.toDepartmentId,
+          originatingDepartmentId:
+            ref.case.originatingDepartmentId ?? ref.case.currentDepartmentId ?? ref.fromDepartmentId ?? null,
           referralStatus: 'awaiting_assignment',
           workflowId: placeholderWorkflow.id,
           workflowVersion: placeholderWorkflow.version,
@@ -346,6 +400,8 @@ export async function acceptReferral(req, res, next) {
       caseId: updated.caseId,
       fromTenantId: updated.fromTenantId,
       toTenantId: updated.toTenantId,
+      fromDepartmentId: updated.fromDepartmentId,
+      toDepartmentId: updated.toDepartmentId,
       acceptedBy: String(accepterId),
       acceptedAt: updated.acceptedAt.toISOString(),
     });
@@ -380,6 +436,7 @@ export async function assignReferral(req, res, next) {
     const { workflowId, assignedToUserId } = req.body || {};
     const actorTenant = tenantHeader(req);
     const actorId = userId(req);
+    const actorDept = departmentHeader(req);
     if (!actorTenant) throw new ValidationError('x-tenant-id header required');
     if (!actorId) throw new ValidationError('x-user-id header required');
     if (!workflowId || !isUuid(String(workflowId))) throw new ValidationError('workflowId is required');
@@ -397,6 +454,9 @@ export async function assignReferral(req, res, next) {
         throw new InvalidReferralStateError('Referral must be accepted before assignment.');
       }
       assertActorTenant(req, ref.toTenantId, 'Only the receiving agency can assign this referral.');
+      if (actorDept && ref.toDepartmentId && String(actorDept) !== String(ref.toDepartmentId)) {
+        throw new ForbiddenError('You can only assign referrals for your own department.');
+      }
 
       const workflow = await tx.workflow.findFirst({
         where: { id: String(workflowId), tenantId: ref.toTenantId, status: 'PUBLISHED' },
@@ -417,6 +477,7 @@ export async function assignReferral(req, res, next) {
         receivingAssignedWorkflowVersion: workflow.version,
         receivingAssignedAt: new Date().toISOString(),
         receivingAssignedInitialStepId: initialStep.id,
+        receivingAssignedDepartmentId: ref.toDepartmentId ?? actorDept ?? null,
       });
 
       await deactivateActiveAssignments(tx, ref.caseId);
@@ -439,6 +500,7 @@ export async function assignReferral(req, res, next) {
           currentStepId: initialStep.id,
           assignedTo: assignee.id,
           referralStatus: 'in_progress',
+          currentDepartmentId: ref.toDepartmentId ?? actorDept ?? null,
         },
       });
 
@@ -553,6 +615,7 @@ export async function completeReferral(req, res, next) {
       if (!metadata.originWorkflowId) {
         throw new ValidationError('Referral is missing original workflow information and cannot be returned safely.');
       }
+      const originDepartmentId = metadata.originDepartmentId ? String(metadata.originDepartmentId) : null;
 
       const referral = await tx.caseReferral.update({
         where: { id: ref.id },
@@ -580,6 +643,7 @@ export async function completeReferral(req, res, next) {
           workflowVersion: Number(metadata.originWorkflowVersion || 1),
           currentStepId: metadata.originCurrentStepId ? String(metadata.originCurrentStepId) : null,
           assignedTo: metadata.originAssignedTo ? String(metadata.originAssignedTo) : null,
+          currentDepartmentId: originDepartmentId,
         },
       });
       return referral;

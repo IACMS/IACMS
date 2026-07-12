@@ -56,6 +56,7 @@ describe('Login', () => {
     expect(res.body.accessToken).toBeDefined();
     expect(res.body.user.mustChangePassword).toBe(false);
     expect(res.body.user.email).toBe(ADMIN_EMAIL);
+    expect(Object.prototype.hasOwnProperty.call(res.body.user, 'departmentId')).toBe(true);
   });
 
   it('returns 401 for wrong password', async () => {
