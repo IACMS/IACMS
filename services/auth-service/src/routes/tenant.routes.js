@@ -3,12 +3,15 @@ import {
   listTenants,
   getTenant,
   listTenantDepartments,
+  createDepartment,
+  updateDepartment,
+  deactivateDepartment,
   validateTenant,
   updateTenantConfig,
   registerTenant,
   uploadTenantLogo,
 } from '../controllers/tenant.controller.js';
-import { authenticateTokenOptional } from '../middleware/auth.middleware.js';
+import { authenticateTokenOptional, authenticateToken } from '../middleware/auth.middleware.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -19,6 +22,9 @@ router.post('/register', authenticateTokenOptional, registerTenant);
 router.get('/', listTenants);
 router.get('/validate/:code', validateTenant);
 router.get('/:id/departments', listTenantDepartments);
+router.post('/:id/departments', authenticateToken, createDepartment);
+router.patch('/:id/departments/:deptId', authenticateToken, updateDepartment);
+router.delete('/:id/departments/:deptId', authenticateToken, deactivateDepartment);
 router.get('/:id', getTenant);
 router.patch('/:id/config', updateTenantConfig);
 
@@ -49,4 +55,3 @@ const upload = multer({
 router.post('/:id/logo', upload.single('file'), uploadTenantLogo);
 
 export default router;
-
