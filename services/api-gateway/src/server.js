@@ -48,6 +48,7 @@ const services = {
   audit: process.env.AUDIT_SERVICE_URL || 'http://localhost:3006',
   integration: process.env.INTEGRATION_SERVICE_URL || 'http://localhost:3007',
   notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008',
+  file: process.env.FILE_SERVICE_URL || 'http://localhost:3009',
 };
 
 /** Forward identity to microservices (headers are not reliably inherited from req.headers by the proxy). */
@@ -155,6 +156,7 @@ async function startServer() {
       { key: 'audit', label: 'Audit service', baseUrl: services.audit },
       { key: 'integration', label: 'Integration service', baseUrl: services.integration },
       { key: 'notification', label: 'Notification service', baseUrl: services.notification },
+      { key: 'file', label: 'File service', baseUrl: services.file },
     ];
     const probes = await Promise.all(
       definitions.map(async (d) => {
@@ -354,6 +356,28 @@ async function startServer() {
     onError: (err, req, res) => {
       console.error('Proxy error (notifications):', err.message);
       res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Notification service unavailable' } });
+    },
+  }));
+
+  app.use('/api/v1/files', createProxyMiddleware({
+    target: services.file,
+    changeOrigin: true,
+    pathRewrite: (path) => '/files' + path,
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+    onError: (err, req, res) => {
+      console.error('Proxy error (file-service):', err.message);
+      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'File service unavailable' } });
+    },
+  }));
+
+  app.use('/api/v1/uploads', createProxyMiddleware({
+    target: services.file,
+    changeOrigin: true,
+    pathRewrite: (path) => '/uploads' + path,
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+    onError: (err, req, res) => {
+      console.error('Proxy error (file-service uploads):', err.message);
+      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'File service unavailable' } });
     },
   }));
 
