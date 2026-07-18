@@ -297,7 +297,7 @@ export async function validateTenant(req, res, next) {
       throw new NotFoundError('Tenant');
     }
 
-    res.json({ 
+    res.json({
       valid: tenant.isActive,
       tenant: {
         id: tenant.id,
@@ -426,6 +426,166 @@ export async function uploadTenantLogo(req, res, next) {
 }
 
 /**
+ * POST /tenants/:id/departments
+ * Create a new department. Tenant admin or system admin only.
+ */
+export async function createDepartment(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { actorTenantId, actorUserId, isSystemAdmin, isTenantAdmin } = await resolveActorContext(req);
+
+    if (!isSystemAdmin && id !== actorTenantId) throw new NotFoundError('Tenant');
+    if (!(isSystemAdmin || isTenantAdmin)) {
+      throw new ForbiddenError('Only tenant administrators may manage departments');
+    }
+
+    const tenant = await prisma.tenant.findUnique({ where: { id }, select: { id: true } });
+    if (!tenant) throw new NotFoundError('Tenant');
+
+    const { code, name, description } = req.body || {};
+    if (!code || typeof code !== 'string' || !code.trim()) throw new ValidationError('code is required');
+    if (!name || typeof name !== 'string' || !name.trim()) throw new ValidationError('name is required');
+
+    const codeUpper = code.trim().toUpperCase();
+    const nameTrim = name.trim();
+
+    const existing = await prisma.department.findFirst({
+      where: { tenantId: id, OR: [{ code: codeUpper }, { name: nameTrim }] },
+    });
+    if (existing) throw new ConflictError('A department with this code or name already exists in this tenant');
+
+    const department = await prisma.department.create({
+      data: {
+        tenantId: id,
+        code: codeUpper,
+        name: nameTrim,
+        description: description?.trim() || null,
+        isActive: true,
+      },
+      select: { id: true, code: true, name: true, description: true, isActive: true, createdAt: true },
+    });
+
+    const bus = getEventBus();
+    if (bus) {
+      bus.publish(TOPICS.AUDIT_LOG, {
+        tenantId: id,
+        entityType: 'department',
+        entityId: department.id,
+        action: 'department.create',
+        userId: actorUserId,
+        oldValues: null,
+        newValues: { code: department.code, name: department.name },
+        metadata: {},
+      }).catch(() => {});
+    }
+
+    res.status(201).json({ department });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PATCH /tenants/:id/departments/:deptId
+ * Update a department's name, description, or active status. Tenant admin or system admin only.
+ */
+export async function updateDepartment(req, res, next) {
+  try {
+    const { id, deptId } = req.params;
+    const { actorTenantId, actorUserId, isSystemAdmin, isTenantAdmin } = await resolveActorContext(req);
+
+    if (!isSystemAdmin && id !== actorTenantId) throw new NotFoundError('Tenant');
+    if (!(isSystemAdmin || isTenantAdmin)) {
+      throw new ForbiddenError('Only tenant administrators may manage departments');
+    }
+
+    const dept = await prisma.department.findFirst({
+      where: { id: deptId, tenantId: id },
+    });
+    if (!dept) throw new NotFoundError('Department');
+
+    const { name, description, isActive } = req.body || {};
+    const patch = {};
+    if (name !== undefined) {
+      const n = String(name).trim();
+      if (!n) throw new ValidationError('name cannot be empty');
+      patch.name = n;
+    }
+    if (description !== undefined) {
+      patch.description = description ? String(description).trim() : null;
+    }
+    if (isActive !== undefined) {
+      patch.isActive = Boolean(isActive);
+    }
+
+    if (Object.keys(patch).length === 0) throw new ValidationError('At least one field is required');
+
+    const updated = await prisma.department.update({
+      where: { id: deptId },
+      data: patch,
+      select: { id: true, code: true, name: true, description: true, isActive: true, updatedAt: true },
+    });
+
+    const bus = getEventBus();
+    if (bus) {
+      bus.publish(TOPICS.AUDIT_LOG, {
+        tenantId: id,
+        entityType: 'department',
+        entityId: deptId,
+        action: 'department.update',
+        userId: actorUserId,
+        oldValues: { name: dept.name, description: dept.description, isActive: dept.isActive },
+        newValues: patch,
+        metadata: {},
+      }).catch(() => {});
+    }
+
+    res.json({ department: updated });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * DELETE /tenants/:id/departments/:deptId
+ * Soft-deactivate a department. Tenant admin or system admin only.
+ */
+export async function deactivateDepartment(req, res, next) {
+  try {
+    const { id, deptId } = req.params;
+    const { actorTenantId, actorUserId, isSystemAdmin, isTenantAdmin } = await resolveActorContext(req);
+
+    if (!isSystemAdmin && id !== actorTenantId) throw new NotFoundError('Tenant');
+    if (!(isSystemAdmin || isTenantAdmin)) {
+      throw new ForbiddenError('Only tenant administrators may manage departments');
+    }
+
+    const dept = await prisma.department.findFirst({ where: { id: deptId, tenantId: id } });
+    if (!dept) throw new NotFoundError('Department');
+
+    await prisma.department.update({ where: { id: deptId }, data: { isActive: false } });
+
+    const bus = getEventBus();
+    if (bus) {
+      bus.publish(TOPICS.AUDIT_LOG, {
+        tenantId: id,
+        entityType: 'department',
+        entityId: deptId,
+        action: 'department.deactivate',
+        userId: actorUserId,
+        oldValues: { isActive: true },
+        newValues: { isActive: false },
+        metadata: {},
+      }).catch(() => {});
+    }
+
+    res.json({ message: 'Department deactivated' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * POST /tenants/register
  * Creates a new tenant and first user as **tenant_admin**.
  * **Only `system_admin` (platform operators) may call this** — enforced at API gateway and here.
@@ -496,6 +656,15 @@ export async function registerTenant(req, res, next) {
           roleId: tenantAdminRole.id,
           assignedBy: registrarUserId,
         },
+      });
+
+      // Auto-create default departments for the new tenant
+      await tx.department.createMany({
+        data: [
+          { tenantId: tenantRow.id, code: 'INTAKE', name: 'Intake', description: 'Initial case intake and registration', isActive: true },
+          { tenantId: tenantRow.id, code: 'PROCESSING', name: 'Case Processing', description: 'Active case investigation and processing', isActive: true },
+          { tenantId: tenantRow.id, code: 'CLOSURE', name: 'Case Closure', description: 'Case resolution and archival', isActive: true },
+        ],
       });
 
       return {

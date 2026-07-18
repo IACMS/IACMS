@@ -117,7 +117,7 @@ export async function updateUser(req, res, next) {
 
     const existing = await prisma.user.findFirst({
       where: { id, tenantId },
-      select: { id: true, firstName: true, lastName: true, email: true, phone: true, isActive: true },
+      select: { id: true, firstName: true, lastName: true, email: true, phone: true, isActive: true, departmentId: true },
     });
     if (!existing) throw new NotFoundError('User not found');
 
@@ -128,10 +128,27 @@ export async function updateUser(req, res, next) {
       if (conflict) throw new ConflictError('Email is already in use within this tenant');
     }
 
+    // Validate departmentId belongs to the same tenant if provided
+    if (fields.departmentId) {
+      const dept = await prisma.department.findFirst({
+        where: { id: fields.departmentId, tenantId, isActive: true },
+      });
+      if (!dept) throw new NotFoundError('Department not found in this tenant');
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: fields,
-      select: { id: true, email: true, firstName: true, lastName: true, phone: true, isActive: true },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        isActive: true,
+        departmentId: true,
+        department: { select: { id: true, code: true, name: true } },
+      },
     });
 
     const keys = Object.keys(fields);
