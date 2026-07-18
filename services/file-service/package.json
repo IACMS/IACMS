@@ -1,0 +1,36 @@
+{
+  "name": "file-service",
+  "version": "1.0.0",
+  "description": "IACMS File Management Service — centralized file storage, streaming, and metadata",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "prisma migrate dev --schema=../../prisma/schema.prisma",
+    "migrate:deploy": "prisma migrate deploy --schema=../../prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema=../../prisma/schema.prisma",
+    "test": "vitest run tests/unit",
+    "test:integration": "npm run prisma:generate && vitest run tests/integration",
+    "test:all": "npm run prisma:generate && vitest run",
+    "test:watch": "vitest tests/unit",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "busboy": "^1.6.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "ioredis": "^5.10.0",
+    "jsonwebtoken": "^9.0.2",
+    "minio": "^8.0.2",
+    "prisma": "^6.0.0",
+    "uuid": "^11.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.0.0",
+    "supertest": "^7.0.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -105,7 +105,11 @@ const permissions = [
   { resource: 'audit', action: 'read', description: 'View audit logs' },
   { resource: 'tenants', action: 'read', description: 'View tenants' },
   { resource: 'tenants', action: 'update', description: 'Update tenant settings' },
-  { resource: 'platform', action: 'manage_tenants', description: 'Register organizations / platform operations' },
+  {
+    resource: 'platform',
+    action: 'manage_tenants',
+    description: 'Register organizations / platform operations',
+  },
   { resource: 'referrals', action: 'read', description: 'View referrals involving own tenant' },
   { resource: 'referrals', action: 'create', description: 'Create outbound case referrals' },
   { resource: 'referrals', action: 'update', description: 'Accept or reject incoming referrals' },
@@ -114,13 +118,15 @@ const permissions = [
 /** Platform operator: all permissions except tenant case/workflow/referral operational data. */
 function platformAdminPermissionKeys() {
   return permissions
-    .filter((p) => !['cases', 'workflows', 'referrals'].includes(p.resource))
-    .map((p) => `${p.resource}:${p.action}`);
+    .filter(p => !['cases', 'workflows', 'referrals'].includes(p.resource))
+    .map(p => `${p.resource}:${p.action}`);
 }
 
 const rolePermissions = {
   system_admin: platformAdminPermissionKeys(),
-  tenant_admin: permissions.filter((p) => p.resource !== 'platform').map((p) => `${p.resource}:${p.action}`),
+  tenant_admin: permissions
+    .filter(p => p.resource !== 'platform')
+    .map(p => `${p.resource}:${p.action}`),
   case_manager: [
     'cases:create',
     'cases:read',
@@ -170,9 +176,21 @@ function makeEmail(tenantCode, localPart) {
 
 function seededDepartmentsForTenant(tenant) {
   return [
-    { code: `${tenant.code}-INTAKE`, name: 'Intake Department', description: 'Receives and triages new work.' },
-    { code: `${tenant.code}-CASE`, name: 'Case Management Department', description: 'Owns active case handling and assignments.' },
-    { code: `${tenant.code}-LEGAL`, name: 'Legal and Escalations Department', description: 'Handles escalations, approvals, and legal coordination.' },
+    {
+      code: `${tenant.code}-INTAKE`,
+      name: 'Intake Department',
+      description: 'Receives and triages new work.',
+    },
+    {
+      code: `${tenant.code}-CASE`,
+      name: 'Case Management Department',
+      description: 'Owns active case handling and assignments.',
+    },
+    {
+      code: `${tenant.code}-LEGAL`,
+      name: 'Legal and Escalations Department',
+      description: 'Handles escalations, approvals, and legal coordination.',
+    },
   ];
 }
 
@@ -202,7 +220,16 @@ async function clearDatabase() {
   console.log('✅ Database cleared\n');
 }
 
-async function writeAudit({ tenantId, entityType, entityId, action, userId, newValues, oldValues, relatedTenantId }) {
+async function writeAudit({
+  tenantId,
+  entityType,
+  entityId,
+  action,
+  userId,
+  newValues,
+  oldValues,
+  relatedTenantId,
+}) {
   await prisma.auditLog.create({
     data: {
       tenantId,
@@ -412,9 +439,7 @@ async function main() {
 
   console.log('Creating permissions...');
   const createdPermissions = await Promise.all(
-    permissions.map((perm) =>
-      prisma.permission.create({ data: perm })
-    ),
+    permissions.map(perm => prisma.permission.create({ data: perm }))
   );
   console.log(`✅ Created ${createdPermissions.length} permissions\n`);
 
@@ -468,7 +493,9 @@ async function main() {
   async function assignPermissionsToRole(roleId, keys) {
     for (const key of keys) {
       const [resource, action] = key.split(':');
-      const permission = createdPermissions.find((p) => p.resource === resource && p.action === action);
+      const permission = createdPermissions.find(
+        p => p.resource === resource && p.action === action
+      );
       if (!permission) continue;
       await prisma.rolePermission.create({ data: { roleId, permissionId: permission.id } });
     }
@@ -537,7 +564,7 @@ async function main() {
             description: def.description,
             isActive: true,
           },
-        }),
+        })
       );
     }
     departmentsByTenant.set(tenant.id, created);
@@ -561,7 +588,9 @@ async function main() {
       lastLogin: daysAgo(1),
     },
   });
-  await prisma.userRole.create({ data: { userId: platformUser.id, roleId: ROLE_SYSTEM_ADMIN_ID, assignedBy: platformUser.id } });
+  await prisma.userRole.create({
+    data: { userId: platformUser.id, roleId: ROLE_SYSTEM_ADMIN_ID, assignedBy: platformUser.id },
+  });
   console.log('✅ Platform user created\n');
 
   console.log('Creating tenant staff (6 users per tenant)...');
@@ -570,7 +599,10 @@ async function main() {
 
   for (const tenant of TENANTS) {
     // Registrar link
-    await prisma.tenant.update({ where: { id: tenant.id }, data: { registeredByUserId: platformUser.id } });
+    await prisma.tenant.update({
+      where: { id: tenant.id },
+      data: { registeredByUserId: platformUser.id },
+    });
     await writeAudit({
       tenantId: tenant.id,
       entityType: 'tenant',
@@ -595,10 +627,28 @@ async function main() {
 
     const staff = [
       { local: 'admin', first: 'Dana', last: 'Reed', roles: [ROLE_TENANT_ADMIN_ID], deptIdx: 2 },
-      { local: 'supervisor', first: 'Noah', last: 'Brooks', roles: [ROLE_CASE_MANAGER_ID], deptIdx: 1 },
+      {
+        local: 'supervisor',
+        first: 'Noah',
+        last: 'Brooks',
+        roles: [ROLE_CASE_MANAGER_ID],
+        deptIdx: 1,
+      },
       { local: 'intake', first: 'Maya', last: 'Patel', roles: [intakeRole.id], deptIdx: 0 },
-      { local: 'case.manager1', first: 'Ethan', last: 'Kim', roles: [ROLE_CASE_MANAGER_ID], deptIdx: 1 },
-      { local: 'case.manager2', first: 'Sara', last: 'Lopez', roles: [ROLE_CASE_MANAGER_ID], deptIdx: 1 },
+      {
+        local: 'case.manager1',
+        first: 'Ethan',
+        last: 'Kim',
+        roles: [ROLE_CASE_MANAGER_ID],
+        deptIdx: 1,
+      },
+      {
+        local: 'case.manager2',
+        first: 'Sara',
+        last: 'Lopez',
+        roles: [ROLE_CASE_MANAGER_ID],
+        deptIdx: 1,
+      },
       { local: 'viewer', first: 'Ivy', last: 'Chen', roles: [ROLE_VIEWER_ID], deptIdx: 0 },
     ];
 
@@ -622,7 +672,9 @@ async function main() {
         },
       });
       for (const roleId of s.roles) {
-        await prisma.userRole.create({ data: { userId: user.id, roleId, assignedBy: platformUser.id } });
+        await prisma.userRole.create({
+          data: { userId: user.id, roleId, assignedBy: platformUser.id },
+        });
       }
       seededUsers.push({ tenantCode: tenant.code, email, password: 'password123', roles: s.roles });
     }
@@ -632,16 +684,38 @@ async function main() {
   console.log('Creating workflows (5 per tenant)...');
   const workflowsByTenant = new Map();
   const workflowCatalog = [
-    { key: 'child-protection', name: 'Child Protection Response', desc: 'Hotline / walk-in child protection workflow' },
-    { key: 'education-welfare', name: 'Education Welfare', desc: 'School attendance and welfare follow-up workflow' },
-    { key: 'medical-social', name: 'Medical Social Support', desc: 'Hospital social work intake and discharge planning' },
-    { key: 'legal-support', name: 'Legal Support', desc: 'Legal aid / protection order support workflow' },
-    { key: 'interagency', name: 'Inter-Agency Referral', desc: 'Cross-agency referral and collaboration workflow' },
+    {
+      key: 'child-protection',
+      name: 'Child Protection Response',
+      desc: 'Hotline / walk-in child protection workflow',
+    },
+    {
+      key: 'education-welfare',
+      name: 'Education Welfare',
+      desc: 'School attendance and welfare follow-up workflow',
+    },
+    {
+      key: 'medical-social',
+      name: 'Medical Social Support',
+      desc: 'Hospital social work intake and discharge planning',
+    },
+    {
+      key: 'legal-support',
+      name: 'Legal Support',
+      desc: 'Legal aid / protection order support workflow',
+    },
+    {
+      key: 'interagency',
+      name: 'Inter-Agency Referral',
+      desc: 'Cross-agency referral and collaboration workflow',
+    },
   ];
 
   for (const tenant of TENANTS) {
     const adminEmail = makeEmail(tenant.code, 'admin');
-    const adminUser = await prisma.user.findFirst({ where: { tenantId: tenant.id, email: adminEmail } });
+    const adminUser = await prisma.user.findFirst({
+      where: { tenantId: tenant.id, email: adminEmail },
+    });
     if (!adminUser) throw new Error(`Expected admin user missing for ${tenant.code}`);
 
     const tenantWorkflows = [];
@@ -660,7 +734,7 @@ async function main() {
       await createReferralIntakeWorkflow({
         tenantId: tenant.id,
         createdBy: adminUser.id,
-      }),
+      })
     );
     workflowsByTenant.set(tenant.id, tenantWorkflows);
   }
@@ -671,22 +745,30 @@ async function main() {
 
   // Seed case sequences for each tenant
   for (const tenant of TENANTS) {
-    await prisma.caseSequence.create({ data: { tenantId: tenant.id, year: currentYear, lastSeq: 100 } });
+    await prisma.caseSequence.create({
+      data: { tenantId: tenant.id, year: currentYear, lastSeq: 100 },
+    });
   }
 
   // Create 3 referral cases from DCS-01 to three partner tenants
-  const fromTenant = TENANTS.find((t) => t.code === 'DCS-01');
+  const fromTenant = TENANTS.find(t => t.code === 'DCS-01');
   if (!fromTenant) throw new Error('Missing DCS-01 tenant');
-  const fromAdmin = await prisma.user.findFirst({ where: { tenantId: fromTenant.id, email: makeEmail(fromTenant.code, 'admin') } });
-  const fromManager = await prisma.user.findFirst({ where: { tenantId: fromTenant.id, email: makeEmail(fromTenant.code, 'case.manager1') } });
+  const fromAdmin = await prisma.user.findFirst({
+    where: { tenantId: fromTenant.id, email: makeEmail(fromTenant.code, 'admin') },
+  });
+  const fromManager = await prisma.user.findFirst({
+    where: { tenantId: fromTenant.id, email: makeEmail(fromTenant.code, 'case.manager1') },
+  });
   if (!fromAdmin || !fromManager) throw new Error('Missing expected users for DCS-01');
-  const fromDefaultWorkflow = workflowsByTenant.get(fromTenant.id)?.find((w) => w.workflow.isDefault);
+  const fromDefaultWorkflow = workflowsByTenant.get(fromTenant.id)?.find(w => w.workflow.isDefault);
   if (!fromDefaultWorkflow) throw new Error('Missing default workflow for DCS-01');
   const fromDepartments = departmentsByTenant.get(fromTenant.id) ?? [];
   const fromCaseDept = fromDepartments[1]?.id ?? null;
 
-  const referralTargets = ['CPS-GCPD', 'PUBLIC-HOSP', 'LEGAL-AID'].map((code) => TENANTS.find((t) => t.code === code));
-  if (referralTargets.some((t) => !t)) throw new Error('Missing referral target tenant(s)');
+  const referralTargets = ['CPS-GCPD', 'PUBLIC-HOSP', 'LEGAL-AID'].map(code =>
+    TENANTS.find(t => t.code === code)
+  );
+  if (referralTargets.some(t => !t)) throw new Error('Missing referral target tenant(s)');
 
   const referralSpecs = [
     {
@@ -742,8 +824,10 @@ async function main() {
     });
 
     // Add minimal history
-    const transitions = await prisma.workflowTransition.findMany({ where: { workflowId: c.workflowId } });
-    const tIntake = transitions.find((t) => t.name === 'submit_intake');
+    const transitions = await prisma.workflowTransition.findMany({
+      where: { workflowId: c.workflowId },
+    });
+    const tIntake = transitions.find(t => t.name === 'submit_intake');
     await prisma.caseHistory.create({
       data: {
         caseId: c.id,
@@ -758,8 +842,12 @@ async function main() {
     });
 
     // Create referral
-    const accepter = await prisma.user.findFirst({ where: { tenantId: spec.toTenant.id, email: makeEmail(spec.toTenant.code, 'supervisor') } });
-    const rejecter = await prisma.user.findFirst({ where: { tenantId: spec.toTenant.id, email: makeEmail(spec.toTenant.code, 'supervisor') } });
+    const accepter = await prisma.user.findFirst({
+      where: { tenantId: spec.toTenant.id, email: makeEmail(spec.toTenant.code, 'supervisor') },
+    });
+    const rejecter = await prisma.user.findFirst({
+      where: { tenantId: spec.toTenant.id, email: makeEmail(spec.toTenant.code, 'supervisor') },
+    });
 
     const now = new Date();
     await prisma.caseReferral.create({
@@ -774,8 +862,9 @@ async function main() {
         notes: 'Seeded referral notes: includes consent and contact instructions.',
         status: spec.status,
         referredBy: fromManager.id,
-        acceptedBy: spec.status === 'accepted' || spec.status === 'completed' ? accepter?.id ?? null : null,
-        rejectedBy: spec.status === 'rejected' ? rejecter?.id ?? null : null,
+        acceptedBy:
+          spec.status === 'accepted' || spec.status === 'completed' ? (accepter?.id ?? null) : null,
+        rejectedBy: spec.status === 'rejected' ? (rejecter?.id ?? null) : null,
         referredAt: daysAgo(5),
         acceptedAt: spec.status === 'accepted' || spec.status === 'completed' ? daysAgo(4) : null,
         rejectedAt: spec.status === 'rejected' ? daysAgo(4) : null,
@@ -804,15 +893,26 @@ async function main() {
   });
   if (!fixtureAdmin) throw new Error(`Fixture tenant admin missing for ${TENANTS[0].code}`);
 
-  await prisma.workflowTransition.deleteMany({ where: { workflowId: FIXTURE_WORKFLOW_ID } }).catch(() => {});
-  await prisma.workflowStep.deleteMany({ where: { workflowId: FIXTURE_WORKFLOW_ID } }).catch(() => {});
+  await prisma.workflowTransition
+    .deleteMany({ where: { workflowId: FIXTURE_WORKFLOW_ID } })
+    .catch(() => {});
+  await prisma.workflowStep
+    .deleteMany({ where: { workflowId: FIXTURE_WORKFLOW_ID } })
+    .catch(() => {});
   await prisma.workflow.deleteMany({ where: { id: FIXTURE_WORKFLOW_ID } }).catch(() => {});
 
   const wfFixture = JSON.parse(
     readFileSync(
-      path.join(__dirname, '..', 'shared', 'contracts', '__fixtures__', 'workflow-full.example.json'),
-      'utf8',
-    ),
+      path.join(
+        __dirname,
+        '..',
+        'shared',
+        'contracts',
+        '__fixtures__',
+        'workflow-full.example.json'
+      ),
+      'utf8'
+    )
   );
 
   await prisma.workflow.create({
@@ -860,6 +960,40 @@ async function main() {
 
   console.log(`✅ Workflow ${wfFixture.key} v${wfFixture.version} seeded (PUBLISHED)\n`);
 
+  // ── File Management Service: retention policies ──────────────────────────
+  console.log('Seeding service retention policies...');
+  const retentionPolicies = [
+    {
+      service: 'case-management',
+      retentionDays: null,
+      description: 'Legal evidence — keep forever, never auto-delete',
+    },
+    {
+      service: 'chat',
+      retentionDays: 90,
+      description: 'Chat attachments — deleted 90 days after soft delete',
+    },
+    {
+      service: 'hr',
+      retentionDays: 2555,
+      description: 'HR documents — 7 years legal compliance requirement',
+    },
+    {
+      service: 'audit',
+      retentionDays: null,
+      description: 'Audit documents — keep forever',
+    },
+  ];
+
+  for (const policy of retentionPolicies) {
+    await prisma.serviceRetentionPolicy.upsert({
+      where: { service: policy.service },
+      update: { retentionDays: policy.retentionDays, description: policy.description },
+      create: policy,
+    });
+  }
+  console.log('Service retention policies seeded.');
+
   // Summary
   console.log('═'.repeat(60));
   console.log('🎉 Portal database seeded successfully!\n');
@@ -870,7 +1004,7 @@ async function main() {
   console.log('');
   for (const tenant of TENANTS) {
     console.log(`${tenant.code} — ${tenant.name}`);
-    const tenantUsers = seededUsers.filter((u) => u.tenantCode === tenant.code);
+    const tenantUsers = seededUsers.filter(u => u.tenantCode === tenant.code);
     for (const u of tenantUsers) {
       console.log(`  ${u.email}`);
     }
@@ -880,7 +1014,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error('❌ Error seeding database:', e);
     process.exit(1);
   })
