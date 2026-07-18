@@ -7,9 +7,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "migrate": "prisma migrate dev",
-    "migrate:deploy": "prisma migrate deploy",
-    "prisma:generate": "prisma generate",
+    "migrate": "prisma migrate dev --schema=../../prisma/schema.prisma",
+    "migrate:deploy": "prisma migrate deploy --schema=../../prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema=../../prisma/schema.prisma",
     "test": "vitest run tests/unit tests/regression",
     "test:integration": "vitest run tests/integration",
     "test:all": "vitest run"

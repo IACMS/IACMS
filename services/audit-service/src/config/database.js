@@ -1,4 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { loadServiceEnv } from '../../../../shared/config/loadEnv.js';
+import { PrismaClient } from '../generated/prisma/client.js';
+
+loadServiceEnv(import.meta.url);
 
 if (!process.env.DATABASE_URL) {
   const dbConfig = {

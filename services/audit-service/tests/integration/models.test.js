@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../src/generated/prisma/client.js';
 import dotenv from 'dotenv';
 import { canConnect, loadSeedUser } from '../../../../shared/tests/db.js';
 import { TENANT_CODES } from '../../../../shared/tests/seed-constants.js';
