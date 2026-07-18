@@ -1,13 +1,10 @@
 import express from 'express';
-import dotenv from 'dotenv';
 import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import auditRoutes from './routes/audit.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
 import { handleAuditLog } from './consumers/audit.consumer.js';
-import './config/database.js'; // Initialize database connection
-
-dotenv.config();
+import './config/database.js';
 
 // Prevent any async Kafka errors from killing the process
 process.on('unhandledRejection', (reason) => {

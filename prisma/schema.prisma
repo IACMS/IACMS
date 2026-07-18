@@ -27,6 +27,21 @@ generator clientReferral {
   output   = "../services/referral-service/src/generated/prisma"
 }
 
+generator clientRbac {
+  provider = "prisma-client-js"
+  output   = "../services/rbac-service/src/generated/prisma"
+}
+
+generator clientAudit {
+  provider = "prisma-client-js"
+  output   = "../services/audit-service/src/generated/prisma"
+}
+
+generator clientIntegration {
+  provider = "prisma-client-js"
+  output   = "../services/integration-service/src/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
