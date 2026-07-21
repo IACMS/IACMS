@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ValidationError } from '../../../../shared/common/errors.js';
+import { ValidationError } from '../../../../../shared/common/errors.js';
 
 const uploadFieldsSchema = z.object({
   service: z
@@ -18,6 +18,7 @@ const uploadFieldsSchema = z.object({
     .optional()
     .transform((v) => v === 'true'),
   visibility: z.enum(['private', 'internal', 'public']).default('private'),
+  versionOf: z.string().uuid().optional(),
 });
 
 /**

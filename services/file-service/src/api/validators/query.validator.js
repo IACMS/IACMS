@@ -11,6 +11,10 @@ const listQuerySchema = z.object({
   status: z.enum(FILE_STATUSES).optional(),
   from: z.string().optional(),
   to: z.string().optional(),
+  crossService: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true'),
   page: z
     .string()
     .optional()

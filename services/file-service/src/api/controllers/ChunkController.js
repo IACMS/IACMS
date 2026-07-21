@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ChunkService } from '../../application/services/ChunkService.js';
-import { ValidationError } from '../../../../shared/common/errors.js';
-import Logger from '../../../../shared/common/logger.js';
+import { ValidationError } from '../../../../../shared/common/errors.js';
+import Logger from '../../../../../shared/common/logger.js';
 
 const logger = new Logger('file-service');
 const chunkService = new ChunkService();

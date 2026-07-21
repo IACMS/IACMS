@@ -124,6 +124,21 @@ const ROUTE_PERMISSIONS = {
 'GET:/audit/cases/:caseId': 'audit:read',
 'GET:/audit/users/:userId/actions': 'audit:read',
 'GET:/audit/compliance/:tenantId': 'audit:read',
+
+  // File Management Service
+  'POST:/files': 'file:upload',
+  'POST:/files/batch': 'file:upload',
+  'GET:/files': 'file:read',
+  'GET:/files/:id': 'file:read',
+  'GET:/files/:id/download': 'file:read',
+  'GET:/files/:id/view': 'file:read',
+  'GET:/files/:id/stream': 'file:read',
+  'GET:/files/:id/signed-url': 'file:read',
+  'DELETE:/files/:id': 'file:delete',
+  'POST:/uploads/init': 'file:upload',
+  'PUT:/uploads/:id/chunks/:number': 'file:upload',
+  'POST:/uploads/:id/complete': 'file:upload',
+  'GET:/uploads/:id/status': 'file:read',
 };
 
 function matchPath(pattern, actualPath) {
@@ -133,8 +148,15 @@ function matchPath(pattern, actualPath) {
   return patternParts.every((part, i) => part.startsWith(':') || part === actualParts[i]);
 }
 
+/** Strip trailing slash so `/files/` matches `POST:/files` (except bare `/`). */
+function normalizeRoutePath(path) {
+  if (!path || path === '/') return path || '/';
+  return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
+}
+
 function getRequiredPermission(method, path) {
-  const exactKey = `${method}:${path}`;
+  const normalized = normalizeRoutePath(path);
+  const exactKey = `${method}:${normalized}`;
   if (ROUTE_PERMISSIONS[exactKey]) return ROUTE_PERMISSIONS[exactKey];
 
   for (const [routeKey, permission] of Object.entries(ROUTE_PERMISSIONS)) {
@@ -142,7 +164,7 @@ function getRequiredPermission(method, path) {
     if (sep === -1) continue;
     const routeMethod = routeKey.slice(0, sep);
     const routePath = routeKey.slice(sep + 1);
-    if (routeMethod === method && matchPath(routePath, path)) return permission;
+    if (routeMethod === method && matchPath(routePath, normalized)) return permission;
   }
   return null;
 }
@@ -263,11 +285,13 @@ export function createRbacMiddleware(rbacServiceUrl) {
     if (!req.user) return next();
 
     const requiredPermission = getRequiredPermission(req.method, req.path);
-    if (!requiredPermission) return next();
-
-    const requiredList = Array.isArray(requiredPermission) ? requiredPermission : [requiredPermission];
+    const requiredList = requiredPermission
+      ? (Array.isArray(requiredPermission) ? requiredPermission : [requiredPermission])
+      : null;
 
     try {
+      // Always resolve permissions so proxies can forward `x-user-permissions`
+      // to services that enforce scopes themselves (e.g. file-service).
       const { permissions: userPermissions, roleIds, rbacAvailable } = await getUserPermissionsWithAvailability(
         req.user.id,
         req.user.tenantId,
@@ -275,6 +299,17 @@ export function createRbacMiddleware(rbacServiceUrl) {
       );
 
       req.rbacEnvelope = { permissions: userPermissions, roleIds: roleIds || [], rbacAvailable };
+
+      // Also stamp req.headers so http-proxy forwards them even if onProxyReq
+      // only re-applies a subset (file-service reads these for requireScope).
+      if (userPermissions.length) {
+        req.headers['x-user-permissions'] = userPermissions.join(',');
+      }
+      if (roleIds?.length) {
+        req.headers['x-user-roles'] = roleIds.join(',');
+      }
+
+      if (!requiredList) return next();
 
       if (!rbacAvailable) {
         return res.status(503).json({

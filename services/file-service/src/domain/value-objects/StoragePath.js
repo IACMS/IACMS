@@ -2,18 +2,13 @@
  * StoragePath — builds the canonical storage path for a file.
  *
  * Pattern: service/module/YYYY/MM/fileId.bin
- *
- * Rules:
- * - Never uses the original filename (prevents path traversal + name collision)
- * - Always a UUID as the leaf node
- * - Year/month partitioning prevents single-directory overload in MinIO
- * - .bin extension on disk — MIME type is tracked in DB only
- * - storagePath is NEVER returned to clients in API responses
  */
+import { randomUUID } from 'crypto';
+
 export class StoragePath {
   /**
    * Build the storage path for a file.
-   * @param {{ service: string, module: string, fileId: string, date?: Date }} opts
+   * @param {{ service: string, module: string, fileId?: string, date?: Date }} opts
    * @returns {string}
    */
   static build({ service, module, fileId, date = new Date() }) {
@@ -21,7 +16,8 @@ export class StoragePath {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const safeService = StoragePath._sanitize(service);
     const safeModule = StoragePath._sanitize(module);
-    return `${safeService}/${safeModule}/${year}/${month}/${fileId}.bin`;
+    const id = fileId || randomUUID();
+    return `${safeService}/${safeModule}/${year}/${month}/${id}.bin`;
   }
 
   /**

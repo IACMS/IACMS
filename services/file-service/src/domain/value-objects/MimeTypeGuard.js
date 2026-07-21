@@ -2,10 +2,7 @@ import path from 'path';
 import config from '../../config/index.js';
 
 /**
- * MimeTypeGuard — guards against dangerous file types and normalizes MIME strings.
- *
- * Phase 1: extension-based blocking only.
- * Phase 5: magic-byte detection added via file-type library.
+ * MimeTypeGuard — guards against dangerous file types and detects MIME from magic bytes.
  */
 export class MimeTypeGuard {
   /**
@@ -19,37 +16,24 @@ export class MimeTypeGuard {
     return config.upload.blockedExtensions.some((blocked) => blocked.toLowerCase() === ext);
   }
 
-  /**
-   * Returns true if the MIME type is a video type.
-   */
   static isVideo(mimeType) {
     return typeof mimeType === 'string' && mimeType.startsWith('video/');
   }
 
-  /**
-   * Returns true if the MIME type is an image type.
-   */
   static isImage(mimeType) {
     return typeof mimeType === 'string' && mimeType.startsWith('image/');
   }
 
-  /**
-   * Returns true if the MIME type is an audio type.
-   */
   static isAudio(mimeType) {
     return typeof mimeType === 'string' && mimeType.startsWith('audio/');
   }
 
-  /**
-   * Returns true if the file is a PDF.
-   */
   static isPdf(mimeType) {
     return mimeType === 'application/pdf';
   }
 
   /**
    * Normalize and clean a MIME type string.
-   * Strips charset and other parameters. Falls back to application/octet-stream.
    * @param {string} mimeType
    * @returns {string}
    */
@@ -57,5 +41,26 @@ export class MimeTypeGuard {
     if (!mimeType) return 'application/octet-stream';
     const clean = mimeType.toLowerCase().split(';')[0].trim();
     return clean || 'application/octet-stream';
+  }
+
+  /**
+   * Detect MIME from magic bytes (file-type). Falls back to client-provided MIME.
+   * Magic bytes take precedence over the client Content-Type / filename.
+   *
+   * @param {Buffer} buffer - at least the first ~4100 bytes
+   * @param {string} [fallbackMime]
+   * @returns {Promise<string>}
+   */
+  static async detectFromBuffer(buffer, fallbackMime = 'application/octet-stream') {
+    try {
+      const { fileTypeFromBuffer } = await import('file-type');
+      const detected = await fileTypeFromBuffer(buffer);
+      if (detected?.mime) {
+        return MimeTypeGuard.normalize(detected.mime);
+      }
+    } catch {
+      /* file-type unavailable or detection failed */
+    }
+    return MimeTypeGuard.normalize(fallbackMime);
   }
 }

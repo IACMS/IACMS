@@ -1,65 +1,66 @@
-import { ForbiddenError } from '../../../../shared/common/errors.js';
+import { ForbiddenError } from '../../../../../shared/common/errors.js';
 
 /**
- * Scope-to-role mapping.
- * Defines which roles satisfy each file scope.
- *
- * Phase 2: permissive defaults — authenticated users pass all read checks.
- * Phase 5: tighten these by integrating with the RBAC service permission table,
- *          requiring explicit file.* permissions assigned to the user's roles.
+ * Map FMS scopes to RBAC permission keys (resource:action) and legacy role names.
  */
-const SCOPE_ROLES = {
-  'file.upload': ['system_admin', 'tenant_admin', 'case_manager', 'file.upload', 'file.admin'],
-  'file.read':   ['system_admin', 'tenant_admin', 'case_manager', 'viewer',      'file.read',   'file.admin'],
-  'file.delete': ['system_admin', 'tenant_admin', 'case_manager',                'file.delete', 'file.admin'],
-  'file.admin':  ['system_admin',                                                 'file.admin'],
+const SCOPE_PERMISSIONS = {
+  'file.upload': ['file:upload', 'file:admin'],
+  'file.read':   ['file:read', 'file:admin'],
+  'file.delete': ['file:delete', 'file:admin'],
+  'file.admin':  ['file:admin'],
 };
 
+/** Role names still accepted (JWT may carry names in some direct-call paths). */
+const SCOPE_ROLE_NAMES = {
+  'file.upload': ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist'],
+  'file.read':   ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist', 'viewer'],
+  'file.delete': ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist'],
+  'file.admin':  ['system_admin'],
+};
+
+function hasPermission(granted, required) {
+  if (!Array.isArray(granted) || granted.length === 0) return false;
+  if (granted.includes('*') || granted.includes('admin:*')) return true;
+  if (granted.includes(required)) return true;
+  const [resource] = required.split(':');
+  if (resource && granted.includes(`${resource}:*`)) return true;
+  return false;
+}
+
+function hasAnyPermission(granted, requiredList) {
+  return requiredList.some((p) => hasPermission(granted, p));
+}
+
 /**
- * requireScope(scope) — middleware factory.
+ * requireScope(scope) — checks gateway-forwarded permissions, then role names.
  *
- * Returns a middleware that checks whether the authenticated user has one of
- * the roles that satisfies the required scope.
- *
- * The user's roles come from:
- *   - JWT claim `roles[]` (direct API calls)
- *   - `x-user-roles` header (gateway-proxied calls, comma-separated role IDs/names)
- *
- * If req.user has no roles array, the check falls back to allowing the request
- * through for read operations (phase 2 permissive policy).
- *
- * @param {'file.upload'|'file.read'|'file.delete'|'file.admin'} scope
+ * Permissions come from `x-user-permissions` (RBAC) via the API gateway.
+ * Role names are a secondary check for direct JWT calls that embed role names.
  */
 export function requireScope(scope) {
-  const allowedRoles = SCOPE_ROLES[scope] ?? [];
+  const requiredPerms = SCOPE_PERMISSIONS[scope] ?? [];
+  const allowedRoleNames = SCOPE_ROLE_NAMES[scope] ?? [];
 
   return function scopeMiddleware(req, res, next) {
     if (!req.user) {
-      // authenticateToken runs before this — if we get here without req.user it is a bug
       return next(new ForbiddenError('No authenticated user on request'));
     }
 
+    const permissions = Array.isArray(req.user.permissions) ? req.user.permissions : [];
     const userRoles = Array.isArray(req.user.roles) ? req.user.roles : [];
 
-    // file.admin bypasses all scope checks
-    if (userRoles.includes('file.admin')) return next();
+    if (hasAnyPermission(permissions, requiredPerms)) {
+      return next();
+    }
 
-    // Check if any of the user's roles satisfies the required scope
-    const hasScope = userRoles.some((role) => allowedRoles.includes(role));
-    if (hasScope) return next();
-
-    // Phase 2 permissive fallback:
-    // Allow any authenticated user to read/upload.
-    // Only delete requires an explicit matching role.
-    // This will be removed in Phase 5 once RBAC is fully wired.
-    if (scope === 'file.read' || scope === 'file.upload') {
+    if (userRoles.some((role) => allowedRoleNames.includes(role))) {
       return next();
     }
 
     return next(
       new ForbiddenError(
-        `Insufficient permissions. Required scope: ${scope}. ` +
-        `Your roles: [${userRoles.join(', ') || 'none'}]`
+        `Insufficient permissions. Required scope: ${scope} ` +
+        `(one of: ${requiredPerms.join(', ') || 'n/a'}).`
       )
     );
   };

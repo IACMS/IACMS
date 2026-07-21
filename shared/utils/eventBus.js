@@ -11,6 +11,11 @@
 
 import { Kafka, logLevel } from 'kafkajs';
 
+// Quiet the KafkaJS v2 default-partitioner migration warning in local logs
+if (!process.env.KAFKAJS_NO_PARTITIONER_WARNING) {
+  process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
+}
+
 // All event topics used across services
 export const TOPICS = {
   USER_CREATED: 'user.created',
@@ -40,6 +45,12 @@ export const TOPICS = {
   EMAIL_VERIFICATION_REQUESTED: 'email.verification.requested',
   PASSWORD_RESET_REQUESTED: 'password.reset.requested',
   PASSWORD_CHANGED: 'password.changed',
+  CASE_DELETED: 'case.deleted',
+  FILE_UPLOADED: 'file.uploaded',
+  FILE_DELETED: 'file.deleted',
+  FILE_PROCESSED: 'file.processed',
+  FILE_VIRUS_FOUND: 'file.virus.found',
+  FILE_PERMANENTLY_DELETED: 'file.permanently.deleted',
 };
 
 class EventBus {
@@ -103,6 +114,7 @@ class EventBus {
       void this._startConsumer();
     }, delay);
 
+    // Log at most once per backoff step to avoid flooding when the broker is down
     console.warn(
       `[EventBus] Scheduling consumer reconnect for "${this.serviceId}" in ${delay}ms`,
     );
@@ -218,6 +230,8 @@ class EventBus {
         }
 
         await this.consumer.run({
+          // EventBus owns reconnect/backoff — disable KafkaJS auto-restart to avoid a double loop.
+          restartOnFailure: async () => false,
           eachMessage: async ({ topic, partition, message }) => {
             try {
               const event = JSON.parse(message.value.toString());

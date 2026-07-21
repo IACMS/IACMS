@@ -6,9 +6,9 @@ import { PrismaFileRepository } from '../../infrastructure/persistence/PrismaFil
 import { RedisUploadState } from '../../infrastructure/cache/RedisUploadState.js';
 import { StorageFactory } from '../../infrastructure/storage/StorageFactory.js';
 import { StoragePath } from '../../domain/value-objects/StoragePath.js';
-import { NotFoundError, ValidationError, AppError } from '../../../../shared/common/errors.js';
+import { NotFoundError, ValidationError, AppError } from '../../../../../shared/common/errors.js';
 import config from '../../config/index.js';
-import Logger from '../../../../shared/common/logger.js';
+import Logger from '../../../../../shared/common/logger.js';
 
 const logger = new Logger('file-service');
 
@@ -231,8 +231,9 @@ export class ChunkService {
         checksum,
         storagePath:     permanentPath,
         storageProvider: config.storage.provider,
-        compressed:      false,
-        status:          'AVAILABLE',
+        compressed:         false,
+        compressRequested:  false,
+        status:             'PENDING',
         retentionDays,
       });
 

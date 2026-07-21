@@ -27,15 +27,22 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Service URLs
-/** Forward identity + RBAC role ids to downstream microservices */
+/** Forward identity + RBAC role ids + permissions to downstream microservices */
 function attachDownstreamHeaders(proxyReq, req) {
   if (!req.user) return;
   proxyReq.setHeader('x-user-id', req.user.id);
   proxyReq.setHeader('x-tenant-id', req.user.tenantId);
   if (req.user.departmentId) proxyReq.setHeader('x-department-id', req.user.departmentId);
+  if (req.user.email) proxyReq.setHeader('x-user-email', req.user.email);
   const roleIds = req.rbacEnvelope?.roleIds;
   if (Array.isArray(roleIds) && roleIds.length) {
     proxyReq.setHeader('x-user-roles', roleIds.join(','));
+  } else if (req.user.roles?.length) {
+    proxyReq.setHeader('x-user-roles', req.user.roles.join(','));
+  }
+  const permissions = req.rbacEnvelope?.permissions;
+  if (Array.isArray(permissions) && permissions.length) {
+    proxyReq.setHeader('x-user-permissions', permissions.join(','));
   }
 }
 
@@ -51,16 +58,41 @@ const services = {
   file: process.env.FILE_SERVICE_URL || 'http://localhost:3009',
 };
 
+/** Fail hung/slow downstreams before the browser's client timeout (~30s). */
+const PROXY_TIMEOUT_MS = Number(process.env.PROXY_TIMEOUT_MS || 25_000);
+
+function proxyOnError(label) {
+  return (err, req, res) => {
+    console.error(`Proxy error (${label}):`, err.message);
+    if (res.headersSent) return;
+    const timedOut = err.code === 'ECONNRESET' || /timeout/i.test(err.message || '');
+    res.status(timedOut ? 504 : 503).json({
+      error: {
+        code: timedOut ? 'GATEWAY_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+        message: timedOut
+          ? `${label} did not respond in time. Check that the service is running and not blocked.`
+          : `${label} unavailable`,
+      },
+    });
+  };
+}
+
+function serviceProxy({ target, pathRewrite, label, onProxyReq, onProxyRes }) {
+  return createProxyMiddleware({
+    target,
+    changeOrigin: true,
+    pathRewrite,
+    timeout: PROXY_TIMEOUT_MS,
+    proxyTimeout: PROXY_TIMEOUT_MS,
+    ...(onProxyReq ? { onProxyReq } : {}),
+    ...(onProxyRes ? { onProxyRes } : {}),
+    onError: proxyOnError(label),
+  });
+}
+
 /** Forward identity to microservices (headers are not reliably inherited from req.headers by the proxy). */
 function forwardProxyIdentity(proxyReq, req) {
-  if (!req.user) return;
-  proxyReq.setHeader('x-user-id', req.user.id);
-  proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-  if (req.user.departmentId) proxyReq.setHeader('x-department-id', req.user.departmentId);
-  if (req.user.email) proxyReq.setHeader('x-user-email', req.user.email);
-  if (req.user.roles?.length) {
-    proxyReq.setHeader('x-user-roles', req.user.roles.join(','));
-  }
+  attachDownstreamHeaders(proxyReq, req);
 }
 
 /**
@@ -180,10 +212,10 @@ async function startServer() {
   });
 
   // Proxy routes
-  app.use('/api/v1/auth', createProxyMiddleware({
+  app.use('/api/v1/auth', serviceProxy({
     target: services.auth,
-    changeOrigin: true,
     pathRewrite: (path) => '/auth' + path,
+    label: 'Auth service',
     onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
     onProxyRes: (proxyRes, req) => {
       if (req.method !== 'POST' || proxyRes.statusCode !== 200) return;
@@ -201,184 +233,104 @@ async function startServer() {
         });
       }
     },
-    onError: (err, req, res) => {
-      console.error('Proxy error (auth):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Auth service unavailable' } });
-    },
   }));
 
-  app.use('/api/v1/chat', createProxyMiddleware({
+  app.use('/api/v1/chat', serviceProxy({
     target: services.auth,
-    changeOrigin: true,
     pathRewrite: (path) => '/chat' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (chat):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Auth service unavailable' } });
-    },
+    label: 'Auth service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/tenants', createProxyMiddleware({
+  app.use('/api/v1/tenants', serviceProxy({
     target: services.auth,
-    changeOrigin: true,
     pathRewrite: (path) => '/tenants' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (tenants):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Auth service unavailable' } });
-    },
+    label: 'Auth service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/rbac', createProxyMiddleware({
+  app.use('/api/v1/rbac', serviceProxy({
     target: services.rbac,
-    changeOrigin: true,
     pathRewrite: (path) => path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (rbac):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'RBAC service unavailable' } });
-    },
+    label: 'RBAC service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/dashboard', createProxyMiddleware({
+  app.use('/api/v1/dashboard', serviceProxy({
     target: services.case,
-    changeOrigin: true,
     pathRewrite: (path) => '/dashboard' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (dashboard):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
-    },
+    label: 'Case service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/cases', createProxyMiddleware({
+  app.use('/api/v1/cases', serviceProxy({
     target: services.case,
-    changeOrigin: true,
     pathRewrite: (path) => '/cases' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (cases):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
-    },
+    label: 'Case service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/assignments', createProxyMiddleware({
+  app.use('/api/v1/assignments', serviceProxy({
     target: services.case,
-    changeOrigin: true,
     pathRewrite: (path) => '/assignments' + path,
+    label: 'Case service',
     onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
-    onError: (err, req, res) => {
-      console.error('Proxy error (assignments):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
-    },
   }));
 
-  app.use('/api/v1/attachments', createProxyMiddleware({
+  app.use('/api/v1/attachments', serviceProxy({
     target: services.case,
-    changeOrigin: true,
     pathRewrite: (path) => '/attachments' + path,
+    label: 'Case service',
     onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
-    onError: (err, req, res) => {
-      console.error('Proxy error (attachments):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
-    },
   }));
 
-  app.use('/api/v1/workflows', createProxyMiddleware({
+  app.use('/api/v1/workflows', serviceProxy({
     target: services.workflow,
-    changeOrigin: true,
     pathRewrite: (path) => '/workflows' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (workflows):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Workflow service unavailable' } });
-    },
+    label: 'Workflow service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/referrals', createProxyMiddleware({
+  app.use('/api/v1/referrals', serviceProxy({
     target: services.referral,
-    changeOrigin: true,
     pathRewrite: (path) => '/referrals' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (referrals):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Referral service unavailable' } });
-    },
+    label: 'Referral service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/audit', createProxyMiddleware({
+  app.use('/api/v1/audit', serviceProxy({
     target: services.audit,
-    changeOrigin: true,
     pathRewrite: (path) => '/audit' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (audit):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Audit service unavailable' } });
-    },
+    label: 'Audit service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/integrations', createProxyMiddleware({
+  app.use('/api/v1/integrations', serviceProxy({
     target: services.integration,
-    changeOrigin: true,
     pathRewrite: (path) => '/integrations' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (integrations):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Integration service unavailable' } });
-    },
+    label: 'Integration service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/notifications', createProxyMiddleware({
+  app.use('/api/v1/notifications', serviceProxy({
     target: services.notification,
-    changeOrigin: true,
     pathRewrite: (path) => '/notifications' + path,
-    onProxyReq: (proxyReq, req) => {
-      attachDownstreamHeaders(proxyReq, req);
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (notifications):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Notification service unavailable' } });
-    },
+    label: 'Notification service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/files', createProxyMiddleware({
+  app.use('/api/v1/files', serviceProxy({
     target: services.file,
-    changeOrigin: true,
     pathRewrite: (path) => '/files' + path,
+    label: 'File service',
     onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
-    onError: (err, req, res) => {
-      console.error('Proxy error (file-service):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'File service unavailable' } });
-    },
   }));
 
-  app.use('/api/v1/uploads', createProxyMiddleware({
+  app.use('/api/v1/uploads', serviceProxy({
     target: services.file,
-    changeOrigin: true,
     pathRewrite: (path) => '/uploads' + path,
+    label: 'File service',
     onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
-    onError: (err, req, res) => {
-      console.error('Proxy error (file-service uploads):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'File service unavailable' } });
-    },
   }));
 
   // 404 handler

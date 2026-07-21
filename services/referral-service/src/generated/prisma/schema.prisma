@@ -42,6 +42,11 @@ generator clientIntegration {
   output   = "../services/integration-service/src/generated/prisma"
 }
 
+generator clientFile {
+  provider = "prisma-client-js"
+  output   = "../services/file-service/src/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -51,6 +56,23 @@ enum WorkflowStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+enum FileStatus {
+  PENDING
+  SCANNING
+  PROCESSING
+  AVAILABLE
+  FAILED
+  DELETED
+}
+
+enum ChunkUploadStatus {
+  IN_PROGRESS
+  MERGING
+  COMPLETE
+  FAILED
+  EXPIRED
 }
 
 model Department {
@@ -606,4 +628,101 @@ model AgencyChatMessage {
   @@index([tenantId, departmentId, createdAt(sort: Desc)])
   @@index([senderId, recipientId])
   @@map("agency_chat_messages")
+}
+
+// ─── File Management Service ──────────────────────────────────────────────────
+
+model File {
+  id                String     @id @default(uuid()) @db.Uuid
+  service           String
+  module            String
+  ownerId           String     @map("owner_id")
+  referenceId       String?    @map("reference_id")
+  originalName      String     @map("original_name")
+  storedName        String     @map("stored_name")
+  mimeType          String     @map("mime_type")
+  size              BigInt
+  checksum          String
+  storagePath       String     @map("storage_path") @db.Text
+  storageProvider   String     @default("minio") @map("storage_provider")
+  compressed        Boolean    @default(false)
+  compressionType   String?    @map("compression_type")
+  compressRequested Boolean    @default(false) @map("compress_requested")
+  thumbnails        Json?
+  metadata          Json?
+  retentionDays     Int?       @map("retention_days")
+  scheduledDeleteAt DateTime?  @map("scheduled_delete_at")
+  status            FileStatus @default(PENDING)
+  retryCount        Int        @default(0) @map("retry_count")
+  retryAt           DateTime?  @map("retry_at")
+  versionOf         String?    @map("version_of") @db.Uuid
+  deleted           Boolean    @default(false)
+  deletedAt         DateTime?  @map("deleted_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  parentVersion File?  @relation("FileVersions", fields: [versionOf], references: [id], onDelete: SetNull)
+  versions      File[] @relation("FileVersions")
+
+  @@index([service, module])
+  @@index([ownerId])
+  @@index([referenceId])
+  @@index([checksum])
+  @@index([status])
+  @@index([status, retryAt])
+  @@index([deleted, scheduledDeleteAt])
+  @@index([versionOf])
+  @@map("files")
+}
+
+model ChunkUpload {
+  id             String            @id @default(uuid()) @db.Uuid
+  service        String
+  module         String
+  ownerId        String            @map("owner_id")
+  referenceId    String?           @map("reference_id")
+  originalName   String            @map("original_name")
+  mimeType       String            @map("mime_type")
+  totalSize      BigInt            @map("total_size")
+  totalChunks    Int               @map("total_chunks")
+  receivedChunks Int               @default(0) @map("received_chunks")
+  chunkSize      Int               @map("chunk_size")
+  status         ChunkUploadStatus @default(IN_PROGRESS)
+  tempPath       String            @map("temp_path") @db.Text
+  expiresAt      DateTime          @map("expires_at")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  chunks Chunk[]
+
+  @@index([status])
+  @@index([expiresAt])
+  @@map("chunk_uploads")
+}
+
+model Chunk {
+  id          String   @id @default(uuid()) @db.Uuid
+  uploadId    String   @map("upload_id") @db.Uuid
+  chunkNumber Int      @map("chunk_number")
+  size        Int
+  checksum    String
+  storedPath  String   @map("stored_path") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  upload ChunkUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@unique([uploadId, chunkNumber])
+  @@index([uploadId])
+  @@map("chunks")
+}
+
+model ServiceRetentionPolicy {
+  id            String   @id @default(uuid()) @db.Uuid
+  service       String   @unique
+  retentionDays Int?     @map("retention_days")
+  description   String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("service_retention_policies")
 }
