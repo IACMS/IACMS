@@ -408,6 +408,74 @@ exports.Prisma.AgencyChatMessageScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.FileScalarFieldEnum = {
+  id: 'id',
+  service: 'service',
+  module: 'module',
+  ownerId: 'ownerId',
+  referenceId: 'referenceId',
+  originalName: 'originalName',
+  storedName: 'storedName',
+  mimeType: 'mimeType',
+  size: 'size',
+  checksum: 'checksum',
+  storagePath: 'storagePath',
+  storageProvider: 'storageProvider',
+  compressed: 'compressed',
+  compressionType: 'compressionType',
+  compressRequested: 'compressRequested',
+  thumbnails: 'thumbnails',
+  metadata: 'metadata',
+  retentionDays: 'retentionDays',
+  scheduledDeleteAt: 'scheduledDeleteAt',
+  status: 'status',
+  retryCount: 'retryCount',
+  retryAt: 'retryAt',
+  versionOf: 'versionOf',
+  deleted: 'deleted',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ChunkUploadScalarFieldEnum = {
+  id: 'id',
+  service: 'service',
+  module: 'module',
+  ownerId: 'ownerId',
+  referenceId: 'referenceId',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  totalSize: 'totalSize',
+  totalChunks: 'totalChunks',
+  receivedChunks: 'receivedChunks',
+  chunkSize: 'chunkSize',
+  status: 'status',
+  tempPath: 'tempPath',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ChunkScalarFieldEnum = {
+  id: 'id',
+  uploadId: 'uploadId',
+  chunkNumber: 'chunkNumber',
+  size: 'size',
+  checksum: 'checksum',
+  storedPath: 'storedPath',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ServiceRetentionPolicyScalarFieldEnum = {
+  id: 'id',
+  service: 'service',
+  retentionDays: 'retentionDays',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -443,6 +511,23 @@ exports.WorkflowStatus = exports.$Enums.WorkflowStatus = {
   ARCHIVED: 'ARCHIVED'
 };
 
+exports.FileStatus = exports.$Enums.FileStatus = {
+  PENDING: 'PENDING',
+  SCANNING: 'SCANNING',
+  PROCESSING: 'PROCESSING',
+  AVAILABLE: 'AVAILABLE',
+  FAILED: 'FAILED',
+  DELETED: 'DELETED'
+};
+
+exports.ChunkUploadStatus = exports.$Enums.ChunkUploadStatus = {
+  IN_PROGRESS: 'IN_PROGRESS',
+  MERGING: 'MERGING',
+  COMPLETE: 'COMPLETE',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED'
+};
+
 exports.Prisma.ModelName = {
   Department: 'Department',
   Tenant: 'Tenant',
@@ -463,7 +548,11 @@ exports.Prisma.ModelName = {
   AuditLog: 'AuditLog',
   Webhook: 'Webhook',
   Integration: 'Integration',
-  AgencyChatMessage: 'AgencyChatMessage'
+  AgencyChatMessage: 'AgencyChatMessage',
+  File: 'File',
+  ChunkUpload: 'ChunkUpload',
+  Chunk: 'Chunk',
+  ServiceRetentionPolicy: 'ServiceRetentionPolicy'
 };
 
 /**

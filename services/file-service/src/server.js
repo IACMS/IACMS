@@ -6,15 +6,16 @@ import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import { requestId } from './api/middleware/requestId.middleware.js';
 import fileRoutes from './api/routes/file.routes.js';
 import chunkRoutes from './api/routes/chunk.routes.js';
-import { ExpiredChunkWorker } from './workers/ExpiredChunkWorker.js';
+import { startWorkers } from './workers/index.js';
+import { startKafkaConsumers } from './infrastructure/queue/KafkaConsumer.js';
 import { StorageFactory } from './infrastructure/storage/StorageFactory.js';
 import { ensureBucketExists } from './config/minio.js';
 import { getRedisClient, closeRedisClient } from './config/redis.config.js';
+import { metrics } from './infrastructure/metrics/metrics.js';
 import prisma from './config/database.js';
 import config from './config/index.js';
 import Logger from '../../../shared/common/logger.js';
 
-// Load .env from service directory (same pattern as all other IACMS services)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
@@ -28,11 +29,9 @@ process.on('unhandledRejection', (reason) => {
 
 const app = express();
 
-// ── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(requestId);
 
-// ── Health (no auth required) ─────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
@@ -41,11 +40,9 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// ── Readiness (checks DB + Storage + Redis) ───────────────────────────────────
 app.get('/ready', async (_req, res) => {
   const checks = { db: false, storage: false, redis: false };
 
-  // Database
   try {
     await prisma.$queryRaw`SELECT 1`;
     checks.db = true;
@@ -53,19 +50,17 @@ app.get('/ready', async (_req, res) => {
     /* not ready */
   }
 
-  // Storage (MinIO ping or local filesystem check)
   try {
     const storage = StorageFactory.getInstance();
-    // exists() returns false for missing files but true connection means storage is healthy
     await storage.exists('__healthcheck__');
     checks.storage = true;
   } catch {
     /* not ready */
   }
 
-  // Redis
   try {
     const redis = getRedisClient();
+    if (redis.status !== 'ready') await redis.connect().catch(() => {});
     await redis.ping();
     checks.redis = true;
   } catch {
@@ -81,16 +76,18 @@ app.get('/ready', async (_req, res) => {
   });
 });
 
-// ── Routes ────────────────────────────────────────────────────────────────────
-app.use('/files',   fileRoutes);
-app.use('/uploads', chunkRoutes);
+app.get('/metrics', (_req, res) => {
+  res.setHeader('Content-Type', 'text/plain; version=0.0.4');
+  res.send(metrics.toPrometheus());
+});
 
-// ── Error handler (must be last) ──────────────────────────────────────────────
+app.use('/files', fileRoutes);
+app.use('/uploads', chunkRoutes);
 app.use(errorHandler);
 
-// ── Startup ───────────────────────────────────────────────────────────────────
+let workerHandle = null;
+
 async function startServer() {
-  // Initialize storage bucket if using MinIO
   if (config.storage.provider === 'minio') {
     try {
       await ensureBucketExists();
@@ -99,6 +96,15 @@ async function startServer() {
         error: err.message,
       });
     }
+  }
+
+  await startKafkaConsumers().catch((err) =>
+    logger.warn('Kafka consumers failed to start', { error: err.message })
+  );
+
+  // Embedded workers only when not running a separate workers container
+  if (config.workerMode === 'embedded') {
+    workerHandle = startWorkers();
   }
 
   app.listen(config.port, () => {
@@ -117,18 +123,9 @@ startServer().catch((err) => {
   process.exit(1);
 });
 
-// ── Workers (embedded mode only) ──────────────────────────────────────────
-let expiredChunkWorker = null;
-
-if (config.workerMode === 'embedded') {
-  expiredChunkWorker = new ExpiredChunkWorker();
-  expiredChunkWorker.start();
-}
-
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received — shutting down gracefully');
-  if (expiredChunkWorker) expiredChunkWorker.stop();
+  if (workerHandle) workerHandle.stop();
   await closeRedisClient();
   await prisma.$disconnect();
   process.exit(0);

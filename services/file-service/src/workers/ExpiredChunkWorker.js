@@ -2,7 +2,7 @@ import { PrismaChunkRepository } from '../infrastructure/persistence/PrismaChunk
 import { RedisUploadState } from '../infrastructure/cache/RedisUploadState.js';
 import { StorageFactory } from '../infrastructure/storage/StorageFactory.js';
 import { StoragePath } from '../domain/value-objects/StoragePath.js';
-import Logger from '../../../shared/common/logger.js';
+import Logger from '../../../../shared/common/logger.js';
 
 const logger = new Logger('file-service');
 

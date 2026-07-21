@@ -113,6 +113,11 @@ const permissions = [
   { resource: 'referrals', action: 'read', description: 'View referrals involving own tenant' },
   { resource: 'referrals', action: 'create', description: 'Create outbound case referrals' },
   { resource: 'referrals', action: 'update', description: 'Accept or reject incoming referrals' },
+  // File Management Service
+  { resource: 'file', action: 'read', description: 'View and download files' },
+  { resource: 'file', action: 'upload', description: 'Upload files (single, batch, chunked)' },
+  { resource: 'file', action: 'delete', description: 'Soft-delete files' },
+  { resource: 'file', action: 'admin', description: 'Cross-service file admin (list all services)' },
 ];
 
 /** Platform operator: all permissions except tenant case/workflow/referral operational data. */
@@ -125,7 +130,7 @@ function platformAdminPermissionKeys() {
 const rolePermissions = {
   system_admin: platformAdminPermissionKeys(),
   tenant_admin: permissions
-    .filter(p => p.resource !== 'platform')
+    .filter(p => p.resource !== 'platform' && !(p.resource === 'file' && p.action === 'admin'))
     .map(p => `${p.resource}:${p.action}`),
   case_manager: [
     'cases:create',
@@ -140,8 +145,18 @@ const rolePermissions = {
     'referrals:read',
     'referrals:create',
     'referrals:update',
+    'file:read',
+    'file:upload',
+    'file:delete',
   ],
-  viewer: ['cases:read', 'users:read', 'workflows:read', 'tenants:read', 'referrals:read'],
+  viewer: [
+    'cases:read',
+    'users:read',
+    'workflows:read',
+    'tenants:read',
+    'referrals:read',
+    'file:read',
+  ],
   intake_specialist: [
     'cases:create',
     'cases:read',
@@ -151,6 +166,9 @@ const rolePermissions = {
     'referrals:read',
     'referrals:create',
     'referrals:update',
+    'file:read',
+    'file:upload',
+    'file:delete',
   ],
 };
 

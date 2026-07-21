@@ -113,6 +113,26 @@ export type Integration = $Result.DefaultSelection<Prisma.$IntegrationPayload>
  * * In-agency chat: agency-wide channel (recipientId null) or direct messages between colleagues.
  */
 export type AgencyChatMessage = $Result.DefaultSelection<Prisma.$AgencyChatMessagePayload>
+/**
+ * Model File
+ * 
+ */
+export type File = $Result.DefaultSelection<Prisma.$FilePayload>
+/**
+ * Model ChunkUpload
+ * 
+ */
+export type ChunkUpload = $Result.DefaultSelection<Prisma.$ChunkUploadPayload>
+/**
+ * Model Chunk
+ * 
+ */
+export type Chunk = $Result.DefaultSelection<Prisma.$ChunkPayload>
+/**
+ * Model ServiceRetentionPolicy
+ * 
+ */
+export type ServiceRetentionPolicy = $Result.DefaultSelection<Prisma.$ServiceRetentionPolicyPayload>
 
 /**
  * Enums
@@ -126,11 +146,42 @@ export namespace $Enums {
 
 export type WorkflowStatus = (typeof WorkflowStatus)[keyof typeof WorkflowStatus]
 
+
+export const FileStatus: {
+  PENDING: 'PENDING',
+  SCANNING: 'SCANNING',
+  PROCESSING: 'PROCESSING',
+  AVAILABLE: 'AVAILABLE',
+  FAILED: 'FAILED',
+  DELETED: 'DELETED'
+};
+
+export type FileStatus = (typeof FileStatus)[keyof typeof FileStatus]
+
+
+export const ChunkUploadStatus: {
+  IN_PROGRESS: 'IN_PROGRESS',
+  MERGING: 'MERGING',
+  COMPLETE: 'COMPLETE',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED'
+};
+
+export type ChunkUploadStatus = (typeof ChunkUploadStatus)[keyof typeof ChunkUploadStatus]
+
 }
 
 export type WorkflowStatus = $Enums.WorkflowStatus
 
 export const WorkflowStatus: typeof $Enums.WorkflowStatus
+
+export type FileStatus = $Enums.FileStatus
+
+export const FileStatus: typeof $Enums.FileStatus
+
+export type ChunkUploadStatus = $Enums.ChunkUploadStatus
+
+export const ChunkUploadStatus: typeof $Enums.ChunkUploadStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -449,6 +500,46 @@ export class PrismaClient<
     * ```
     */
   get agencyChatMessage(): Prisma.AgencyChatMessageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.file`: Exposes CRUD operations for the **File** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Files
+    * const files = await prisma.file.findMany()
+    * ```
+    */
+  get file(): Prisma.FileDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.chunkUpload`: Exposes CRUD operations for the **ChunkUpload** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ChunkUploads
+    * const chunkUploads = await prisma.chunkUpload.findMany()
+    * ```
+    */
+  get chunkUpload(): Prisma.ChunkUploadDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.chunk`: Exposes CRUD operations for the **Chunk** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Chunks
+    * const chunks = await prisma.chunk.findMany()
+    * ```
+    */
+  get chunk(): Prisma.ChunkDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.serviceRetentionPolicy`: Exposes CRUD operations for the **ServiceRetentionPolicy** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ServiceRetentionPolicies
+    * const serviceRetentionPolicies = await prisma.serviceRetentionPolicy.findMany()
+    * ```
+    */
+  get serviceRetentionPolicy(): Prisma.ServiceRetentionPolicyDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -909,7 +1000,11 @@ export namespace Prisma {
     AuditLog: 'AuditLog',
     Webhook: 'Webhook',
     Integration: 'Integration',
-    AgencyChatMessage: 'AgencyChatMessage'
+    AgencyChatMessage: 'AgencyChatMessage',
+    File: 'File',
+    ChunkUpload: 'ChunkUpload',
+    Chunk: 'Chunk',
+    ServiceRetentionPolicy: 'ServiceRetentionPolicy'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -928,7 +1023,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "department" | "tenant" | "user" | "role" | "permission" | "rolePermission" | "userRole" | "workflow" | "workflowStep" | "workflowTransition" | "case" | "caseHistory" | "caseSequence" | "assignment" | "caseReferral" | "caseAttachment" | "auditLog" | "webhook" | "integration" | "agencyChatMessage"
+      modelProps: "department" | "tenant" | "user" | "role" | "permission" | "rolePermission" | "userRole" | "workflow" | "workflowStep" | "workflowTransition" | "case" | "caseHistory" | "caseSequence" | "assignment" | "caseReferral" | "caseAttachment" | "auditLog" | "webhook" | "integration" | "agencyChatMessage" | "file" | "chunkUpload" | "chunk" | "serviceRetentionPolicy"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2412,6 +2507,302 @@ export namespace Prisma {
           }
         }
       }
+      File: {
+        payload: Prisma.$FilePayload<ExtArgs>
+        fields: Prisma.FileFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FileFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FileFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>
+          }
+          findFirst: {
+            args: Prisma.FileFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FileFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>
+          }
+          findMany: {
+            args: Prisma.FileFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>[]
+          }
+          create: {
+            args: Prisma.FileCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>
+          }
+          createMany: {
+            args: Prisma.FileCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FileCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>[]
+          }
+          delete: {
+            args: Prisma.FileDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>
+          }
+          update: {
+            args: Prisma.FileUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>
+          }
+          deleteMany: {
+            args: Prisma.FileDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FileUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FileUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>[]
+          }
+          upsert: {
+            args: Prisma.FileUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FilePayload>
+          }
+          aggregate: {
+            args: Prisma.FileAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFile>
+          }
+          groupBy: {
+            args: Prisma.FileGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FileGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FileCountArgs<ExtArgs>
+            result: $Utils.Optional<FileCountAggregateOutputType> | number
+          }
+        }
+      }
+      ChunkUpload: {
+        payload: Prisma.$ChunkUploadPayload<ExtArgs>
+        fields: Prisma.ChunkUploadFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChunkUploadFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChunkUploadFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>
+          }
+          findFirst: {
+            args: Prisma.ChunkUploadFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChunkUploadFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>
+          }
+          findMany: {
+            args: Prisma.ChunkUploadFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>[]
+          }
+          create: {
+            args: Prisma.ChunkUploadCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>
+          }
+          createMany: {
+            args: Prisma.ChunkUploadCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ChunkUploadCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>[]
+          }
+          delete: {
+            args: Prisma.ChunkUploadDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>
+          }
+          update: {
+            args: Prisma.ChunkUploadUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>
+          }
+          deleteMany: {
+            args: Prisma.ChunkUploadDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChunkUploadUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ChunkUploadUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>[]
+          }
+          upsert: {
+            args: Prisma.ChunkUploadUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkUploadPayload>
+          }
+          aggregate: {
+            args: Prisma.ChunkUploadAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChunkUpload>
+          }
+          groupBy: {
+            args: Prisma.ChunkUploadGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChunkUploadGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ChunkUploadCountArgs<ExtArgs>
+            result: $Utils.Optional<ChunkUploadCountAggregateOutputType> | number
+          }
+        }
+      }
+      Chunk: {
+        payload: Prisma.$ChunkPayload<ExtArgs>
+        fields: Prisma.ChunkFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChunkFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChunkFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>
+          }
+          findFirst: {
+            args: Prisma.ChunkFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChunkFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>
+          }
+          findMany: {
+            args: Prisma.ChunkFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>[]
+          }
+          create: {
+            args: Prisma.ChunkCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>
+          }
+          createMany: {
+            args: Prisma.ChunkCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ChunkCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>[]
+          }
+          delete: {
+            args: Prisma.ChunkDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>
+          }
+          update: {
+            args: Prisma.ChunkUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>
+          }
+          deleteMany: {
+            args: Prisma.ChunkDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChunkUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ChunkUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>[]
+          }
+          upsert: {
+            args: Prisma.ChunkUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChunkPayload>
+          }
+          aggregate: {
+            args: Prisma.ChunkAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChunk>
+          }
+          groupBy: {
+            args: Prisma.ChunkGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChunkGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ChunkCountArgs<ExtArgs>
+            result: $Utils.Optional<ChunkCountAggregateOutputType> | number
+          }
+        }
+      }
+      ServiceRetentionPolicy: {
+        payload: Prisma.$ServiceRetentionPolicyPayload<ExtArgs>
+        fields: Prisma.ServiceRetentionPolicyFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ServiceRetentionPolicyFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ServiceRetentionPolicyFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>
+          }
+          findFirst: {
+            args: Prisma.ServiceRetentionPolicyFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ServiceRetentionPolicyFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>
+          }
+          findMany: {
+            args: Prisma.ServiceRetentionPolicyFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>[]
+          }
+          create: {
+            args: Prisma.ServiceRetentionPolicyCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>
+          }
+          createMany: {
+            args: Prisma.ServiceRetentionPolicyCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ServiceRetentionPolicyCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>[]
+          }
+          delete: {
+            args: Prisma.ServiceRetentionPolicyDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>
+          }
+          update: {
+            args: Prisma.ServiceRetentionPolicyUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>
+          }
+          deleteMany: {
+            args: Prisma.ServiceRetentionPolicyDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ServiceRetentionPolicyUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ServiceRetentionPolicyUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>[]
+          }
+          upsert: {
+            args: Prisma.ServiceRetentionPolicyUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ServiceRetentionPolicyPayload>
+          }
+          aggregate: {
+            args: Prisma.ServiceRetentionPolicyAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateServiceRetentionPolicy>
+          }
+          groupBy: {
+            args: Prisma.ServiceRetentionPolicyGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ServiceRetentionPolicyGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ServiceRetentionPolicyCountArgs<ExtArgs>
+            result: $Utils.Optional<ServiceRetentionPolicyCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2528,6 +2919,10 @@ export namespace Prisma {
     webhook?: WebhookOmit
     integration?: IntegrationOmit
     agencyChatMessage?: AgencyChatMessageOmit
+    file?: FileOmit
+    chunkUpload?: ChunkUploadOmit
+    chunk?: ChunkOmit
+    serviceRetentionPolicy?: ServiceRetentionPolicyOmit
   }
 
   /* Types for Logging */
@@ -3320,6 +3715,68 @@ export namespace Prisma {
    */
   export type CaseCountOutputTypeCountAttachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CaseAttachmentWhereInput
+  }
+
+
+  /**
+   * Count Type FileCountOutputType
+   */
+
+  export type FileCountOutputType = {
+    versions: number
+  }
+
+  export type FileCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    versions?: boolean | FileCountOutputTypeCountVersionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * FileCountOutputType without action
+   */
+  export type FileCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FileCountOutputType
+     */
+    select?: FileCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * FileCountOutputType without action
+   */
+  export type FileCountOutputTypeCountVersionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FileWhereInput
+  }
+
+
+  /**
+   * Count Type ChunkUploadCountOutputType
+   */
+
+  export type ChunkUploadCountOutputType = {
+    chunks: number
+  }
+
+  export type ChunkUploadCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    chunks?: boolean | ChunkUploadCountOutputTypeCountChunksArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ChunkUploadCountOutputType without action
+   */
+  export type ChunkUploadCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUploadCountOutputType
+     */
+    select?: ChunkUploadCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ChunkUploadCountOutputType without action
+   */
+  export type ChunkUploadCountOutputTypeCountChunksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChunkWhereInput
   }
 
 
@@ -28807,6 +29264,4856 @@ export namespace Prisma {
 
 
   /**
+   * Model File
+   */
+
+  export type AggregateFile = {
+    _count: FileCountAggregateOutputType | null
+    _avg: FileAvgAggregateOutputType | null
+    _sum: FileSumAggregateOutputType | null
+    _min: FileMinAggregateOutputType | null
+    _max: FileMaxAggregateOutputType | null
+  }
+
+  export type FileAvgAggregateOutputType = {
+    size: number | null
+    retentionDays: number | null
+    retryCount: number | null
+  }
+
+  export type FileSumAggregateOutputType = {
+    size: bigint | null
+    retentionDays: number | null
+    retryCount: number | null
+  }
+
+  export type FileMinAggregateOutputType = {
+    id: string | null
+    service: string | null
+    module: string | null
+    ownerId: string | null
+    referenceId: string | null
+    originalName: string | null
+    storedName: string | null
+    mimeType: string | null
+    size: bigint | null
+    checksum: string | null
+    storagePath: string | null
+    storageProvider: string | null
+    compressed: boolean | null
+    compressionType: string | null
+    compressRequested: boolean | null
+    retentionDays: number | null
+    scheduledDeleteAt: Date | null
+    status: $Enums.FileStatus | null
+    retryCount: number | null
+    retryAt: Date | null
+    versionOf: string | null
+    deleted: boolean | null
+    deletedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FileMaxAggregateOutputType = {
+    id: string | null
+    service: string | null
+    module: string | null
+    ownerId: string | null
+    referenceId: string | null
+    originalName: string | null
+    storedName: string | null
+    mimeType: string | null
+    size: bigint | null
+    checksum: string | null
+    storagePath: string | null
+    storageProvider: string | null
+    compressed: boolean | null
+    compressionType: string | null
+    compressRequested: boolean | null
+    retentionDays: number | null
+    scheduledDeleteAt: Date | null
+    status: $Enums.FileStatus | null
+    retryCount: number | null
+    retryAt: Date | null
+    versionOf: string | null
+    deleted: boolean | null
+    deletedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FileCountAggregateOutputType = {
+    id: number
+    service: number
+    module: number
+    ownerId: number
+    referenceId: number
+    originalName: number
+    storedName: number
+    mimeType: number
+    size: number
+    checksum: number
+    storagePath: number
+    storageProvider: number
+    compressed: number
+    compressionType: number
+    compressRequested: number
+    thumbnails: number
+    metadata: number
+    retentionDays: number
+    scheduledDeleteAt: number
+    status: number
+    retryCount: number
+    retryAt: number
+    versionOf: number
+    deleted: number
+    deletedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type FileAvgAggregateInputType = {
+    size?: true
+    retentionDays?: true
+    retryCount?: true
+  }
+
+  export type FileSumAggregateInputType = {
+    size?: true
+    retentionDays?: true
+    retryCount?: true
+  }
+
+  export type FileMinAggregateInputType = {
+    id?: true
+    service?: true
+    module?: true
+    ownerId?: true
+    referenceId?: true
+    originalName?: true
+    storedName?: true
+    mimeType?: true
+    size?: true
+    checksum?: true
+    storagePath?: true
+    storageProvider?: true
+    compressed?: true
+    compressionType?: true
+    compressRequested?: true
+    retentionDays?: true
+    scheduledDeleteAt?: true
+    status?: true
+    retryCount?: true
+    retryAt?: true
+    versionOf?: true
+    deleted?: true
+    deletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FileMaxAggregateInputType = {
+    id?: true
+    service?: true
+    module?: true
+    ownerId?: true
+    referenceId?: true
+    originalName?: true
+    storedName?: true
+    mimeType?: true
+    size?: true
+    checksum?: true
+    storagePath?: true
+    storageProvider?: true
+    compressed?: true
+    compressionType?: true
+    compressRequested?: true
+    retentionDays?: true
+    scheduledDeleteAt?: true
+    status?: true
+    retryCount?: true
+    retryAt?: true
+    versionOf?: true
+    deleted?: true
+    deletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FileCountAggregateInputType = {
+    id?: true
+    service?: true
+    module?: true
+    ownerId?: true
+    referenceId?: true
+    originalName?: true
+    storedName?: true
+    mimeType?: true
+    size?: true
+    checksum?: true
+    storagePath?: true
+    storageProvider?: true
+    compressed?: true
+    compressionType?: true
+    compressRequested?: true
+    thumbnails?: true
+    metadata?: true
+    retentionDays?: true
+    scheduledDeleteAt?: true
+    status?: true
+    retryCount?: true
+    retryAt?: true
+    versionOf?: true
+    deleted?: true
+    deletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type FileAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which File to aggregate.
+     */
+    where?: FileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Files to fetch.
+     */
+    orderBy?: FileOrderByWithRelationInput | FileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Files from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Files.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Files
+    **/
+    _count?: true | FileCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FileAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FileSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FileMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FileMaxAggregateInputType
+  }
+
+  export type GetFileAggregateType<T extends FileAggregateArgs> = {
+        [P in keyof T & keyof AggregateFile]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFile[P]>
+      : GetScalarType<T[P], AggregateFile[P]>
+  }
+
+
+
+
+  export type FileGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FileWhereInput
+    orderBy?: FileOrderByWithAggregationInput | FileOrderByWithAggregationInput[]
+    by: FileScalarFieldEnum[] | FileScalarFieldEnum
+    having?: FileScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FileCountAggregateInputType | true
+    _avg?: FileAvgAggregateInputType
+    _sum?: FileSumAggregateInputType
+    _min?: FileMinAggregateInputType
+    _max?: FileMaxAggregateInputType
+  }
+
+  export type FileGroupByOutputType = {
+    id: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint
+    checksum: string
+    storagePath: string
+    storageProvider: string
+    compressed: boolean
+    compressionType: string | null
+    compressRequested: boolean
+    thumbnails: JsonValue | null
+    metadata: JsonValue | null
+    retentionDays: number | null
+    scheduledDeleteAt: Date | null
+    status: $Enums.FileStatus
+    retryCount: number
+    retryAt: Date | null
+    versionOf: string | null
+    deleted: boolean
+    deletedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: FileCountAggregateOutputType | null
+    _avg: FileAvgAggregateOutputType | null
+    _sum: FileSumAggregateOutputType | null
+    _min: FileMinAggregateOutputType | null
+    _max: FileMaxAggregateOutputType | null
+  }
+
+  type GetFileGroupByPayload<T extends FileGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FileGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FileGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FileGroupByOutputType[P]>
+            : GetScalarType<T[P], FileGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FileSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    module?: boolean
+    ownerId?: boolean
+    referenceId?: boolean
+    originalName?: boolean
+    storedName?: boolean
+    mimeType?: boolean
+    size?: boolean
+    checksum?: boolean
+    storagePath?: boolean
+    storageProvider?: boolean
+    compressed?: boolean
+    compressionType?: boolean
+    compressRequested?: boolean
+    thumbnails?: boolean
+    metadata?: boolean
+    retentionDays?: boolean
+    scheduledDeleteAt?: boolean
+    status?: boolean
+    retryCount?: boolean
+    retryAt?: boolean
+    versionOf?: boolean
+    deleted?: boolean
+    deletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    parentVersion?: boolean | File$parentVersionArgs<ExtArgs>
+    versions?: boolean | File$versionsArgs<ExtArgs>
+    _count?: boolean | FileCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["file"]>
+
+  export type FileSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    module?: boolean
+    ownerId?: boolean
+    referenceId?: boolean
+    originalName?: boolean
+    storedName?: boolean
+    mimeType?: boolean
+    size?: boolean
+    checksum?: boolean
+    storagePath?: boolean
+    storageProvider?: boolean
+    compressed?: boolean
+    compressionType?: boolean
+    compressRequested?: boolean
+    thumbnails?: boolean
+    metadata?: boolean
+    retentionDays?: boolean
+    scheduledDeleteAt?: boolean
+    status?: boolean
+    retryCount?: boolean
+    retryAt?: boolean
+    versionOf?: boolean
+    deleted?: boolean
+    deletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    parentVersion?: boolean | File$parentVersionArgs<ExtArgs>
+  }, ExtArgs["result"]["file"]>
+
+  export type FileSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    module?: boolean
+    ownerId?: boolean
+    referenceId?: boolean
+    originalName?: boolean
+    storedName?: boolean
+    mimeType?: boolean
+    size?: boolean
+    checksum?: boolean
+    storagePath?: boolean
+    storageProvider?: boolean
+    compressed?: boolean
+    compressionType?: boolean
+    compressRequested?: boolean
+    thumbnails?: boolean
+    metadata?: boolean
+    retentionDays?: boolean
+    scheduledDeleteAt?: boolean
+    status?: boolean
+    retryCount?: boolean
+    retryAt?: boolean
+    versionOf?: boolean
+    deleted?: boolean
+    deletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    parentVersion?: boolean | File$parentVersionArgs<ExtArgs>
+  }, ExtArgs["result"]["file"]>
+
+  export type FileSelectScalar = {
+    id?: boolean
+    service?: boolean
+    module?: boolean
+    ownerId?: boolean
+    referenceId?: boolean
+    originalName?: boolean
+    storedName?: boolean
+    mimeType?: boolean
+    size?: boolean
+    checksum?: boolean
+    storagePath?: boolean
+    storageProvider?: boolean
+    compressed?: boolean
+    compressionType?: boolean
+    compressRequested?: boolean
+    thumbnails?: boolean
+    metadata?: boolean
+    retentionDays?: boolean
+    scheduledDeleteAt?: boolean
+    status?: boolean
+    retryCount?: boolean
+    retryAt?: boolean
+    versionOf?: boolean
+    deleted?: boolean
+    deletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type FileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "service" | "module" | "ownerId" | "referenceId" | "originalName" | "storedName" | "mimeType" | "size" | "checksum" | "storagePath" | "storageProvider" | "compressed" | "compressionType" | "compressRequested" | "thumbnails" | "metadata" | "retentionDays" | "scheduledDeleteAt" | "status" | "retryCount" | "retryAt" | "versionOf" | "deleted" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["file"]>
+  export type FileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parentVersion?: boolean | File$parentVersionArgs<ExtArgs>
+    versions?: boolean | File$versionsArgs<ExtArgs>
+    _count?: boolean | FileCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type FileIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parentVersion?: boolean | File$parentVersionArgs<ExtArgs>
+  }
+  export type FileIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parentVersion?: boolean | File$parentVersionArgs<ExtArgs>
+  }
+
+  export type $FilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "File"
+    objects: {
+      parentVersion: Prisma.$FilePayload<ExtArgs> | null
+      versions: Prisma.$FilePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      service: string
+      module: string
+      ownerId: string
+      referenceId: string | null
+      originalName: string
+      storedName: string
+      mimeType: string
+      size: bigint
+      checksum: string
+      storagePath: string
+      storageProvider: string
+      compressed: boolean
+      compressionType: string | null
+      compressRequested: boolean
+      thumbnails: Prisma.JsonValue | null
+      metadata: Prisma.JsonValue | null
+      retentionDays: number | null
+      scheduledDeleteAt: Date | null
+      status: $Enums.FileStatus
+      retryCount: number
+      retryAt: Date | null
+      versionOf: string | null
+      deleted: boolean
+      deletedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["file"]>
+    composites: {}
+  }
+
+  type FileGetPayload<S extends boolean | null | undefined | FileDefaultArgs> = $Result.GetResult<Prisma.$FilePayload, S>
+
+  type FileCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FileFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FileCountAggregateInputType | true
+    }
+
+  export interface FileDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['File'], meta: { name: 'File' } }
+    /**
+     * Find zero or one File that matches the filter.
+     * @param {FileFindUniqueArgs} args - Arguments to find a File
+     * @example
+     * // Get one File
+     * const file = await prisma.file.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FileFindUniqueArgs>(args: SelectSubset<T, FileFindUniqueArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one File that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FileFindUniqueOrThrowArgs} args - Arguments to find a File
+     * @example
+     * // Get one File
+     * const file = await prisma.file.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FileFindUniqueOrThrowArgs>(args: SelectSubset<T, FileFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first File that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FileFindFirstArgs} args - Arguments to find a File
+     * @example
+     * // Get one File
+     * const file = await prisma.file.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FileFindFirstArgs>(args?: SelectSubset<T, FileFindFirstArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first File that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FileFindFirstOrThrowArgs} args - Arguments to find a File
+     * @example
+     * // Get one File
+     * const file = await prisma.file.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FileFindFirstOrThrowArgs>(args?: SelectSubset<T, FileFindFirstOrThrowArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Files that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FileFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Files
+     * const files = await prisma.file.findMany()
+     * 
+     * // Get first 10 Files
+     * const files = await prisma.file.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const fileWithIdOnly = await prisma.file.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FileFindManyArgs>(args?: SelectSubset<T, FileFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a File.
+     * @param {FileCreateArgs} args - Arguments to create a File.
+     * @example
+     * // Create one File
+     * const File = await prisma.file.create({
+     *   data: {
+     *     // ... data to create a File
+     *   }
+     * })
+     * 
+     */
+    create<T extends FileCreateArgs>(args: SelectSubset<T, FileCreateArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Files.
+     * @param {FileCreateManyArgs} args - Arguments to create many Files.
+     * @example
+     * // Create many Files
+     * const file = await prisma.file.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FileCreateManyArgs>(args?: SelectSubset<T, FileCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Files and returns the data saved in the database.
+     * @param {FileCreateManyAndReturnArgs} args - Arguments to create many Files.
+     * @example
+     * // Create many Files
+     * const file = await prisma.file.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Files and only return the `id`
+     * const fileWithIdOnly = await prisma.file.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FileCreateManyAndReturnArgs>(args?: SelectSubset<T, FileCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a File.
+     * @param {FileDeleteArgs} args - Arguments to delete one File.
+     * @example
+     * // Delete one File
+     * const File = await prisma.file.delete({
+     *   where: {
+     *     // ... filter to delete one File
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FileDeleteArgs>(args: SelectSubset<T, FileDeleteArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one File.
+     * @param {FileUpdateArgs} args - Arguments to update one File.
+     * @example
+     * // Update one File
+     * const file = await prisma.file.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FileUpdateArgs>(args: SelectSubset<T, FileUpdateArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Files.
+     * @param {FileDeleteManyArgs} args - Arguments to filter Files to delete.
+     * @example
+     * // Delete a few Files
+     * const { count } = await prisma.file.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FileDeleteManyArgs>(args?: SelectSubset<T, FileDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Files.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FileUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Files
+     * const file = await prisma.file.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FileUpdateManyArgs>(args: SelectSubset<T, FileUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Files and returns the data updated in the database.
+     * @param {FileUpdateManyAndReturnArgs} args - Arguments to update many Files.
+     * @example
+     * // Update many Files
+     * const file = await prisma.file.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Files and only return the `id`
+     * const fileWithIdOnly = await prisma.file.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FileUpdateManyAndReturnArgs>(args: SelectSubset<T, FileUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one File.
+     * @param {FileUpsertArgs} args - Arguments to update or create a File.
+     * @example
+     * // Update or create a File
+     * const file = await prisma.file.upsert({
+     *   create: {
+     *     // ... data to create a File
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the File we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FileUpsertArgs>(args: SelectSubset<T, FileUpsertArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Files.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FileCountArgs} args - Arguments to filter Files to count.
+     * @example
+     * // Count the number of Files
+     * const count = await prisma.file.count({
+     *   where: {
+     *     // ... the filter for the Files we want to count
+     *   }
+     * })
+    **/
+    count<T extends FileCountArgs>(
+      args?: Subset<T, FileCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FileCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a File.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FileAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FileAggregateArgs>(args: Subset<T, FileAggregateArgs>): Prisma.PrismaPromise<GetFileAggregateType<T>>
+
+    /**
+     * Group by File.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FileGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FileGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FileGroupByArgs['orderBy'] }
+        : { orderBy?: FileGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FileGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFileGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the File model
+   */
+  readonly fields: FileFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for File.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FileClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    parentVersion<T extends File$parentVersionArgs<ExtArgs> = {}>(args?: Subset<T, File$parentVersionArgs<ExtArgs>>): Prisma__FileClient<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    versions<T extends File$versionsArgs<ExtArgs> = {}>(args?: Subset<T, File$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the File model
+   */
+  interface FileFieldRefs {
+    readonly id: FieldRef<"File", 'String'>
+    readonly service: FieldRef<"File", 'String'>
+    readonly module: FieldRef<"File", 'String'>
+    readonly ownerId: FieldRef<"File", 'String'>
+    readonly referenceId: FieldRef<"File", 'String'>
+    readonly originalName: FieldRef<"File", 'String'>
+    readonly storedName: FieldRef<"File", 'String'>
+    readonly mimeType: FieldRef<"File", 'String'>
+    readonly size: FieldRef<"File", 'BigInt'>
+    readonly checksum: FieldRef<"File", 'String'>
+    readonly storagePath: FieldRef<"File", 'String'>
+    readonly storageProvider: FieldRef<"File", 'String'>
+    readonly compressed: FieldRef<"File", 'Boolean'>
+    readonly compressionType: FieldRef<"File", 'String'>
+    readonly compressRequested: FieldRef<"File", 'Boolean'>
+    readonly thumbnails: FieldRef<"File", 'Json'>
+    readonly metadata: FieldRef<"File", 'Json'>
+    readonly retentionDays: FieldRef<"File", 'Int'>
+    readonly scheduledDeleteAt: FieldRef<"File", 'DateTime'>
+    readonly status: FieldRef<"File", 'FileStatus'>
+    readonly retryCount: FieldRef<"File", 'Int'>
+    readonly retryAt: FieldRef<"File", 'DateTime'>
+    readonly versionOf: FieldRef<"File", 'String'>
+    readonly deleted: FieldRef<"File", 'Boolean'>
+    readonly deletedAt: FieldRef<"File", 'DateTime'>
+    readonly createdAt: FieldRef<"File", 'DateTime'>
+    readonly updatedAt: FieldRef<"File", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * File findUnique
+   */
+  export type FileFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * Filter, which File to fetch.
+     */
+    where: FileWhereUniqueInput
+  }
+
+  /**
+   * File findUniqueOrThrow
+   */
+  export type FileFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * Filter, which File to fetch.
+     */
+    where: FileWhereUniqueInput
+  }
+
+  /**
+   * File findFirst
+   */
+  export type FileFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * Filter, which File to fetch.
+     */
+    where?: FileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Files to fetch.
+     */
+    orderBy?: FileOrderByWithRelationInput | FileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Files.
+     */
+    cursor?: FileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Files from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Files.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Files.
+     */
+    distinct?: FileScalarFieldEnum | FileScalarFieldEnum[]
+  }
+
+  /**
+   * File findFirstOrThrow
+   */
+  export type FileFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * Filter, which File to fetch.
+     */
+    where?: FileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Files to fetch.
+     */
+    orderBy?: FileOrderByWithRelationInput | FileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Files.
+     */
+    cursor?: FileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Files from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Files.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Files.
+     */
+    distinct?: FileScalarFieldEnum | FileScalarFieldEnum[]
+  }
+
+  /**
+   * File findMany
+   */
+  export type FileFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * Filter, which Files to fetch.
+     */
+    where?: FileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Files to fetch.
+     */
+    orderBy?: FileOrderByWithRelationInput | FileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Files.
+     */
+    cursor?: FileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Files from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Files.
+     */
+    skip?: number
+    distinct?: FileScalarFieldEnum | FileScalarFieldEnum[]
+  }
+
+  /**
+   * File create
+   */
+  export type FileCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * The data needed to create a File.
+     */
+    data: XOR<FileCreateInput, FileUncheckedCreateInput>
+  }
+
+  /**
+   * File createMany
+   */
+  export type FileCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Files.
+     */
+    data: FileCreateManyInput | FileCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * File createManyAndReturn
+   */
+  export type FileCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * The data used to create many Files.
+     */
+    data: FileCreateManyInput | FileCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * File update
+   */
+  export type FileUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * The data needed to update a File.
+     */
+    data: XOR<FileUpdateInput, FileUncheckedUpdateInput>
+    /**
+     * Choose, which File to update.
+     */
+    where: FileWhereUniqueInput
+  }
+
+  /**
+   * File updateMany
+   */
+  export type FileUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Files.
+     */
+    data: XOR<FileUpdateManyMutationInput, FileUncheckedUpdateManyInput>
+    /**
+     * Filter which Files to update
+     */
+    where?: FileWhereInput
+    /**
+     * Limit how many Files to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * File updateManyAndReturn
+   */
+  export type FileUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * The data used to update Files.
+     */
+    data: XOR<FileUpdateManyMutationInput, FileUncheckedUpdateManyInput>
+    /**
+     * Filter which Files to update
+     */
+    where?: FileWhereInput
+    /**
+     * Limit how many Files to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * File upsert
+   */
+  export type FileUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * The filter to search for the File to update in case it exists.
+     */
+    where: FileWhereUniqueInput
+    /**
+     * In case the File found by the `where` argument doesn't exist, create a new File with this data.
+     */
+    create: XOR<FileCreateInput, FileUncheckedCreateInput>
+    /**
+     * In case the File was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FileUpdateInput, FileUncheckedUpdateInput>
+  }
+
+  /**
+   * File delete
+   */
+  export type FileDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    /**
+     * Filter which File to delete.
+     */
+    where: FileWhereUniqueInput
+  }
+
+  /**
+   * File deleteMany
+   */
+  export type FileDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Files to delete
+     */
+    where?: FileWhereInput
+    /**
+     * Limit how many Files to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * File.parentVersion
+   */
+  export type File$parentVersionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    where?: FileWhereInput
+  }
+
+  /**
+   * File.versions
+   */
+  export type File$versionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    where?: FileWhereInput
+    orderBy?: FileOrderByWithRelationInput | FileOrderByWithRelationInput[]
+    cursor?: FileWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FileScalarFieldEnum | FileScalarFieldEnum[]
+  }
+
+  /**
+   * File without action
+   */
+  export type FileDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ChunkUpload
+   */
+
+  export type AggregateChunkUpload = {
+    _count: ChunkUploadCountAggregateOutputType | null
+    _avg: ChunkUploadAvgAggregateOutputType | null
+    _sum: ChunkUploadSumAggregateOutputType | null
+    _min: ChunkUploadMinAggregateOutputType | null
+    _max: ChunkUploadMaxAggregateOutputType | null
+  }
+
+  export type ChunkUploadAvgAggregateOutputType = {
+    totalSize: number | null
+    totalChunks: number | null
+    receivedChunks: number | null
+    chunkSize: number | null
+  }
+
+  export type ChunkUploadSumAggregateOutputType = {
+    totalSize: bigint | null
+    totalChunks: number | null
+    receivedChunks: number | null
+    chunkSize: number | null
+  }
+
+  export type ChunkUploadMinAggregateOutputType = {
+    id: string | null
+    service: string | null
+    module: string | null
+    ownerId: string | null
+    referenceId: string | null
+    originalName: string | null
+    mimeType: string | null
+    totalSize: bigint | null
+    totalChunks: number | null
+    receivedChunks: number | null
+    chunkSize: number | null
+    status: $Enums.ChunkUploadStatus | null
+    tempPath: string | null
+    expiresAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ChunkUploadMaxAggregateOutputType = {
+    id: string | null
+    service: string | null
+    module: string | null
+    ownerId: string | null
+    referenceId: string | null
+    originalName: string | null
+    mimeType: string | null
+    totalSize: bigint | null
+    totalChunks: number | null
+    receivedChunks: number | null
+    chunkSize: number | null
+    status: $Enums.ChunkUploadStatus | null
+    tempPath: string | null
+    expiresAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ChunkUploadCountAggregateOutputType = {
+    id: number
+    service: number
+    module: number
+    ownerId: number
+    referenceId: number
+    originalName: number
+    mimeType: number
+    totalSize: number
+    totalChunks: number
+    receivedChunks: number
+    chunkSize: number
+    status: number
+    tempPath: number
+    expiresAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ChunkUploadAvgAggregateInputType = {
+    totalSize?: true
+    totalChunks?: true
+    receivedChunks?: true
+    chunkSize?: true
+  }
+
+  export type ChunkUploadSumAggregateInputType = {
+    totalSize?: true
+    totalChunks?: true
+    receivedChunks?: true
+    chunkSize?: true
+  }
+
+  export type ChunkUploadMinAggregateInputType = {
+    id?: true
+    service?: true
+    module?: true
+    ownerId?: true
+    referenceId?: true
+    originalName?: true
+    mimeType?: true
+    totalSize?: true
+    totalChunks?: true
+    receivedChunks?: true
+    chunkSize?: true
+    status?: true
+    tempPath?: true
+    expiresAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ChunkUploadMaxAggregateInputType = {
+    id?: true
+    service?: true
+    module?: true
+    ownerId?: true
+    referenceId?: true
+    originalName?: true
+    mimeType?: true
+    totalSize?: true
+    totalChunks?: true
+    receivedChunks?: true
+    chunkSize?: true
+    status?: true
+    tempPath?: true
+    expiresAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ChunkUploadCountAggregateInputType = {
+    id?: true
+    service?: true
+    module?: true
+    ownerId?: true
+    referenceId?: true
+    originalName?: true
+    mimeType?: true
+    totalSize?: true
+    totalChunks?: true
+    receivedChunks?: true
+    chunkSize?: true
+    status?: true
+    tempPath?: true
+    expiresAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ChunkUploadAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChunkUpload to aggregate.
+     */
+    where?: ChunkUploadWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChunkUploads to fetch.
+     */
+    orderBy?: ChunkUploadOrderByWithRelationInput | ChunkUploadOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChunkUploadWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChunkUploads from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChunkUploads.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ChunkUploads
+    **/
+    _count?: true | ChunkUploadCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ChunkUploadAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ChunkUploadSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChunkUploadMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChunkUploadMaxAggregateInputType
+  }
+
+  export type GetChunkUploadAggregateType<T extends ChunkUploadAggregateArgs> = {
+        [P in keyof T & keyof AggregateChunkUpload]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChunkUpload[P]>
+      : GetScalarType<T[P], AggregateChunkUpload[P]>
+  }
+
+
+
+
+  export type ChunkUploadGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChunkUploadWhereInput
+    orderBy?: ChunkUploadOrderByWithAggregationInput | ChunkUploadOrderByWithAggregationInput[]
+    by: ChunkUploadScalarFieldEnum[] | ChunkUploadScalarFieldEnum
+    having?: ChunkUploadScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChunkUploadCountAggregateInputType | true
+    _avg?: ChunkUploadAvgAggregateInputType
+    _sum?: ChunkUploadSumAggregateInputType
+    _min?: ChunkUploadMinAggregateInputType
+    _max?: ChunkUploadMaxAggregateInputType
+  }
+
+  export type ChunkUploadGroupByOutputType = {
+    id: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId: string | null
+    originalName: string
+    mimeType: string
+    totalSize: bigint
+    totalChunks: number
+    receivedChunks: number
+    chunkSize: number
+    status: $Enums.ChunkUploadStatus
+    tempPath: string
+    expiresAt: Date
+    createdAt: Date
+    updatedAt: Date
+    _count: ChunkUploadCountAggregateOutputType | null
+    _avg: ChunkUploadAvgAggregateOutputType | null
+    _sum: ChunkUploadSumAggregateOutputType | null
+    _min: ChunkUploadMinAggregateOutputType | null
+    _max: ChunkUploadMaxAggregateOutputType | null
+  }
+
+  type GetChunkUploadGroupByPayload<T extends ChunkUploadGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChunkUploadGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChunkUploadGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChunkUploadGroupByOutputType[P]>
+            : GetScalarType<T[P], ChunkUploadGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChunkUploadSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    module?: boolean
+    ownerId?: boolean
+    referenceId?: boolean
+    originalName?: boolean
+    mimeType?: boolean
+    totalSize?: boolean
+    totalChunks?: boolean
+    receivedChunks?: boolean
+    chunkSize?: boolean
+    status?: boolean
+    tempPath?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    chunks?: boolean | ChunkUpload$chunksArgs<ExtArgs>
+    _count?: boolean | ChunkUploadCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chunkUpload"]>
+
+  export type ChunkUploadSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    module?: boolean
+    ownerId?: boolean
+    referenceId?: boolean
+    originalName?: boolean
+    mimeType?: boolean
+    totalSize?: boolean
+    totalChunks?: boolean
+    receivedChunks?: boolean
+    chunkSize?: boolean
+    status?: boolean
+    tempPath?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["chunkUpload"]>
+
+  export type ChunkUploadSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    module?: boolean
+    ownerId?: boolean
+    referenceId?: boolean
+    originalName?: boolean
+    mimeType?: boolean
+    totalSize?: boolean
+    totalChunks?: boolean
+    receivedChunks?: boolean
+    chunkSize?: boolean
+    status?: boolean
+    tempPath?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["chunkUpload"]>
+
+  export type ChunkUploadSelectScalar = {
+    id?: boolean
+    service?: boolean
+    module?: boolean
+    ownerId?: boolean
+    referenceId?: boolean
+    originalName?: boolean
+    mimeType?: boolean
+    totalSize?: boolean
+    totalChunks?: boolean
+    receivedChunks?: boolean
+    chunkSize?: boolean
+    status?: boolean
+    tempPath?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ChunkUploadOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "service" | "module" | "ownerId" | "referenceId" | "originalName" | "mimeType" | "totalSize" | "totalChunks" | "receivedChunks" | "chunkSize" | "status" | "tempPath" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["chunkUpload"]>
+  export type ChunkUploadInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    chunks?: boolean | ChunkUpload$chunksArgs<ExtArgs>
+    _count?: boolean | ChunkUploadCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ChunkUploadIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type ChunkUploadIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $ChunkUploadPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ChunkUpload"
+    objects: {
+      chunks: Prisma.$ChunkPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      service: string
+      module: string
+      ownerId: string
+      referenceId: string | null
+      originalName: string
+      mimeType: string
+      totalSize: bigint
+      totalChunks: number
+      receivedChunks: number
+      chunkSize: number
+      status: $Enums.ChunkUploadStatus
+      tempPath: string
+      expiresAt: Date
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["chunkUpload"]>
+    composites: {}
+  }
+
+  type ChunkUploadGetPayload<S extends boolean | null | undefined | ChunkUploadDefaultArgs> = $Result.GetResult<Prisma.$ChunkUploadPayload, S>
+
+  type ChunkUploadCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChunkUploadFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ChunkUploadCountAggregateInputType | true
+    }
+
+  export interface ChunkUploadDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ChunkUpload'], meta: { name: 'ChunkUpload' } }
+    /**
+     * Find zero or one ChunkUpload that matches the filter.
+     * @param {ChunkUploadFindUniqueArgs} args - Arguments to find a ChunkUpload
+     * @example
+     * // Get one ChunkUpload
+     * const chunkUpload = await prisma.chunkUpload.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChunkUploadFindUniqueArgs>(args: SelectSubset<T, ChunkUploadFindUniqueArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ChunkUpload that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChunkUploadFindUniqueOrThrowArgs} args - Arguments to find a ChunkUpload
+     * @example
+     * // Get one ChunkUpload
+     * const chunkUpload = await prisma.chunkUpload.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChunkUploadFindUniqueOrThrowArgs>(args: SelectSubset<T, ChunkUploadFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChunkUpload that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkUploadFindFirstArgs} args - Arguments to find a ChunkUpload
+     * @example
+     * // Get one ChunkUpload
+     * const chunkUpload = await prisma.chunkUpload.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChunkUploadFindFirstArgs>(args?: SelectSubset<T, ChunkUploadFindFirstArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChunkUpload that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkUploadFindFirstOrThrowArgs} args - Arguments to find a ChunkUpload
+     * @example
+     * // Get one ChunkUpload
+     * const chunkUpload = await prisma.chunkUpload.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChunkUploadFindFirstOrThrowArgs>(args?: SelectSubset<T, ChunkUploadFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ChunkUploads that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkUploadFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ChunkUploads
+     * const chunkUploads = await prisma.chunkUpload.findMany()
+     * 
+     * // Get first 10 ChunkUploads
+     * const chunkUploads = await prisma.chunkUpload.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const chunkUploadWithIdOnly = await prisma.chunkUpload.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ChunkUploadFindManyArgs>(args?: SelectSubset<T, ChunkUploadFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ChunkUpload.
+     * @param {ChunkUploadCreateArgs} args - Arguments to create a ChunkUpload.
+     * @example
+     * // Create one ChunkUpload
+     * const ChunkUpload = await prisma.chunkUpload.create({
+     *   data: {
+     *     // ... data to create a ChunkUpload
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChunkUploadCreateArgs>(args: SelectSubset<T, ChunkUploadCreateArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ChunkUploads.
+     * @param {ChunkUploadCreateManyArgs} args - Arguments to create many ChunkUploads.
+     * @example
+     * // Create many ChunkUploads
+     * const chunkUpload = await prisma.chunkUpload.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChunkUploadCreateManyArgs>(args?: SelectSubset<T, ChunkUploadCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ChunkUploads and returns the data saved in the database.
+     * @param {ChunkUploadCreateManyAndReturnArgs} args - Arguments to create many ChunkUploads.
+     * @example
+     * // Create many ChunkUploads
+     * const chunkUpload = await prisma.chunkUpload.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ChunkUploads and only return the `id`
+     * const chunkUploadWithIdOnly = await prisma.chunkUpload.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ChunkUploadCreateManyAndReturnArgs>(args?: SelectSubset<T, ChunkUploadCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ChunkUpload.
+     * @param {ChunkUploadDeleteArgs} args - Arguments to delete one ChunkUpload.
+     * @example
+     * // Delete one ChunkUpload
+     * const ChunkUpload = await prisma.chunkUpload.delete({
+     *   where: {
+     *     // ... filter to delete one ChunkUpload
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChunkUploadDeleteArgs>(args: SelectSubset<T, ChunkUploadDeleteArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ChunkUpload.
+     * @param {ChunkUploadUpdateArgs} args - Arguments to update one ChunkUpload.
+     * @example
+     * // Update one ChunkUpload
+     * const chunkUpload = await prisma.chunkUpload.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChunkUploadUpdateArgs>(args: SelectSubset<T, ChunkUploadUpdateArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ChunkUploads.
+     * @param {ChunkUploadDeleteManyArgs} args - Arguments to filter ChunkUploads to delete.
+     * @example
+     * // Delete a few ChunkUploads
+     * const { count } = await prisma.chunkUpload.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChunkUploadDeleteManyArgs>(args?: SelectSubset<T, ChunkUploadDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChunkUploads.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkUploadUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ChunkUploads
+     * const chunkUpload = await prisma.chunkUpload.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChunkUploadUpdateManyArgs>(args: SelectSubset<T, ChunkUploadUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChunkUploads and returns the data updated in the database.
+     * @param {ChunkUploadUpdateManyAndReturnArgs} args - Arguments to update many ChunkUploads.
+     * @example
+     * // Update many ChunkUploads
+     * const chunkUpload = await prisma.chunkUpload.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ChunkUploads and only return the `id`
+     * const chunkUploadWithIdOnly = await prisma.chunkUpload.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ChunkUploadUpdateManyAndReturnArgs>(args: SelectSubset<T, ChunkUploadUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ChunkUpload.
+     * @param {ChunkUploadUpsertArgs} args - Arguments to update or create a ChunkUpload.
+     * @example
+     * // Update or create a ChunkUpload
+     * const chunkUpload = await prisma.chunkUpload.upsert({
+     *   create: {
+     *     // ... data to create a ChunkUpload
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ChunkUpload we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChunkUploadUpsertArgs>(args: SelectSubset<T, ChunkUploadUpsertArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ChunkUploads.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkUploadCountArgs} args - Arguments to filter ChunkUploads to count.
+     * @example
+     * // Count the number of ChunkUploads
+     * const count = await prisma.chunkUpload.count({
+     *   where: {
+     *     // ... the filter for the ChunkUploads we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChunkUploadCountArgs>(
+      args?: Subset<T, ChunkUploadCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChunkUploadCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ChunkUpload.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkUploadAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChunkUploadAggregateArgs>(args: Subset<T, ChunkUploadAggregateArgs>): Prisma.PrismaPromise<GetChunkUploadAggregateType<T>>
+
+    /**
+     * Group by ChunkUpload.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkUploadGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChunkUploadGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChunkUploadGroupByArgs['orderBy'] }
+        : { orderBy?: ChunkUploadGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChunkUploadGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChunkUploadGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ChunkUpload model
+   */
+  readonly fields: ChunkUploadFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ChunkUpload.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChunkUploadClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    chunks<T extends ChunkUpload$chunksArgs<ExtArgs> = {}>(args?: Subset<T, ChunkUpload$chunksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ChunkUpload model
+   */
+  interface ChunkUploadFieldRefs {
+    readonly id: FieldRef<"ChunkUpload", 'String'>
+    readonly service: FieldRef<"ChunkUpload", 'String'>
+    readonly module: FieldRef<"ChunkUpload", 'String'>
+    readonly ownerId: FieldRef<"ChunkUpload", 'String'>
+    readonly referenceId: FieldRef<"ChunkUpload", 'String'>
+    readonly originalName: FieldRef<"ChunkUpload", 'String'>
+    readonly mimeType: FieldRef<"ChunkUpload", 'String'>
+    readonly totalSize: FieldRef<"ChunkUpload", 'BigInt'>
+    readonly totalChunks: FieldRef<"ChunkUpload", 'Int'>
+    readonly receivedChunks: FieldRef<"ChunkUpload", 'Int'>
+    readonly chunkSize: FieldRef<"ChunkUpload", 'Int'>
+    readonly status: FieldRef<"ChunkUpload", 'ChunkUploadStatus'>
+    readonly tempPath: FieldRef<"ChunkUpload", 'String'>
+    readonly expiresAt: FieldRef<"ChunkUpload", 'DateTime'>
+    readonly createdAt: FieldRef<"ChunkUpload", 'DateTime'>
+    readonly updatedAt: FieldRef<"ChunkUpload", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ChunkUpload findUnique
+   */
+  export type ChunkUploadFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChunkUpload to fetch.
+     */
+    where: ChunkUploadWhereUniqueInput
+  }
+
+  /**
+   * ChunkUpload findUniqueOrThrow
+   */
+  export type ChunkUploadFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChunkUpload to fetch.
+     */
+    where: ChunkUploadWhereUniqueInput
+  }
+
+  /**
+   * ChunkUpload findFirst
+   */
+  export type ChunkUploadFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChunkUpload to fetch.
+     */
+    where?: ChunkUploadWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChunkUploads to fetch.
+     */
+    orderBy?: ChunkUploadOrderByWithRelationInput | ChunkUploadOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChunkUploads.
+     */
+    cursor?: ChunkUploadWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChunkUploads from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChunkUploads.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChunkUploads.
+     */
+    distinct?: ChunkUploadScalarFieldEnum | ChunkUploadScalarFieldEnum[]
+  }
+
+  /**
+   * ChunkUpload findFirstOrThrow
+   */
+  export type ChunkUploadFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChunkUpload to fetch.
+     */
+    where?: ChunkUploadWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChunkUploads to fetch.
+     */
+    orderBy?: ChunkUploadOrderByWithRelationInput | ChunkUploadOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChunkUploads.
+     */
+    cursor?: ChunkUploadWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChunkUploads from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChunkUploads.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChunkUploads.
+     */
+    distinct?: ChunkUploadScalarFieldEnum | ChunkUploadScalarFieldEnum[]
+  }
+
+  /**
+   * ChunkUpload findMany
+   */
+  export type ChunkUploadFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * Filter, which ChunkUploads to fetch.
+     */
+    where?: ChunkUploadWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChunkUploads to fetch.
+     */
+    orderBy?: ChunkUploadOrderByWithRelationInput | ChunkUploadOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ChunkUploads.
+     */
+    cursor?: ChunkUploadWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChunkUploads from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChunkUploads.
+     */
+    skip?: number
+    distinct?: ChunkUploadScalarFieldEnum | ChunkUploadScalarFieldEnum[]
+  }
+
+  /**
+   * ChunkUpload create
+   */
+  export type ChunkUploadCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ChunkUpload.
+     */
+    data: XOR<ChunkUploadCreateInput, ChunkUploadUncheckedCreateInput>
+  }
+
+  /**
+   * ChunkUpload createMany
+   */
+  export type ChunkUploadCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ChunkUploads.
+     */
+    data: ChunkUploadCreateManyInput | ChunkUploadCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChunkUpload createManyAndReturn
+   */
+  export type ChunkUploadCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * The data used to create many ChunkUploads.
+     */
+    data: ChunkUploadCreateManyInput | ChunkUploadCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChunkUpload update
+   */
+  export type ChunkUploadUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ChunkUpload.
+     */
+    data: XOR<ChunkUploadUpdateInput, ChunkUploadUncheckedUpdateInput>
+    /**
+     * Choose, which ChunkUpload to update.
+     */
+    where: ChunkUploadWhereUniqueInput
+  }
+
+  /**
+   * ChunkUpload updateMany
+   */
+  export type ChunkUploadUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ChunkUploads.
+     */
+    data: XOR<ChunkUploadUpdateManyMutationInput, ChunkUploadUncheckedUpdateManyInput>
+    /**
+     * Filter which ChunkUploads to update
+     */
+    where?: ChunkUploadWhereInput
+    /**
+     * Limit how many ChunkUploads to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChunkUpload updateManyAndReturn
+   */
+  export type ChunkUploadUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * The data used to update ChunkUploads.
+     */
+    data: XOR<ChunkUploadUpdateManyMutationInput, ChunkUploadUncheckedUpdateManyInput>
+    /**
+     * Filter which ChunkUploads to update
+     */
+    where?: ChunkUploadWhereInput
+    /**
+     * Limit how many ChunkUploads to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChunkUpload upsert
+   */
+  export type ChunkUploadUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ChunkUpload to update in case it exists.
+     */
+    where: ChunkUploadWhereUniqueInput
+    /**
+     * In case the ChunkUpload found by the `where` argument doesn't exist, create a new ChunkUpload with this data.
+     */
+    create: XOR<ChunkUploadCreateInput, ChunkUploadUncheckedCreateInput>
+    /**
+     * In case the ChunkUpload was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChunkUploadUpdateInput, ChunkUploadUncheckedUpdateInput>
+  }
+
+  /**
+   * ChunkUpload delete
+   */
+  export type ChunkUploadDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+    /**
+     * Filter which ChunkUpload to delete.
+     */
+    where: ChunkUploadWhereUniqueInput
+  }
+
+  /**
+   * ChunkUpload deleteMany
+   */
+  export type ChunkUploadDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChunkUploads to delete
+     */
+    where?: ChunkUploadWhereInput
+    /**
+     * Limit how many ChunkUploads to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChunkUpload.chunks
+   */
+  export type ChunkUpload$chunksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    where?: ChunkWhereInput
+    orderBy?: ChunkOrderByWithRelationInput | ChunkOrderByWithRelationInput[]
+    cursor?: ChunkWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ChunkScalarFieldEnum | ChunkScalarFieldEnum[]
+  }
+
+  /**
+   * ChunkUpload without action
+   */
+  export type ChunkUploadDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChunkUpload
+     */
+    select?: ChunkUploadSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChunkUpload
+     */
+    omit?: ChunkUploadOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkUploadInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Chunk
+   */
+
+  export type AggregateChunk = {
+    _count: ChunkCountAggregateOutputType | null
+    _avg: ChunkAvgAggregateOutputType | null
+    _sum: ChunkSumAggregateOutputType | null
+    _min: ChunkMinAggregateOutputType | null
+    _max: ChunkMaxAggregateOutputType | null
+  }
+
+  export type ChunkAvgAggregateOutputType = {
+    chunkNumber: number | null
+    size: number | null
+  }
+
+  export type ChunkSumAggregateOutputType = {
+    chunkNumber: number | null
+    size: number | null
+  }
+
+  export type ChunkMinAggregateOutputType = {
+    id: string | null
+    uploadId: string | null
+    chunkNumber: number | null
+    size: number | null
+    checksum: string | null
+    storedPath: string | null
+    createdAt: Date | null
+  }
+
+  export type ChunkMaxAggregateOutputType = {
+    id: string | null
+    uploadId: string | null
+    chunkNumber: number | null
+    size: number | null
+    checksum: string | null
+    storedPath: string | null
+    createdAt: Date | null
+  }
+
+  export type ChunkCountAggregateOutputType = {
+    id: number
+    uploadId: number
+    chunkNumber: number
+    size: number
+    checksum: number
+    storedPath: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ChunkAvgAggregateInputType = {
+    chunkNumber?: true
+    size?: true
+  }
+
+  export type ChunkSumAggregateInputType = {
+    chunkNumber?: true
+    size?: true
+  }
+
+  export type ChunkMinAggregateInputType = {
+    id?: true
+    uploadId?: true
+    chunkNumber?: true
+    size?: true
+    checksum?: true
+    storedPath?: true
+    createdAt?: true
+  }
+
+  export type ChunkMaxAggregateInputType = {
+    id?: true
+    uploadId?: true
+    chunkNumber?: true
+    size?: true
+    checksum?: true
+    storedPath?: true
+    createdAt?: true
+  }
+
+  export type ChunkCountAggregateInputType = {
+    id?: true
+    uploadId?: true
+    chunkNumber?: true
+    size?: true
+    checksum?: true
+    storedPath?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ChunkAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Chunk to aggregate.
+     */
+    where?: ChunkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Chunks to fetch.
+     */
+    orderBy?: ChunkOrderByWithRelationInput | ChunkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChunkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Chunks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Chunks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Chunks
+    **/
+    _count?: true | ChunkCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ChunkAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ChunkSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChunkMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChunkMaxAggregateInputType
+  }
+
+  export type GetChunkAggregateType<T extends ChunkAggregateArgs> = {
+        [P in keyof T & keyof AggregateChunk]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChunk[P]>
+      : GetScalarType<T[P], AggregateChunk[P]>
+  }
+
+
+
+
+  export type ChunkGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChunkWhereInput
+    orderBy?: ChunkOrderByWithAggregationInput | ChunkOrderByWithAggregationInput[]
+    by: ChunkScalarFieldEnum[] | ChunkScalarFieldEnum
+    having?: ChunkScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChunkCountAggregateInputType | true
+    _avg?: ChunkAvgAggregateInputType
+    _sum?: ChunkSumAggregateInputType
+    _min?: ChunkMinAggregateInputType
+    _max?: ChunkMaxAggregateInputType
+  }
+
+  export type ChunkGroupByOutputType = {
+    id: string
+    uploadId: string
+    chunkNumber: number
+    size: number
+    checksum: string
+    storedPath: string
+    createdAt: Date
+    _count: ChunkCountAggregateOutputType | null
+    _avg: ChunkAvgAggregateOutputType | null
+    _sum: ChunkSumAggregateOutputType | null
+    _min: ChunkMinAggregateOutputType | null
+    _max: ChunkMaxAggregateOutputType | null
+  }
+
+  type GetChunkGroupByPayload<T extends ChunkGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChunkGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChunkGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChunkGroupByOutputType[P]>
+            : GetScalarType<T[P], ChunkGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChunkSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uploadId?: boolean
+    chunkNumber?: boolean
+    size?: boolean
+    checksum?: boolean
+    storedPath?: boolean
+    createdAt?: boolean
+    upload?: boolean | ChunkUploadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chunk"]>
+
+  export type ChunkSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uploadId?: boolean
+    chunkNumber?: boolean
+    size?: boolean
+    checksum?: boolean
+    storedPath?: boolean
+    createdAt?: boolean
+    upload?: boolean | ChunkUploadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chunk"]>
+
+  export type ChunkSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uploadId?: boolean
+    chunkNumber?: boolean
+    size?: boolean
+    checksum?: boolean
+    storedPath?: boolean
+    createdAt?: boolean
+    upload?: boolean | ChunkUploadDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chunk"]>
+
+  export type ChunkSelectScalar = {
+    id?: boolean
+    uploadId?: boolean
+    chunkNumber?: boolean
+    size?: boolean
+    checksum?: boolean
+    storedPath?: boolean
+    createdAt?: boolean
+  }
+
+  export type ChunkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "uploadId" | "chunkNumber" | "size" | "checksum" | "storedPath" | "createdAt", ExtArgs["result"]["chunk"]>
+  export type ChunkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    upload?: boolean | ChunkUploadDefaultArgs<ExtArgs>
+  }
+  export type ChunkIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    upload?: boolean | ChunkUploadDefaultArgs<ExtArgs>
+  }
+  export type ChunkIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    upload?: boolean | ChunkUploadDefaultArgs<ExtArgs>
+  }
+
+  export type $ChunkPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Chunk"
+    objects: {
+      upload: Prisma.$ChunkUploadPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      uploadId: string
+      chunkNumber: number
+      size: number
+      checksum: string
+      storedPath: string
+      createdAt: Date
+    }, ExtArgs["result"]["chunk"]>
+    composites: {}
+  }
+
+  type ChunkGetPayload<S extends boolean | null | undefined | ChunkDefaultArgs> = $Result.GetResult<Prisma.$ChunkPayload, S>
+
+  type ChunkCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChunkFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ChunkCountAggregateInputType | true
+    }
+
+  export interface ChunkDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Chunk'], meta: { name: 'Chunk' } }
+    /**
+     * Find zero or one Chunk that matches the filter.
+     * @param {ChunkFindUniqueArgs} args - Arguments to find a Chunk
+     * @example
+     * // Get one Chunk
+     * const chunk = await prisma.chunk.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChunkFindUniqueArgs>(args: SelectSubset<T, ChunkFindUniqueArgs<ExtArgs>>): Prisma__ChunkClient<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Chunk that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChunkFindUniqueOrThrowArgs} args - Arguments to find a Chunk
+     * @example
+     * // Get one Chunk
+     * const chunk = await prisma.chunk.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChunkFindUniqueOrThrowArgs>(args: SelectSubset<T, ChunkFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChunkClient<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Chunk that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkFindFirstArgs} args - Arguments to find a Chunk
+     * @example
+     * // Get one Chunk
+     * const chunk = await prisma.chunk.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChunkFindFirstArgs>(args?: SelectSubset<T, ChunkFindFirstArgs<ExtArgs>>): Prisma__ChunkClient<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Chunk that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkFindFirstOrThrowArgs} args - Arguments to find a Chunk
+     * @example
+     * // Get one Chunk
+     * const chunk = await prisma.chunk.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChunkFindFirstOrThrowArgs>(args?: SelectSubset<T, ChunkFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChunkClient<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Chunks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Chunks
+     * const chunks = await prisma.chunk.findMany()
+     * 
+     * // Get first 10 Chunks
+     * const chunks = await prisma.chunk.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const chunkWithIdOnly = await prisma.chunk.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ChunkFindManyArgs>(args?: SelectSubset<T, ChunkFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Chunk.
+     * @param {ChunkCreateArgs} args - Arguments to create a Chunk.
+     * @example
+     * // Create one Chunk
+     * const Chunk = await prisma.chunk.create({
+     *   data: {
+     *     // ... data to create a Chunk
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChunkCreateArgs>(args: SelectSubset<T, ChunkCreateArgs<ExtArgs>>): Prisma__ChunkClient<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Chunks.
+     * @param {ChunkCreateManyArgs} args - Arguments to create many Chunks.
+     * @example
+     * // Create many Chunks
+     * const chunk = await prisma.chunk.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChunkCreateManyArgs>(args?: SelectSubset<T, ChunkCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Chunks and returns the data saved in the database.
+     * @param {ChunkCreateManyAndReturnArgs} args - Arguments to create many Chunks.
+     * @example
+     * // Create many Chunks
+     * const chunk = await prisma.chunk.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Chunks and only return the `id`
+     * const chunkWithIdOnly = await prisma.chunk.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ChunkCreateManyAndReturnArgs>(args?: SelectSubset<T, ChunkCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Chunk.
+     * @param {ChunkDeleteArgs} args - Arguments to delete one Chunk.
+     * @example
+     * // Delete one Chunk
+     * const Chunk = await prisma.chunk.delete({
+     *   where: {
+     *     // ... filter to delete one Chunk
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChunkDeleteArgs>(args: SelectSubset<T, ChunkDeleteArgs<ExtArgs>>): Prisma__ChunkClient<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Chunk.
+     * @param {ChunkUpdateArgs} args - Arguments to update one Chunk.
+     * @example
+     * // Update one Chunk
+     * const chunk = await prisma.chunk.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChunkUpdateArgs>(args: SelectSubset<T, ChunkUpdateArgs<ExtArgs>>): Prisma__ChunkClient<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Chunks.
+     * @param {ChunkDeleteManyArgs} args - Arguments to filter Chunks to delete.
+     * @example
+     * // Delete a few Chunks
+     * const { count } = await prisma.chunk.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChunkDeleteManyArgs>(args?: SelectSubset<T, ChunkDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Chunks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Chunks
+     * const chunk = await prisma.chunk.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChunkUpdateManyArgs>(args: SelectSubset<T, ChunkUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Chunks and returns the data updated in the database.
+     * @param {ChunkUpdateManyAndReturnArgs} args - Arguments to update many Chunks.
+     * @example
+     * // Update many Chunks
+     * const chunk = await prisma.chunk.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Chunks and only return the `id`
+     * const chunkWithIdOnly = await prisma.chunk.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ChunkUpdateManyAndReturnArgs>(args: SelectSubset<T, ChunkUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Chunk.
+     * @param {ChunkUpsertArgs} args - Arguments to update or create a Chunk.
+     * @example
+     * // Update or create a Chunk
+     * const chunk = await prisma.chunk.upsert({
+     *   create: {
+     *     // ... data to create a Chunk
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Chunk we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChunkUpsertArgs>(args: SelectSubset<T, ChunkUpsertArgs<ExtArgs>>): Prisma__ChunkClient<$Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Chunks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkCountArgs} args - Arguments to filter Chunks to count.
+     * @example
+     * // Count the number of Chunks
+     * const count = await prisma.chunk.count({
+     *   where: {
+     *     // ... the filter for the Chunks we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChunkCountArgs>(
+      args?: Subset<T, ChunkCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChunkCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Chunk.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChunkAggregateArgs>(args: Subset<T, ChunkAggregateArgs>): Prisma.PrismaPromise<GetChunkAggregateType<T>>
+
+    /**
+     * Group by Chunk.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChunkGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChunkGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChunkGroupByArgs['orderBy'] }
+        : { orderBy?: ChunkGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChunkGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChunkGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Chunk model
+   */
+  readonly fields: ChunkFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Chunk.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChunkClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    upload<T extends ChunkUploadDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ChunkUploadDefaultArgs<ExtArgs>>): Prisma__ChunkUploadClient<$Result.GetResult<Prisma.$ChunkUploadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Chunk model
+   */
+  interface ChunkFieldRefs {
+    readonly id: FieldRef<"Chunk", 'String'>
+    readonly uploadId: FieldRef<"Chunk", 'String'>
+    readonly chunkNumber: FieldRef<"Chunk", 'Int'>
+    readonly size: FieldRef<"Chunk", 'Int'>
+    readonly checksum: FieldRef<"Chunk", 'String'>
+    readonly storedPath: FieldRef<"Chunk", 'String'>
+    readonly createdAt: FieldRef<"Chunk", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Chunk findUnique
+   */
+  export type ChunkFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * Filter, which Chunk to fetch.
+     */
+    where: ChunkWhereUniqueInput
+  }
+
+  /**
+   * Chunk findUniqueOrThrow
+   */
+  export type ChunkFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * Filter, which Chunk to fetch.
+     */
+    where: ChunkWhereUniqueInput
+  }
+
+  /**
+   * Chunk findFirst
+   */
+  export type ChunkFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * Filter, which Chunk to fetch.
+     */
+    where?: ChunkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Chunks to fetch.
+     */
+    orderBy?: ChunkOrderByWithRelationInput | ChunkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Chunks.
+     */
+    cursor?: ChunkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Chunks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Chunks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Chunks.
+     */
+    distinct?: ChunkScalarFieldEnum | ChunkScalarFieldEnum[]
+  }
+
+  /**
+   * Chunk findFirstOrThrow
+   */
+  export type ChunkFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * Filter, which Chunk to fetch.
+     */
+    where?: ChunkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Chunks to fetch.
+     */
+    orderBy?: ChunkOrderByWithRelationInput | ChunkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Chunks.
+     */
+    cursor?: ChunkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Chunks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Chunks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Chunks.
+     */
+    distinct?: ChunkScalarFieldEnum | ChunkScalarFieldEnum[]
+  }
+
+  /**
+   * Chunk findMany
+   */
+  export type ChunkFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * Filter, which Chunks to fetch.
+     */
+    where?: ChunkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Chunks to fetch.
+     */
+    orderBy?: ChunkOrderByWithRelationInput | ChunkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Chunks.
+     */
+    cursor?: ChunkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Chunks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Chunks.
+     */
+    skip?: number
+    distinct?: ChunkScalarFieldEnum | ChunkScalarFieldEnum[]
+  }
+
+  /**
+   * Chunk create
+   */
+  export type ChunkCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Chunk.
+     */
+    data: XOR<ChunkCreateInput, ChunkUncheckedCreateInput>
+  }
+
+  /**
+   * Chunk createMany
+   */
+  export type ChunkCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Chunks.
+     */
+    data: ChunkCreateManyInput | ChunkCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Chunk createManyAndReturn
+   */
+  export type ChunkCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * The data used to create many Chunks.
+     */
+    data: ChunkCreateManyInput | ChunkCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Chunk update
+   */
+  export type ChunkUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Chunk.
+     */
+    data: XOR<ChunkUpdateInput, ChunkUncheckedUpdateInput>
+    /**
+     * Choose, which Chunk to update.
+     */
+    where: ChunkWhereUniqueInput
+  }
+
+  /**
+   * Chunk updateMany
+   */
+  export type ChunkUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Chunks.
+     */
+    data: XOR<ChunkUpdateManyMutationInput, ChunkUncheckedUpdateManyInput>
+    /**
+     * Filter which Chunks to update
+     */
+    where?: ChunkWhereInput
+    /**
+     * Limit how many Chunks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Chunk updateManyAndReturn
+   */
+  export type ChunkUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * The data used to update Chunks.
+     */
+    data: XOR<ChunkUpdateManyMutationInput, ChunkUncheckedUpdateManyInput>
+    /**
+     * Filter which Chunks to update
+     */
+    where?: ChunkWhereInput
+    /**
+     * Limit how many Chunks to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Chunk upsert
+   */
+  export type ChunkUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Chunk to update in case it exists.
+     */
+    where: ChunkWhereUniqueInput
+    /**
+     * In case the Chunk found by the `where` argument doesn't exist, create a new Chunk with this data.
+     */
+    create: XOR<ChunkCreateInput, ChunkUncheckedCreateInput>
+    /**
+     * In case the Chunk was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChunkUpdateInput, ChunkUncheckedUpdateInput>
+  }
+
+  /**
+   * Chunk delete
+   */
+  export type ChunkDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+    /**
+     * Filter which Chunk to delete.
+     */
+    where: ChunkWhereUniqueInput
+  }
+
+  /**
+   * Chunk deleteMany
+   */
+  export type ChunkDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Chunks to delete
+     */
+    where?: ChunkWhereInput
+    /**
+     * Limit how many Chunks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Chunk without action
+   */
+  export type ChunkDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chunk
+     */
+    select?: ChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chunk
+     */
+    omit?: ChunkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChunkInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ServiceRetentionPolicy
+   */
+
+  export type AggregateServiceRetentionPolicy = {
+    _count: ServiceRetentionPolicyCountAggregateOutputType | null
+    _avg: ServiceRetentionPolicyAvgAggregateOutputType | null
+    _sum: ServiceRetentionPolicySumAggregateOutputType | null
+    _min: ServiceRetentionPolicyMinAggregateOutputType | null
+    _max: ServiceRetentionPolicyMaxAggregateOutputType | null
+  }
+
+  export type ServiceRetentionPolicyAvgAggregateOutputType = {
+    retentionDays: number | null
+  }
+
+  export type ServiceRetentionPolicySumAggregateOutputType = {
+    retentionDays: number | null
+  }
+
+  export type ServiceRetentionPolicyMinAggregateOutputType = {
+    id: string | null
+    service: string | null
+    retentionDays: number | null
+    description: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ServiceRetentionPolicyMaxAggregateOutputType = {
+    id: string | null
+    service: string | null
+    retentionDays: number | null
+    description: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ServiceRetentionPolicyCountAggregateOutputType = {
+    id: number
+    service: number
+    retentionDays: number
+    description: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ServiceRetentionPolicyAvgAggregateInputType = {
+    retentionDays?: true
+  }
+
+  export type ServiceRetentionPolicySumAggregateInputType = {
+    retentionDays?: true
+  }
+
+  export type ServiceRetentionPolicyMinAggregateInputType = {
+    id?: true
+    service?: true
+    retentionDays?: true
+    description?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ServiceRetentionPolicyMaxAggregateInputType = {
+    id?: true
+    service?: true
+    retentionDays?: true
+    description?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ServiceRetentionPolicyCountAggregateInputType = {
+    id?: true
+    service?: true
+    retentionDays?: true
+    description?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ServiceRetentionPolicyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ServiceRetentionPolicy to aggregate.
+     */
+    where?: ServiceRetentionPolicyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ServiceRetentionPolicies to fetch.
+     */
+    orderBy?: ServiceRetentionPolicyOrderByWithRelationInput | ServiceRetentionPolicyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ServiceRetentionPolicyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ServiceRetentionPolicies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ServiceRetentionPolicies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ServiceRetentionPolicies
+    **/
+    _count?: true | ServiceRetentionPolicyCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ServiceRetentionPolicyAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ServiceRetentionPolicySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ServiceRetentionPolicyMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ServiceRetentionPolicyMaxAggregateInputType
+  }
+
+  export type GetServiceRetentionPolicyAggregateType<T extends ServiceRetentionPolicyAggregateArgs> = {
+        [P in keyof T & keyof AggregateServiceRetentionPolicy]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateServiceRetentionPolicy[P]>
+      : GetScalarType<T[P], AggregateServiceRetentionPolicy[P]>
+  }
+
+
+
+
+  export type ServiceRetentionPolicyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ServiceRetentionPolicyWhereInput
+    orderBy?: ServiceRetentionPolicyOrderByWithAggregationInput | ServiceRetentionPolicyOrderByWithAggregationInput[]
+    by: ServiceRetentionPolicyScalarFieldEnum[] | ServiceRetentionPolicyScalarFieldEnum
+    having?: ServiceRetentionPolicyScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ServiceRetentionPolicyCountAggregateInputType | true
+    _avg?: ServiceRetentionPolicyAvgAggregateInputType
+    _sum?: ServiceRetentionPolicySumAggregateInputType
+    _min?: ServiceRetentionPolicyMinAggregateInputType
+    _max?: ServiceRetentionPolicyMaxAggregateInputType
+  }
+
+  export type ServiceRetentionPolicyGroupByOutputType = {
+    id: string
+    service: string
+    retentionDays: number | null
+    description: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ServiceRetentionPolicyCountAggregateOutputType | null
+    _avg: ServiceRetentionPolicyAvgAggregateOutputType | null
+    _sum: ServiceRetentionPolicySumAggregateOutputType | null
+    _min: ServiceRetentionPolicyMinAggregateOutputType | null
+    _max: ServiceRetentionPolicyMaxAggregateOutputType | null
+  }
+
+  type GetServiceRetentionPolicyGroupByPayload<T extends ServiceRetentionPolicyGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ServiceRetentionPolicyGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ServiceRetentionPolicyGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ServiceRetentionPolicyGroupByOutputType[P]>
+            : GetScalarType<T[P], ServiceRetentionPolicyGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ServiceRetentionPolicySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    retentionDays?: boolean
+    description?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["serviceRetentionPolicy"]>
+
+  export type ServiceRetentionPolicySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    retentionDays?: boolean
+    description?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["serviceRetentionPolicy"]>
+
+  export type ServiceRetentionPolicySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    service?: boolean
+    retentionDays?: boolean
+    description?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["serviceRetentionPolicy"]>
+
+  export type ServiceRetentionPolicySelectScalar = {
+    id?: boolean
+    service?: boolean
+    retentionDays?: boolean
+    description?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ServiceRetentionPolicyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "service" | "retentionDays" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["serviceRetentionPolicy"]>
+
+  export type $ServiceRetentionPolicyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ServiceRetentionPolicy"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      service: string
+      retentionDays: number | null
+      description: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["serviceRetentionPolicy"]>
+    composites: {}
+  }
+
+  type ServiceRetentionPolicyGetPayload<S extends boolean | null | undefined | ServiceRetentionPolicyDefaultArgs> = $Result.GetResult<Prisma.$ServiceRetentionPolicyPayload, S>
+
+  type ServiceRetentionPolicyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ServiceRetentionPolicyFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ServiceRetentionPolicyCountAggregateInputType | true
+    }
+
+  export interface ServiceRetentionPolicyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ServiceRetentionPolicy'], meta: { name: 'ServiceRetentionPolicy' } }
+    /**
+     * Find zero or one ServiceRetentionPolicy that matches the filter.
+     * @param {ServiceRetentionPolicyFindUniqueArgs} args - Arguments to find a ServiceRetentionPolicy
+     * @example
+     * // Get one ServiceRetentionPolicy
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ServiceRetentionPolicyFindUniqueArgs>(args: SelectSubset<T, ServiceRetentionPolicyFindUniqueArgs<ExtArgs>>): Prisma__ServiceRetentionPolicyClient<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ServiceRetentionPolicy that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ServiceRetentionPolicyFindUniqueOrThrowArgs} args - Arguments to find a ServiceRetentionPolicy
+     * @example
+     * // Get one ServiceRetentionPolicy
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ServiceRetentionPolicyFindUniqueOrThrowArgs>(args: SelectSubset<T, ServiceRetentionPolicyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ServiceRetentionPolicyClient<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ServiceRetentionPolicy that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceRetentionPolicyFindFirstArgs} args - Arguments to find a ServiceRetentionPolicy
+     * @example
+     * // Get one ServiceRetentionPolicy
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ServiceRetentionPolicyFindFirstArgs>(args?: SelectSubset<T, ServiceRetentionPolicyFindFirstArgs<ExtArgs>>): Prisma__ServiceRetentionPolicyClient<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ServiceRetentionPolicy that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceRetentionPolicyFindFirstOrThrowArgs} args - Arguments to find a ServiceRetentionPolicy
+     * @example
+     * // Get one ServiceRetentionPolicy
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ServiceRetentionPolicyFindFirstOrThrowArgs>(args?: SelectSubset<T, ServiceRetentionPolicyFindFirstOrThrowArgs<ExtArgs>>): Prisma__ServiceRetentionPolicyClient<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ServiceRetentionPolicies that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceRetentionPolicyFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ServiceRetentionPolicies
+     * const serviceRetentionPolicies = await prisma.serviceRetentionPolicy.findMany()
+     * 
+     * // Get first 10 ServiceRetentionPolicies
+     * const serviceRetentionPolicies = await prisma.serviceRetentionPolicy.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const serviceRetentionPolicyWithIdOnly = await prisma.serviceRetentionPolicy.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ServiceRetentionPolicyFindManyArgs>(args?: SelectSubset<T, ServiceRetentionPolicyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ServiceRetentionPolicy.
+     * @param {ServiceRetentionPolicyCreateArgs} args - Arguments to create a ServiceRetentionPolicy.
+     * @example
+     * // Create one ServiceRetentionPolicy
+     * const ServiceRetentionPolicy = await prisma.serviceRetentionPolicy.create({
+     *   data: {
+     *     // ... data to create a ServiceRetentionPolicy
+     *   }
+     * })
+     * 
+     */
+    create<T extends ServiceRetentionPolicyCreateArgs>(args: SelectSubset<T, ServiceRetentionPolicyCreateArgs<ExtArgs>>): Prisma__ServiceRetentionPolicyClient<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ServiceRetentionPolicies.
+     * @param {ServiceRetentionPolicyCreateManyArgs} args - Arguments to create many ServiceRetentionPolicies.
+     * @example
+     * // Create many ServiceRetentionPolicies
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ServiceRetentionPolicyCreateManyArgs>(args?: SelectSubset<T, ServiceRetentionPolicyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ServiceRetentionPolicies and returns the data saved in the database.
+     * @param {ServiceRetentionPolicyCreateManyAndReturnArgs} args - Arguments to create many ServiceRetentionPolicies.
+     * @example
+     * // Create many ServiceRetentionPolicies
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ServiceRetentionPolicies and only return the `id`
+     * const serviceRetentionPolicyWithIdOnly = await prisma.serviceRetentionPolicy.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ServiceRetentionPolicyCreateManyAndReturnArgs>(args?: SelectSubset<T, ServiceRetentionPolicyCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ServiceRetentionPolicy.
+     * @param {ServiceRetentionPolicyDeleteArgs} args - Arguments to delete one ServiceRetentionPolicy.
+     * @example
+     * // Delete one ServiceRetentionPolicy
+     * const ServiceRetentionPolicy = await prisma.serviceRetentionPolicy.delete({
+     *   where: {
+     *     // ... filter to delete one ServiceRetentionPolicy
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ServiceRetentionPolicyDeleteArgs>(args: SelectSubset<T, ServiceRetentionPolicyDeleteArgs<ExtArgs>>): Prisma__ServiceRetentionPolicyClient<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ServiceRetentionPolicy.
+     * @param {ServiceRetentionPolicyUpdateArgs} args - Arguments to update one ServiceRetentionPolicy.
+     * @example
+     * // Update one ServiceRetentionPolicy
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ServiceRetentionPolicyUpdateArgs>(args: SelectSubset<T, ServiceRetentionPolicyUpdateArgs<ExtArgs>>): Prisma__ServiceRetentionPolicyClient<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ServiceRetentionPolicies.
+     * @param {ServiceRetentionPolicyDeleteManyArgs} args - Arguments to filter ServiceRetentionPolicies to delete.
+     * @example
+     * // Delete a few ServiceRetentionPolicies
+     * const { count } = await prisma.serviceRetentionPolicy.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ServiceRetentionPolicyDeleteManyArgs>(args?: SelectSubset<T, ServiceRetentionPolicyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ServiceRetentionPolicies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceRetentionPolicyUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ServiceRetentionPolicies
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ServiceRetentionPolicyUpdateManyArgs>(args: SelectSubset<T, ServiceRetentionPolicyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ServiceRetentionPolicies and returns the data updated in the database.
+     * @param {ServiceRetentionPolicyUpdateManyAndReturnArgs} args - Arguments to update many ServiceRetentionPolicies.
+     * @example
+     * // Update many ServiceRetentionPolicies
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ServiceRetentionPolicies and only return the `id`
+     * const serviceRetentionPolicyWithIdOnly = await prisma.serviceRetentionPolicy.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ServiceRetentionPolicyUpdateManyAndReturnArgs>(args: SelectSubset<T, ServiceRetentionPolicyUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ServiceRetentionPolicy.
+     * @param {ServiceRetentionPolicyUpsertArgs} args - Arguments to update or create a ServiceRetentionPolicy.
+     * @example
+     * // Update or create a ServiceRetentionPolicy
+     * const serviceRetentionPolicy = await prisma.serviceRetentionPolicy.upsert({
+     *   create: {
+     *     // ... data to create a ServiceRetentionPolicy
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ServiceRetentionPolicy we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ServiceRetentionPolicyUpsertArgs>(args: SelectSubset<T, ServiceRetentionPolicyUpsertArgs<ExtArgs>>): Prisma__ServiceRetentionPolicyClient<$Result.GetResult<Prisma.$ServiceRetentionPolicyPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ServiceRetentionPolicies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceRetentionPolicyCountArgs} args - Arguments to filter ServiceRetentionPolicies to count.
+     * @example
+     * // Count the number of ServiceRetentionPolicies
+     * const count = await prisma.serviceRetentionPolicy.count({
+     *   where: {
+     *     // ... the filter for the ServiceRetentionPolicies we want to count
+     *   }
+     * })
+    **/
+    count<T extends ServiceRetentionPolicyCountArgs>(
+      args?: Subset<T, ServiceRetentionPolicyCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ServiceRetentionPolicyCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ServiceRetentionPolicy.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceRetentionPolicyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ServiceRetentionPolicyAggregateArgs>(args: Subset<T, ServiceRetentionPolicyAggregateArgs>): Prisma.PrismaPromise<GetServiceRetentionPolicyAggregateType<T>>
+
+    /**
+     * Group by ServiceRetentionPolicy.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ServiceRetentionPolicyGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ServiceRetentionPolicyGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ServiceRetentionPolicyGroupByArgs['orderBy'] }
+        : { orderBy?: ServiceRetentionPolicyGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ServiceRetentionPolicyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetServiceRetentionPolicyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ServiceRetentionPolicy model
+   */
+  readonly fields: ServiceRetentionPolicyFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ServiceRetentionPolicy.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ServiceRetentionPolicyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ServiceRetentionPolicy model
+   */
+  interface ServiceRetentionPolicyFieldRefs {
+    readonly id: FieldRef<"ServiceRetentionPolicy", 'String'>
+    readonly service: FieldRef<"ServiceRetentionPolicy", 'String'>
+    readonly retentionDays: FieldRef<"ServiceRetentionPolicy", 'Int'>
+    readonly description: FieldRef<"ServiceRetentionPolicy", 'String'>
+    readonly createdAt: FieldRef<"ServiceRetentionPolicy", 'DateTime'>
+    readonly updatedAt: FieldRef<"ServiceRetentionPolicy", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ServiceRetentionPolicy findUnique
+   */
+  export type ServiceRetentionPolicyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceRetentionPolicy to fetch.
+     */
+    where: ServiceRetentionPolicyWhereUniqueInput
+  }
+
+  /**
+   * ServiceRetentionPolicy findUniqueOrThrow
+   */
+  export type ServiceRetentionPolicyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceRetentionPolicy to fetch.
+     */
+    where: ServiceRetentionPolicyWhereUniqueInput
+  }
+
+  /**
+   * ServiceRetentionPolicy findFirst
+   */
+  export type ServiceRetentionPolicyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceRetentionPolicy to fetch.
+     */
+    where?: ServiceRetentionPolicyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ServiceRetentionPolicies to fetch.
+     */
+    orderBy?: ServiceRetentionPolicyOrderByWithRelationInput | ServiceRetentionPolicyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ServiceRetentionPolicies.
+     */
+    cursor?: ServiceRetentionPolicyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ServiceRetentionPolicies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ServiceRetentionPolicies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ServiceRetentionPolicies.
+     */
+    distinct?: ServiceRetentionPolicyScalarFieldEnum | ServiceRetentionPolicyScalarFieldEnum[]
+  }
+
+  /**
+   * ServiceRetentionPolicy findFirstOrThrow
+   */
+  export type ServiceRetentionPolicyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceRetentionPolicy to fetch.
+     */
+    where?: ServiceRetentionPolicyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ServiceRetentionPolicies to fetch.
+     */
+    orderBy?: ServiceRetentionPolicyOrderByWithRelationInput | ServiceRetentionPolicyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ServiceRetentionPolicies.
+     */
+    cursor?: ServiceRetentionPolicyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ServiceRetentionPolicies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ServiceRetentionPolicies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ServiceRetentionPolicies.
+     */
+    distinct?: ServiceRetentionPolicyScalarFieldEnum | ServiceRetentionPolicyScalarFieldEnum[]
+  }
+
+  /**
+   * ServiceRetentionPolicy findMany
+   */
+  export type ServiceRetentionPolicyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which ServiceRetentionPolicies to fetch.
+     */
+    where?: ServiceRetentionPolicyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ServiceRetentionPolicies to fetch.
+     */
+    orderBy?: ServiceRetentionPolicyOrderByWithRelationInput | ServiceRetentionPolicyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ServiceRetentionPolicies.
+     */
+    cursor?: ServiceRetentionPolicyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ServiceRetentionPolicies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ServiceRetentionPolicies.
+     */
+    skip?: number
+    distinct?: ServiceRetentionPolicyScalarFieldEnum | ServiceRetentionPolicyScalarFieldEnum[]
+  }
+
+  /**
+   * ServiceRetentionPolicy create
+   */
+  export type ServiceRetentionPolicyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ServiceRetentionPolicy.
+     */
+    data: XOR<ServiceRetentionPolicyCreateInput, ServiceRetentionPolicyUncheckedCreateInput>
+  }
+
+  /**
+   * ServiceRetentionPolicy createMany
+   */
+  export type ServiceRetentionPolicyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ServiceRetentionPolicies.
+     */
+    data: ServiceRetentionPolicyCreateManyInput | ServiceRetentionPolicyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ServiceRetentionPolicy createManyAndReturn
+   */
+  export type ServiceRetentionPolicyCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * The data used to create many ServiceRetentionPolicies.
+     */
+    data: ServiceRetentionPolicyCreateManyInput | ServiceRetentionPolicyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ServiceRetentionPolicy update
+   */
+  export type ServiceRetentionPolicyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ServiceRetentionPolicy.
+     */
+    data: XOR<ServiceRetentionPolicyUpdateInput, ServiceRetentionPolicyUncheckedUpdateInput>
+    /**
+     * Choose, which ServiceRetentionPolicy to update.
+     */
+    where: ServiceRetentionPolicyWhereUniqueInput
+  }
+
+  /**
+   * ServiceRetentionPolicy updateMany
+   */
+  export type ServiceRetentionPolicyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ServiceRetentionPolicies.
+     */
+    data: XOR<ServiceRetentionPolicyUpdateManyMutationInput, ServiceRetentionPolicyUncheckedUpdateManyInput>
+    /**
+     * Filter which ServiceRetentionPolicies to update
+     */
+    where?: ServiceRetentionPolicyWhereInput
+    /**
+     * Limit how many ServiceRetentionPolicies to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ServiceRetentionPolicy updateManyAndReturn
+   */
+  export type ServiceRetentionPolicyUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * The data used to update ServiceRetentionPolicies.
+     */
+    data: XOR<ServiceRetentionPolicyUpdateManyMutationInput, ServiceRetentionPolicyUncheckedUpdateManyInput>
+    /**
+     * Filter which ServiceRetentionPolicies to update
+     */
+    where?: ServiceRetentionPolicyWhereInput
+    /**
+     * Limit how many ServiceRetentionPolicies to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ServiceRetentionPolicy upsert
+   */
+  export type ServiceRetentionPolicyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ServiceRetentionPolicy to update in case it exists.
+     */
+    where: ServiceRetentionPolicyWhereUniqueInput
+    /**
+     * In case the ServiceRetentionPolicy found by the `where` argument doesn't exist, create a new ServiceRetentionPolicy with this data.
+     */
+    create: XOR<ServiceRetentionPolicyCreateInput, ServiceRetentionPolicyUncheckedCreateInput>
+    /**
+     * In case the ServiceRetentionPolicy was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ServiceRetentionPolicyUpdateInput, ServiceRetentionPolicyUncheckedUpdateInput>
+  }
+
+  /**
+   * ServiceRetentionPolicy delete
+   */
+  export type ServiceRetentionPolicyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+    /**
+     * Filter which ServiceRetentionPolicy to delete.
+     */
+    where: ServiceRetentionPolicyWhereUniqueInput
+  }
+
+  /**
+   * ServiceRetentionPolicy deleteMany
+   */
+  export type ServiceRetentionPolicyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ServiceRetentionPolicies to delete
+     */
+    where?: ServiceRetentionPolicyWhereInput
+    /**
+     * Limit how many ServiceRetentionPolicies to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ServiceRetentionPolicy without action
+   */
+  export type ServiceRetentionPolicyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ServiceRetentionPolicy
+     */
+    select?: ServiceRetentionPolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ServiceRetentionPolicy
+     */
+    omit?: ServiceRetentionPolicyOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -29167,6 +34474,86 @@ export namespace Prisma {
   export type AgencyChatMessageScalarFieldEnum = (typeof AgencyChatMessageScalarFieldEnum)[keyof typeof AgencyChatMessageScalarFieldEnum]
 
 
+  export const FileScalarFieldEnum: {
+    id: 'id',
+    service: 'service',
+    module: 'module',
+    ownerId: 'ownerId',
+    referenceId: 'referenceId',
+    originalName: 'originalName',
+    storedName: 'storedName',
+    mimeType: 'mimeType',
+    size: 'size',
+    checksum: 'checksum',
+    storagePath: 'storagePath',
+    storageProvider: 'storageProvider',
+    compressed: 'compressed',
+    compressionType: 'compressionType',
+    compressRequested: 'compressRequested',
+    thumbnails: 'thumbnails',
+    metadata: 'metadata',
+    retentionDays: 'retentionDays',
+    scheduledDeleteAt: 'scheduledDeleteAt',
+    status: 'status',
+    retryCount: 'retryCount',
+    retryAt: 'retryAt',
+    versionOf: 'versionOf',
+    deleted: 'deleted',
+    deletedAt: 'deletedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
+
+
+  export const ChunkUploadScalarFieldEnum: {
+    id: 'id',
+    service: 'service',
+    module: 'module',
+    ownerId: 'ownerId',
+    referenceId: 'referenceId',
+    originalName: 'originalName',
+    mimeType: 'mimeType',
+    totalSize: 'totalSize',
+    totalChunks: 'totalChunks',
+    receivedChunks: 'receivedChunks',
+    chunkSize: 'chunkSize',
+    status: 'status',
+    tempPath: 'tempPath',
+    expiresAt: 'expiresAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ChunkUploadScalarFieldEnum = (typeof ChunkUploadScalarFieldEnum)[keyof typeof ChunkUploadScalarFieldEnum]
+
+
+  export const ChunkScalarFieldEnum: {
+    id: 'id',
+    uploadId: 'uploadId',
+    chunkNumber: 'chunkNumber',
+    size: 'size',
+    checksum: 'checksum',
+    storedPath: 'storedPath',
+    createdAt: 'createdAt'
+  };
+
+  export type ChunkScalarFieldEnum = (typeof ChunkScalarFieldEnum)[keyof typeof ChunkScalarFieldEnum]
+
+
+  export const ServiceRetentionPolicyScalarFieldEnum: {
+    id: 'id',
+    service: 'service',
+    retentionDays: 'retentionDays',
+    description: 'description',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ServiceRetentionPolicyScalarFieldEnum = (typeof ServiceRetentionPolicyScalarFieldEnum)[keyof typeof ServiceRetentionPolicyScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -29294,6 +34681,48 @@ export namespace Prisma {
    * Reference to a field of type 'WorkflowStatus[]'
    */
   export type ListEnumWorkflowStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WorkflowStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'BigInt'
+   */
+  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+  /**
+   * Reference to a field of type 'BigInt[]'
+   */
+  export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'FileStatus'
+   */
+  export type EnumFileStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FileStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'FileStatus[]'
+   */
+  export type ListEnumFileStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FileStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ChunkUploadStatus'
+   */
+  export type EnumChunkUploadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChunkUploadStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ChunkUploadStatus[]'
+   */
+  export type ListEnumChunkUploadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChunkUploadStatus[]'>
     
 
 
@@ -31362,6 +36791,415 @@ export namespace Prisma {
     recipientDepartmentId?: UuidNullableWithAggregatesFilter<"AgencyChatMessage"> | string | null
     body?: StringWithAggregatesFilter<"AgencyChatMessage"> | string
     createdAt?: DateTimeWithAggregatesFilter<"AgencyChatMessage"> | Date | string
+  }
+
+  export type FileWhereInput = {
+    AND?: FileWhereInput | FileWhereInput[]
+    OR?: FileWhereInput[]
+    NOT?: FileWhereInput | FileWhereInput[]
+    id?: UuidFilter<"File"> | string
+    service?: StringFilter<"File"> | string
+    module?: StringFilter<"File"> | string
+    ownerId?: StringFilter<"File"> | string
+    referenceId?: StringNullableFilter<"File"> | string | null
+    originalName?: StringFilter<"File"> | string
+    storedName?: StringFilter<"File"> | string
+    mimeType?: StringFilter<"File"> | string
+    size?: BigIntFilter<"File"> | bigint | number
+    checksum?: StringFilter<"File"> | string
+    storagePath?: StringFilter<"File"> | string
+    storageProvider?: StringFilter<"File"> | string
+    compressed?: BoolFilter<"File"> | boolean
+    compressionType?: StringNullableFilter<"File"> | string | null
+    compressRequested?: BoolFilter<"File"> | boolean
+    thumbnails?: JsonNullableFilter<"File">
+    metadata?: JsonNullableFilter<"File">
+    retentionDays?: IntNullableFilter<"File"> | number | null
+    scheduledDeleteAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    status?: EnumFileStatusFilter<"File"> | $Enums.FileStatus
+    retryCount?: IntFilter<"File"> | number
+    retryAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    versionOf?: UuidNullableFilter<"File"> | string | null
+    deleted?: BoolFilter<"File"> | boolean
+    deletedAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    createdAt?: DateTimeFilter<"File"> | Date | string
+    updatedAt?: DateTimeFilter<"File"> | Date | string
+    parentVersion?: XOR<FileNullableScalarRelationFilter, FileWhereInput> | null
+    versions?: FileListRelationFilter
+  }
+
+  export type FileOrderByWithRelationInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrderInput | SortOrder
+    originalName?: SortOrder
+    storedName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    storageProvider?: SortOrder
+    compressed?: SortOrder
+    compressionType?: SortOrderInput | SortOrder
+    compressRequested?: SortOrder
+    thumbnails?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    retentionDays?: SortOrderInput | SortOrder
+    scheduledDeleteAt?: SortOrderInput | SortOrder
+    status?: SortOrder
+    retryCount?: SortOrder
+    retryAt?: SortOrderInput | SortOrder
+    versionOf?: SortOrderInput | SortOrder
+    deleted?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    parentVersion?: FileOrderByWithRelationInput
+    versions?: FileOrderByRelationAggregateInput
+  }
+
+  export type FileWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FileWhereInput | FileWhereInput[]
+    OR?: FileWhereInput[]
+    NOT?: FileWhereInput | FileWhereInput[]
+    service?: StringFilter<"File"> | string
+    module?: StringFilter<"File"> | string
+    ownerId?: StringFilter<"File"> | string
+    referenceId?: StringNullableFilter<"File"> | string | null
+    originalName?: StringFilter<"File"> | string
+    storedName?: StringFilter<"File"> | string
+    mimeType?: StringFilter<"File"> | string
+    size?: BigIntFilter<"File"> | bigint | number
+    checksum?: StringFilter<"File"> | string
+    storagePath?: StringFilter<"File"> | string
+    storageProvider?: StringFilter<"File"> | string
+    compressed?: BoolFilter<"File"> | boolean
+    compressionType?: StringNullableFilter<"File"> | string | null
+    compressRequested?: BoolFilter<"File"> | boolean
+    thumbnails?: JsonNullableFilter<"File">
+    metadata?: JsonNullableFilter<"File">
+    retentionDays?: IntNullableFilter<"File"> | number | null
+    scheduledDeleteAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    status?: EnumFileStatusFilter<"File"> | $Enums.FileStatus
+    retryCount?: IntFilter<"File"> | number
+    retryAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    versionOf?: UuidNullableFilter<"File"> | string | null
+    deleted?: BoolFilter<"File"> | boolean
+    deletedAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    createdAt?: DateTimeFilter<"File"> | Date | string
+    updatedAt?: DateTimeFilter<"File"> | Date | string
+    parentVersion?: XOR<FileNullableScalarRelationFilter, FileWhereInput> | null
+    versions?: FileListRelationFilter
+  }, "id">
+
+  export type FileOrderByWithAggregationInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrderInput | SortOrder
+    originalName?: SortOrder
+    storedName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    storageProvider?: SortOrder
+    compressed?: SortOrder
+    compressionType?: SortOrderInput | SortOrder
+    compressRequested?: SortOrder
+    thumbnails?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    retentionDays?: SortOrderInput | SortOrder
+    scheduledDeleteAt?: SortOrderInput | SortOrder
+    status?: SortOrder
+    retryCount?: SortOrder
+    retryAt?: SortOrderInput | SortOrder
+    versionOf?: SortOrderInput | SortOrder
+    deleted?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: FileCountOrderByAggregateInput
+    _avg?: FileAvgOrderByAggregateInput
+    _max?: FileMaxOrderByAggregateInput
+    _min?: FileMinOrderByAggregateInput
+    _sum?: FileSumOrderByAggregateInput
+  }
+
+  export type FileScalarWhereWithAggregatesInput = {
+    AND?: FileScalarWhereWithAggregatesInput | FileScalarWhereWithAggregatesInput[]
+    OR?: FileScalarWhereWithAggregatesInput[]
+    NOT?: FileScalarWhereWithAggregatesInput | FileScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"File"> | string
+    service?: StringWithAggregatesFilter<"File"> | string
+    module?: StringWithAggregatesFilter<"File"> | string
+    ownerId?: StringWithAggregatesFilter<"File"> | string
+    referenceId?: StringNullableWithAggregatesFilter<"File"> | string | null
+    originalName?: StringWithAggregatesFilter<"File"> | string
+    storedName?: StringWithAggregatesFilter<"File"> | string
+    mimeType?: StringWithAggregatesFilter<"File"> | string
+    size?: BigIntWithAggregatesFilter<"File"> | bigint | number
+    checksum?: StringWithAggregatesFilter<"File"> | string
+    storagePath?: StringWithAggregatesFilter<"File"> | string
+    storageProvider?: StringWithAggregatesFilter<"File"> | string
+    compressed?: BoolWithAggregatesFilter<"File"> | boolean
+    compressionType?: StringNullableWithAggregatesFilter<"File"> | string | null
+    compressRequested?: BoolWithAggregatesFilter<"File"> | boolean
+    thumbnails?: JsonNullableWithAggregatesFilter<"File">
+    metadata?: JsonNullableWithAggregatesFilter<"File">
+    retentionDays?: IntNullableWithAggregatesFilter<"File"> | number | null
+    scheduledDeleteAt?: DateTimeNullableWithAggregatesFilter<"File"> | Date | string | null
+    status?: EnumFileStatusWithAggregatesFilter<"File"> | $Enums.FileStatus
+    retryCount?: IntWithAggregatesFilter<"File"> | number
+    retryAt?: DateTimeNullableWithAggregatesFilter<"File"> | Date | string | null
+    versionOf?: UuidNullableWithAggregatesFilter<"File"> | string | null
+    deleted?: BoolWithAggregatesFilter<"File"> | boolean
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"File"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"File"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"File"> | Date | string
+  }
+
+  export type ChunkUploadWhereInput = {
+    AND?: ChunkUploadWhereInput | ChunkUploadWhereInput[]
+    OR?: ChunkUploadWhereInput[]
+    NOT?: ChunkUploadWhereInput | ChunkUploadWhereInput[]
+    id?: UuidFilter<"ChunkUpload"> | string
+    service?: StringFilter<"ChunkUpload"> | string
+    module?: StringFilter<"ChunkUpload"> | string
+    ownerId?: StringFilter<"ChunkUpload"> | string
+    referenceId?: StringNullableFilter<"ChunkUpload"> | string | null
+    originalName?: StringFilter<"ChunkUpload"> | string
+    mimeType?: StringFilter<"ChunkUpload"> | string
+    totalSize?: BigIntFilter<"ChunkUpload"> | bigint | number
+    totalChunks?: IntFilter<"ChunkUpload"> | number
+    receivedChunks?: IntFilter<"ChunkUpload"> | number
+    chunkSize?: IntFilter<"ChunkUpload"> | number
+    status?: EnumChunkUploadStatusFilter<"ChunkUpload"> | $Enums.ChunkUploadStatus
+    tempPath?: StringFilter<"ChunkUpload"> | string
+    expiresAt?: DateTimeFilter<"ChunkUpload"> | Date | string
+    createdAt?: DateTimeFilter<"ChunkUpload"> | Date | string
+    updatedAt?: DateTimeFilter<"ChunkUpload"> | Date | string
+    chunks?: ChunkListRelationFilter
+  }
+
+  export type ChunkUploadOrderByWithRelationInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrderInput | SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    totalSize?: SortOrder
+    totalChunks?: SortOrder
+    receivedChunks?: SortOrder
+    chunkSize?: SortOrder
+    status?: SortOrder
+    tempPath?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    chunks?: ChunkOrderByRelationAggregateInput
+  }
+
+  export type ChunkUploadWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ChunkUploadWhereInput | ChunkUploadWhereInput[]
+    OR?: ChunkUploadWhereInput[]
+    NOT?: ChunkUploadWhereInput | ChunkUploadWhereInput[]
+    service?: StringFilter<"ChunkUpload"> | string
+    module?: StringFilter<"ChunkUpload"> | string
+    ownerId?: StringFilter<"ChunkUpload"> | string
+    referenceId?: StringNullableFilter<"ChunkUpload"> | string | null
+    originalName?: StringFilter<"ChunkUpload"> | string
+    mimeType?: StringFilter<"ChunkUpload"> | string
+    totalSize?: BigIntFilter<"ChunkUpload"> | bigint | number
+    totalChunks?: IntFilter<"ChunkUpload"> | number
+    receivedChunks?: IntFilter<"ChunkUpload"> | number
+    chunkSize?: IntFilter<"ChunkUpload"> | number
+    status?: EnumChunkUploadStatusFilter<"ChunkUpload"> | $Enums.ChunkUploadStatus
+    tempPath?: StringFilter<"ChunkUpload"> | string
+    expiresAt?: DateTimeFilter<"ChunkUpload"> | Date | string
+    createdAt?: DateTimeFilter<"ChunkUpload"> | Date | string
+    updatedAt?: DateTimeFilter<"ChunkUpload"> | Date | string
+    chunks?: ChunkListRelationFilter
+  }, "id">
+
+  export type ChunkUploadOrderByWithAggregationInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrderInput | SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    totalSize?: SortOrder
+    totalChunks?: SortOrder
+    receivedChunks?: SortOrder
+    chunkSize?: SortOrder
+    status?: SortOrder
+    tempPath?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ChunkUploadCountOrderByAggregateInput
+    _avg?: ChunkUploadAvgOrderByAggregateInput
+    _max?: ChunkUploadMaxOrderByAggregateInput
+    _min?: ChunkUploadMinOrderByAggregateInput
+    _sum?: ChunkUploadSumOrderByAggregateInput
+  }
+
+  export type ChunkUploadScalarWhereWithAggregatesInput = {
+    AND?: ChunkUploadScalarWhereWithAggregatesInput | ChunkUploadScalarWhereWithAggregatesInput[]
+    OR?: ChunkUploadScalarWhereWithAggregatesInput[]
+    NOT?: ChunkUploadScalarWhereWithAggregatesInput | ChunkUploadScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"ChunkUpload"> | string
+    service?: StringWithAggregatesFilter<"ChunkUpload"> | string
+    module?: StringWithAggregatesFilter<"ChunkUpload"> | string
+    ownerId?: StringWithAggregatesFilter<"ChunkUpload"> | string
+    referenceId?: StringNullableWithAggregatesFilter<"ChunkUpload"> | string | null
+    originalName?: StringWithAggregatesFilter<"ChunkUpload"> | string
+    mimeType?: StringWithAggregatesFilter<"ChunkUpload"> | string
+    totalSize?: BigIntWithAggregatesFilter<"ChunkUpload"> | bigint | number
+    totalChunks?: IntWithAggregatesFilter<"ChunkUpload"> | number
+    receivedChunks?: IntWithAggregatesFilter<"ChunkUpload"> | number
+    chunkSize?: IntWithAggregatesFilter<"ChunkUpload"> | number
+    status?: EnumChunkUploadStatusWithAggregatesFilter<"ChunkUpload"> | $Enums.ChunkUploadStatus
+    tempPath?: StringWithAggregatesFilter<"ChunkUpload"> | string
+    expiresAt?: DateTimeWithAggregatesFilter<"ChunkUpload"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"ChunkUpload"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ChunkUpload"> | Date | string
+  }
+
+  export type ChunkWhereInput = {
+    AND?: ChunkWhereInput | ChunkWhereInput[]
+    OR?: ChunkWhereInput[]
+    NOT?: ChunkWhereInput | ChunkWhereInput[]
+    id?: UuidFilter<"Chunk"> | string
+    uploadId?: UuidFilter<"Chunk"> | string
+    chunkNumber?: IntFilter<"Chunk"> | number
+    size?: IntFilter<"Chunk"> | number
+    checksum?: StringFilter<"Chunk"> | string
+    storedPath?: StringFilter<"Chunk"> | string
+    createdAt?: DateTimeFilter<"Chunk"> | Date | string
+    upload?: XOR<ChunkUploadScalarRelationFilter, ChunkUploadWhereInput>
+  }
+
+  export type ChunkOrderByWithRelationInput = {
+    id?: SortOrder
+    uploadId?: SortOrder
+    chunkNumber?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storedPath?: SortOrder
+    createdAt?: SortOrder
+    upload?: ChunkUploadOrderByWithRelationInput
+  }
+
+  export type ChunkWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    uploadId_chunkNumber?: ChunkUploadIdChunkNumberCompoundUniqueInput
+    AND?: ChunkWhereInput | ChunkWhereInput[]
+    OR?: ChunkWhereInput[]
+    NOT?: ChunkWhereInput | ChunkWhereInput[]
+    uploadId?: UuidFilter<"Chunk"> | string
+    chunkNumber?: IntFilter<"Chunk"> | number
+    size?: IntFilter<"Chunk"> | number
+    checksum?: StringFilter<"Chunk"> | string
+    storedPath?: StringFilter<"Chunk"> | string
+    createdAt?: DateTimeFilter<"Chunk"> | Date | string
+    upload?: XOR<ChunkUploadScalarRelationFilter, ChunkUploadWhereInput>
+  }, "id" | "uploadId_chunkNumber">
+
+  export type ChunkOrderByWithAggregationInput = {
+    id?: SortOrder
+    uploadId?: SortOrder
+    chunkNumber?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storedPath?: SortOrder
+    createdAt?: SortOrder
+    _count?: ChunkCountOrderByAggregateInput
+    _avg?: ChunkAvgOrderByAggregateInput
+    _max?: ChunkMaxOrderByAggregateInput
+    _min?: ChunkMinOrderByAggregateInput
+    _sum?: ChunkSumOrderByAggregateInput
+  }
+
+  export type ChunkScalarWhereWithAggregatesInput = {
+    AND?: ChunkScalarWhereWithAggregatesInput | ChunkScalarWhereWithAggregatesInput[]
+    OR?: ChunkScalarWhereWithAggregatesInput[]
+    NOT?: ChunkScalarWhereWithAggregatesInput | ChunkScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"Chunk"> | string
+    uploadId?: UuidWithAggregatesFilter<"Chunk"> | string
+    chunkNumber?: IntWithAggregatesFilter<"Chunk"> | number
+    size?: IntWithAggregatesFilter<"Chunk"> | number
+    checksum?: StringWithAggregatesFilter<"Chunk"> | string
+    storedPath?: StringWithAggregatesFilter<"Chunk"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Chunk"> | Date | string
+  }
+
+  export type ServiceRetentionPolicyWhereInput = {
+    AND?: ServiceRetentionPolicyWhereInput | ServiceRetentionPolicyWhereInput[]
+    OR?: ServiceRetentionPolicyWhereInput[]
+    NOT?: ServiceRetentionPolicyWhereInput | ServiceRetentionPolicyWhereInput[]
+    id?: UuidFilter<"ServiceRetentionPolicy"> | string
+    service?: StringFilter<"ServiceRetentionPolicy"> | string
+    retentionDays?: IntNullableFilter<"ServiceRetentionPolicy"> | number | null
+    description?: StringNullableFilter<"ServiceRetentionPolicy"> | string | null
+    createdAt?: DateTimeFilter<"ServiceRetentionPolicy"> | Date | string
+    updatedAt?: DateTimeFilter<"ServiceRetentionPolicy"> | Date | string
+  }
+
+  export type ServiceRetentionPolicyOrderByWithRelationInput = {
+    id?: SortOrder
+    service?: SortOrder
+    retentionDays?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ServiceRetentionPolicyWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    service?: string
+    AND?: ServiceRetentionPolicyWhereInput | ServiceRetentionPolicyWhereInput[]
+    OR?: ServiceRetentionPolicyWhereInput[]
+    NOT?: ServiceRetentionPolicyWhereInput | ServiceRetentionPolicyWhereInput[]
+    retentionDays?: IntNullableFilter<"ServiceRetentionPolicy"> | number | null
+    description?: StringNullableFilter<"ServiceRetentionPolicy"> | string | null
+    createdAt?: DateTimeFilter<"ServiceRetentionPolicy"> | Date | string
+    updatedAt?: DateTimeFilter<"ServiceRetentionPolicy"> | Date | string
+  }, "id" | "service">
+
+  export type ServiceRetentionPolicyOrderByWithAggregationInput = {
+    id?: SortOrder
+    service?: SortOrder
+    retentionDays?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ServiceRetentionPolicyCountOrderByAggregateInput
+    _avg?: ServiceRetentionPolicyAvgOrderByAggregateInput
+    _max?: ServiceRetentionPolicyMaxOrderByAggregateInput
+    _min?: ServiceRetentionPolicyMinOrderByAggregateInput
+    _sum?: ServiceRetentionPolicySumOrderByAggregateInput
+  }
+
+  export type ServiceRetentionPolicyScalarWhereWithAggregatesInput = {
+    AND?: ServiceRetentionPolicyScalarWhereWithAggregatesInput | ServiceRetentionPolicyScalarWhereWithAggregatesInput[]
+    OR?: ServiceRetentionPolicyScalarWhereWithAggregatesInput[]
+    NOT?: ServiceRetentionPolicyScalarWhereWithAggregatesInput | ServiceRetentionPolicyScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"ServiceRetentionPolicy"> | string
+    service?: StringWithAggregatesFilter<"ServiceRetentionPolicy"> | string
+    retentionDays?: IntNullableWithAggregatesFilter<"ServiceRetentionPolicy"> | number | null
+    description?: StringNullableWithAggregatesFilter<"ServiceRetentionPolicy"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ServiceRetentionPolicy"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ServiceRetentionPolicy"> | Date | string
   }
 
   export type DepartmentCreateInput = {
@@ -33547,6 +39385,488 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FileCreateInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint | number
+    checksum: string
+    storagePath: string
+    storageProvider?: string
+    compressed?: boolean
+    compressionType?: string | null
+    compressRequested?: boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: number | null
+    scheduledDeleteAt?: Date | string | null
+    status?: $Enums.FileStatus
+    retryCount?: number
+    retryAt?: Date | string | null
+    deleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parentVersion?: FileCreateNestedOneWithoutVersionsInput
+    versions?: FileCreateNestedManyWithoutParentVersionInput
+  }
+
+  export type FileUncheckedCreateInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint | number
+    checksum: string
+    storagePath: string
+    storageProvider?: string
+    compressed?: boolean
+    compressionType?: string | null
+    compressRequested?: boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: number | null
+    scheduledDeleteAt?: Date | string | null
+    status?: $Enums.FileStatus
+    retryCount?: number
+    retryAt?: Date | string | null
+    versionOf?: string | null
+    deleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    versions?: FileUncheckedCreateNestedManyWithoutParentVersionInput
+  }
+
+  export type FileUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentVersion?: FileUpdateOneWithoutVersionsNestedInput
+    versions?: FileUpdateManyWithoutParentVersionNestedInput
+  }
+
+  export type FileUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    versionOf?: NullableStringFieldUpdateOperationsInput | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    versions?: FileUncheckedUpdateManyWithoutParentVersionNestedInput
+  }
+
+  export type FileCreateManyInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint | number
+    checksum: string
+    storagePath: string
+    storageProvider?: string
+    compressed?: boolean
+    compressionType?: string | null
+    compressRequested?: boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: number | null
+    scheduledDeleteAt?: Date | string | null
+    status?: $Enums.FileStatus
+    retryCount?: number
+    retryAt?: Date | string | null
+    versionOf?: string | null
+    deleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FileUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FileUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    versionOf?: NullableStringFieldUpdateOperationsInput | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkUploadCreateInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    mimeType: string
+    totalSize: bigint | number
+    totalChunks: number
+    receivedChunks?: number
+    chunkSize: number
+    status?: $Enums.ChunkUploadStatus
+    tempPath: string
+    expiresAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chunks?: ChunkCreateNestedManyWithoutUploadInput
+  }
+
+  export type ChunkUploadUncheckedCreateInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    mimeType: string
+    totalSize: bigint | number
+    totalChunks: number
+    receivedChunks?: number
+    chunkSize: number
+    status?: $Enums.ChunkUploadStatus
+    tempPath: string
+    expiresAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chunks?: ChunkUncheckedCreateNestedManyWithoutUploadInput
+  }
+
+  export type ChunkUploadUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    totalSize?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalChunks?: IntFieldUpdateOperationsInput | number
+    receivedChunks?: IntFieldUpdateOperationsInput | number
+    chunkSize?: IntFieldUpdateOperationsInput | number
+    status?: EnumChunkUploadStatusFieldUpdateOperationsInput | $Enums.ChunkUploadStatus
+    tempPath?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chunks?: ChunkUpdateManyWithoutUploadNestedInput
+  }
+
+  export type ChunkUploadUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    totalSize?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalChunks?: IntFieldUpdateOperationsInput | number
+    receivedChunks?: IntFieldUpdateOperationsInput | number
+    chunkSize?: IntFieldUpdateOperationsInput | number
+    status?: EnumChunkUploadStatusFieldUpdateOperationsInput | $Enums.ChunkUploadStatus
+    tempPath?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chunks?: ChunkUncheckedUpdateManyWithoutUploadNestedInput
+  }
+
+  export type ChunkUploadCreateManyInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    mimeType: string
+    totalSize: bigint | number
+    totalChunks: number
+    receivedChunks?: number
+    chunkSize: number
+    status?: $Enums.ChunkUploadStatus
+    tempPath: string
+    expiresAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChunkUploadUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    totalSize?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalChunks?: IntFieldUpdateOperationsInput | number
+    receivedChunks?: IntFieldUpdateOperationsInput | number
+    chunkSize?: IntFieldUpdateOperationsInput | number
+    status?: EnumChunkUploadStatusFieldUpdateOperationsInput | $Enums.ChunkUploadStatus
+    tempPath?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkUploadUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    totalSize?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalChunks?: IntFieldUpdateOperationsInput | number
+    receivedChunks?: IntFieldUpdateOperationsInput | number
+    chunkSize?: IntFieldUpdateOperationsInput | number
+    status?: EnumChunkUploadStatusFieldUpdateOperationsInput | $Enums.ChunkUploadStatus
+    tempPath?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkCreateInput = {
+    id?: string
+    chunkNumber: number
+    size: number
+    checksum: string
+    storedPath: string
+    createdAt?: Date | string
+    upload: ChunkUploadCreateNestedOneWithoutChunksInput
+  }
+
+  export type ChunkUncheckedCreateInput = {
+    id?: string
+    uploadId: string
+    chunkNumber: number
+    size: number
+    checksum: string
+    storedPath: string
+    createdAt?: Date | string
+  }
+
+  export type ChunkUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chunkNumber?: IntFieldUpdateOperationsInput | number
+    size?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storedPath?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    upload?: ChunkUploadUpdateOneRequiredWithoutChunksNestedInput
+  }
+
+  export type ChunkUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploadId?: StringFieldUpdateOperationsInput | string
+    chunkNumber?: IntFieldUpdateOperationsInput | number
+    size?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storedPath?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkCreateManyInput = {
+    id?: string
+    uploadId: string
+    chunkNumber: number
+    size: number
+    checksum: string
+    storedPath: string
+    createdAt?: Date | string
+  }
+
+  export type ChunkUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chunkNumber?: IntFieldUpdateOperationsInput | number
+    size?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storedPath?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploadId?: StringFieldUpdateOperationsInput | string
+    chunkNumber?: IntFieldUpdateOperationsInput | number
+    size?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storedPath?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceRetentionPolicyCreateInput = {
+    id?: string
+    service: string
+    retentionDays?: number | null
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ServiceRetentionPolicyUncheckedCreateInput = {
+    id?: string
+    service: string
+    retentionDays?: number | null
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ServiceRetentionPolicyUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceRetentionPolicyUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceRetentionPolicyCreateManyInput = {
+    id?: string
+    service: string
+    retentionDays?: number | null
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ServiceRetentionPolicyUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceRetentionPolicyUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -35122,6 +41442,346 @@ export namespace Prisma {
     recipientDepartmentId?: SortOrder
     body?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type BigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type EnumFileStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.FileStatus | EnumFileStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FileStatus[] | ListEnumFileStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FileStatus[] | ListEnumFileStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFileStatusFilter<$PrismaModel> | $Enums.FileStatus
+  }
+
+  export type FileNullableScalarRelationFilter = {
+    is?: FileWhereInput | null
+    isNot?: FileWhereInput | null
+  }
+
+  export type FileListRelationFilter = {
+    every?: FileWhereInput
+    some?: FileWhereInput
+    none?: FileWhereInput
+  }
+
+  export type FileOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FileCountOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrder
+    originalName?: SortOrder
+    storedName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    storageProvider?: SortOrder
+    compressed?: SortOrder
+    compressionType?: SortOrder
+    compressRequested?: SortOrder
+    thumbnails?: SortOrder
+    metadata?: SortOrder
+    retentionDays?: SortOrder
+    scheduledDeleteAt?: SortOrder
+    status?: SortOrder
+    retryCount?: SortOrder
+    retryAt?: SortOrder
+    versionOf?: SortOrder
+    deleted?: SortOrder
+    deletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FileAvgOrderByAggregateInput = {
+    size?: SortOrder
+    retentionDays?: SortOrder
+    retryCount?: SortOrder
+  }
+
+  export type FileMaxOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrder
+    originalName?: SortOrder
+    storedName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    storageProvider?: SortOrder
+    compressed?: SortOrder
+    compressionType?: SortOrder
+    compressRequested?: SortOrder
+    retentionDays?: SortOrder
+    scheduledDeleteAt?: SortOrder
+    status?: SortOrder
+    retryCount?: SortOrder
+    retryAt?: SortOrder
+    versionOf?: SortOrder
+    deleted?: SortOrder
+    deletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FileMinOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrder
+    originalName?: SortOrder
+    storedName?: SortOrder
+    mimeType?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storagePath?: SortOrder
+    storageProvider?: SortOrder
+    compressed?: SortOrder
+    compressionType?: SortOrder
+    compressRequested?: SortOrder
+    retentionDays?: SortOrder
+    scheduledDeleteAt?: SortOrder
+    status?: SortOrder
+    retryCount?: SortOrder
+    retryAt?: SortOrder
+    versionOf?: SortOrder
+    deleted?: SortOrder
+    deletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FileSumOrderByAggregateInput = {
+    size?: SortOrder
+    retentionDays?: SortOrder
+    retryCount?: SortOrder
+  }
+
+  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
+  export type EnumFileStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FileStatus | EnumFileStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FileStatus[] | ListEnumFileStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FileStatus[] | ListEnumFileStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFileStatusWithAggregatesFilter<$PrismaModel> | $Enums.FileStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFileStatusFilter<$PrismaModel>
+    _max?: NestedEnumFileStatusFilter<$PrismaModel>
+  }
+
+  export type EnumChunkUploadStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ChunkUploadStatus | EnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ChunkUploadStatus[] | ListEnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ChunkUploadStatus[] | ListEnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumChunkUploadStatusFilter<$PrismaModel> | $Enums.ChunkUploadStatus
+  }
+
+  export type ChunkListRelationFilter = {
+    every?: ChunkWhereInput
+    some?: ChunkWhereInput
+    none?: ChunkWhereInput
+  }
+
+  export type ChunkOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ChunkUploadCountOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    totalSize?: SortOrder
+    totalChunks?: SortOrder
+    receivedChunks?: SortOrder
+    chunkSize?: SortOrder
+    status?: SortOrder
+    tempPath?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChunkUploadAvgOrderByAggregateInput = {
+    totalSize?: SortOrder
+    totalChunks?: SortOrder
+    receivedChunks?: SortOrder
+    chunkSize?: SortOrder
+  }
+
+  export type ChunkUploadMaxOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    totalSize?: SortOrder
+    totalChunks?: SortOrder
+    receivedChunks?: SortOrder
+    chunkSize?: SortOrder
+    status?: SortOrder
+    tempPath?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChunkUploadMinOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    module?: SortOrder
+    ownerId?: SortOrder
+    referenceId?: SortOrder
+    originalName?: SortOrder
+    mimeType?: SortOrder
+    totalSize?: SortOrder
+    totalChunks?: SortOrder
+    receivedChunks?: SortOrder
+    chunkSize?: SortOrder
+    status?: SortOrder
+    tempPath?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChunkUploadSumOrderByAggregateInput = {
+    totalSize?: SortOrder
+    totalChunks?: SortOrder
+    receivedChunks?: SortOrder
+    chunkSize?: SortOrder
+  }
+
+  export type EnumChunkUploadStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ChunkUploadStatus | EnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ChunkUploadStatus[] | ListEnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ChunkUploadStatus[] | ListEnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumChunkUploadStatusWithAggregatesFilter<$PrismaModel> | $Enums.ChunkUploadStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumChunkUploadStatusFilter<$PrismaModel>
+    _max?: NestedEnumChunkUploadStatusFilter<$PrismaModel>
+  }
+
+  export type ChunkUploadScalarRelationFilter = {
+    is?: ChunkUploadWhereInput
+    isNot?: ChunkUploadWhereInput
+  }
+
+  export type ChunkUploadIdChunkNumberCompoundUniqueInput = {
+    uploadId: string
+    chunkNumber: number
+  }
+
+  export type ChunkCountOrderByAggregateInput = {
+    id?: SortOrder
+    uploadId?: SortOrder
+    chunkNumber?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storedPath?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ChunkAvgOrderByAggregateInput = {
+    chunkNumber?: SortOrder
+    size?: SortOrder
+  }
+
+  export type ChunkMaxOrderByAggregateInput = {
+    id?: SortOrder
+    uploadId?: SortOrder
+    chunkNumber?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storedPath?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ChunkMinOrderByAggregateInput = {
+    id?: SortOrder
+    uploadId?: SortOrder
+    chunkNumber?: SortOrder
+    size?: SortOrder
+    checksum?: SortOrder
+    storedPath?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ChunkSumOrderByAggregateInput = {
+    chunkNumber?: SortOrder
+    size?: SortOrder
+  }
+
+  export type ServiceRetentionPolicyCountOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    retentionDays?: SortOrder
+    description?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ServiceRetentionPolicyAvgOrderByAggregateInput = {
+    retentionDays?: SortOrder
+  }
+
+  export type ServiceRetentionPolicyMaxOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    retentionDays?: SortOrder
+    description?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ServiceRetentionPolicyMinOrderByAggregateInput = {
+    id?: SortOrder
+    service?: SortOrder
+    retentionDays?: SortOrder
+    description?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ServiceRetentionPolicySumOrderByAggregateInput = {
+    retentionDays?: SortOrder
   }
 
   export type TenantCreateNestedOneWithoutDepartmentsInput = {
@@ -38486,6 +45146,136 @@ export namespace Prisma {
     update?: XOR<XOR<DepartmentUpdateToOneWithWhereWithoutRecipientChatMessagesInput, DepartmentUpdateWithoutRecipientChatMessagesInput>, DepartmentUncheckedUpdateWithoutRecipientChatMessagesInput>
   }
 
+  export type FileCreateNestedOneWithoutVersionsInput = {
+    create?: XOR<FileCreateWithoutVersionsInput, FileUncheckedCreateWithoutVersionsInput>
+    connectOrCreate?: FileCreateOrConnectWithoutVersionsInput
+    connect?: FileWhereUniqueInput
+  }
+
+  export type FileCreateNestedManyWithoutParentVersionInput = {
+    create?: XOR<FileCreateWithoutParentVersionInput, FileUncheckedCreateWithoutParentVersionInput> | FileCreateWithoutParentVersionInput[] | FileUncheckedCreateWithoutParentVersionInput[]
+    connectOrCreate?: FileCreateOrConnectWithoutParentVersionInput | FileCreateOrConnectWithoutParentVersionInput[]
+    createMany?: FileCreateManyParentVersionInputEnvelope
+    connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+  }
+
+  export type FileUncheckedCreateNestedManyWithoutParentVersionInput = {
+    create?: XOR<FileCreateWithoutParentVersionInput, FileUncheckedCreateWithoutParentVersionInput> | FileCreateWithoutParentVersionInput[] | FileUncheckedCreateWithoutParentVersionInput[]
+    connectOrCreate?: FileCreateOrConnectWithoutParentVersionInput | FileCreateOrConnectWithoutParentVersionInput[]
+    createMany?: FileCreateManyParentVersionInputEnvelope
+    connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+  }
+
+  export type BigIntFieldUpdateOperationsInput = {
+    set?: bigint | number
+    increment?: bigint | number
+    decrement?: bigint | number
+    multiply?: bigint | number
+    divide?: bigint | number
+  }
+
+  export type EnumFileStatusFieldUpdateOperationsInput = {
+    set?: $Enums.FileStatus
+  }
+
+  export type FileUpdateOneWithoutVersionsNestedInput = {
+    create?: XOR<FileCreateWithoutVersionsInput, FileUncheckedCreateWithoutVersionsInput>
+    connectOrCreate?: FileCreateOrConnectWithoutVersionsInput
+    upsert?: FileUpsertWithoutVersionsInput
+    disconnect?: FileWhereInput | boolean
+    delete?: FileWhereInput | boolean
+    connect?: FileWhereUniqueInput
+    update?: XOR<XOR<FileUpdateToOneWithWhereWithoutVersionsInput, FileUpdateWithoutVersionsInput>, FileUncheckedUpdateWithoutVersionsInput>
+  }
+
+  export type FileUpdateManyWithoutParentVersionNestedInput = {
+    create?: XOR<FileCreateWithoutParentVersionInput, FileUncheckedCreateWithoutParentVersionInput> | FileCreateWithoutParentVersionInput[] | FileUncheckedCreateWithoutParentVersionInput[]
+    connectOrCreate?: FileCreateOrConnectWithoutParentVersionInput | FileCreateOrConnectWithoutParentVersionInput[]
+    upsert?: FileUpsertWithWhereUniqueWithoutParentVersionInput | FileUpsertWithWhereUniqueWithoutParentVersionInput[]
+    createMany?: FileCreateManyParentVersionInputEnvelope
+    set?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    disconnect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    delete?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    update?: FileUpdateWithWhereUniqueWithoutParentVersionInput | FileUpdateWithWhereUniqueWithoutParentVersionInput[]
+    updateMany?: FileUpdateManyWithWhereWithoutParentVersionInput | FileUpdateManyWithWhereWithoutParentVersionInput[]
+    deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
+  }
+
+  export type FileUncheckedUpdateManyWithoutParentVersionNestedInput = {
+    create?: XOR<FileCreateWithoutParentVersionInput, FileUncheckedCreateWithoutParentVersionInput> | FileCreateWithoutParentVersionInput[] | FileUncheckedCreateWithoutParentVersionInput[]
+    connectOrCreate?: FileCreateOrConnectWithoutParentVersionInput | FileCreateOrConnectWithoutParentVersionInput[]
+    upsert?: FileUpsertWithWhereUniqueWithoutParentVersionInput | FileUpsertWithWhereUniqueWithoutParentVersionInput[]
+    createMany?: FileCreateManyParentVersionInputEnvelope
+    set?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    disconnect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    delete?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    update?: FileUpdateWithWhereUniqueWithoutParentVersionInput | FileUpdateWithWhereUniqueWithoutParentVersionInput[]
+    updateMany?: FileUpdateManyWithWhereWithoutParentVersionInput | FileUpdateManyWithWhereWithoutParentVersionInput[]
+    deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
+  }
+
+  export type ChunkCreateNestedManyWithoutUploadInput = {
+    create?: XOR<ChunkCreateWithoutUploadInput, ChunkUncheckedCreateWithoutUploadInput> | ChunkCreateWithoutUploadInput[] | ChunkUncheckedCreateWithoutUploadInput[]
+    connectOrCreate?: ChunkCreateOrConnectWithoutUploadInput | ChunkCreateOrConnectWithoutUploadInput[]
+    createMany?: ChunkCreateManyUploadInputEnvelope
+    connect?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+  }
+
+  export type ChunkUncheckedCreateNestedManyWithoutUploadInput = {
+    create?: XOR<ChunkCreateWithoutUploadInput, ChunkUncheckedCreateWithoutUploadInput> | ChunkCreateWithoutUploadInput[] | ChunkUncheckedCreateWithoutUploadInput[]
+    connectOrCreate?: ChunkCreateOrConnectWithoutUploadInput | ChunkCreateOrConnectWithoutUploadInput[]
+    createMany?: ChunkCreateManyUploadInputEnvelope
+    connect?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+  }
+
+  export type EnumChunkUploadStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ChunkUploadStatus
+  }
+
+  export type ChunkUpdateManyWithoutUploadNestedInput = {
+    create?: XOR<ChunkCreateWithoutUploadInput, ChunkUncheckedCreateWithoutUploadInput> | ChunkCreateWithoutUploadInput[] | ChunkUncheckedCreateWithoutUploadInput[]
+    connectOrCreate?: ChunkCreateOrConnectWithoutUploadInput | ChunkCreateOrConnectWithoutUploadInput[]
+    upsert?: ChunkUpsertWithWhereUniqueWithoutUploadInput | ChunkUpsertWithWhereUniqueWithoutUploadInput[]
+    createMany?: ChunkCreateManyUploadInputEnvelope
+    set?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+    disconnect?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+    delete?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+    connect?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+    update?: ChunkUpdateWithWhereUniqueWithoutUploadInput | ChunkUpdateWithWhereUniqueWithoutUploadInput[]
+    updateMany?: ChunkUpdateManyWithWhereWithoutUploadInput | ChunkUpdateManyWithWhereWithoutUploadInput[]
+    deleteMany?: ChunkScalarWhereInput | ChunkScalarWhereInput[]
+  }
+
+  export type ChunkUncheckedUpdateManyWithoutUploadNestedInput = {
+    create?: XOR<ChunkCreateWithoutUploadInput, ChunkUncheckedCreateWithoutUploadInput> | ChunkCreateWithoutUploadInput[] | ChunkUncheckedCreateWithoutUploadInput[]
+    connectOrCreate?: ChunkCreateOrConnectWithoutUploadInput | ChunkCreateOrConnectWithoutUploadInput[]
+    upsert?: ChunkUpsertWithWhereUniqueWithoutUploadInput | ChunkUpsertWithWhereUniqueWithoutUploadInput[]
+    createMany?: ChunkCreateManyUploadInputEnvelope
+    set?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+    disconnect?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+    delete?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+    connect?: ChunkWhereUniqueInput | ChunkWhereUniqueInput[]
+    update?: ChunkUpdateWithWhereUniqueWithoutUploadInput | ChunkUpdateWithWhereUniqueWithoutUploadInput[]
+    updateMany?: ChunkUpdateManyWithWhereWithoutUploadInput | ChunkUpdateManyWithWhereWithoutUploadInput[]
+    deleteMany?: ChunkScalarWhereInput | ChunkScalarWhereInput[]
+  }
+
+  export type ChunkUploadCreateNestedOneWithoutChunksInput = {
+    create?: XOR<ChunkUploadCreateWithoutChunksInput, ChunkUploadUncheckedCreateWithoutChunksInput>
+    connectOrCreate?: ChunkUploadCreateOrConnectWithoutChunksInput
+    connect?: ChunkUploadWhereUniqueInput
+  }
+
+  export type ChunkUploadUpdateOneRequiredWithoutChunksNestedInput = {
+    create?: XOR<ChunkUploadCreateWithoutChunksInput, ChunkUploadUncheckedCreateWithoutChunksInput>
+    connectOrCreate?: ChunkUploadCreateOrConnectWithoutChunksInput
+    upsert?: ChunkUploadUpsertWithoutChunksInput
+    connect?: ChunkUploadWhereUniqueInput
+    update?: XOR<XOR<ChunkUploadUpdateToOneWithWhereWithoutChunksInput, ChunkUploadUpdateWithoutChunksInput>, ChunkUploadUncheckedUpdateWithoutChunksInput>
+  }
+
   export type NestedUuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -38798,6 +45588,67 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedBigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type NestedEnumFileStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.FileStatus | EnumFileStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FileStatus[] | ListEnumFileStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FileStatus[] | ListEnumFileStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFileStatusFilter<$PrismaModel> | $Enums.FileStatus
+  }
+
+  export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
+  export type NestedEnumFileStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FileStatus | EnumFileStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.FileStatus[] | ListEnumFileStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FileStatus[] | ListEnumFileStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumFileStatusWithAggregatesFilter<$PrismaModel> | $Enums.FileStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFileStatusFilter<$PrismaModel>
+    _max?: NestedEnumFileStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumChunkUploadStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ChunkUploadStatus | EnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ChunkUploadStatus[] | ListEnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ChunkUploadStatus[] | ListEnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumChunkUploadStatusFilter<$PrismaModel> | $Enums.ChunkUploadStatus
+  }
+
+  export type NestedEnumChunkUploadStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ChunkUploadStatus | EnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ChunkUploadStatus[] | ListEnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ChunkUploadStatus[] | ListEnumChunkUploadStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumChunkUploadStatusWithAggregatesFilter<$PrismaModel> | $Enums.ChunkUploadStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumChunkUploadStatusFilter<$PrismaModel>
+    _max?: NestedEnumChunkUploadStatusFilter<$PrismaModel>
   }
 
   export type TenantCreateWithoutDepartmentsInput = {
@@ -50326,6 +57177,410 @@ export namespace Prisma {
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutDepartmentNestedInput
   }
 
+  export type FileCreateWithoutVersionsInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint | number
+    checksum: string
+    storagePath: string
+    storageProvider?: string
+    compressed?: boolean
+    compressionType?: string | null
+    compressRequested?: boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: number | null
+    scheduledDeleteAt?: Date | string | null
+    status?: $Enums.FileStatus
+    retryCount?: number
+    retryAt?: Date | string | null
+    deleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parentVersion?: FileCreateNestedOneWithoutVersionsInput
+  }
+
+  export type FileUncheckedCreateWithoutVersionsInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint | number
+    checksum: string
+    storagePath: string
+    storageProvider?: string
+    compressed?: boolean
+    compressionType?: string | null
+    compressRequested?: boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: number | null
+    scheduledDeleteAt?: Date | string | null
+    status?: $Enums.FileStatus
+    retryCount?: number
+    retryAt?: Date | string | null
+    versionOf?: string | null
+    deleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FileCreateOrConnectWithoutVersionsInput = {
+    where: FileWhereUniqueInput
+    create: XOR<FileCreateWithoutVersionsInput, FileUncheckedCreateWithoutVersionsInput>
+  }
+
+  export type FileCreateWithoutParentVersionInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint | number
+    checksum: string
+    storagePath: string
+    storageProvider?: string
+    compressed?: boolean
+    compressionType?: string | null
+    compressRequested?: boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: number | null
+    scheduledDeleteAt?: Date | string | null
+    status?: $Enums.FileStatus
+    retryCount?: number
+    retryAt?: Date | string | null
+    deleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    versions?: FileCreateNestedManyWithoutParentVersionInput
+  }
+
+  export type FileUncheckedCreateWithoutParentVersionInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint | number
+    checksum: string
+    storagePath: string
+    storageProvider?: string
+    compressed?: boolean
+    compressionType?: string | null
+    compressRequested?: boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: number | null
+    scheduledDeleteAt?: Date | string | null
+    status?: $Enums.FileStatus
+    retryCount?: number
+    retryAt?: Date | string | null
+    deleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    versions?: FileUncheckedCreateNestedManyWithoutParentVersionInput
+  }
+
+  export type FileCreateOrConnectWithoutParentVersionInput = {
+    where: FileWhereUniqueInput
+    create: XOR<FileCreateWithoutParentVersionInput, FileUncheckedCreateWithoutParentVersionInput>
+  }
+
+  export type FileCreateManyParentVersionInputEnvelope = {
+    data: FileCreateManyParentVersionInput | FileCreateManyParentVersionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FileUpsertWithoutVersionsInput = {
+    update: XOR<FileUpdateWithoutVersionsInput, FileUncheckedUpdateWithoutVersionsInput>
+    create: XOR<FileCreateWithoutVersionsInput, FileUncheckedCreateWithoutVersionsInput>
+    where?: FileWhereInput
+  }
+
+  export type FileUpdateToOneWithWhereWithoutVersionsInput = {
+    where?: FileWhereInput
+    data: XOR<FileUpdateWithoutVersionsInput, FileUncheckedUpdateWithoutVersionsInput>
+  }
+
+  export type FileUpdateWithoutVersionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentVersion?: FileUpdateOneWithoutVersionsNestedInput
+  }
+
+  export type FileUncheckedUpdateWithoutVersionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    versionOf?: NullableStringFieldUpdateOperationsInput | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FileUpsertWithWhereUniqueWithoutParentVersionInput = {
+    where: FileWhereUniqueInput
+    update: XOR<FileUpdateWithoutParentVersionInput, FileUncheckedUpdateWithoutParentVersionInput>
+    create: XOR<FileCreateWithoutParentVersionInput, FileUncheckedCreateWithoutParentVersionInput>
+  }
+
+  export type FileUpdateWithWhereUniqueWithoutParentVersionInput = {
+    where: FileWhereUniqueInput
+    data: XOR<FileUpdateWithoutParentVersionInput, FileUncheckedUpdateWithoutParentVersionInput>
+  }
+
+  export type FileUpdateManyWithWhereWithoutParentVersionInput = {
+    where: FileScalarWhereInput
+    data: XOR<FileUpdateManyMutationInput, FileUncheckedUpdateManyWithoutParentVersionInput>
+  }
+
+  export type FileScalarWhereInput = {
+    AND?: FileScalarWhereInput | FileScalarWhereInput[]
+    OR?: FileScalarWhereInput[]
+    NOT?: FileScalarWhereInput | FileScalarWhereInput[]
+    id?: UuidFilter<"File"> | string
+    service?: StringFilter<"File"> | string
+    module?: StringFilter<"File"> | string
+    ownerId?: StringFilter<"File"> | string
+    referenceId?: StringNullableFilter<"File"> | string | null
+    originalName?: StringFilter<"File"> | string
+    storedName?: StringFilter<"File"> | string
+    mimeType?: StringFilter<"File"> | string
+    size?: BigIntFilter<"File"> | bigint | number
+    checksum?: StringFilter<"File"> | string
+    storagePath?: StringFilter<"File"> | string
+    storageProvider?: StringFilter<"File"> | string
+    compressed?: BoolFilter<"File"> | boolean
+    compressionType?: StringNullableFilter<"File"> | string | null
+    compressRequested?: BoolFilter<"File"> | boolean
+    thumbnails?: JsonNullableFilter<"File">
+    metadata?: JsonNullableFilter<"File">
+    retentionDays?: IntNullableFilter<"File"> | number | null
+    scheduledDeleteAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    status?: EnumFileStatusFilter<"File"> | $Enums.FileStatus
+    retryCount?: IntFilter<"File"> | number
+    retryAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    versionOf?: UuidNullableFilter<"File"> | string | null
+    deleted?: BoolFilter<"File"> | boolean
+    deletedAt?: DateTimeNullableFilter<"File"> | Date | string | null
+    createdAt?: DateTimeFilter<"File"> | Date | string
+    updatedAt?: DateTimeFilter<"File"> | Date | string
+  }
+
+  export type ChunkCreateWithoutUploadInput = {
+    id?: string
+    chunkNumber: number
+    size: number
+    checksum: string
+    storedPath: string
+    createdAt?: Date | string
+  }
+
+  export type ChunkUncheckedCreateWithoutUploadInput = {
+    id?: string
+    chunkNumber: number
+    size: number
+    checksum: string
+    storedPath: string
+    createdAt?: Date | string
+  }
+
+  export type ChunkCreateOrConnectWithoutUploadInput = {
+    where: ChunkWhereUniqueInput
+    create: XOR<ChunkCreateWithoutUploadInput, ChunkUncheckedCreateWithoutUploadInput>
+  }
+
+  export type ChunkCreateManyUploadInputEnvelope = {
+    data: ChunkCreateManyUploadInput | ChunkCreateManyUploadInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ChunkUpsertWithWhereUniqueWithoutUploadInput = {
+    where: ChunkWhereUniqueInput
+    update: XOR<ChunkUpdateWithoutUploadInput, ChunkUncheckedUpdateWithoutUploadInput>
+    create: XOR<ChunkCreateWithoutUploadInput, ChunkUncheckedCreateWithoutUploadInput>
+  }
+
+  export type ChunkUpdateWithWhereUniqueWithoutUploadInput = {
+    where: ChunkWhereUniqueInput
+    data: XOR<ChunkUpdateWithoutUploadInput, ChunkUncheckedUpdateWithoutUploadInput>
+  }
+
+  export type ChunkUpdateManyWithWhereWithoutUploadInput = {
+    where: ChunkScalarWhereInput
+    data: XOR<ChunkUpdateManyMutationInput, ChunkUncheckedUpdateManyWithoutUploadInput>
+  }
+
+  export type ChunkScalarWhereInput = {
+    AND?: ChunkScalarWhereInput | ChunkScalarWhereInput[]
+    OR?: ChunkScalarWhereInput[]
+    NOT?: ChunkScalarWhereInput | ChunkScalarWhereInput[]
+    id?: UuidFilter<"Chunk"> | string
+    uploadId?: UuidFilter<"Chunk"> | string
+    chunkNumber?: IntFilter<"Chunk"> | number
+    size?: IntFilter<"Chunk"> | number
+    checksum?: StringFilter<"Chunk"> | string
+    storedPath?: StringFilter<"Chunk"> | string
+    createdAt?: DateTimeFilter<"Chunk"> | Date | string
+  }
+
+  export type ChunkUploadCreateWithoutChunksInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    mimeType: string
+    totalSize: bigint | number
+    totalChunks: number
+    receivedChunks?: number
+    chunkSize: number
+    status?: $Enums.ChunkUploadStatus
+    tempPath: string
+    expiresAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChunkUploadUncheckedCreateWithoutChunksInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    mimeType: string
+    totalSize: bigint | number
+    totalChunks: number
+    receivedChunks?: number
+    chunkSize: number
+    status?: $Enums.ChunkUploadStatus
+    tempPath: string
+    expiresAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChunkUploadCreateOrConnectWithoutChunksInput = {
+    where: ChunkUploadWhereUniqueInput
+    create: XOR<ChunkUploadCreateWithoutChunksInput, ChunkUploadUncheckedCreateWithoutChunksInput>
+  }
+
+  export type ChunkUploadUpsertWithoutChunksInput = {
+    update: XOR<ChunkUploadUpdateWithoutChunksInput, ChunkUploadUncheckedUpdateWithoutChunksInput>
+    create: XOR<ChunkUploadCreateWithoutChunksInput, ChunkUploadUncheckedCreateWithoutChunksInput>
+    where?: ChunkUploadWhereInput
+  }
+
+  export type ChunkUploadUpdateToOneWithWhereWithoutChunksInput = {
+    where?: ChunkUploadWhereInput
+    data: XOR<ChunkUploadUpdateWithoutChunksInput, ChunkUploadUncheckedUpdateWithoutChunksInput>
+  }
+
+  export type ChunkUploadUpdateWithoutChunksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    totalSize?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalChunks?: IntFieldUpdateOperationsInput | number
+    receivedChunks?: IntFieldUpdateOperationsInput | number
+    chunkSize?: IntFieldUpdateOperationsInput | number
+    status?: EnumChunkUploadStatusFieldUpdateOperationsInput | $Enums.ChunkUploadStatus
+    tempPath?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkUploadUncheckedUpdateWithoutChunksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    totalSize?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalChunks?: IntFieldUpdateOperationsInput | number
+    receivedChunks?: IntFieldUpdateOperationsInput | number
+    chunkSize?: IntFieldUpdateOperationsInput | number
+    status?: EnumChunkUploadStatusFieldUpdateOperationsInput | $Enums.ChunkUploadStatus
+    tempPath?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateManyDepartmentInput = {
     id?: string
     tenantId: string
@@ -54268,6 +61523,160 @@ export namespace Prisma {
     uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     workflowStepId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type FileCreateManyParentVersionInput = {
+    id?: string
+    service: string
+    module: string
+    ownerId: string
+    referenceId?: string | null
+    originalName: string
+    storedName: string
+    mimeType: string
+    size: bigint | number
+    checksum: string
+    storagePath: string
+    storageProvider?: string
+    compressed?: boolean
+    compressionType?: string | null
+    compressRequested?: boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: number | null
+    scheduledDeleteAt?: Date | string | null
+    status?: $Enums.FileStatus
+    retryCount?: number
+    retryAt?: Date | string | null
+    deleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FileUpdateWithoutParentVersionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    versions?: FileUpdateManyWithoutParentVersionNestedInput
+  }
+
+  export type FileUncheckedUpdateWithoutParentVersionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    versions?: FileUncheckedUpdateManyWithoutParentVersionNestedInput
+  }
+
+  export type FileUncheckedUpdateManyWithoutParentVersionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    service?: StringFieldUpdateOperationsInput | string
+    module?: StringFieldUpdateOperationsInput | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    referenceId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalName?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    size?: BigIntFieldUpdateOperationsInput | bigint | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storagePath?: StringFieldUpdateOperationsInput | string
+    storageProvider?: StringFieldUpdateOperationsInput | string
+    compressed?: BoolFieldUpdateOperationsInput | boolean
+    compressionType?: NullableStringFieldUpdateOperationsInput | string | null
+    compressRequested?: BoolFieldUpdateOperationsInput | boolean
+    thumbnails?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    retentionDays?: NullableIntFieldUpdateOperationsInput | number | null
+    scheduledDeleteAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+    retryCount?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkCreateManyUploadInput = {
+    id?: string
+    chunkNumber: number
+    size: number
+    checksum: string
+    storedPath: string
+    createdAt?: Date | string
+  }
+
+  export type ChunkUpdateWithoutUploadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chunkNumber?: IntFieldUpdateOperationsInput | number
+    size?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storedPath?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkUncheckedUpdateWithoutUploadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chunkNumber?: IntFieldUpdateOperationsInput | number
+    size?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storedPath?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChunkUncheckedUpdateManyWithoutUploadInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chunkNumber?: IntFieldUpdateOperationsInput | number
+    size?: IntFieldUpdateOperationsInput | number
+    checksum?: StringFieldUpdateOperationsInput | string
+    storedPath?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

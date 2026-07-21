@@ -2,56 +2,51 @@ import prisma from '../../config/database.js';
 
 /**
  * PrismaFileRepository — all database access for files and retention policies.
- *
- * Never expose storagePath in query results that go to controllers (except when needed internally).
- * The select projection in list() intentionally omits storagePath.
  */
 export class PrismaFileRepository {
-  /**
-   * Create a new file metadata record.
-   * @param {object} data
-   * @returns {Promise<object>}
-   */
   async create(data) {
     return await prisma.file.create({ data });
   }
 
-  /**
-   * Find a file by ID (excludes deleted files).
-   * @param {string} id
-   * @returns {Promise<object|null>}
-   */
   async findById(id) {
     return await prisma.file.findFirst({
       where: { id, deleted: false },
     });
   }
 
-  /**
-   * Find a file by ID including deleted files (for admin / cleanup workers).
-   * @param {string} id
-   * @returns {Promise<object|null>}
-   */
   async findByIdRaw(id) {
     return await prisma.file.findUnique({ where: { id } });
   }
 
-  /**
-   * Update arbitrary fields on a file record.
-   * @param {string} id
-   * @param {object} data
-   * @returns {Promise<object>}
-   */
+  async findByChecksum(checksum, service) {
+    return await prisma.file.findFirst({
+      where: {
+        checksum,
+        service,
+        deleted: false,
+        status: 'AVAILABLE',
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
   async update(id, data) {
     return await prisma.file.update({ where: { id }, data });
   }
 
   /**
-   * Soft-delete a file: sets deleted=true, status=DELETED, records scheduledDeleteAt.
-   * @param {string} id
-   * @param {{ scheduledDeleteAt?: Date|null }} opts
-   * @returns {Promise<object>}
+   * Atomic status transition: only updates if current status matches expected.
+   * @returns {Promise<object|null>} updated row or null if race lost
    */
+  async transitionStatus(id, fromStatus, toStatus, extra = {}) {
+    const result = await prisma.file.updateMany({
+      where: { id, status: fromStatus, deleted: false },
+      data: { status: toStatus, ...extra },
+    });
+    if (result.count === 0) return null;
+    return await prisma.file.findUnique({ where: { id } });
+  }
+
   async softDelete(id, { scheduledDeleteAt = null } = {}) {
     return await prisma.file.update({
       where: { id },
@@ -64,13 +59,77 @@ export class PrismaFileRepository {
     });
   }
 
-  /**
-   * List files with optional filters. storagePath is excluded from results.
-   */
-  async list({ service, module, ownerId, referenceId, mimeType, status, from, to, page = 1, limit = 20 } = {}) {
+  async softDeleteByReferenceId(referenceId, { scheduledDeleteAt = null } = {}) {
+    return await prisma.file.updateMany({
+      where: { referenceId, deleted: false },
+      data: {
+        deleted: true,
+        deletedAt: new Date(),
+        status: 'DELETED',
+        scheduledDeleteAt,
+      },
+    });
+  }
+
+  async findByStatus(status, { take = 10 } = {}) {
+    return await prisma.file.findMany({
+      where: { status, deleted: false },
+      orderBy: { createdAt: 'asc' },
+      take,
+    });
+  }
+
+  async findDueForRetry({ take = 10, maxRetries = 3 } = {}) {
+    return await prisma.file.findMany({
+      where: {
+        status: 'FAILED',
+        deleted: false,
+        retryCount: { lt: maxRetries },
+        OR: [{ retryAt: null }, { retryAt: { lte: new Date() } }],
+      },
+      orderBy: { retryAt: 'asc' },
+      take,
+    });
+  }
+
+  async findDueForPermanentDelete({ take = 50 } = {}) {
+    return await prisma.file.findMany({
+      where: {
+        deleted: true,
+        scheduledDeleteAt: { not: null, lte: new Date() },
+      },
+      orderBy: { scheduledDeleteAt: 'asc' },
+      take,
+    });
+  }
+
+  async hardDelete(id) {
+    return await prisma.file.delete({ where: { id } });
+  }
+
+  async countByStatuses(statuses) {
+    return await prisma.file.count({
+      where: { status: { in: statuses }, deleted: false },
+    });
+  }
+
+  async list({
+    service,
+    module,
+    ownerId,
+    referenceId,
+    mimeType,
+    status,
+    from,
+    to,
+    page = 1,
+    limit = 20,
+    crossService = false,
+  } = {}) {
     const where = {
       deleted: false,
-      ...(service && { service }),
+      ...(!crossService && service ? { service } : {}),
+      ...(crossService && service ? { service } : {}),
       ...(module && { module }),
       ...(ownerId && { ownerId }),
       ...(referenceId && { referenceId }),
@@ -106,9 +165,9 @@ export class PrismaFileRepository {
           thumbnails: true,
           metadata: true,
           retentionDays: true,
+          versionOf: true,
           createdAt: true,
           updatedAt: true,
-          // storagePath intentionally excluded
         },
       }),
       prisma.file.count({ where }),
@@ -117,12 +176,6 @@ export class PrismaFileRepository {
     return { data, total, page, limit };
   }
 
-  /**
-   * Look up the retention policy for a given service name.
-   * Returns null if no policy exists (caller falls back to default).
-   * @param {string} service
-   * @returns {Promise<object|null>}
-   */
   async getRetentionPolicy(service) {
     return await prisma.serviceRetentionPolicy.findUnique({
       where: { service },

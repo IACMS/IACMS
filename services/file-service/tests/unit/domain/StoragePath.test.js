@@ -27,7 +27,7 @@ describe('StoragePath', () => {
 
     it('replaces spaces and special chars with hyphens', () => {
       const path = StoragePath.build({ service: 'my service!', module: 'my@module', fileId: 'z' });
-      expect(path).toMatch(/^my-service-\/my-module\//);
+      expect(path).toMatch(/^my-service\/my-module\//);
     });
 
     it('collapses consecutive hyphens into one', () => {

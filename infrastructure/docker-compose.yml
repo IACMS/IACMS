@@ -67,11 +67,13 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_LOG_RETENTION_HOURS: 168
     healthcheck:
-      test: ['CMD-SHELL', 'kafka-topics --bootstrap-server localhost:9092 --list']
+      # Use the internal listener — host-advertised PLAINTEXT address is not
+      # always reachable from inside the container when LAN_HOST is an external IP.
+      test: ['CMD-SHELL', 'kafka-topics --bootstrap-server localhost:29092 --list']
       interval: 15s
       timeout: 10s
       retries: 10
-      start_period: 30s
+      start_period: 40s
 
   # ── Services ──────────────────────────────────────────────────────────────
 
@@ -334,22 +336,62 @@ services:
     networks:
       - iacms-network
 
-  # File Management Service
+  # File Management Service (HTTP)
   file-service:
     build:
       context: ..
       dockerfile: services/file-service/Dockerfile
+      target: http
     container_name: iacms-file-service
     ports:
       - '3009:3009'
     environment:
       PORT: 3009
       NODE_ENV: production
-      WORKER_MODE: embedded
+      WORKER_MODE: standalone
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       JWT_SECRET: change-this-secret-key
       AUTH_SERVICE_URL: http://auth-service:3001
+      REDIS_URL: redis://redis:6379
+      STORAGE_PROVIDER: minio
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: iacms-files
+      MINIO_USE_SSL: 'false'
+      VIRUS_SCAN_ENABLED: 'false'
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: '3310'
+      THUMBNAIL_ENABLED: 'true'
+      COMPRESSION_IMAGE_ENABLED: 'true'
+      COMPRESSION_VIDEO_ENABLED: 'false'
+      DEDUPLICATION_ENABLED: 'false'
+      DEFAULT_SOFT_DELETE_DAYS: '30'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # File Management Service workers (virus scan, compress, thumbs, cleanup)
+  file-service-workers:
+    build:
+      context: ..
+      dockerfile: services/file-service/Dockerfile.workers
+    container_name: iacms-file-service-workers
+    environment:
+      NODE_ENV: production
+      WORKER_MODE: standalone
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
       STORAGE_PROVIDER: minio
       MINIO_ENDPOINT: minio
