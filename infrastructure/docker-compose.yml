@@ -6,6 +6,8 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: iacms-postgres
+    networks:
+      - iacms-network
     environment:
       POSTGRES_DB: iacms
       POSTGRES_USER: postgres
@@ -131,7 +133,7 @@ services:
       - '3001:3001'
     environment:
       PORT: 3001
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       JWT_SECRET: change-this-secret-key
       JWT_EXPIRES_IN: 24h
@@ -154,7 +156,7 @@ services:
       - '3002:3002'
     environment:
       PORT: 3002
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
@@ -174,7 +176,7 @@ services:
       - '3003:3003'
     environment:
       PORT: 3003
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       WORKFLOW_SERVICE_URL: http://workflow-service:3004
     depends_on:
@@ -197,7 +199,7 @@ services:
       - '3004:3004'
     environment:
       PORT: 3004
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
@@ -217,7 +219,7 @@ services:
       - '3005:3005'
     environment:
       PORT: 3005
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
@@ -237,7 +239,7 @@ services:
       - '3006:3006'
     environment:
       PORT: 3006
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
@@ -257,7 +259,7 @@ services:
       - '3007:3007'
     environment:
       PORT: 3007
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
@@ -351,7 +353,7 @@ services:
       PORT: 3009
       NODE_ENV: production
       WORKER_MODE: standalone
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       JWT_SECRET: change-this-secret-key
       AUTH_SERVICE_URL: http://auth-service:3001
@@ -392,7 +394,7 @@ services:
     environment:
       NODE_ENV: production
       WORKER_MODE: standalone
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
       STORAGE_PROVIDER: minio
