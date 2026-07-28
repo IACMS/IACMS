@@ -537,7 +537,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/e/code/IACMS/Current/IACMS/services/case-service/src/generated/prisma",
+      "value": "/opt/iacms/IACMS/services/case-service/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -551,12 +551,11 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/e/code/IACMS/Current/IACMS/prisma/schema.prisma",
+    "sourceFilePath": "/opt/iacms/IACMS/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../../../../prisma",
   "clientVersion": "6.19.3",
@@ -565,7 +564,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

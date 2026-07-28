@@ -1,9 +1,12 @@
 FROM node:20-alpine
 
 WORKDIR /app
+COPY package*.json ./
+COPY shared ./shared
+COPY services/api-gateway/package*.json ./services/api-gateway/
 
-COPY services/api-gateway/package*.json ./
-RUN npm ci
+RUN npm install
+WORKDIR /app/services/api-gateway
 
 COPY services/api-gateway/src ./src
 
