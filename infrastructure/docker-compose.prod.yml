@@ -62,7 +62,7 @@ services:
       dockerfile: services/auth-service/Dockerfile
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@postgres:5432/iacms?schema=public"
+      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
       JWT_SECRET: "BgIxe/n6SlyvnFFazwEt6+jICQIS6kyeAgFG7qRqxgI="
     ports:
       - '127.0.0.1:3011:3001'
@@ -74,7 +74,7 @@ services:
       dockerfile: services/rbac-service/Dockerfile
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@postgres:5432/iacms?schema=public"
+      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
     ports:
       - '127.0.0.1:3012:3002'
     restart: unless-stopped
@@ -85,7 +85,7 @@ services:
       dockerfile: services/case-service/Dockerfile
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@postgres:5432/iacms?schema=public"
+      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
     ports:
       - '127.0.0.1:3013:3003'
     restart: unless-stopped
@@ -96,7 +96,7 @@ services:
       dockerfile: services/workflow-service/Dockerfile
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@postgres:5432/iacms?schema=public"
+      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
     ports:
       - '127.0.0.1:3014:3004'
     restart: unless-stopped
@@ -107,7 +107,7 @@ services:
       dockerfile: services/referral-service/Dockerfile
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@postgres:5432/iacms?schema=public"
+      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
     ports:
       - '127.0.0.1:3015:3005'
     restart: unless-stopped
@@ -118,7 +118,7 @@ services:
       dockerfile: services/audit-service/Dockerfile
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@postgres:5432/iacms?schema=public"
+      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
     ports:
       - '127.0.0.1:3016:3006'
     restart: unless-stopped
@@ -129,7 +129,7 @@ services:
       dockerfile: services/integration-service/Dockerfile
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@postgres:5432/iacms?schema=public"
+      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
     ports:
       - '127.0.0.1:3017:3007'
     restart: unless-stopped
@@ -151,7 +151,7 @@ services:
       dockerfile: services/file-service/Dockerfile
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@postgres:5432/iacms?schema=public"
+      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
       JWT_SECRET: "BgIxe/n6SlyvnFFazwEt6+jICQIS6kyeAgFG7qRqxgI="
       MINIO_ACCESS_KEY: ddff2b5806be361a81a9890f
       MINIO_SECRET_KEY: "EEFO/IxeE5W5fNFhK0oqghT4H4gIDH1+I01XYiLDOf8="
