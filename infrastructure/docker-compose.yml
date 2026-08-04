@@ -92,11 +92,14 @@ services:
     environment:
       PORT: 3000
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:5174}
-      AUTH_SERVICE_URL: http://auth-service:3001
-      RBAC_SERVICE_URL: http://rbac-service:3002
-      CASE_SERVICE_URL: http://case-service:3003
-      WORKFLOW_SERVICE_URL: http://workflow-service:3004
-      REFERRAL_SERVICE_URL: http://referral-service:3005
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      IAM_SERVICE_URL: http://iam-service:3001
+      AUTH_SERVICE_URL: http://iam-service:3001
+      RBAC_SERVICE_URL: http://iam-service:3001
+      CASE_ENGINE_SERVICE_URL: http://case-engine-service:3003
+      CASE_SERVICE_URL: http://case-engine-service:3003
+      WORKFLOW_SERVICE_URL: http://case-engine-service:3003
+      REFERRAL_SERVICE_URL: http://case-engine-service:3003
       AUDIT_SERVICE_URL: http://audit-service:3006
       INTEGRATION_SERVICE_URL: http://integration-service:3007
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
@@ -108,13 +111,9 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      auth-service:
+      iam-service:
         condition: service_started
-      case-service:
-        condition: service_started
-      workflow-service:
-        condition: service_started
-      referral-service:
+      case-engine-service:
         condition: service_started
       kafka:
         condition: service_healthy
@@ -123,12 +122,12 @@ services:
     networks:
       - iacms-network
 
-  # Auth Service — PostgreSQL + Kafka only
-  auth-service:
+  # IAM Service — Auth + RBAC (PostgreSQL + Kafka)
+  iam-service:
     build:
       context: ..
-      dockerfile: services/auth-service/Dockerfile
-    container_name: iacms-auth-service
+      dockerfile: services/iam-service/Dockerfile
+    container_name: iacms-iam-service
     ports:
       - '3001:3001'
     environment:
@@ -146,79 +145,16 @@ services:
     networks:
       - iacms-network
 
-  # RBAC Service — PostgreSQL + Kafka only
-  rbac-service:
+  # Case Engine Service — Case + Workflow + Referral (PostgreSQL + Kafka)
+  case-engine-service:
     build:
       context: ..
-      dockerfile: services/rbac-service/Dockerfile
-    container_name: iacms-rbac-service
-    ports:
-      - '3002:3002'
-    environment:
-      PORT: 3002
-      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
-      KAFKA_BROKERS: kafka:29092
-    depends_on:
-      postgres:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - iacms-network
-
-  # Case Service — PostgreSQL + Kafka only
-  case-service:
-    build:
-      context: ..
-      dockerfile: services/case-service/Dockerfile
-    container_name: iacms-case-service
+      dockerfile: services/case-engine-service/Dockerfile
+    container_name: iacms-case-engine-service
     ports:
       - '3003:3003'
     environment:
       PORT: 3003
-      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
-      KAFKA_BROKERS: kafka:29092
-      WORKFLOW_SERVICE_URL: http://workflow-service:3004
-    depends_on:
-      postgres:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-      workflow-service:
-        condition: service_started
-    networks:
-      - iacms-network
-
-  # Workflow Service — PostgreSQL + Kafka only
-  workflow-service:
-    build:
-      context: ..
-      dockerfile: services/workflow-service/Dockerfile
-    container_name: iacms-workflow-service
-    ports:
-      - '3004:3004'
-    environment:
-      PORT: 3004
-      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
-      KAFKA_BROKERS: kafka:29092
-    depends_on:
-      postgres:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - iacms-network
-
-  # Referral Service — PostgreSQL + Kafka only
-  referral-service:
-    build:
-      context: ..
-      dockerfile: services/referral-service/Dockerfile
-    container_name: iacms-referral-service
-    ports:
-      - '3005:3005'
-    environment:
-      PORT: 3005
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
     depends_on:

@@ -7,29 +7,14 @@ generator client {
 }
 
 /// Per-service clients (outputs relative to this `prisma/` directory). Run `npx prisma generate` from repo root.
-generator clientAuth {
+generator clientIam {
   provider = "prisma-client-js"
-  output   = "../services/auth-service/src/generated/prisma"
+  output   = "../services/iam-service/src/generated/prisma"
 }
 
-generator clientCase {
+generator clientCaseEngine {
   provider = "prisma-client-js"
-  output   = "../services/case-service/src/generated/prisma"
-}
-
-generator clientWorkflow {
-  provider = "prisma-client-js"
-  output   = "../services/workflow-service/src/generated/prisma"
-}
-
-generator clientReferral {
-  provider = "prisma-client-js"
-  output   = "../services/referral-service/src/generated/prisma"
-}
-
-generator clientRbac {
-  provider = "prisma-client-js"
-  output   = "../services/rbac-service/src/generated/prisma"
+  output   = "../services/case-engine-service/src/generated/prisma"
 }
 
 generator clientAudit {
