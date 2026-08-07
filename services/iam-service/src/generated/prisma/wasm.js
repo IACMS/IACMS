@@ -531,13 +531,13 @@ exports.Prisma.ModelName = {
  */
 const config = {
   "generator": {
-    "name": "clientFile",
+    "name": "clientIam",
     "provider": {
       "fromEnvVar": null,
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/bishi/Desktop/iacms_project/IACMS/services/file-service/src/generated/prisma",
+      "value": "/home/bishi/Desktop/iacms_project/IACMS/services/iam-service/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {

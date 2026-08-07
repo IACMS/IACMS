@@ -1,0 +1,19 @@
+{
+  "name": "case-engine-service",
+  "version": "1.0.0",
+  "description": "IACMS Case Engine Service - Cases, Workflows & Referrals",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "prisma:generate": "prisma generate --schema=../../prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "ioredis": "^5.10.0",
+    "prisma": "^6.0.0"
+  }
+}
