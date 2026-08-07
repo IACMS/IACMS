@@ -29,6 +29,7 @@ const PUBLIC_ROUTES = [
   { method: 'POST', path: '/session/login' },
   // Tenant validate is public (login screen). Tenant register requires auth + platform permission (RBAC).
   { method: 'GET', path: '/tenants/validate' },
+  { method: 'POST', path: '/tenants/self-register' },
 ];
 
 /**

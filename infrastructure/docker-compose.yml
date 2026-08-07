@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - '5433:5432'
+      - '5434:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -51,6 +51,8 @@ services:
       timeout: 10s
       retries: 10
       start_period: 20s
+    networks:
+      - iacms-network
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -78,6 +80,8 @@ services:
       timeout: 10s
       retries: 10
       start_period: 40s
+    networks:
+      - iacms-network
 
   # ── Services ──────────────────────────────────────────────────────────────
 
@@ -137,6 +141,15 @@ services:
       JWT_SECRET: change-this-secret-key
       JWT_EXPIRES_IN: 24h
       JWT_REFRESH_EXPIRES_IN: 7d
+      AUTH_SERVICE_URL: http://auth-service:3001
+      RBAC_SERVICE_URL: http://rbac-service:3002
+      CASE_SERVICE_URL: http://case-service:3003
+      WORKFLOW_SERVICE_URL: http://workflow-service:3004
+      REFERRAL_SERVICE_URL: http://referral-service:3005
+      AUDIT_SERVICE_URL: http://audit-service:3006
+      INTEGRATION_SERVICE_URL: http://integration-service:3007
+      NOTIFICATION_SERVICE_URL: http://notification-service:3008
+      FILE_SERVICE_URL: http://file-service:3009
     depends_on:
       postgres:
         condition: service_healthy
@@ -217,6 +230,10 @@ services:
       PORT: 3008
       KAFKA_BROKERS: kafka:29092
       APP_URL: ${APP_URL:-http://localhost:5173}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
     depends_on:
       kafka:
         condition: service_healthy

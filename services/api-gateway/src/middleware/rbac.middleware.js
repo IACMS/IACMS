@@ -18,6 +18,27 @@ const CACHE_KEY_PREFIX = 'rbac:perms:';
 const ROUTE_PERMISSIONS = {
   // Platform — operational visibility (connectivity from gateway → microservices)
   'GET:/platform/service-probes': 'platform:manage_tenants',
+  
+  // Platform Admin (auth-service)
+  'POST:/platform/impersonate/:tenantId': 'platform:manage_tenants',
+  'GET:/platform/settings': 'platform:manage_tenants',
+  'PATCH:/platform/settings': 'platform:manage_tenants',
+  'GET:/platform/feature-flags': 'platform:manage_tenants',
+  'POST:/platform/feature-flags': 'platform:manage_tenants',
+  'GET:/platform/announcements': 'platform:manage_tenants',
+  'POST:/platform/announcements': 'platform:manage_tenants',
+  'DELETE:/platform/announcements/:id': 'platform:manage_tenants',
+  'GET:/platform/support-tickets': 'platform:manage_tenants',
+  'POST:/platform/support-tickets': 'platform:manage_tenants',
+  'PATCH:/platform/support-tickets/:id': 'platform:manage_tenants',
+  'GET:/platform/quotas': 'platform:manage_tenants',
+  'GET:/platform/tenants/:tenantId/quota': 'platform:manage_tenants',
+  'PATCH:/platform/tenants/:tenantId/quota': 'platform:manage_tenants',
+  
+  'GET:/platform/agencies/pending': 'platform:manage_tenants',
+  'POST:/platform/agencies/:id/approve': 'platform:manage_tenants',
+  'POST:/platform/agencies/:id/decline': 'platform:manage_tenants',
+
 
   // Cases
   'GET:/cases': 'cases:read',

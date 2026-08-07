@@ -9,6 +9,7 @@ import {
   handlePasswordResetRequested,
   handlePasswordChanged,
   handleEmailVerificationRequested,
+  handleTenantApproved,
 } from './consumers/email.consumer.js';
 
 dotenv.config();
@@ -41,6 +42,7 @@ async function registerSubscriptions() {
     eventBus.subscribe(TOPICS.PASSWORD_RESET_REQUESTED, handlePasswordResetRequested),
     eventBus.subscribe(TOPICS.PASSWORD_CHANGED, handlePasswordChanged),
     eventBus.subscribe(TOPICS.EMAIL_VERIFICATION_REQUESTED, handleEmailVerificationRequested),
+    eventBus.subscribe(TOPICS.TENANT_APPROVED, handleTenantApproved),
 
     // Case / workflow / referral events (stub handlers — real templates to be added later)
     eventBus.subscribe(TOPICS.CASE_CREATED, (data) => {

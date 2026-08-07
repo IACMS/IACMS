@@ -43,6 +43,8 @@
   "dependencies": {
     "@prisma/client": "^6.0.0",
     "bcryptjs": "^2.4.3",
-    "kafkajs": "^2.2.4"
+    "kafkajs": "^2.2.4",
+    "react-is": "^19.2.8",
+    "recharts": "^3.10.1"
   }
 }
