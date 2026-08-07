@@ -537,7 +537,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/opt/iacms/IACMS/services/integration-service/src/generated/prisma",
+      "value": "/home/e/code/IACMS/Current/IACMS/services/integration-service/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -551,11 +551,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/opt/iacms/IACMS/prisma/schema.prisma",
+    "sourceFilePath": "/home/e/code/IACMS/Current/IACMS/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../../../.env"
   },
   "relativePath": "../../../../../prisma",
   "clientVersion": "6.19.3",

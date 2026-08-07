@@ -7,6 +7,7 @@ import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import tenantRoutes from './routes/tenant.routes.js';
 import chatRoutes from './routes/chat.routes.js';
+import platformRoutes from './routes/platform.routes.js';
 import Logger from '../../../shared/common/logger.js';
 
 // Load .env from service directory
@@ -48,6 +49,7 @@ app.get('/health', (req, res) => {
 app.use('/auth', authRoutes);
 app.use('/tenants', tenantRoutes);
 app.use('/chat', chatRoutes);
+app.use('/platform', platformRoutes);
 
 // Error handler
 app.use(errorHandler);

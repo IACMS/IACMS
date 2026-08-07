@@ -538,7 +538,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/opt/iacms/IACMS/services/case-service/src/generated/prisma",
+      "value": "/home/e/code/IACMS/Current/IACMS/services/case-service/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -552,11 +552,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/opt/iacms/IACMS/prisma/schema.prisma",
+    "sourceFilePath": "/home/e/code/IACMS/Current/IACMS/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../../../.env"
   },
   "relativePath": "../../../../../prisma",
   "clientVersion": "6.19.3",
@@ -583,7 +584,7 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "../case-service/src/generated/prisma",
+    "services/case-service/src/generated/prisma",
     "case-service/src/generated/prisma",
   ]
   
@@ -614,7 +615,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");
-path.join(process.cwd(), "../case-service/src/generated/prisma/libquery_engine-debian-openssl-3.0.x.so.node")
+path.join(process.cwd(), "services/case-service/src/generated/prisma/libquery_engine-debian-openssl-3.0.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "../case-service/src/generated/prisma/schema.prisma")
+path.join(process.cwd(), "services/case-service/src/generated/prisma/schema.prisma")
