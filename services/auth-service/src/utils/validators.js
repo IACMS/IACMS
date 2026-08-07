@@ -299,7 +299,7 @@ export function validateUpdateUserRequest(body) {
  * do not send `password` in the body.
  */
 export function validateTenantRegistrationRequest(body) {
-  const { tenantName, tenantCode, email, firstName, lastName, username } = body || {};
+  const { tenantName, tenantCode, email, firstName, lastName, username, password } = body || {};
 
   if (!tenantName || typeof tenantName !== 'string' || !tenantName.trim()) {
     throw new ValidationError('Organization name is required');
@@ -321,6 +321,7 @@ export function validateTenantRegistrationRequest(body) {
     firstName: validateName(firstName, 'First name'),
     lastName: validateName(lastName, 'Last name'),
     username: validateUsername(username),
+    password: password ? validatePassword(password) : undefined,
   };
 }
 

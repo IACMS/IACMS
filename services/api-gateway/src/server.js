@@ -333,6 +333,14 @@ async function startServer() {
     onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
   }));
 
+  // Platform admin routes (system_admin only — enforced in auth-service controller)
+  app.use('/api/v1/platform', serviceProxy({
+    target: services.auth,
+    pathRewrite: (path) => '/platform' + path,
+    label: 'Auth service (platform admin)',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
   // 404 handler
   app.use((req, res) => {
     res.status(404).json({

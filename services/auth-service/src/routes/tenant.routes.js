@@ -9,6 +9,7 @@ import {
   validateTenant,
   updateTenantConfig,
   registerTenant,
+  selfRegisterTenant,
   uploadTenantLogo,
 } from '../controllers/tenant.controller.js';
 import { authenticateTokenOptional, authenticateToken } from '../middleware/auth.middleware.js';
@@ -19,6 +20,7 @@ import fs from 'fs';
 const router = express.Router();
 
 router.post('/register', authenticateTokenOptional, registerTenant);
+router.post('/self-register', selfRegisterTenant);
 router.get('/', listTenants);
 router.get('/validate/:code', validateTenant);
 router.get('/:id/departments', listTenantDepartments);

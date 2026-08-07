@@ -721,3 +721,125 @@ export async function registerTenant(req, res, next) {
     next(error);
   }
 }
+
+/**
+ * POST /tenants/self-register
+ * Public endpoint for organizations to request registration.
+ * Creates an inactive Tenant (pending approval) and inactive first User (tenant admin).
+ */
+export async function selfRegisterTenant(req, res, next) {
+  try {
+    const payload = validateTenantRegistrationRequest(req.body);
+
+    const existingTenant = await prisma.tenant.findUnique({
+      where: { code: payload.tenantCode },
+    });
+    if (existingTenant) {
+      throw new ConflictError('An organization with this tenant code already exists');
+    }
+
+    const temporaryPassword = payload.password || generateTemporaryPassword();
+    const passwordHash = await bcrypt.hash(temporaryPassword, 10);
+    const uname =
+      payload.username?.trim()?.toLowerCase() ||
+      payload.email.split('@')[0].toLowerCase();
+
+    const { tenant, user, roleIds } = await prisma.$transaction(async (tx) => {
+      const tenantRow = await tx.tenant.create({
+        data: {
+          name: payload.tenantName,
+          code: payload.tenantCode,
+          description: null,
+          isActive: false,
+          config: { registrationStatus: 'PENDING_APPROVAL' },
+        },
+      });
+
+      const userRow = await tx.user.create({
+        data: {
+          tenantId: tenantRow.id,
+          email: payload.email,
+          username: uname,
+          passwordHash,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          isActive: false, // Locked until the tenant is approved
+          isEmailVerified: false,
+          mustChangePassword: false, // User already set their password during registration
+        },
+      });
+
+      const tenantAdminRole = await resolveCanonicalGlobalTenantAdminRole(tx);
+      if (!tenantAdminRole) {
+        throw new ValidationError(
+          'Server is missing tenant_admin role — run database migrations and seed',
+        );
+      }
+      if (tenantAdminRole._count.rolePermissions < 1) {
+        throw new ValidationError(
+          'tenant_admin role has no permissions — run database seed to attach RBAC permissions',
+        );
+      }
+
+      await tx.userRole.create({
+        data: {
+          userId: userRow.id,
+          roleId: tenantAdminRole.id,
+          // No assignedBy since they self-registered
+        },
+      });
+
+      // Auto-create default departments for the new tenant
+      await tx.department.createMany({
+        data: [
+          { tenantId: tenantRow.id, code: 'INTAKE', name: 'Intake', description: 'Initial case intake and registration', isActive: true },
+          { tenantId: tenantRow.id, code: 'PROCESSING', name: 'Case Processing', description: 'Active case investigation and processing', isActive: true },
+          { tenantId: tenantRow.id, code: 'CLOSURE', name: 'Case Closure', description: 'Case resolution and archival', isActive: true },
+        ],
+      });
+
+      return {
+        tenant: tenantRow,
+        user: userRow,
+        roleIds: [tenantAdminRole.id],
+      };
+    });
+
+    const bus = getEventBus();
+    if (bus) {
+      bus
+        .publish(TOPICS.USER_CREATED, {
+          userId: user.id,
+          tenantId: tenant.id,
+          email: user.email,
+          firstName: user.firstName,
+          tenantName: tenant.name,
+          tenantCode: tenant.code,
+          temporaryPassword,
+          source: 'tenant_self_register',
+        })
+        .catch((err) => logger.warn('USER_CREATED publish failed', { error: err.message }));
+    }
+
+    logger.info('Tenant self-registered, awaiting approval', {
+      tenantId: tenant.id,
+      firstTenantUserId: user.id,
+      code: tenant.code,
+    });
+
+    res.status(201).json({
+      message:
+        'Registration submitted successfully. Your organization is pending review by platform administrators.',
+      tenant: {
+        id: tenant.id,
+        name: tenant.name,
+        code: tenant.code,
+      },
+    });
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return next(new ConflictError('Email or username already in use for this organization'));
+    }
+    next(error);
+  }
+}

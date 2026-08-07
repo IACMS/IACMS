@@ -11,6 +11,7 @@ import {
   sendPasswordResetEmail,
   sendPasswordChangedEmail,
   sendVerificationEmail,
+  sendAgencyApprovedEmail,
 } from '../utils/email.js';
 import Logger from '../../../../shared/common/logger.js';
 
@@ -94,6 +95,24 @@ export async function handleEmailVerificationRequested(data) {
     to: data.email,
     firstName: data.firstName,
     verificationToken: data.verificationToken,
+    tenantCode: data.tenantCode,
+  });
+}
+
+/**
+ * Handle tenant.approved events.
+ * Sent when a platform admin approves a self-registered agency.
+ *
+ * Expected payload:
+ *   { tenantId, tenantName, tenantCode, email, firstName }
+ */
+export async function handleTenantApproved(data) {
+  logger.info('Sending agency approval email', { tenantId: data.tenantId, email: data.email });
+
+  await sendAgencyApprovedEmail({
+    to: data.email,
+    firstName: data.firstName,
+    tenantName: data.tenantName,
     tenantCode: data.tenantCode,
   });
 }
