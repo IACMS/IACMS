@@ -17,16 +17,13 @@ SERVICES=(
   "minio"
   "minio-init"
   "clamav"
-  "referral-service"
   "file-service"
   "file-service-workers"
   "integration-service"
   "notification-service"
-  "rbac-service"
+  "iam-service"
   "audit-service"
-  "auth-service"
-  "workflow-service"
-  "case-service"
+  "case-engine-service"
   "api-gateway"
 )
 

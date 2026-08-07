@@ -531,13 +531,13 @@ exports.Prisma.ModelName = {
  */
 const config = {
   "generator": {
-    "name": "clientIntegration",
+    "name": "clientCaseEngine",
     "provider": {
       "fromEnvVar": null,
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/bishi/Desktop/iacms_project/IACMS/services/integration-service/src/generated/prisma",
+      "value": "/home/bishi/Desktop/iacms_project/IACMS/services/case-engine-service/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {

@@ -1,0 +1,67 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import { errorHandler } from '../../../shared/middleware/errorHandler.js';
+import authRoutes from './routes/auth.routes.js';
+import tenantRoutes from './routes/tenant.routes.js';
+import chatRoutes from './routes/chat.routes.js';
+import platformRoutes from './routes/platform.routes.js';
+import roleRoutes from './routes/role.routes.js';
+import permissionRoutes from './routes/permission.routes.js';
+import userRoleRoutes from './routes/user-role.routes.js';
+import Logger from '../../../shared/common/logger.js';
+
+// Load .env from service directory
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+// Prevent any async Kafka errors from killing the process
+process.on('unhandledRejection', (reason) => {
+  console.warn('[iam-service] Unhandled rejection (non-fatal):', reason?.message || reason);
+});
+
+const app = express();
+const PORT = process.env.PORT || 3001; // IAM Service port
+const logger = new Logger('iam-service');
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Public static assets (tenant logos, etc.)
+const uploadsDir = path.join(process.cwd(), 'uploads');
+try {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+} catch {
+  // ignore
+}
+app.use('/tenants/assets', express.static(uploadsDir, { maxAge: '1h' }));
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'iam-service',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Routes
+app.use('/auth', authRoutes);
+app.use('/tenants', tenantRoutes);
+app.use('/chat', chatRoutes);
+app.use('/platform', platformRoutes);
+app.use('/roles', roleRoutes);
+app.use('/permissions', permissionRoutes);
+app.use('/user-roles', userRoleRoutes);
+
+// Error handler
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  logger.info(`IAM Service running on port ${PORT}`);
+});
+
+export default app;

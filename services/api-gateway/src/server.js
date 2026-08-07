@@ -47,11 +47,13 @@ function attachDownstreamHeaders(proxyReq, req) {
 }
 
 const services = {
-  auth: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
-  rbac: process.env.RBAC_SERVICE_URL || 'http://localhost:3002',
-  case: process.env.CASE_SERVICE_URL || 'http://localhost:3003',
-  workflow: process.env.WORKFLOW_SERVICE_URL || 'http://localhost:3004',
-  referral: process.env.REFERRAL_SERVICE_URL || 'http://localhost:3005',
+  iam: process.env.IAM_SERVICE_URL || process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
+  auth: process.env.AUTH_SERVICE_URL || process.env.IAM_SERVICE_URL || 'http://localhost:3001',
+  rbac: process.env.RBAC_SERVICE_URL || process.env.IAM_SERVICE_URL || 'http://localhost:3001',
+  caseEngine: process.env.CASE_ENGINE_SERVICE_URL || process.env.CASE_SERVICE_URL || 'http://localhost:3003',
+  case: process.env.CASE_SERVICE_URL || process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
+  workflow: process.env.WORKFLOW_SERVICE_URL || process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
+  referral: process.env.REFERRAL_SERVICE_URL || process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
   audit: process.env.AUDIT_SERVICE_URL || 'http://localhost:3006',
   integration: process.env.INTEGRATION_SERVICE_URL || 'http://localhost:3007',
   notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008',
@@ -180,11 +182,8 @@ async function startServer() {
 
   app.get('/api/v1/platform/service-probes', async (req, res) => {
     const definitions = [
-      { key: 'auth', label: 'Auth service', baseUrl: services.auth },
-      { key: 'rbac', label: 'RBAC service', baseUrl: services.rbac },
-      { key: 'case', label: 'Case service', baseUrl: services.case },
-      { key: 'workflow', label: 'Workflow service', baseUrl: services.workflow },
-      { key: 'referral', label: 'Referral service', baseUrl: services.referral },
+      { key: 'iam', label: 'IAM service (Auth + RBAC)', baseUrl: services.iam },
+      { key: 'case-engine', label: 'Case Engine service (Cases + Workflows + Referrals)', baseUrl: services.caseEngine },
       { key: 'audit', label: 'Audit service', baseUrl: services.audit },
       { key: 'integration', label: 'Integration service', baseUrl: services.integration },
       { key: 'notification', label: 'Notification service', baseUrl: services.notification },
