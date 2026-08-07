@@ -245,3 +245,34 @@ export function passwordChangedTemplate({ firstName }) {
     </p>
   `);
 }
+
+/**
+ * Agency Approved email sent to a newly approved organization's admin.
+ */
+export function agencyApprovedTemplate({ firstName, tenantName, tenantCode }) {
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Welcome, ${firstName}!</h2>
+    <p>
+      Good news! Your registration request for the <strong>${tenantName}</strong> workspace
+      has been reviewed and <strong>approved</strong> by the platform administrators.
+    </p>
+    
+    <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; border-radius: 0 6px 6px 0; margin: 24px 0;">
+      <strong style="color: #166534;">Your workspace is now fully active.</strong>
+    </div>
+
+    <p>
+      You can now log in using the email and password you provided during registration.
+      <br><br>
+      <strong>Organization Code:</strong> <span style="font-family: 'Courier New', monospace; font-weight: bold;">${tenantCode}</span>
+    </p>
+
+    <div style="text-align: center;">
+      <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="${buttonStyle}">Open IACMS Dashboard</a>
+    </div>
+
+    <p style="color: #666; font-size: 14px;">
+      If you did not expect this email, please ignore it or contact support.
+    </p>
+  `);
+}
