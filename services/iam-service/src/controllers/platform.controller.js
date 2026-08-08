@@ -18,11 +18,8 @@ import {
 
 
 const SERVICE_URLS = {
-  auth: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
-  rbac: process.env.RBAC_SERVICE_URL || 'http://localhost:3002',
-  case: process.env.CASE_SERVICE_URL || 'http://localhost:3003',
-  workflow: process.env.WORKFLOW_SERVICE_URL || 'http://localhost:3004',
-  referral: process.env.REFERRAL_SERVICE_URL || 'http://localhost:3005',
+  iam: process.env.IAM_SERVICE_URL || 'http://localhost:3001',
+  caseEngine: process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
   audit: process.env.AUDIT_SERVICE_URL || 'http://localhost:3006',
   integration: process.env.INTEGRATION_SERVICE_URL || 'http://localhost:3007',
   notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008',
