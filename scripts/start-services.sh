@@ -7,16 +7,13 @@ LOGDIR="${IACMS_LOG_DIR:-/tmp/iacms-logs}"
 mkdir -p "$LOGDIR"
 
 SERVICES=(
-  "api-gateway:3000"
-  "auth-service:3001"
-  "rbac-service:3002"
-  "case-service:3003"
-  "workflow-service:3004"
-  "referral-service:3005"
+  "iam-service:3001"
+  "case-engine-service:3003"
   "audit-service:3006"
   "integration-service:3007"
   "notification-service:3008"
   "file-service:3009"
+  "api-gateway:3000"
 )
 
 pid_on_port() {
@@ -45,8 +42,34 @@ start_one() {
   fi
   (
     cd "$ROOT/services/$name"
-    nohup node src/server.js >>"$LOGDIR/$name.log" 2>&1 &
-    echo $! >"$LOGDIR/$name.pid"
+    export PORT="$port"
+    export DATABASE_URL="postgresql://postgres:postgres@localhost:5434/iacms?schema=public"
+    export JWT_SECRET="change-this-secret-key-in-production-use-openssl-rand-base64-32"
+    export REDIS_URL="redis://localhost:6379"
+    export KAFKA_BROKERS="localhost:9092"
+    export STORAGE_PROVIDER="minio"
+    export MINIO_ENDPOINT="localhost"
+    export MINIO_PORT="9000"
+    export MINIO_ACCESS_KEY="minioadmin"
+    export MINIO_SECRET_KEY="minioadmin"
+    export MINIO_BUCKET="iacms-files"
+    export MINIO_USE_SSL="false"
+    export WORKER_MODE="embedded"
+    export IAM_SERVICE_URL="http://localhost:3001"
+    export AUTH_SERVICE_URL="http://localhost:3001"
+    export RBAC_SERVICE_URL="http://localhost:3001"
+    export CASE_ENGINE_SERVICE_URL="http://localhost:3003"
+    export CASE_SERVICE_URL="http://localhost:3003"
+    export WORKFLOW_SERVICE_URL="http://localhost:3003"
+    export REFERRAL_SERVICE_URL="http://localhost:3003"
+    export AUDIT_SERVICE_URL="http://localhost:3006"
+    export INTEGRATION_SERVICE_URL="http://localhost:3007"
+    export NOTIFICATION_SERVICE_URL="http://localhost:3008"
+    export FILE_SERVICE_URL="http://localhost:3009"
+    nohup node src/server.js </dev/null >>"$LOGDIR/$name.log" 2>&1 &
+    local pid=$!
+    disown $pid
+    echo $pid >"$LOGDIR/$name.pid"
   )
   echo "started $name pid=$(cat "$LOGDIR/$name.pid") → $LOGDIR/$name.log"
 }

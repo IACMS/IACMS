@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import notificationRoutes from './routes/notification.routes.js';
 import Logger from '../../../shared/common/logger.js';
+import { setupSwagger } from '../../../shared/swagger.js';
 import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
 import {
   handleUserCreated,
@@ -24,6 +25,9 @@ const PORT = process.env.PORT || 3008;
 const logger = new Logger('notification-service');
 
 app.use(express.json());
+
+// Setup Swagger OpenAPI Documentation
+setupSwagger(app, 'Notification Service', PORT);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'notification-service', timestamp: new Date().toISOString() });
