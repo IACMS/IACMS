@@ -138,7 +138,7 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
-      JWT_SECRET: change-this-secret-key
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
       JWT_EXPIRES_IN: 24h
       JWT_REFRESH_EXPIRES_IN: 7d
       IAM_SERVICE_URL: http://localhost:3001
@@ -305,7 +305,7 @@ services:
       WORKER_MODE: standalone
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
-      JWT_SECRET: change-this-secret-key
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
       AUTH_SERVICE_URL: http://auth-service:3001
       REDIS_URL: redis://redis:6379
       STORAGE_PROVIDER: minio

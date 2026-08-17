@@ -12,6 +12,7 @@ import roleRoutes from './routes/role.routes.js';
 import permissionRoutes from './routes/permission.routes.js';
 import userRoleRoutes from './routes/user-role.routes.js';
 import Logger from '../../../shared/common/logger.js';
+import { setupSwagger } from '../../../shared/swagger.js';
 
 // Load .env from service directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,6 +39,9 @@ try {
   // ignore
 }
 app.use('/tenants/assets', express.static(uploadsDir, { maxAge: '1h' }));
+
+// Setup Swagger OpenAPI Documentation
+setupSwagger(app, 'IAM Service', PORT);
 
 // Health check
 app.get('/health', (req, res) => {

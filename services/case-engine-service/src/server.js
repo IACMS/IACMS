@@ -8,6 +8,7 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 import workflowRoutes from './routes/workflow.routes.js';
 import referralRoutes from './routes/referral.routes.js';
 import Logger from '../../../shared/common/logger.js';
+import { setupSwagger } from '../../../shared/swagger.js';
 import './config/database.js';
 
 dotenv.config();
@@ -17,6 +18,9 @@ const PORT = process.env.PORT || 3003;
 const logger = new Logger('case-engine-service');
 
 app.use(express.json());
+
+// Setup Swagger OpenAPI Documentation
+setupSwagger(app, 'Case Engine Service', PORT);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'case-engine-service', timestamp: new Date().toISOString() });
