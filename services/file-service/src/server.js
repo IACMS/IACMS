@@ -15,6 +15,7 @@ import { metrics } from './infrastructure/metrics/metrics.js';
 import prisma from './config/database.js';
 import config from './config/index.js';
 import Logger from '../../../shared/common/logger.js';
+import { setupSwagger } from '../../../shared/swagger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
@@ -28,9 +29,13 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const app = express();
+const PORT = process.env.PORT || 3009;
 
 app.use(express.json());
 app.use(requestId);
+
+// Setup Swagger OpenAPI Documentation
+setupSwagger(app, 'File Management Service', PORT);
 
 app.get('/health', (_req, res) => {
   res.json({
