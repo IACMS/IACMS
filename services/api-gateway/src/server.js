@@ -18,6 +18,7 @@ import { apiRateLimiter, authRateLimiter } from './middleware/rateLimit.middlewa
 import { createSessionMiddleware, closeSessionStore } from './config/session.config.js';
 import { closeRedisClient } from './config/redis.config.js';
 import sessionRoutes from './routes/session.routes.js';
+import { setupSwagger } from '../../../shared/swagger.js';
 
 // Load .env from service directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -131,6 +132,9 @@ async function startServer() {
     });
     next();
   });
+
+  // Setup Swagger OpenAPI Documentation
+  setupSwagger(app, 'API Gateway', PORT);
 
   // Health check (before session middleware)
   app.get('/health', (req, res) => {

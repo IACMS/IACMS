@@ -2,6 +2,7 @@ import express from 'express';
 import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import auditRoutes from './routes/audit.routes.js';
 import Logger from '../../../shared/common/logger.js';
+import { setupSwagger } from '../../../shared/swagger.js';
 import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
 import { handleAuditLog } from './consumers/audit.consumer.js';
 import './config/database.js';
@@ -16,6 +17,9 @@ const PORT = process.env.PORT || 3006;
 const logger = new Logger('audit-service');
 
 app.use(express.json());
+
+// Setup Swagger OpenAPI Documentation
+setupSwagger(app, 'Audit Service', PORT);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'audit-service', timestamp: new Date().toISOString() });

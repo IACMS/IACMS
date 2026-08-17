@@ -4,6 +4,7 @@ import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import integrationRoutes from './routes/integration.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import Logger from '../../../shared/common/logger.js';
+import { setupSwagger } from '../../../shared/swagger.js';
 import './config/database.js'; // Initialize database connection
 
 dotenv.config();
@@ -13,6 +14,9 @@ const PORT = process.env.PORT || 3007;
 const logger = new Logger('integration-service');
 
 app.use(express.json());
+
+// Setup Swagger OpenAPI Documentation
+setupSwagger(app, 'Integration Service', PORT);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'integration-service', timestamp: new Date().toISOString() });
