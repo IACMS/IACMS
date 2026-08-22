@@ -8,7 +8,7 @@ import {
   getTenantPlatformStats,
   setTenantStatus,
   deleteTenant,
-  impersonateTenant,
+
   getPlatformSettings,
   updatePlatformSettings,
   getFeatureFlags,
@@ -48,8 +48,7 @@ router.get('/tenants/:tenantId/stats', getTenantPlatformStats);
 router.patch('/tenants/:tenantId/status', setTenantStatus);
 router.delete('/tenants/:tenantId', deleteTenant);
 
-// ── Tenant Impersonation ──────────────────────────────────────────────────
-router.post('/impersonate/:tenantId', impersonateTenant);
+
 
 // ── Global Settings ───────────────────────────────────────────────────────
 router.get('/settings', getPlatformSettings);
