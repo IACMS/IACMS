@@ -20,7 +20,7 @@ const ROUTE_PERMISSIONS = {
   'GET:/platform/service-probes': 'platform:manage_tenants',
   
   // Platform Admin (auth-service)
-  'POST:/platform/impersonate/:tenantId': 'platform:manage_tenants',
+
   'GET:/platform/settings': 'platform:manage_tenants',
   'PATCH:/platform/settings': 'platform:manage_tenants',
   'GET:/platform/feature-flags': 'platform:manage_tenants',

@@ -12,6 +12,8 @@ import {
   reactivateUser,
   deleteUser,
 } from '../controllers/auth/admin.users.controller.js';
+import { getRoles, getRole, createRole, updateRole, deleteRole } from '../controllers/role.controller.js';
+import { getPermissions, getPermission } from '../controllers/permission.controller.js';
 import { authenticateToken, requirePasswordChange } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -45,5 +47,16 @@ router.patch('/users/:id/role',         authenticateToken, requirePasswordChange
 router.patch('/users/:id/deactivate',   authenticateToken, requirePasswordChange, deactivateUser);
 router.patch('/users/:id/reactivate',   authenticateToken, requirePasswordChange, reactivateUser);
 router.delete('/users/:id',             authenticateToken, requirePasswordChange, deleteUser);
+
+// ── Roles (accessible via /api/v1/auth/roles) ────────────────────────────
+router.get('/roles',            authenticateToken, requirePasswordChange, getRoles);
+router.get('/roles/:id',        authenticateToken, requirePasswordChange, getRole);
+router.post('/roles',           authenticateToken, requirePasswordChange, createRole);
+router.put('/roles/:id',        authenticateToken, requirePasswordChange, updateRole);
+router.delete('/roles/:id',     authenticateToken, requirePasswordChange, deleteRole);
+
+// ── Permissions (accessible via /api/v1/auth/permissions) ────────────────
+router.get('/permissions',      authenticateToken, requirePasswordChange, getPermissions);
+router.get('/permissions/:id',  authenticateToken, requirePasswordChange, getPermission);
 
 export default router;
