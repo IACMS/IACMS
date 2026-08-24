@@ -314,21 +314,47 @@ The Single Query Endpoint provides unified access to the core operational entiti
 
 ---
 
-## 7. Multi-Tenant Data Governance & Compliance
+## 7. Multi-Tenant Data Governance, Hardening & Compliance
 
-In a multi-agency government environment, security and audit compliance are paramount:
+In a multi-agency government environment holding sensitive case files (including child protection and law enforcement records), security and audit compliance are paramount. The dynamic query engine incorporates strict defense-in-depth controls before handling live external traffic:
 
-1. **Zero Cross-Tenant Leakage**: All queries are automatically wrapped in a tenant constraint at the query engine level. Client queries cannot circumvent this boundary by modifying query filters.
-2. **Immutable Audit Trail**: Every query and mutation executed via an API Key is asynchronously emitted to the Apache Kafka event stream and recorded in the permanent audit store, capturing:
-   * Key Identifier & Issuing Tenant
-   * Originating Client IP Address
-   * Timestamp (UTC)
-   * Exact Operation Executed (Query projection or Mutation diff)
-3. **Regulatory Export**: Audit records remain queryable through the same unified endpoint for authorized compliance monitoring.
+### 7.1 Production Security & Defense-in-Depth Matrix
+
+| # | Hardening Control | Severity | Risk Addressed | Implementation Standard |
+| :- | :--- | :---: | :--- | :--- |
+| 1 | **Field-Level Allowlisting** | **Critical** | Default-open column exposure when new database fields are added. | Per-entity, per-scope field allowlists enforced in code and CI build checks. Un-allowlisted fields are stripped. |
+| 2 | **Database-Enforced Tenant Isolation (Postgres RLS)** | **Critical** | Single app-layer dispatcher bug exposing cross-tenant data. | Postgres Row-Level Security (RLS) policies on all multi-tenant tables, tied to session/API key tenant context. |
+| 3 | **Query Depth & Cost Ceilings** | **High** | Unbounded nested joins or Cartesian explosion causing Denial of Service. | Strict relation nesting depth limits (max 3 levels) and computed query cost ceilings per request. |
+| 4 | **Filter Field Allowlists** | **High** | Side-channel data leakage via ORM `where` clauses on non-selectable fields. | Separate filterable-field allowlists per entity/scope; validate allowed operators per field type. |
+| 5 | **Durable Audit Trail (Transactional Outbox)** | **High** | Silent audit gap if process crashes between DB commit and Kafka event publish. | Transactional outbox pattern (or synchronous audit write before HTTP response) for full compliance reliability. |
+| 6 | **Explicit Mutation Schemas & State-Machine Guards** | **Medium** | Unvalidated mutation payloads or out-of-order state transitions. | Strict Zod / JSON Schema validation per action with server-side workflow state-machine transition guards. |
+| 7 | **Benchmarking & Security Analogue Alignment** | **Low** | Misaligned security expectations comparing fixed REST vs dynamic engines. | Security benchmarked against **Hasura Engine** and **GitHub GraphQL** permission models, not fixed-shape REST. |
 
 ---
 
-## 8. Client Integration Walkthrough (Developer Experience)
+## 8. Phased Production Rollout Plan
+
+To safely onboard partner agencies without risking platform stability or multi-tenant data isolation, deployment follows a 4-phase rollout gate:
+
+```
+┌───────────────────────────┐     ┌───────────────────────────┐     ┌───────────────────────────┐     ┌───────────────────────────┐
+│     Phase 0: Build        │  ►  │      Phase 1: Pilot       │  ►  │    Phase 2: Write Access  │  ►  │ Phase 3: General Avail.   │
+│ • Engine & RLS Policies   │     │ • 1 Low-Risk Agency       │     │ • enable createCase,      │     │ • Self-Service Key Portal │
+│ • Field Allowlists & CI   │     │ • Read-Only Scoped Keys   │     │   executeTransition, etc. │     │ • Open to All Agencies    │
+│ • Depth & Cost Limits     │     │ • Outbox Audit Logging    │     │ • Action Schemas & Guards │     │ • All Hardening Items Closed│
+└───────────────────────────┘     └───────────────────────────┘     └───────────────────────────┘     └───────────────────────────┘
+```
+
+| Phase | Scope | Exit Criteria |
+| :--- | :--- | :--- |
+| **Phase 0: Internal Build** | Build query/mutation engine, field allowlists, RLS, depth/cost limits. No external traffic. | Cross-tenant test suite passes 100%; allowlist CI check passes; depth limits verified. |
+| **Phase 1: Pilot Partner** | Onboard one low-risk partner agency with a read-only, narrowly-scoped API key. Outbox audit live. | 2 weeks of production traffic with zero isolation or data exposure incidents. |
+| **Phase 2: Write Access** | Enable `createCase`, `executeTransition`, and `createReferral` mutations with per-action schemas and workflow state-machine guards. | Security sign-off on mutation validation, state-machine guards, and audit trail coverage. |
+| **Phase 3: General Availability** | Open API key self-service portal and onboarding for all external partner agencies. | All Critical and High hardening controls verified and signed off. |
+
+---
+
+## 9. Client Integration Walkthrough (Developer Experience)
 
 Because the system uses a single endpoint and header-based authentication, integrating from any programming language requires only standard HTTP capabilities without specialized SDKs.
 
