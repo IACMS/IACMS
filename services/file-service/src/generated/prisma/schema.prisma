@@ -32,6 +32,11 @@ generator clientFile {
   output   = "../services/file-service/src/generated/prisma"
 }
 
+generator clientGateway {
+  provider = "prisma-client-js"
+  output   = "../services/api-gateway/src/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -119,6 +124,7 @@ model Tenant {
   integrations     Integration[]
   caseSequences    CaseSequence[]
   chatMessages     AgencyChatMessage[]
+  apiKeys          ApiKey[]
 
   @@index([code])
   @@index([isActive])
@@ -168,6 +174,8 @@ model User {
   tenantsRegistered     Tenant[]            @relation("TenantRegistrar")
   chatMessagesSent      AgencyChatMessage[] @relation("ChatSender")
   chatMessagesReceived  AgencyChatMessage[] @relation("ChatRecipient")
+  apiKeysCreated        ApiKey[]            @relation("ApiKeyCreator")
+  apiKeysRevoked        ApiKey[]            @relation("ApiKeyRevoker")
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -710,4 +718,46 @@ model ServiceRetentionPolicy {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@map("service_retention_policies")
+}
+
+// ─── Partner API Key Management ───────────────────────────────────────────────
+
+model ApiKey {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.Uuid
+  name       String /// Human label ("Police Desk Integration")
+  keyPrefix  String    @map("key_prefix") /// First 20 chars of raw key for identification
+  keyHash    String    @unique @map("key_hash") /// SHA-256 of the full raw key
+  scopes     String[]  @default([]) /// ["cases:read", "referrals:read", ...]
+  isActive   Boolean   @default(true) @map("is_active")
+  expiresAt  DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  lastUsedIp String?   @map("last_used_ip")
+  createdBy  String    @map("created_by") @db.Uuid
+  revokedAt  DateTime? @map("revoked_at")
+  revokedBy  String?   @map("revoked_by") @db.Uuid
+  metadata   Json? /// Optional partner metadata
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  tenant  Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator User   @relation("ApiKeyCreator", fields: [createdBy], references: [id])
+  revoker User?  @relation("ApiKeyRevoker", fields: [revokedBy], references: [id])
+
+  @@index([tenantId])
+  @@index([keyHash])
+  @@index([isActive, expiresAt])
+  @@map("api_keys")
+}
+
+model AuditOutbox {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  payload     Json /// Full audit event payload
+  published   Boolean   @default(false)
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([published, createdAt])
+  @@map("audit_outbox")
 }

@@ -1,15 +1,15 @@
 /**
  * Authentication Middleware for API Gateway
- * Supports dual authentication: Session-based (cookies) and JWT (tokens)
- * 
- * Priority:
- * 1. Session authentication (for web browsers)
- * 2. JWT authentication (for API clients)
+ * Supports triple authentication:
+ *   1. Session-based (cookies) — for web browsers
+ *   2. JWT (Bearer tokens) — for API clients
+ *   3. API Key (X-API-Key header) — for partner agency integrations
  */
 
 import jwt from 'jsonwebtoken';
 import { fetchMustChangePasswordFromAuth } from '../utils/authPasswordStatus.js';
 import { clearPermissionCache } from './rbac.middleware.js';
+import * as apiKeyService from '../services/apiKey.service.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'iacms-dev-secret-key-change-in-production';
 
@@ -201,10 +201,49 @@ export async function authenticate(req, res, next) {
     });
   }
 
+  // Strategy 3: Check for API key (partner agency integration)
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey && typeof apiKey === 'string' && apiKey.startsWith('iacms_live_')) {
+    try {
+      const keyData = await apiKeyService.validateApiKey(apiKey, req.ip);
+
+      req.user = {
+        id: `apikey:${keyData.keyId}`,
+        tenantId: keyData.tenantId,
+        departmentId: null,
+        email: null,
+        roles: [],
+        mustChangePassword: false,
+        isApiKey: true,
+      };
+
+      req.apiKeyContext = {
+        keyId: keyData.keyId,
+        keyName: keyData.keyName,
+        scopes: keyData.scopes,
+        tenantId: keyData.tenantId,
+        tenantCode: keyData.tenantCode,
+      };
+
+      setUserHeaders(req, req.user);
+      req.headers['x-api-key-id'] = keyData.keyId;
+      req.headers['x-api-key-scopes'] = keyData.scopes.join(',');
+
+      return next();
+    } catch (error) {
+      return res.status(401).json({
+        error: {
+          code: 'INVALID_API_KEY',
+          message: error.message || 'Invalid or expired API key',
+        },
+      });
+    }
+  }
+
   return res.status(401).json({
     error: {
       code: 'UNAUTHORIZED',
-      message: 'Authentication required. Provide a valid session cookie or Bearer token.',
+      message: 'Authentication required. Provide a session cookie, Bearer token, or X-API-Key header.',
     },
   });
 }

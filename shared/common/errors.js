@@ -74,3 +74,23 @@ export class InvalidReferralStateError extends AppError {
   }
 }
 
+export class InvalidQueryError extends AppError {
+  constructor(message = 'Malformed query payload', errors = []) {
+    super(message, 400, 'INVALID_QUERY');
+    this.errors = errors;
+  }
+}
+
+export class BusinessRuleViolationError extends AppError {
+  constructor(message = 'Mutation rejected by business rules') {
+    super(message, 422, 'BUSINESS_RULE_VIOLATION');
+  }
+}
+
+export class RateLimitedError extends AppError {
+  constructor(retryAfter = 60) {
+    super('Rate limit exceeded. Please try again later.', 429, 'RATE_LIMITED');
+    this.retryAfter = retryAfter;
+  }
+}
+
