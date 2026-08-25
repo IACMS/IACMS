@@ -476,6 +476,34 @@ exports.Prisma.ServiceRetentionPolicyScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ApiKeyScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  keyPrefix: 'keyPrefix',
+  keyHash: 'keyHash',
+  scopes: 'scopes',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  lastUsedAt: 'lastUsedAt',
+  lastUsedIp: 'lastUsedIp',
+  createdBy: 'createdBy',
+  revokedAt: 'revokedAt',
+  revokedBy: 'revokedBy',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AuditOutboxScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  payload: 'payload',
+  published: 'published',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -552,7 +580,9 @@ exports.Prisma.ModelName = {
   File: 'File',
   ChunkUpload: 'ChunkUpload',
   Chunk: 'Chunk',
-  ServiceRetentionPolicy: 'ServiceRetentionPolicy'
+  ServiceRetentionPolicy: 'ServiceRetentionPolicy',
+  ApiKey: 'ApiKey',
+  AuditOutbox: 'AuditOutbox'
 };
 
 /**

@@ -133,6 +133,16 @@ export type Chunk = $Result.DefaultSelection<Prisma.$ChunkPayload>
  * 
  */
 export type ServiceRetentionPolicy = $Result.DefaultSelection<Prisma.$ServiceRetentionPolicyPayload>
+/**
+ * Model ApiKey
+ * 
+ */
+export type ApiKey = $Result.DefaultSelection<Prisma.$ApiKeyPayload>
+/**
+ * Model AuditOutbox
+ * 
+ */
+export type AuditOutbox = $Result.DefaultSelection<Prisma.$AuditOutboxPayload>
 
 /**
  * Enums
@@ -540,6 +550,26 @@ export class PrismaClient<
     * ```
     */
   get serviceRetentionPolicy(): Prisma.ServiceRetentionPolicyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.apiKey`: Exposes CRUD operations for the **ApiKey** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ApiKeys
+    * const apiKeys = await prisma.apiKey.findMany()
+    * ```
+    */
+  get apiKey(): Prisma.ApiKeyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.auditOutbox`: Exposes CRUD operations for the **AuditOutbox** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AuditOutboxes
+    * const auditOutboxes = await prisma.auditOutbox.findMany()
+    * ```
+    */
+  get auditOutbox(): Prisma.AuditOutboxDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1004,7 +1034,9 @@ export namespace Prisma {
     File: 'File',
     ChunkUpload: 'ChunkUpload',
     Chunk: 'Chunk',
-    ServiceRetentionPolicy: 'ServiceRetentionPolicy'
+    ServiceRetentionPolicy: 'ServiceRetentionPolicy',
+    ApiKey: 'ApiKey',
+    AuditOutbox: 'AuditOutbox'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1023,7 +1055,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "department" | "tenant" | "user" | "role" | "permission" | "rolePermission" | "userRole" | "workflow" | "workflowStep" | "workflowTransition" | "case" | "caseHistory" | "caseSequence" | "assignment" | "caseReferral" | "caseAttachment" | "auditLog" | "webhook" | "integration" | "agencyChatMessage" | "file" | "chunkUpload" | "chunk" | "serviceRetentionPolicy"
+      modelProps: "department" | "tenant" | "user" | "role" | "permission" | "rolePermission" | "userRole" | "workflow" | "workflowStep" | "workflowTransition" | "case" | "caseHistory" | "caseSequence" | "assignment" | "caseReferral" | "caseAttachment" | "auditLog" | "webhook" | "integration" | "agencyChatMessage" | "file" | "chunkUpload" | "chunk" | "serviceRetentionPolicy" | "apiKey" | "auditOutbox"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2803,6 +2835,154 @@ export namespace Prisma {
           }
         }
       }
+      ApiKey: {
+        payload: Prisma.$ApiKeyPayload<ExtArgs>
+        fields: Prisma.ApiKeyFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ApiKeyFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ApiKeyFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+          }
+          findFirst: {
+            args: Prisma.ApiKeyFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ApiKeyFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+          }
+          findMany: {
+            args: Prisma.ApiKeyFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+          }
+          create: {
+            args: Prisma.ApiKeyCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+          }
+          createMany: {
+            args: Prisma.ApiKeyCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ApiKeyCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+          }
+          delete: {
+            args: Prisma.ApiKeyDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+          }
+          update: {
+            args: Prisma.ApiKeyUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+          }
+          deleteMany: {
+            args: Prisma.ApiKeyDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ApiKeyUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ApiKeyUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>[]
+          }
+          upsert: {
+            args: Prisma.ApiKeyUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ApiKeyPayload>
+          }
+          aggregate: {
+            args: Prisma.ApiKeyAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateApiKey>
+          }
+          groupBy: {
+            args: Prisma.ApiKeyGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ApiKeyGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ApiKeyCountArgs<ExtArgs>
+            result: $Utils.Optional<ApiKeyCountAggregateOutputType> | number
+          }
+        }
+      }
+      AuditOutbox: {
+        payload: Prisma.$AuditOutboxPayload<ExtArgs>
+        fields: Prisma.AuditOutboxFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AuditOutboxFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AuditOutboxFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>
+          }
+          findFirst: {
+            args: Prisma.AuditOutboxFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AuditOutboxFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>
+          }
+          findMany: {
+            args: Prisma.AuditOutboxFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>[]
+          }
+          create: {
+            args: Prisma.AuditOutboxCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>
+          }
+          createMany: {
+            args: Prisma.AuditOutboxCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AuditOutboxCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>[]
+          }
+          delete: {
+            args: Prisma.AuditOutboxDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>
+          }
+          update: {
+            args: Prisma.AuditOutboxUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>
+          }
+          deleteMany: {
+            args: Prisma.AuditOutboxDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AuditOutboxUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AuditOutboxUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>[]
+          }
+          upsert: {
+            args: Prisma.AuditOutboxUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AuditOutboxPayload>
+          }
+          aggregate: {
+            args: Prisma.AuditOutboxAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAuditOutbox>
+          }
+          groupBy: {
+            args: Prisma.AuditOutboxGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AuditOutboxGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AuditOutboxCountArgs<ExtArgs>
+            result: $Utils.Optional<AuditOutboxCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2923,6 +3103,8 @@ export namespace Prisma {
     chunkUpload?: ChunkUploadOmit
     chunk?: ChunkOmit
     serviceRetentionPolicy?: ServiceRetentionPolicyOmit
+    apiKey?: ApiKeyOmit
+    auditOutbox?: AuditOutboxOmit
   }
 
   /* Types for Logging */
@@ -3113,6 +3295,7 @@ export namespace Prisma {
     integrations: number
     caseSequences: number
     chatMessages: number
+    apiKeys: number
   }
 
   export type TenantCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3132,6 +3315,7 @@ export namespace Prisma {
     integrations?: boolean | TenantCountOutputTypeCountIntegrationsArgs
     caseSequences?: boolean | TenantCountOutputTypeCountCaseSequencesArgs
     chatMessages?: boolean | TenantCountOutputTypeCountChatMessagesArgs
+    apiKeys?: boolean | TenantCountOutputTypeCountApiKeysArgs
   }
 
   // Custom InputTypes
@@ -3257,6 +3441,13 @@ export namespace Prisma {
     where?: AgencyChatMessageWhereInput
   }
 
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountApiKeysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApiKeyWhereInput
+  }
+
 
   /**
    * Count Type UserCountOutputType
@@ -3282,6 +3473,8 @@ export namespace Prisma {
     tenantsRegistered: number
     chatMessagesSent: number
     chatMessagesReceived: number
+    apiKeysCreated: number
+    apiKeysRevoked: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3304,6 +3497,8 @@ export namespace Prisma {
     tenantsRegistered?: boolean | UserCountOutputTypeCountTenantsRegisteredArgs
     chatMessagesSent?: boolean | UserCountOutputTypeCountChatMessagesSentArgs
     chatMessagesReceived?: boolean | UserCountOutputTypeCountChatMessagesReceivedArgs
+    apiKeysCreated?: boolean | UserCountOutputTypeCountApiKeysCreatedArgs
+    apiKeysRevoked?: boolean | UserCountOutputTypeCountApiKeysRevokedArgs
   }
 
   // Custom InputTypes
@@ -3448,6 +3643,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountChatMessagesReceivedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AgencyChatMessageWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountApiKeysCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApiKeyWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountApiKeysRevokedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApiKeyWhereInput
   }
 
 
@@ -5316,6 +5525,7 @@ export namespace Prisma {
     integrations?: boolean | Tenant$integrationsArgs<ExtArgs>
     caseSequences?: boolean | Tenant$caseSequencesArgs<ExtArgs>
     chatMessages?: boolean | Tenant$chatMessagesArgs<ExtArgs>
+    apiKeys?: boolean | Tenant$apiKeysArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tenant"]>
 
@@ -5376,6 +5586,7 @@ export namespace Prisma {
     integrations?: boolean | Tenant$integrationsArgs<ExtArgs>
     caseSequences?: boolean | Tenant$caseSequencesArgs<ExtArgs>
     chatMessages?: boolean | Tenant$chatMessagesArgs<ExtArgs>
+    apiKeys?: boolean | Tenant$apiKeysArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TenantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5405,6 +5616,7 @@ export namespace Prisma {
       integrations: Prisma.$IntegrationPayload<ExtArgs>[]
       caseSequences: Prisma.$CaseSequencePayload<ExtArgs>[]
       chatMessages: Prisma.$AgencyChatMessagePayload<ExtArgs>[]
+      apiKeys: Prisma.$ApiKeyPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5830,6 +6042,7 @@ export namespace Prisma {
     integrations<T extends Tenant$integrationsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$integrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     caseSequences<T extends Tenant$caseSequencesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$caseSequencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseSequencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chatMessages<T extends Tenant$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    apiKeys<T extends Tenant$apiKeysArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$apiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6667,6 +6880,30 @@ export namespace Prisma {
   }
 
   /**
+   * Tenant.apiKeys
+   */
+  export type Tenant$apiKeysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    where?: ApiKeyWhereInput
+    orderBy?: ApiKeyOrderByWithRelationInput | ApiKeyOrderByWithRelationInput[]
+    cursor?: ApiKeyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ApiKeyScalarFieldEnum | ApiKeyScalarFieldEnum[]
+  }
+
+  /**
    * Tenant without action
    */
   export type TenantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6990,6 +7227,8 @@ export namespace Prisma {
     tenantsRegistered?: boolean | User$tenantsRegisteredArgs<ExtArgs>
     chatMessagesSent?: boolean | User$chatMessagesSentArgs<ExtArgs>
     chatMessagesReceived?: boolean | User$chatMessagesReceivedArgs<ExtArgs>
+    apiKeysCreated?: boolean | User$apiKeysCreatedArgs<ExtArgs>
+    apiKeysRevoked?: boolean | User$apiKeysRevokedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -7089,6 +7328,8 @@ export namespace Prisma {
     tenantsRegistered?: boolean | User$tenantsRegisteredArgs<ExtArgs>
     chatMessagesSent?: boolean | User$chatMessagesSentArgs<ExtArgs>
     chatMessagesReceived?: boolean | User$chatMessagesReceivedArgs<ExtArgs>
+    apiKeysCreated?: boolean | User$apiKeysCreatedArgs<ExtArgs>
+    apiKeysRevoked?: boolean | User$apiKeysRevokedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7124,6 +7365,8 @@ export namespace Prisma {
       tenantsRegistered: Prisma.$TenantPayload<ExtArgs>[]
       chatMessagesSent: Prisma.$AgencyChatMessagePayload<ExtArgs>[]
       chatMessagesReceived: Prisma.$AgencyChatMessagePayload<ExtArgs>[]
+      apiKeysCreated: Prisma.$ApiKeyPayload<ExtArgs>[]
+      apiKeysRevoked: Prisma.$ApiKeyPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7561,6 +7804,8 @@ export namespace Prisma {
     tenantsRegistered<T extends User$tenantsRegisteredArgs<ExtArgs> = {}>(args?: Subset<T, User$tenantsRegisteredArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chatMessagesSent<T extends User$chatMessagesSentArgs<ExtArgs> = {}>(args?: Subset<T, User$chatMessagesSentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chatMessagesReceived<T extends User$chatMessagesReceivedArgs<ExtArgs> = {}>(args?: Subset<T, User$chatMessagesReceivedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgencyChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    apiKeysCreated<T extends User$apiKeysCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$apiKeysCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    apiKeysRevoked<T extends User$apiKeysRevokedArgs<ExtArgs> = {}>(args?: Subset<T, User$apiKeysRevokedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8478,6 +8723,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AgencyChatMessageScalarFieldEnum | AgencyChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * User.apiKeysCreated
+   */
+  export type User$apiKeysCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    where?: ApiKeyWhereInput
+    orderBy?: ApiKeyOrderByWithRelationInput | ApiKeyOrderByWithRelationInput[]
+    cursor?: ApiKeyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ApiKeyScalarFieldEnum | ApiKeyScalarFieldEnum[]
+  }
+
+  /**
+   * User.apiKeysRevoked
+   */
+  export type User$apiKeysRevokedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    where?: ApiKeyWhereInput
+    orderBy?: ApiKeyOrderByWithRelationInput | ApiKeyOrderByWithRelationInput[]
+    cursor?: ApiKeyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ApiKeyScalarFieldEnum | ApiKeyScalarFieldEnum[]
   }
 
   /**
@@ -34114,6 +34407,2256 @@ export namespace Prisma {
 
 
   /**
+   * Model ApiKey
+   */
+
+  export type AggregateApiKey = {
+    _count: ApiKeyCountAggregateOutputType | null
+    _min: ApiKeyMinAggregateOutputType | null
+    _max: ApiKeyMaxAggregateOutputType | null
+  }
+
+  export type ApiKeyMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    name: string | null
+    keyPrefix: string | null
+    keyHash: string | null
+    isActive: boolean | null
+    expiresAt: Date | null
+    lastUsedAt: Date | null
+    lastUsedIp: string | null
+    createdBy: string | null
+    revokedAt: Date | null
+    revokedBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ApiKeyMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    name: string | null
+    keyPrefix: string | null
+    keyHash: string | null
+    isActive: boolean | null
+    expiresAt: Date | null
+    lastUsedAt: Date | null
+    lastUsedIp: string | null
+    createdBy: string | null
+    revokedAt: Date | null
+    revokedBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ApiKeyCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    name: number
+    keyPrefix: number
+    keyHash: number
+    scopes: number
+    isActive: number
+    expiresAt: number
+    lastUsedAt: number
+    lastUsedIp: number
+    createdBy: number
+    revokedAt: number
+    revokedBy: number
+    metadata: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ApiKeyMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    name?: true
+    keyPrefix?: true
+    keyHash?: true
+    isActive?: true
+    expiresAt?: true
+    lastUsedAt?: true
+    lastUsedIp?: true
+    createdBy?: true
+    revokedAt?: true
+    revokedBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ApiKeyMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    name?: true
+    keyPrefix?: true
+    keyHash?: true
+    isActive?: true
+    expiresAt?: true
+    lastUsedAt?: true
+    lastUsedIp?: true
+    createdBy?: true
+    revokedAt?: true
+    revokedBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ApiKeyCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    name?: true
+    keyPrefix?: true
+    keyHash?: true
+    scopes?: true
+    isActive?: true
+    expiresAt?: true
+    lastUsedAt?: true
+    lastUsedIp?: true
+    createdBy?: true
+    revokedAt?: true
+    revokedBy?: true
+    metadata?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ApiKeyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ApiKey to aggregate.
+     */
+    where?: ApiKeyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApiKeys to fetch.
+     */
+    orderBy?: ApiKeyOrderByWithRelationInput | ApiKeyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ApiKeyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApiKeys from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApiKeys.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ApiKeys
+    **/
+    _count?: true | ApiKeyCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ApiKeyMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ApiKeyMaxAggregateInputType
+  }
+
+  export type GetApiKeyAggregateType<T extends ApiKeyAggregateArgs> = {
+        [P in keyof T & keyof AggregateApiKey]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateApiKey[P]>
+      : GetScalarType<T[P], AggregateApiKey[P]>
+  }
+
+
+
+
+  export type ApiKeyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ApiKeyWhereInput
+    orderBy?: ApiKeyOrderByWithAggregationInput | ApiKeyOrderByWithAggregationInput[]
+    by: ApiKeyScalarFieldEnum[] | ApiKeyScalarFieldEnum
+    having?: ApiKeyScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ApiKeyCountAggregateInputType | true
+    _min?: ApiKeyMinAggregateInputType
+    _max?: ApiKeyMaxAggregateInputType
+  }
+
+  export type ApiKeyGroupByOutputType = {
+    id: string
+    tenantId: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes: string[]
+    isActive: boolean
+    expiresAt: Date | null
+    lastUsedAt: Date | null
+    lastUsedIp: string | null
+    createdBy: string
+    revokedAt: Date | null
+    revokedBy: string | null
+    metadata: JsonValue | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ApiKeyCountAggregateOutputType | null
+    _min: ApiKeyMinAggregateOutputType | null
+    _max: ApiKeyMaxAggregateOutputType | null
+  }
+
+  type GetApiKeyGroupByPayload<T extends ApiKeyGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ApiKeyGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ApiKeyGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ApiKeyGroupByOutputType[P]>
+            : GetScalarType<T[P], ApiKeyGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ApiKeySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    name?: boolean
+    keyPrefix?: boolean
+    keyHash?: boolean
+    scopes?: boolean
+    isActive?: boolean
+    expiresAt?: boolean
+    lastUsedAt?: boolean
+    lastUsedIp?: boolean
+    createdBy?: boolean
+    revokedAt?: boolean
+    revokedBy?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    revoker?: boolean | ApiKey$revokerArgs<ExtArgs>
+  }, ExtArgs["result"]["apiKey"]>
+
+  export type ApiKeySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    name?: boolean
+    keyPrefix?: boolean
+    keyHash?: boolean
+    scopes?: boolean
+    isActive?: boolean
+    expiresAt?: boolean
+    lastUsedAt?: boolean
+    lastUsedIp?: boolean
+    createdBy?: boolean
+    revokedAt?: boolean
+    revokedBy?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    revoker?: boolean | ApiKey$revokerArgs<ExtArgs>
+  }, ExtArgs["result"]["apiKey"]>
+
+  export type ApiKeySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    name?: boolean
+    keyPrefix?: boolean
+    keyHash?: boolean
+    scopes?: boolean
+    isActive?: boolean
+    expiresAt?: boolean
+    lastUsedAt?: boolean
+    lastUsedIp?: boolean
+    createdBy?: boolean
+    revokedAt?: boolean
+    revokedBy?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    revoker?: boolean | ApiKey$revokerArgs<ExtArgs>
+  }, ExtArgs["result"]["apiKey"]>
+
+  export type ApiKeySelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    name?: boolean
+    keyPrefix?: boolean
+    keyHash?: boolean
+    scopes?: boolean
+    isActive?: boolean
+    expiresAt?: boolean
+    lastUsedAt?: boolean
+    lastUsedIp?: boolean
+    createdBy?: boolean
+    revokedAt?: boolean
+    revokedBy?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ApiKeyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "name" | "keyPrefix" | "keyHash" | "scopes" | "isActive" | "expiresAt" | "lastUsedAt" | "lastUsedIp" | "createdBy" | "revokedAt" | "revokedBy" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["apiKey"]>
+  export type ApiKeyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    revoker?: boolean | ApiKey$revokerArgs<ExtArgs>
+  }
+  export type ApiKeyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    revoker?: boolean | ApiKey$revokerArgs<ExtArgs>
+  }
+  export type ApiKeyIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    revoker?: boolean | ApiKey$revokerArgs<ExtArgs>
+  }
+
+  export type $ApiKeyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ApiKey"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+      creator: Prisma.$UserPayload<ExtArgs>
+      revoker: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      /**
+       * Human label ("Police Desk Integration")
+       */
+      name: string
+      /**
+       * First 20 chars of raw key for identification
+       */
+      keyPrefix: string
+      /**
+       * SHA-256 of the full raw key
+       */
+      keyHash: string
+      /**
+       * ["cases:read", "referrals:read", ...]
+       */
+      scopes: string[]
+      isActive: boolean
+      expiresAt: Date | null
+      lastUsedAt: Date | null
+      lastUsedIp: string | null
+      createdBy: string
+      revokedAt: Date | null
+      revokedBy: string | null
+      /**
+       * Optional partner metadata
+       */
+      metadata: Prisma.JsonValue | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["apiKey"]>
+    composites: {}
+  }
+
+  type ApiKeyGetPayload<S extends boolean | null | undefined | ApiKeyDefaultArgs> = $Result.GetResult<Prisma.$ApiKeyPayload, S>
+
+  type ApiKeyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ApiKeyFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ApiKeyCountAggregateInputType | true
+    }
+
+  export interface ApiKeyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ApiKey'], meta: { name: 'ApiKey' } }
+    /**
+     * Find zero or one ApiKey that matches the filter.
+     * @param {ApiKeyFindUniqueArgs} args - Arguments to find a ApiKey
+     * @example
+     * // Get one ApiKey
+     * const apiKey = await prisma.apiKey.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ApiKeyFindUniqueArgs>(args: SelectSubset<T, ApiKeyFindUniqueArgs<ExtArgs>>): Prisma__ApiKeyClient<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ApiKey that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ApiKeyFindUniqueOrThrowArgs} args - Arguments to find a ApiKey
+     * @example
+     * // Get one ApiKey
+     * const apiKey = await prisma.apiKey.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ApiKeyFindUniqueOrThrowArgs>(args: SelectSubset<T, ApiKeyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ApiKeyClient<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ApiKey that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApiKeyFindFirstArgs} args - Arguments to find a ApiKey
+     * @example
+     * // Get one ApiKey
+     * const apiKey = await prisma.apiKey.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ApiKeyFindFirstArgs>(args?: SelectSubset<T, ApiKeyFindFirstArgs<ExtArgs>>): Prisma__ApiKeyClient<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ApiKey that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApiKeyFindFirstOrThrowArgs} args - Arguments to find a ApiKey
+     * @example
+     * // Get one ApiKey
+     * const apiKey = await prisma.apiKey.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ApiKeyFindFirstOrThrowArgs>(args?: SelectSubset<T, ApiKeyFindFirstOrThrowArgs<ExtArgs>>): Prisma__ApiKeyClient<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ApiKeys that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApiKeyFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ApiKeys
+     * const apiKeys = await prisma.apiKey.findMany()
+     * 
+     * // Get first 10 ApiKeys
+     * const apiKeys = await prisma.apiKey.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const apiKeyWithIdOnly = await prisma.apiKey.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ApiKeyFindManyArgs>(args?: SelectSubset<T, ApiKeyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ApiKey.
+     * @param {ApiKeyCreateArgs} args - Arguments to create a ApiKey.
+     * @example
+     * // Create one ApiKey
+     * const ApiKey = await prisma.apiKey.create({
+     *   data: {
+     *     // ... data to create a ApiKey
+     *   }
+     * })
+     * 
+     */
+    create<T extends ApiKeyCreateArgs>(args: SelectSubset<T, ApiKeyCreateArgs<ExtArgs>>): Prisma__ApiKeyClient<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ApiKeys.
+     * @param {ApiKeyCreateManyArgs} args - Arguments to create many ApiKeys.
+     * @example
+     * // Create many ApiKeys
+     * const apiKey = await prisma.apiKey.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ApiKeyCreateManyArgs>(args?: SelectSubset<T, ApiKeyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ApiKeys and returns the data saved in the database.
+     * @param {ApiKeyCreateManyAndReturnArgs} args - Arguments to create many ApiKeys.
+     * @example
+     * // Create many ApiKeys
+     * const apiKey = await prisma.apiKey.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ApiKeys and only return the `id`
+     * const apiKeyWithIdOnly = await prisma.apiKey.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ApiKeyCreateManyAndReturnArgs>(args?: SelectSubset<T, ApiKeyCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ApiKey.
+     * @param {ApiKeyDeleteArgs} args - Arguments to delete one ApiKey.
+     * @example
+     * // Delete one ApiKey
+     * const ApiKey = await prisma.apiKey.delete({
+     *   where: {
+     *     // ... filter to delete one ApiKey
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ApiKeyDeleteArgs>(args: SelectSubset<T, ApiKeyDeleteArgs<ExtArgs>>): Prisma__ApiKeyClient<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ApiKey.
+     * @param {ApiKeyUpdateArgs} args - Arguments to update one ApiKey.
+     * @example
+     * // Update one ApiKey
+     * const apiKey = await prisma.apiKey.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ApiKeyUpdateArgs>(args: SelectSubset<T, ApiKeyUpdateArgs<ExtArgs>>): Prisma__ApiKeyClient<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ApiKeys.
+     * @param {ApiKeyDeleteManyArgs} args - Arguments to filter ApiKeys to delete.
+     * @example
+     * // Delete a few ApiKeys
+     * const { count } = await prisma.apiKey.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ApiKeyDeleteManyArgs>(args?: SelectSubset<T, ApiKeyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ApiKeys.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApiKeyUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ApiKeys
+     * const apiKey = await prisma.apiKey.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ApiKeyUpdateManyArgs>(args: SelectSubset<T, ApiKeyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ApiKeys and returns the data updated in the database.
+     * @param {ApiKeyUpdateManyAndReturnArgs} args - Arguments to update many ApiKeys.
+     * @example
+     * // Update many ApiKeys
+     * const apiKey = await prisma.apiKey.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ApiKeys and only return the `id`
+     * const apiKeyWithIdOnly = await prisma.apiKey.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ApiKeyUpdateManyAndReturnArgs>(args: SelectSubset<T, ApiKeyUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ApiKey.
+     * @param {ApiKeyUpsertArgs} args - Arguments to update or create a ApiKey.
+     * @example
+     * // Update or create a ApiKey
+     * const apiKey = await prisma.apiKey.upsert({
+     *   create: {
+     *     // ... data to create a ApiKey
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ApiKey we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ApiKeyUpsertArgs>(args: SelectSubset<T, ApiKeyUpsertArgs<ExtArgs>>): Prisma__ApiKeyClient<$Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ApiKeys.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApiKeyCountArgs} args - Arguments to filter ApiKeys to count.
+     * @example
+     * // Count the number of ApiKeys
+     * const count = await prisma.apiKey.count({
+     *   where: {
+     *     // ... the filter for the ApiKeys we want to count
+     *   }
+     * })
+    **/
+    count<T extends ApiKeyCountArgs>(
+      args?: Subset<T, ApiKeyCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ApiKeyCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ApiKey.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApiKeyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ApiKeyAggregateArgs>(args: Subset<T, ApiKeyAggregateArgs>): Prisma.PrismaPromise<GetApiKeyAggregateType<T>>
+
+    /**
+     * Group by ApiKey.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ApiKeyGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ApiKeyGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ApiKeyGroupByArgs['orderBy'] }
+        : { orderBy?: ApiKeyGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ApiKeyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetApiKeyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ApiKey model
+   */
+  readonly fields: ApiKeyFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ApiKey.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ApiKeyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    revoker<T extends ApiKey$revokerArgs<ExtArgs> = {}>(args?: Subset<T, ApiKey$revokerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ApiKey model
+   */
+  interface ApiKeyFieldRefs {
+    readonly id: FieldRef<"ApiKey", 'String'>
+    readonly tenantId: FieldRef<"ApiKey", 'String'>
+    readonly name: FieldRef<"ApiKey", 'String'>
+    readonly keyPrefix: FieldRef<"ApiKey", 'String'>
+    readonly keyHash: FieldRef<"ApiKey", 'String'>
+    readonly scopes: FieldRef<"ApiKey", 'String[]'>
+    readonly isActive: FieldRef<"ApiKey", 'Boolean'>
+    readonly expiresAt: FieldRef<"ApiKey", 'DateTime'>
+    readonly lastUsedAt: FieldRef<"ApiKey", 'DateTime'>
+    readonly lastUsedIp: FieldRef<"ApiKey", 'String'>
+    readonly createdBy: FieldRef<"ApiKey", 'String'>
+    readonly revokedAt: FieldRef<"ApiKey", 'DateTime'>
+    readonly revokedBy: FieldRef<"ApiKey", 'String'>
+    readonly metadata: FieldRef<"ApiKey", 'Json'>
+    readonly createdAt: FieldRef<"ApiKey", 'DateTime'>
+    readonly updatedAt: FieldRef<"ApiKey", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ApiKey findUnique
+   */
+  export type ApiKeyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * Filter, which ApiKey to fetch.
+     */
+    where: ApiKeyWhereUniqueInput
+  }
+
+  /**
+   * ApiKey findUniqueOrThrow
+   */
+  export type ApiKeyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * Filter, which ApiKey to fetch.
+     */
+    where: ApiKeyWhereUniqueInput
+  }
+
+  /**
+   * ApiKey findFirst
+   */
+  export type ApiKeyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * Filter, which ApiKey to fetch.
+     */
+    where?: ApiKeyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApiKeys to fetch.
+     */
+    orderBy?: ApiKeyOrderByWithRelationInput | ApiKeyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ApiKeys.
+     */
+    cursor?: ApiKeyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApiKeys from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApiKeys.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ApiKeys.
+     */
+    distinct?: ApiKeyScalarFieldEnum | ApiKeyScalarFieldEnum[]
+  }
+
+  /**
+   * ApiKey findFirstOrThrow
+   */
+  export type ApiKeyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * Filter, which ApiKey to fetch.
+     */
+    where?: ApiKeyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApiKeys to fetch.
+     */
+    orderBy?: ApiKeyOrderByWithRelationInput | ApiKeyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ApiKeys.
+     */
+    cursor?: ApiKeyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApiKeys from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApiKeys.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ApiKeys.
+     */
+    distinct?: ApiKeyScalarFieldEnum | ApiKeyScalarFieldEnum[]
+  }
+
+  /**
+   * ApiKey findMany
+   */
+  export type ApiKeyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * Filter, which ApiKeys to fetch.
+     */
+    where?: ApiKeyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ApiKeys to fetch.
+     */
+    orderBy?: ApiKeyOrderByWithRelationInput | ApiKeyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ApiKeys.
+     */
+    cursor?: ApiKeyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ApiKeys from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ApiKeys.
+     */
+    skip?: number
+    distinct?: ApiKeyScalarFieldEnum | ApiKeyScalarFieldEnum[]
+  }
+
+  /**
+   * ApiKey create
+   */
+  export type ApiKeyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ApiKey.
+     */
+    data: XOR<ApiKeyCreateInput, ApiKeyUncheckedCreateInput>
+  }
+
+  /**
+   * ApiKey createMany
+   */
+  export type ApiKeyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ApiKeys.
+     */
+    data: ApiKeyCreateManyInput | ApiKeyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ApiKey createManyAndReturn
+   */
+  export type ApiKeyCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * The data used to create many ApiKeys.
+     */
+    data: ApiKeyCreateManyInput | ApiKeyCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ApiKey update
+   */
+  export type ApiKeyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ApiKey.
+     */
+    data: XOR<ApiKeyUpdateInput, ApiKeyUncheckedUpdateInput>
+    /**
+     * Choose, which ApiKey to update.
+     */
+    where: ApiKeyWhereUniqueInput
+  }
+
+  /**
+   * ApiKey updateMany
+   */
+  export type ApiKeyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ApiKeys.
+     */
+    data: XOR<ApiKeyUpdateManyMutationInput, ApiKeyUncheckedUpdateManyInput>
+    /**
+     * Filter which ApiKeys to update
+     */
+    where?: ApiKeyWhereInput
+    /**
+     * Limit how many ApiKeys to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ApiKey updateManyAndReturn
+   */
+  export type ApiKeyUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * The data used to update ApiKeys.
+     */
+    data: XOR<ApiKeyUpdateManyMutationInput, ApiKeyUncheckedUpdateManyInput>
+    /**
+     * Filter which ApiKeys to update
+     */
+    where?: ApiKeyWhereInput
+    /**
+     * Limit how many ApiKeys to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ApiKey upsert
+   */
+  export type ApiKeyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ApiKey to update in case it exists.
+     */
+    where: ApiKeyWhereUniqueInput
+    /**
+     * In case the ApiKey found by the `where` argument doesn't exist, create a new ApiKey with this data.
+     */
+    create: XOR<ApiKeyCreateInput, ApiKeyUncheckedCreateInput>
+    /**
+     * In case the ApiKey was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ApiKeyUpdateInput, ApiKeyUncheckedUpdateInput>
+  }
+
+  /**
+   * ApiKey delete
+   */
+  export type ApiKeyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+    /**
+     * Filter which ApiKey to delete.
+     */
+    where: ApiKeyWhereUniqueInput
+  }
+
+  /**
+   * ApiKey deleteMany
+   */
+  export type ApiKeyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ApiKeys to delete
+     */
+    where?: ApiKeyWhereInput
+    /**
+     * Limit how many ApiKeys to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ApiKey.revoker
+   */
+  export type ApiKey$revokerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * ApiKey without action
+   */
+  export type ApiKeyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ApiKey
+     */
+    select?: ApiKeySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ApiKey
+     */
+    omit?: ApiKeyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ApiKeyInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AuditOutbox
+   */
+
+  export type AggregateAuditOutbox = {
+    _count: AuditOutboxCountAggregateOutputType | null
+    _min: AuditOutboxMinAggregateOutputType | null
+    _max: AuditOutboxMaxAggregateOutputType | null
+  }
+
+  export type AuditOutboxMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    published: boolean | null
+    publishedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type AuditOutboxMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    published: boolean | null
+    publishedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type AuditOutboxCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    payload: number
+    published: number
+    publishedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AuditOutboxMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    published?: true
+    publishedAt?: true
+    createdAt?: true
+  }
+
+  export type AuditOutboxMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    published?: true
+    publishedAt?: true
+    createdAt?: true
+  }
+
+  export type AuditOutboxCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    payload?: true
+    published?: true
+    publishedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AuditOutboxAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AuditOutbox to aggregate.
+     */
+    where?: AuditOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AuditOutboxes to fetch.
+     */
+    orderBy?: AuditOutboxOrderByWithRelationInput | AuditOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AuditOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AuditOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AuditOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AuditOutboxes
+    **/
+    _count?: true | AuditOutboxCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AuditOutboxMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AuditOutboxMaxAggregateInputType
+  }
+
+  export type GetAuditOutboxAggregateType<T extends AuditOutboxAggregateArgs> = {
+        [P in keyof T & keyof AggregateAuditOutbox]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAuditOutbox[P]>
+      : GetScalarType<T[P], AggregateAuditOutbox[P]>
+  }
+
+
+
+
+  export type AuditOutboxGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AuditOutboxWhereInput
+    orderBy?: AuditOutboxOrderByWithAggregationInput | AuditOutboxOrderByWithAggregationInput[]
+    by: AuditOutboxScalarFieldEnum[] | AuditOutboxScalarFieldEnum
+    having?: AuditOutboxScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AuditOutboxCountAggregateInputType | true
+    _min?: AuditOutboxMinAggregateInputType
+    _max?: AuditOutboxMaxAggregateInputType
+  }
+
+  export type AuditOutboxGroupByOutputType = {
+    id: string
+    tenantId: string
+    payload: JsonValue
+    published: boolean
+    publishedAt: Date | null
+    createdAt: Date
+    _count: AuditOutboxCountAggregateOutputType | null
+    _min: AuditOutboxMinAggregateOutputType | null
+    _max: AuditOutboxMaxAggregateOutputType | null
+  }
+
+  type GetAuditOutboxGroupByPayload<T extends AuditOutboxGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AuditOutboxGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AuditOutboxGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AuditOutboxGroupByOutputType[P]>
+            : GetScalarType<T[P], AuditOutboxGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AuditOutboxSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    payload?: boolean
+    published?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["auditOutbox"]>
+
+  export type AuditOutboxSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    payload?: boolean
+    published?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["auditOutbox"]>
+
+  export type AuditOutboxSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    payload?: boolean
+    published?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["auditOutbox"]>
+
+  export type AuditOutboxSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    payload?: boolean
+    published?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type AuditOutboxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "payload" | "published" | "publishedAt" | "createdAt", ExtArgs["result"]["auditOutbox"]>
+
+  export type $AuditOutboxPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AuditOutbox"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      /**
+       * Full audit event payload
+       */
+      payload: Prisma.JsonValue
+      published: boolean
+      publishedAt: Date | null
+      createdAt: Date
+    }, ExtArgs["result"]["auditOutbox"]>
+    composites: {}
+  }
+
+  type AuditOutboxGetPayload<S extends boolean | null | undefined | AuditOutboxDefaultArgs> = $Result.GetResult<Prisma.$AuditOutboxPayload, S>
+
+  type AuditOutboxCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AuditOutboxFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AuditOutboxCountAggregateInputType | true
+    }
+
+  export interface AuditOutboxDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AuditOutbox'], meta: { name: 'AuditOutbox' } }
+    /**
+     * Find zero or one AuditOutbox that matches the filter.
+     * @param {AuditOutboxFindUniqueArgs} args - Arguments to find a AuditOutbox
+     * @example
+     * // Get one AuditOutbox
+     * const auditOutbox = await prisma.auditOutbox.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AuditOutboxFindUniqueArgs>(args: SelectSubset<T, AuditOutboxFindUniqueArgs<ExtArgs>>): Prisma__AuditOutboxClient<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AuditOutbox that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AuditOutboxFindUniqueOrThrowArgs} args - Arguments to find a AuditOutbox
+     * @example
+     * // Get one AuditOutbox
+     * const auditOutbox = await prisma.auditOutbox.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AuditOutboxFindUniqueOrThrowArgs>(args: SelectSubset<T, AuditOutboxFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AuditOutboxClient<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AuditOutbox that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuditOutboxFindFirstArgs} args - Arguments to find a AuditOutbox
+     * @example
+     * // Get one AuditOutbox
+     * const auditOutbox = await prisma.auditOutbox.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AuditOutboxFindFirstArgs>(args?: SelectSubset<T, AuditOutboxFindFirstArgs<ExtArgs>>): Prisma__AuditOutboxClient<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AuditOutbox that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuditOutboxFindFirstOrThrowArgs} args - Arguments to find a AuditOutbox
+     * @example
+     * // Get one AuditOutbox
+     * const auditOutbox = await prisma.auditOutbox.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AuditOutboxFindFirstOrThrowArgs>(args?: SelectSubset<T, AuditOutboxFindFirstOrThrowArgs<ExtArgs>>): Prisma__AuditOutboxClient<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AuditOutboxes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuditOutboxFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AuditOutboxes
+     * const auditOutboxes = await prisma.auditOutbox.findMany()
+     * 
+     * // Get first 10 AuditOutboxes
+     * const auditOutboxes = await prisma.auditOutbox.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const auditOutboxWithIdOnly = await prisma.auditOutbox.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AuditOutboxFindManyArgs>(args?: SelectSubset<T, AuditOutboxFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AuditOutbox.
+     * @param {AuditOutboxCreateArgs} args - Arguments to create a AuditOutbox.
+     * @example
+     * // Create one AuditOutbox
+     * const AuditOutbox = await prisma.auditOutbox.create({
+     *   data: {
+     *     // ... data to create a AuditOutbox
+     *   }
+     * })
+     * 
+     */
+    create<T extends AuditOutboxCreateArgs>(args: SelectSubset<T, AuditOutboxCreateArgs<ExtArgs>>): Prisma__AuditOutboxClient<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AuditOutboxes.
+     * @param {AuditOutboxCreateManyArgs} args - Arguments to create many AuditOutboxes.
+     * @example
+     * // Create many AuditOutboxes
+     * const auditOutbox = await prisma.auditOutbox.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AuditOutboxCreateManyArgs>(args?: SelectSubset<T, AuditOutboxCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AuditOutboxes and returns the data saved in the database.
+     * @param {AuditOutboxCreateManyAndReturnArgs} args - Arguments to create many AuditOutboxes.
+     * @example
+     * // Create many AuditOutboxes
+     * const auditOutbox = await prisma.auditOutbox.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AuditOutboxes and only return the `id`
+     * const auditOutboxWithIdOnly = await prisma.auditOutbox.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AuditOutboxCreateManyAndReturnArgs>(args?: SelectSubset<T, AuditOutboxCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AuditOutbox.
+     * @param {AuditOutboxDeleteArgs} args - Arguments to delete one AuditOutbox.
+     * @example
+     * // Delete one AuditOutbox
+     * const AuditOutbox = await prisma.auditOutbox.delete({
+     *   where: {
+     *     // ... filter to delete one AuditOutbox
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AuditOutboxDeleteArgs>(args: SelectSubset<T, AuditOutboxDeleteArgs<ExtArgs>>): Prisma__AuditOutboxClient<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AuditOutbox.
+     * @param {AuditOutboxUpdateArgs} args - Arguments to update one AuditOutbox.
+     * @example
+     * // Update one AuditOutbox
+     * const auditOutbox = await prisma.auditOutbox.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AuditOutboxUpdateArgs>(args: SelectSubset<T, AuditOutboxUpdateArgs<ExtArgs>>): Prisma__AuditOutboxClient<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AuditOutboxes.
+     * @param {AuditOutboxDeleteManyArgs} args - Arguments to filter AuditOutboxes to delete.
+     * @example
+     * // Delete a few AuditOutboxes
+     * const { count } = await prisma.auditOutbox.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AuditOutboxDeleteManyArgs>(args?: SelectSubset<T, AuditOutboxDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AuditOutboxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuditOutboxUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AuditOutboxes
+     * const auditOutbox = await prisma.auditOutbox.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AuditOutboxUpdateManyArgs>(args: SelectSubset<T, AuditOutboxUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AuditOutboxes and returns the data updated in the database.
+     * @param {AuditOutboxUpdateManyAndReturnArgs} args - Arguments to update many AuditOutboxes.
+     * @example
+     * // Update many AuditOutboxes
+     * const auditOutbox = await prisma.auditOutbox.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AuditOutboxes and only return the `id`
+     * const auditOutboxWithIdOnly = await prisma.auditOutbox.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AuditOutboxUpdateManyAndReturnArgs>(args: SelectSubset<T, AuditOutboxUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AuditOutbox.
+     * @param {AuditOutboxUpsertArgs} args - Arguments to update or create a AuditOutbox.
+     * @example
+     * // Update or create a AuditOutbox
+     * const auditOutbox = await prisma.auditOutbox.upsert({
+     *   create: {
+     *     // ... data to create a AuditOutbox
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AuditOutbox we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AuditOutboxUpsertArgs>(args: SelectSubset<T, AuditOutboxUpsertArgs<ExtArgs>>): Prisma__AuditOutboxClient<$Result.GetResult<Prisma.$AuditOutboxPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AuditOutboxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuditOutboxCountArgs} args - Arguments to filter AuditOutboxes to count.
+     * @example
+     * // Count the number of AuditOutboxes
+     * const count = await prisma.auditOutbox.count({
+     *   where: {
+     *     // ... the filter for the AuditOutboxes we want to count
+     *   }
+     * })
+    **/
+    count<T extends AuditOutboxCountArgs>(
+      args?: Subset<T, AuditOutboxCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AuditOutboxCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AuditOutbox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuditOutboxAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AuditOutboxAggregateArgs>(args: Subset<T, AuditOutboxAggregateArgs>): Prisma.PrismaPromise<GetAuditOutboxAggregateType<T>>
+
+    /**
+     * Group by AuditOutbox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuditOutboxGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AuditOutboxGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AuditOutboxGroupByArgs['orderBy'] }
+        : { orderBy?: AuditOutboxGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AuditOutboxGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAuditOutboxGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AuditOutbox model
+   */
+  readonly fields: AuditOutboxFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AuditOutbox.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AuditOutboxClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AuditOutbox model
+   */
+  interface AuditOutboxFieldRefs {
+    readonly id: FieldRef<"AuditOutbox", 'String'>
+    readonly tenantId: FieldRef<"AuditOutbox", 'String'>
+    readonly payload: FieldRef<"AuditOutbox", 'Json'>
+    readonly published: FieldRef<"AuditOutbox", 'Boolean'>
+    readonly publishedAt: FieldRef<"AuditOutbox", 'DateTime'>
+    readonly createdAt: FieldRef<"AuditOutbox", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AuditOutbox findUnique
+   */
+  export type AuditOutboxFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which AuditOutbox to fetch.
+     */
+    where: AuditOutboxWhereUniqueInput
+  }
+
+  /**
+   * AuditOutbox findUniqueOrThrow
+   */
+  export type AuditOutboxFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which AuditOutbox to fetch.
+     */
+    where: AuditOutboxWhereUniqueInput
+  }
+
+  /**
+   * AuditOutbox findFirst
+   */
+  export type AuditOutboxFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which AuditOutbox to fetch.
+     */
+    where?: AuditOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AuditOutboxes to fetch.
+     */
+    orderBy?: AuditOutboxOrderByWithRelationInput | AuditOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AuditOutboxes.
+     */
+    cursor?: AuditOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AuditOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AuditOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AuditOutboxes.
+     */
+    distinct?: AuditOutboxScalarFieldEnum | AuditOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * AuditOutbox findFirstOrThrow
+   */
+  export type AuditOutboxFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which AuditOutbox to fetch.
+     */
+    where?: AuditOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AuditOutboxes to fetch.
+     */
+    orderBy?: AuditOutboxOrderByWithRelationInput | AuditOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AuditOutboxes.
+     */
+    cursor?: AuditOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AuditOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AuditOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AuditOutboxes.
+     */
+    distinct?: AuditOutboxScalarFieldEnum | AuditOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * AuditOutbox findMany
+   */
+  export type AuditOutboxFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which AuditOutboxes to fetch.
+     */
+    where?: AuditOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AuditOutboxes to fetch.
+     */
+    orderBy?: AuditOutboxOrderByWithRelationInput | AuditOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AuditOutboxes.
+     */
+    cursor?: AuditOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AuditOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AuditOutboxes.
+     */
+    skip?: number
+    distinct?: AuditOutboxScalarFieldEnum | AuditOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * AuditOutbox create
+   */
+  export type AuditOutboxCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AuditOutbox.
+     */
+    data: XOR<AuditOutboxCreateInput, AuditOutboxUncheckedCreateInput>
+  }
+
+  /**
+   * AuditOutbox createMany
+   */
+  export type AuditOutboxCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AuditOutboxes.
+     */
+    data: AuditOutboxCreateManyInput | AuditOutboxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AuditOutbox createManyAndReturn
+   */
+  export type AuditOutboxCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * The data used to create many AuditOutboxes.
+     */
+    data: AuditOutboxCreateManyInput | AuditOutboxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AuditOutbox update
+   */
+  export type AuditOutboxUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AuditOutbox.
+     */
+    data: XOR<AuditOutboxUpdateInput, AuditOutboxUncheckedUpdateInput>
+    /**
+     * Choose, which AuditOutbox to update.
+     */
+    where: AuditOutboxWhereUniqueInput
+  }
+
+  /**
+   * AuditOutbox updateMany
+   */
+  export type AuditOutboxUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AuditOutboxes.
+     */
+    data: XOR<AuditOutboxUpdateManyMutationInput, AuditOutboxUncheckedUpdateManyInput>
+    /**
+     * Filter which AuditOutboxes to update
+     */
+    where?: AuditOutboxWhereInput
+    /**
+     * Limit how many AuditOutboxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AuditOutbox updateManyAndReturn
+   */
+  export type AuditOutboxUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * The data used to update AuditOutboxes.
+     */
+    data: XOR<AuditOutboxUpdateManyMutationInput, AuditOutboxUncheckedUpdateManyInput>
+    /**
+     * Filter which AuditOutboxes to update
+     */
+    where?: AuditOutboxWhereInput
+    /**
+     * Limit how many AuditOutboxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AuditOutbox upsert
+   */
+  export type AuditOutboxUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AuditOutbox to update in case it exists.
+     */
+    where: AuditOutboxWhereUniqueInput
+    /**
+     * In case the AuditOutbox found by the `where` argument doesn't exist, create a new AuditOutbox with this data.
+     */
+    create: XOR<AuditOutboxCreateInput, AuditOutboxUncheckedCreateInput>
+    /**
+     * In case the AuditOutbox was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AuditOutboxUpdateInput, AuditOutboxUncheckedUpdateInput>
+  }
+
+  /**
+   * AuditOutbox delete
+   */
+  export type AuditOutboxDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+    /**
+     * Filter which AuditOutbox to delete.
+     */
+    where: AuditOutboxWhereUniqueInput
+  }
+
+  /**
+   * AuditOutbox deleteMany
+   */
+  export type AuditOutboxDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AuditOutboxes to delete
+     */
+    where?: AuditOutboxWhereInput
+    /**
+     * Limit how many AuditOutboxes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AuditOutbox without action
+   */
+  export type AuditOutboxDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AuditOutbox
+     */
+    select?: AuditOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AuditOutbox
+     */
+    omit?: AuditOutboxOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -34554,6 +37097,40 @@ export namespace Prisma {
   export type ServiceRetentionPolicyScalarFieldEnum = (typeof ServiceRetentionPolicyScalarFieldEnum)[keyof typeof ServiceRetentionPolicyScalarFieldEnum]
 
 
+  export const ApiKeyScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    name: 'name',
+    keyPrefix: 'keyPrefix',
+    keyHash: 'keyHash',
+    scopes: 'scopes',
+    isActive: 'isActive',
+    expiresAt: 'expiresAt',
+    lastUsedAt: 'lastUsedAt',
+    lastUsedIp: 'lastUsedIp',
+    createdBy: 'createdBy',
+    revokedAt: 'revokedAt',
+    revokedBy: 'revokedBy',
+    metadata: 'metadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
+
+
+  export const AuditOutboxScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    payload: 'payload',
+    published: 'published',
+    publishedAt: 'publishedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type AuditOutboxScalarFieldEnum = (typeof AuditOutboxScalarFieldEnum)[keyof typeof AuditOutboxScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -34869,6 +37446,7 @@ export namespace Prisma {
     integrations?: IntegrationListRelationFilter
     caseSequences?: CaseSequenceListRelationFilter
     chatMessages?: AgencyChatMessageListRelationFilter
+    apiKeys?: ApiKeyListRelationFilter
   }
 
   export type TenantOrderByWithRelationInput = {
@@ -34898,6 +37476,7 @@ export namespace Prisma {
     integrations?: IntegrationOrderByRelationAggregateInput
     caseSequences?: CaseSequenceOrderByRelationAggregateInput
     chatMessages?: AgencyChatMessageOrderByRelationAggregateInput
+    apiKeys?: ApiKeyOrderByRelationAggregateInput
   }
 
   export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -34930,6 +37509,7 @@ export namespace Prisma {
     integrations?: IntegrationListRelationFilter
     caseSequences?: CaseSequenceListRelationFilter
     chatMessages?: AgencyChatMessageListRelationFilter
+    apiKeys?: ApiKeyListRelationFilter
   }, "id" | "code">
 
   export type TenantOrderByWithAggregationInput = {
@@ -35007,6 +37587,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantListRelationFilter
     chatMessagesSent?: AgencyChatMessageListRelationFilter
     chatMessagesReceived?: AgencyChatMessageListRelationFilter
+    apiKeysCreated?: ApiKeyListRelationFilter
+    apiKeysRevoked?: ApiKeyListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -35051,6 +37633,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantOrderByRelationAggregateInput
     chatMessagesSent?: AgencyChatMessageOrderByRelationAggregateInput
     chatMessagesReceived?: AgencyChatMessageOrderByRelationAggregateInput
+    apiKeysCreated?: ApiKeyOrderByRelationAggregateInput
+    apiKeysRevoked?: ApiKeyOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -35100,6 +37684,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantListRelationFilter
     chatMessagesSent?: AgencyChatMessageListRelationFilter
     chatMessagesReceived?: AgencyChatMessageListRelationFilter
+    apiKeysCreated?: ApiKeyListRelationFilter
+    apiKeysRevoked?: ApiKeyListRelationFilter
   }, "id" | "tenantId_email" | "tenantId_username">
 
   export type UserOrderByWithAggregationInput = {
@@ -37202,6 +39788,179 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"ServiceRetentionPolicy"> | Date | string
   }
 
+  export type ApiKeyWhereInput = {
+    AND?: ApiKeyWhereInput | ApiKeyWhereInput[]
+    OR?: ApiKeyWhereInput[]
+    NOT?: ApiKeyWhereInput | ApiKeyWhereInput[]
+    id?: UuidFilter<"ApiKey"> | string
+    tenantId?: UuidFilter<"ApiKey"> | string
+    name?: StringFilter<"ApiKey"> | string
+    keyPrefix?: StringFilter<"ApiKey"> | string
+    keyHash?: StringFilter<"ApiKey"> | string
+    scopes?: StringNullableListFilter<"ApiKey">
+    isActive?: BoolFilter<"ApiKey"> | boolean
+    expiresAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    lastUsedAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    lastUsedIp?: StringNullableFilter<"ApiKey"> | string | null
+    createdBy?: UuidFilter<"ApiKey"> | string
+    revokedAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    revokedBy?: UuidNullableFilter<"ApiKey"> | string | null
+    metadata?: JsonNullableFilter<"ApiKey">
+    createdAt?: DateTimeFilter<"ApiKey"> | Date | string
+    updatedAt?: DateTimeFilter<"ApiKey"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    revoker?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type ApiKeyOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    keyPrefix?: SortOrder
+    keyHash?: SortOrder
+    scopes?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrderInput | SortOrder
+    lastUsedAt?: SortOrderInput | SortOrder
+    lastUsedIp?: SortOrderInput | SortOrder
+    createdBy?: SortOrder
+    revokedAt?: SortOrderInput | SortOrder
+    revokedBy?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+    creator?: UserOrderByWithRelationInput
+    revoker?: UserOrderByWithRelationInput
+  }
+
+  export type ApiKeyWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    keyHash?: string
+    AND?: ApiKeyWhereInput | ApiKeyWhereInput[]
+    OR?: ApiKeyWhereInput[]
+    NOT?: ApiKeyWhereInput | ApiKeyWhereInput[]
+    tenantId?: UuidFilter<"ApiKey"> | string
+    name?: StringFilter<"ApiKey"> | string
+    keyPrefix?: StringFilter<"ApiKey"> | string
+    scopes?: StringNullableListFilter<"ApiKey">
+    isActive?: BoolFilter<"ApiKey"> | boolean
+    expiresAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    lastUsedAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    lastUsedIp?: StringNullableFilter<"ApiKey"> | string | null
+    createdBy?: UuidFilter<"ApiKey"> | string
+    revokedAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    revokedBy?: UuidNullableFilter<"ApiKey"> | string | null
+    metadata?: JsonNullableFilter<"ApiKey">
+    createdAt?: DateTimeFilter<"ApiKey"> | Date | string
+    updatedAt?: DateTimeFilter<"ApiKey"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    revoker?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "keyHash">
+
+  export type ApiKeyOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    keyPrefix?: SortOrder
+    keyHash?: SortOrder
+    scopes?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrderInput | SortOrder
+    lastUsedAt?: SortOrderInput | SortOrder
+    lastUsedIp?: SortOrderInput | SortOrder
+    createdBy?: SortOrder
+    revokedAt?: SortOrderInput | SortOrder
+    revokedBy?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ApiKeyCountOrderByAggregateInput
+    _max?: ApiKeyMaxOrderByAggregateInput
+    _min?: ApiKeyMinOrderByAggregateInput
+  }
+
+  export type ApiKeyScalarWhereWithAggregatesInput = {
+    AND?: ApiKeyScalarWhereWithAggregatesInput | ApiKeyScalarWhereWithAggregatesInput[]
+    OR?: ApiKeyScalarWhereWithAggregatesInput[]
+    NOT?: ApiKeyScalarWhereWithAggregatesInput | ApiKeyScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"ApiKey"> | string
+    tenantId?: UuidWithAggregatesFilter<"ApiKey"> | string
+    name?: StringWithAggregatesFilter<"ApiKey"> | string
+    keyPrefix?: StringWithAggregatesFilter<"ApiKey"> | string
+    keyHash?: StringWithAggregatesFilter<"ApiKey"> | string
+    scopes?: StringNullableListFilter<"ApiKey">
+    isActive?: BoolWithAggregatesFilter<"ApiKey"> | boolean
+    expiresAt?: DateTimeNullableWithAggregatesFilter<"ApiKey"> | Date | string | null
+    lastUsedAt?: DateTimeNullableWithAggregatesFilter<"ApiKey"> | Date | string | null
+    lastUsedIp?: StringNullableWithAggregatesFilter<"ApiKey"> | string | null
+    createdBy?: UuidWithAggregatesFilter<"ApiKey"> | string
+    revokedAt?: DateTimeNullableWithAggregatesFilter<"ApiKey"> | Date | string | null
+    revokedBy?: UuidNullableWithAggregatesFilter<"ApiKey"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"ApiKey">
+    createdAt?: DateTimeWithAggregatesFilter<"ApiKey"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ApiKey"> | Date | string
+  }
+
+  export type AuditOutboxWhereInput = {
+    AND?: AuditOutboxWhereInput | AuditOutboxWhereInput[]
+    OR?: AuditOutboxWhereInput[]
+    NOT?: AuditOutboxWhereInput | AuditOutboxWhereInput[]
+    id?: UuidFilter<"AuditOutbox"> | string
+    tenantId?: UuidFilter<"AuditOutbox"> | string
+    payload?: JsonFilter<"AuditOutbox">
+    published?: BoolFilter<"AuditOutbox"> | boolean
+    publishedAt?: DateTimeNullableFilter<"AuditOutbox"> | Date | string | null
+    createdAt?: DateTimeFilter<"AuditOutbox"> | Date | string
+  }
+
+  export type AuditOutboxOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    payload?: SortOrder
+    published?: SortOrder
+    publishedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AuditOutboxWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AuditOutboxWhereInput | AuditOutboxWhereInput[]
+    OR?: AuditOutboxWhereInput[]
+    NOT?: AuditOutboxWhereInput | AuditOutboxWhereInput[]
+    tenantId?: UuidFilter<"AuditOutbox"> | string
+    payload?: JsonFilter<"AuditOutbox">
+    published?: BoolFilter<"AuditOutbox"> | boolean
+    publishedAt?: DateTimeNullableFilter<"AuditOutbox"> | Date | string | null
+    createdAt?: DateTimeFilter<"AuditOutbox"> | Date | string
+  }, "id">
+
+  export type AuditOutboxOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    payload?: SortOrder
+    published?: SortOrder
+    publishedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: AuditOutboxCountOrderByAggregateInput
+    _max?: AuditOutboxMaxOrderByAggregateInput
+    _min?: AuditOutboxMinOrderByAggregateInput
+  }
+
+  export type AuditOutboxScalarWhereWithAggregatesInput = {
+    AND?: AuditOutboxScalarWhereWithAggregatesInput | AuditOutboxScalarWhereWithAggregatesInput[]
+    OR?: AuditOutboxScalarWhereWithAggregatesInput[]
+    NOT?: AuditOutboxScalarWhereWithAggregatesInput | AuditOutboxScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"AuditOutbox"> | string
+    tenantId?: UuidWithAggregatesFilter<"AuditOutbox"> | string
+    payload?: JsonWithAggregatesFilter<"AuditOutbox">
+    published?: BoolWithAggregatesFilter<"AuditOutbox"> | boolean
+    publishedAt?: DateTimeNullableWithAggregatesFilter<"AuditOutbox"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AuditOutbox"> | Date | string
+  }
+
   export type DepartmentCreateInput = {
     id?: string
     code: string
@@ -37336,6 +40095,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateInput = {
@@ -37364,6 +40124,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUpdateInput = {
@@ -37392,6 +40153,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateInput = {
@@ -37420,6 +40182,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateManyInput = {
@@ -37497,6 +40260,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -37539,6 +40304,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUpdateInput = {
@@ -37581,6 +40348,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -37623,6 +40392,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -39867,6 +42638,199 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ApiKeyCreateInput = {
+    id?: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    revokedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutApiKeysInput
+    creator: UserCreateNestedOneWithoutApiKeysCreatedInput
+    revoker?: UserCreateNestedOneWithoutApiKeysRevokedInput
+  }
+
+  export type ApiKeyUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    createdBy: string
+    revokedAt?: Date | string | null
+    revokedBy?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApiKeyUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutApiKeysNestedInput
+    creator?: UserUpdateOneRequiredWithoutApiKeysCreatedNestedInput
+    revoker?: UserUpdateOneWithoutApiKeysRevokedNestedInput
+  }
+
+  export type ApiKeyUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    revokedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApiKeyCreateManyInput = {
+    id?: string
+    tenantId: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    createdBy: string
+    revokedAt?: Date | string | null
+    revokedBy?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApiKeyUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApiKeyUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    revokedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AuditOutboxCreateInput = {
+    id?: string
+    tenantId: string
+    payload: JsonNullValueInput | InputJsonValue
+    published?: boolean
+    publishedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type AuditOutboxUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    payload: JsonNullValueInput | InputJsonValue
+    published?: boolean
+    publishedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type AuditOutboxUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    published?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AuditOutboxUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    published?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AuditOutboxCreateManyInput = {
+    id?: string
+    tenantId: string
+    payload: JsonNullValueInput | InputJsonValue
+    published?: boolean
+    publishedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type AuditOutboxUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    published?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AuditOutboxUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    published?: BoolFieldUpdateOperationsInput | boolean
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -40183,6 +43147,12 @@ export namespace Prisma {
     none?: CaseSequenceWhereInput
   }
 
+  export type ApiKeyListRelationFilter = {
+    every?: ApiKeyWhereInput
+    some?: ApiKeyWhereInput
+    none?: ApiKeyWhereInput
+  }
+
   export type DepartmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -40208,6 +43178,10 @@ export namespace Prisma {
   }
 
   export type CaseSequenceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ApiKeyOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -41784,6 +44758,84 @@ export namespace Prisma {
     retentionDays?: SortOrder
   }
 
+  export type ApiKeyCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    keyPrefix?: SortOrder
+    keyHash?: SortOrder
+    scopes?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrder
+    lastUsedAt?: SortOrder
+    lastUsedIp?: SortOrder
+    createdBy?: SortOrder
+    revokedAt?: SortOrder
+    revokedBy?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ApiKeyMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    keyPrefix?: SortOrder
+    keyHash?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrder
+    lastUsedAt?: SortOrder
+    lastUsedIp?: SortOrder
+    createdBy?: SortOrder
+    revokedAt?: SortOrder
+    revokedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ApiKeyMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    name?: SortOrder
+    keyPrefix?: SortOrder
+    keyHash?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrder
+    lastUsedAt?: SortOrder
+    lastUsedIp?: SortOrder
+    createdBy?: SortOrder
+    revokedAt?: SortOrder
+    revokedBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AuditOutboxCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    payload?: SortOrder
+    published?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AuditOutboxMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    published?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AuditOutboxMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    published?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type TenantCreateNestedOneWithoutDepartmentsInput = {
     create?: XOR<TenantCreateWithoutDepartmentsInput, TenantUncheckedCreateWithoutDepartmentsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutDepartmentsInput
@@ -42268,6 +45320,13 @@ export namespace Prisma {
     connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
   }
 
+  export type ApiKeyCreateNestedManyWithoutTenantInput = {
+    create?: XOR<ApiKeyCreateWithoutTenantInput, ApiKeyUncheckedCreateWithoutTenantInput> | ApiKeyCreateWithoutTenantInput[] | ApiKeyUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutTenantInput | ApiKeyCreateOrConnectWithoutTenantInput[]
+    createMany?: ApiKeyCreateManyTenantInputEnvelope
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutTenantInput = {
     create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
@@ -42378,6 +45437,13 @@ export namespace Prisma {
     connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutTenantInput | AgencyChatMessageCreateOrConnectWithoutTenantInput[]
     createMany?: AgencyChatMessageCreateManyTenantInputEnvelope
     connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
+  export type ApiKeyUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<ApiKeyCreateWithoutTenantInput, ApiKeyUncheckedCreateWithoutTenantInput> | ApiKeyCreateWithoutTenantInput[] | ApiKeyUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutTenantInput | ApiKeyCreateOrConnectWithoutTenantInput[]
+    createMany?: ApiKeyCreateManyTenantInputEnvelope
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
   }
 
   export type UserUpdateOneWithoutTenantsRegisteredNestedInput = {
@@ -42614,6 +45680,20 @@ export namespace Prisma {
     deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
   }
 
+  export type ApiKeyUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<ApiKeyCreateWithoutTenantInput, ApiKeyUncheckedCreateWithoutTenantInput> | ApiKeyCreateWithoutTenantInput[] | ApiKeyUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutTenantInput | ApiKeyCreateOrConnectWithoutTenantInput[]
+    upsert?: ApiKeyUpsertWithWhereUniqueWithoutTenantInput | ApiKeyUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: ApiKeyCreateManyTenantInputEnvelope
+    set?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    disconnect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    delete?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    update?: ApiKeyUpdateWithWhereUniqueWithoutTenantInput | ApiKeyUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: ApiKeyUpdateManyWithWhereWithoutTenantInput | ApiKeyUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: ApiKeyScalarWhereInput | ApiKeyScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
@@ -42838,6 +45918,20 @@ export namespace Prisma {
     deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
   }
 
+  export type ApiKeyUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<ApiKeyCreateWithoutTenantInput, ApiKeyUncheckedCreateWithoutTenantInput> | ApiKeyCreateWithoutTenantInput[] | ApiKeyUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutTenantInput | ApiKeyCreateOrConnectWithoutTenantInput[]
+    upsert?: ApiKeyUpsertWithWhereUniqueWithoutTenantInput | ApiKeyUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: ApiKeyCreateManyTenantInputEnvelope
+    set?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    disconnect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    delete?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    update?: ApiKeyUpdateWithWhereUniqueWithoutTenantInput | ApiKeyUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: ApiKeyUpdateManyWithWhereWithoutTenantInput | ApiKeyUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: ApiKeyScalarWhereInput | ApiKeyScalarWhereInput[]
+  }
+
   export type TenantCreateNestedOneWithoutUsersInput = {
     create?: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
     connectOrCreate?: TenantCreateOrConnectWithoutUsersInput
@@ -42983,6 +46077,20 @@ export namespace Prisma {
     connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
   }
 
+  export type ApiKeyCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<ApiKeyCreateWithoutCreatorInput, ApiKeyUncheckedCreateWithoutCreatorInput> | ApiKeyCreateWithoutCreatorInput[] | ApiKeyUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutCreatorInput | ApiKeyCreateOrConnectWithoutCreatorInput[]
+    createMany?: ApiKeyCreateManyCreatorInputEnvelope
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+  }
+
+  export type ApiKeyCreateNestedManyWithoutRevokerInput = {
+    create?: XOR<ApiKeyCreateWithoutRevokerInput, ApiKeyUncheckedCreateWithoutRevokerInput> | ApiKeyCreateWithoutRevokerInput[] | ApiKeyUncheckedCreateWithoutRevokerInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutRevokerInput | ApiKeyCreateOrConnectWithoutRevokerInput[]
+    createMany?: ApiKeyCreateManyRevokerInputEnvelope
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+  }
+
   export type CaseUncheckedCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CaseCreateWithoutCreatorInput, CaseUncheckedCreateWithoutCreatorInput> | CaseCreateWithoutCreatorInput[] | CaseUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CaseCreateOrConnectWithoutCreatorInput | CaseCreateOrConnectWithoutCreatorInput[]
@@ -43114,6 +46222,20 @@ export namespace Prisma {
     connectOrCreate?: AgencyChatMessageCreateOrConnectWithoutRecipientInput | AgencyChatMessageCreateOrConnectWithoutRecipientInput[]
     createMany?: AgencyChatMessageCreateManyRecipientInputEnvelope
     connect?: AgencyChatMessageWhereUniqueInput | AgencyChatMessageWhereUniqueInput[]
+  }
+
+  export type ApiKeyUncheckedCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<ApiKeyCreateWithoutCreatorInput, ApiKeyUncheckedCreateWithoutCreatorInput> | ApiKeyCreateWithoutCreatorInput[] | ApiKeyUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutCreatorInput | ApiKeyCreateOrConnectWithoutCreatorInput[]
+    createMany?: ApiKeyCreateManyCreatorInputEnvelope
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+  }
+
+  export type ApiKeyUncheckedCreateNestedManyWithoutRevokerInput = {
+    create?: XOR<ApiKeyCreateWithoutRevokerInput, ApiKeyUncheckedCreateWithoutRevokerInput> | ApiKeyCreateWithoutRevokerInput[] | ApiKeyUncheckedCreateWithoutRevokerInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutRevokerInput | ApiKeyCreateOrConnectWithoutRevokerInput[]
+    createMany?: ApiKeyCreateManyRevokerInputEnvelope
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -43404,6 +46526,34 @@ export namespace Prisma {
     deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
   }
 
+  export type ApiKeyUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<ApiKeyCreateWithoutCreatorInput, ApiKeyUncheckedCreateWithoutCreatorInput> | ApiKeyCreateWithoutCreatorInput[] | ApiKeyUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutCreatorInput | ApiKeyCreateOrConnectWithoutCreatorInput[]
+    upsert?: ApiKeyUpsertWithWhereUniqueWithoutCreatorInput | ApiKeyUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: ApiKeyCreateManyCreatorInputEnvelope
+    set?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    disconnect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    delete?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    update?: ApiKeyUpdateWithWhereUniqueWithoutCreatorInput | ApiKeyUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: ApiKeyUpdateManyWithWhereWithoutCreatorInput | ApiKeyUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: ApiKeyScalarWhereInput | ApiKeyScalarWhereInput[]
+  }
+
+  export type ApiKeyUpdateManyWithoutRevokerNestedInput = {
+    create?: XOR<ApiKeyCreateWithoutRevokerInput, ApiKeyUncheckedCreateWithoutRevokerInput> | ApiKeyCreateWithoutRevokerInput[] | ApiKeyUncheckedCreateWithoutRevokerInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutRevokerInput | ApiKeyCreateOrConnectWithoutRevokerInput[]
+    upsert?: ApiKeyUpsertWithWhereUniqueWithoutRevokerInput | ApiKeyUpsertWithWhereUniqueWithoutRevokerInput[]
+    createMany?: ApiKeyCreateManyRevokerInputEnvelope
+    set?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    disconnect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    delete?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    update?: ApiKeyUpdateWithWhereUniqueWithoutRevokerInput | ApiKeyUpdateWithWhereUniqueWithoutRevokerInput[]
+    updateMany?: ApiKeyUpdateManyWithWhereWithoutRevokerInput | ApiKeyUpdateManyWithWhereWithoutRevokerInput[]
+    deleteMany?: ApiKeyScalarWhereInput | ApiKeyScalarWhereInput[]
+  }
+
   export type CaseUncheckedUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<CaseCreateWithoutCreatorInput, CaseUncheckedCreateWithoutCreatorInput> | CaseCreateWithoutCreatorInput[] | CaseUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CaseCreateOrConnectWithoutCreatorInput | CaseCreateOrConnectWithoutCreatorInput[]
@@ -43668,6 +46818,34 @@ export namespace Prisma {
     update?: AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientInput | AgencyChatMessageUpdateWithWhereUniqueWithoutRecipientInput[]
     updateMany?: AgencyChatMessageUpdateManyWithWhereWithoutRecipientInput | AgencyChatMessageUpdateManyWithWhereWithoutRecipientInput[]
     deleteMany?: AgencyChatMessageScalarWhereInput | AgencyChatMessageScalarWhereInput[]
+  }
+
+  export type ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<ApiKeyCreateWithoutCreatorInput, ApiKeyUncheckedCreateWithoutCreatorInput> | ApiKeyCreateWithoutCreatorInput[] | ApiKeyUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutCreatorInput | ApiKeyCreateOrConnectWithoutCreatorInput[]
+    upsert?: ApiKeyUpsertWithWhereUniqueWithoutCreatorInput | ApiKeyUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: ApiKeyCreateManyCreatorInputEnvelope
+    set?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    disconnect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    delete?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    update?: ApiKeyUpdateWithWhereUniqueWithoutCreatorInput | ApiKeyUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: ApiKeyUpdateManyWithWhereWithoutCreatorInput | ApiKeyUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: ApiKeyScalarWhereInput | ApiKeyScalarWhereInput[]
+  }
+
+  export type ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput = {
+    create?: XOR<ApiKeyCreateWithoutRevokerInput, ApiKeyUncheckedCreateWithoutRevokerInput> | ApiKeyCreateWithoutRevokerInput[] | ApiKeyUncheckedCreateWithoutRevokerInput[]
+    connectOrCreate?: ApiKeyCreateOrConnectWithoutRevokerInput | ApiKeyCreateOrConnectWithoutRevokerInput[]
+    upsert?: ApiKeyUpsertWithWhereUniqueWithoutRevokerInput | ApiKeyUpsertWithWhereUniqueWithoutRevokerInput[]
+    createMany?: ApiKeyCreateManyRevokerInputEnvelope
+    set?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    disconnect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    delete?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    connect?: ApiKeyWhereUniqueInput | ApiKeyWhereUniqueInput[]
+    update?: ApiKeyUpdateWithWhereUniqueWithoutRevokerInput | ApiKeyUpdateWithWhereUniqueWithoutRevokerInput[]
+    updateMany?: ApiKeyUpdateManyWithWhereWithoutRevokerInput | ApiKeyUpdateManyWithWhereWithoutRevokerInput[]
+    deleteMany?: ApiKeyScalarWhereInput | ApiKeyScalarWhereInput[]
   }
 
   export type TenantCreateNestedOneWithoutRolesInput = {
@@ -45276,6 +48454,59 @@ export namespace Prisma {
     update?: XOR<XOR<ChunkUploadUpdateToOneWithWhereWithoutChunksInput, ChunkUploadUpdateWithoutChunksInput>, ChunkUploadUncheckedUpdateWithoutChunksInput>
   }
 
+  export type ApiKeyCreatescopesInput = {
+    set: string[]
+  }
+
+  export type TenantCreateNestedOneWithoutApiKeysInput = {
+    create?: XOR<TenantCreateWithoutApiKeysInput, TenantUncheckedCreateWithoutApiKeysInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutApiKeysInput
+    connect?: TenantWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutApiKeysCreatedInput = {
+    create?: XOR<UserCreateWithoutApiKeysCreatedInput, UserUncheckedCreateWithoutApiKeysCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApiKeysCreatedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutApiKeysRevokedInput = {
+    create?: XOR<UserCreateWithoutApiKeysRevokedInput, UserUncheckedCreateWithoutApiKeysRevokedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApiKeysRevokedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ApiKeyUpdatescopesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type TenantUpdateOneRequiredWithoutApiKeysNestedInput = {
+    create?: XOR<TenantCreateWithoutApiKeysInput, TenantUncheckedCreateWithoutApiKeysInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutApiKeysInput
+    upsert?: TenantUpsertWithoutApiKeysInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutApiKeysInput, TenantUpdateWithoutApiKeysInput>, TenantUncheckedUpdateWithoutApiKeysInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutApiKeysCreatedNestedInput = {
+    create?: XOR<UserCreateWithoutApiKeysCreatedInput, UserUncheckedCreateWithoutApiKeysCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApiKeysCreatedInput
+    upsert?: UserUpsertWithoutApiKeysCreatedInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutApiKeysCreatedInput, UserUpdateWithoutApiKeysCreatedInput>, UserUncheckedUpdateWithoutApiKeysCreatedInput>
+  }
+
+  export type UserUpdateOneWithoutApiKeysRevokedNestedInput = {
+    create?: XOR<UserCreateWithoutApiKeysRevokedInput, UserUncheckedCreateWithoutApiKeysRevokedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApiKeysRevokedInput
+    upsert?: UserUpsertWithoutApiKeysRevokedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutApiKeysRevokedInput, UserUpdateWithoutApiKeysRevokedInput>, UserUncheckedUpdateWithoutApiKeysRevokedInput>
+  }
+
   export type NestedUuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -45676,6 +48907,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutDepartmentsInput = {
@@ -45703,6 +48935,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutDepartmentsInput = {
@@ -45749,6 +48982,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -45790,6 +49025,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -46192,6 +49429,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutDepartmentsInput = {
@@ -46219,6 +49457,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutDepartmentInput = {
@@ -46504,6 +49743,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutTenantsRegisteredInput = {
@@ -46545,6 +49786,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutTenantsRegisteredInput = {
@@ -46591,6 +49834,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutTenantInput = {
@@ -46632,6 +49877,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutTenantInput = {
@@ -47346,6 +50593,52 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ApiKeyCreateWithoutTenantInput = {
+    id?: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    revokedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutApiKeysCreatedInput
+    revoker?: UserCreateNestedOneWithoutApiKeysRevokedInput
+  }
+
+  export type ApiKeyUncheckedCreateWithoutTenantInput = {
+    id?: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    createdBy: string
+    revokedAt?: Date | string | null
+    revokedBy?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApiKeyCreateOrConnectWithoutTenantInput = {
+    where: ApiKeyWhereUniqueInput
+    create: XOR<ApiKeyCreateWithoutTenantInput, ApiKeyUncheckedCreateWithoutTenantInput>
+  }
+
+  export type ApiKeyCreateManyTenantInputEnvelope = {
+    data: ApiKeyCreateManyTenantInput | ApiKeyCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutTenantsRegisteredInput = {
     update: XOR<UserUpdateWithoutTenantsRegisteredInput, UserUncheckedUpdateWithoutTenantsRegisteredInput>
     create: XOR<UserCreateWithoutTenantsRegisteredInput, UserUncheckedCreateWithoutTenantsRegisteredInput>
@@ -47396,6 +50689,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTenantsRegisteredInput = {
@@ -47437,6 +50732,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutTenantInput = {
@@ -47810,6 +51107,44 @@ export namespace Prisma {
     data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyWithoutTenantInput>
   }
 
+  export type ApiKeyUpsertWithWhereUniqueWithoutTenantInput = {
+    where: ApiKeyWhereUniqueInput
+    update: XOR<ApiKeyUpdateWithoutTenantInput, ApiKeyUncheckedUpdateWithoutTenantInput>
+    create: XOR<ApiKeyCreateWithoutTenantInput, ApiKeyUncheckedCreateWithoutTenantInput>
+  }
+
+  export type ApiKeyUpdateWithWhereUniqueWithoutTenantInput = {
+    where: ApiKeyWhereUniqueInput
+    data: XOR<ApiKeyUpdateWithoutTenantInput, ApiKeyUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type ApiKeyUpdateManyWithWhereWithoutTenantInput = {
+    where: ApiKeyScalarWhereInput
+    data: XOR<ApiKeyUpdateManyMutationInput, ApiKeyUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type ApiKeyScalarWhereInput = {
+    AND?: ApiKeyScalarWhereInput | ApiKeyScalarWhereInput[]
+    OR?: ApiKeyScalarWhereInput[]
+    NOT?: ApiKeyScalarWhereInput | ApiKeyScalarWhereInput[]
+    id?: UuidFilter<"ApiKey"> | string
+    tenantId?: UuidFilter<"ApiKey"> | string
+    name?: StringFilter<"ApiKey"> | string
+    keyPrefix?: StringFilter<"ApiKey"> | string
+    keyHash?: StringFilter<"ApiKey"> | string
+    scopes?: StringNullableListFilter<"ApiKey">
+    isActive?: BoolFilter<"ApiKey"> | boolean
+    expiresAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    lastUsedAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    lastUsedIp?: StringNullableFilter<"ApiKey"> | string | null
+    createdBy?: UuidFilter<"ApiKey"> | string
+    revokedAt?: DateTimeNullableFilter<"ApiKey"> | Date | string | null
+    revokedBy?: UuidNullableFilter<"ApiKey"> | string | null
+    metadata?: JsonNullableFilter<"ApiKey">
+    createdAt?: DateTimeFilter<"ApiKey"> | Date | string
+    updatedAt?: DateTimeFilter<"ApiKey"> | Date | string
+  }
+
   export type TenantCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -47835,6 +51170,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutUsersInput = {
@@ -47862,6 +51198,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutUsersInput = {
@@ -48621,6 +51958,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRegisteredByInput = {
@@ -48648,6 +51986,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRegisteredByInput = {
@@ -48720,6 +52059,98 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ApiKeyCreateWithoutCreatorInput = {
+    id?: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    revokedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutApiKeysInput
+    revoker?: UserCreateNestedOneWithoutApiKeysRevokedInput
+  }
+
+  export type ApiKeyUncheckedCreateWithoutCreatorInput = {
+    id?: string
+    tenantId: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    revokedAt?: Date | string | null
+    revokedBy?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApiKeyCreateOrConnectWithoutCreatorInput = {
+    where: ApiKeyWhereUniqueInput
+    create: XOR<ApiKeyCreateWithoutCreatorInput, ApiKeyUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type ApiKeyCreateManyCreatorInputEnvelope = {
+    data: ApiKeyCreateManyCreatorInput | ApiKeyCreateManyCreatorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ApiKeyCreateWithoutRevokerInput = {
+    id?: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    revokedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutApiKeysInput
+    creator: UserCreateNestedOneWithoutApiKeysCreatedInput
+  }
+
+  export type ApiKeyUncheckedCreateWithoutRevokerInput = {
+    id?: string
+    tenantId: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    createdBy: string
+    revokedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApiKeyCreateOrConnectWithoutRevokerInput = {
+    where: ApiKeyWhereUniqueInput
+    create: XOR<ApiKeyCreateWithoutRevokerInput, ApiKeyUncheckedCreateWithoutRevokerInput>
+  }
+
+  export type ApiKeyCreateManyRevokerInputEnvelope = {
+    data: ApiKeyCreateManyRevokerInput | ApiKeyCreateManyRevokerInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TenantUpsertWithoutUsersInput = {
     update: XOR<TenantUpdateWithoutUsersInput, TenantUncheckedUpdateWithoutUsersInput>
     create: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
@@ -48756,6 +52187,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutUsersInput = {
@@ -48783,6 +52215,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DepartmentUpsertWithoutUsersInput = {
@@ -49193,6 +52626,38 @@ export namespace Prisma {
     data: XOR<AgencyChatMessageUpdateManyMutationInput, AgencyChatMessageUncheckedUpdateManyWithoutRecipientInput>
   }
 
+  export type ApiKeyUpsertWithWhereUniqueWithoutCreatorInput = {
+    where: ApiKeyWhereUniqueInput
+    update: XOR<ApiKeyUpdateWithoutCreatorInput, ApiKeyUncheckedUpdateWithoutCreatorInput>
+    create: XOR<ApiKeyCreateWithoutCreatorInput, ApiKeyUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type ApiKeyUpdateWithWhereUniqueWithoutCreatorInput = {
+    where: ApiKeyWhereUniqueInput
+    data: XOR<ApiKeyUpdateWithoutCreatorInput, ApiKeyUncheckedUpdateWithoutCreatorInput>
+  }
+
+  export type ApiKeyUpdateManyWithWhereWithoutCreatorInput = {
+    where: ApiKeyScalarWhereInput
+    data: XOR<ApiKeyUpdateManyMutationInput, ApiKeyUncheckedUpdateManyWithoutCreatorInput>
+  }
+
+  export type ApiKeyUpsertWithWhereUniqueWithoutRevokerInput = {
+    where: ApiKeyWhereUniqueInput
+    update: XOR<ApiKeyUpdateWithoutRevokerInput, ApiKeyUncheckedUpdateWithoutRevokerInput>
+    create: XOR<ApiKeyCreateWithoutRevokerInput, ApiKeyUncheckedCreateWithoutRevokerInput>
+  }
+
+  export type ApiKeyUpdateWithWhereUniqueWithoutRevokerInput = {
+    where: ApiKeyWhereUniqueInput
+    data: XOR<ApiKeyUpdateWithoutRevokerInput, ApiKeyUncheckedUpdateWithoutRevokerInput>
+  }
+
+  export type ApiKeyUpdateManyWithWhereWithoutRevokerInput = {
+    where: ApiKeyScalarWhereInput
+    data: XOR<ApiKeyUpdateManyMutationInput, ApiKeyUncheckedUpdateManyWithoutRevokerInput>
+  }
+
   export type TenantCreateWithoutRolesInput = {
     id?: string
     name: string
@@ -49218,6 +52683,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRolesInput = {
@@ -49245,6 +52711,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRolesInput = {
@@ -49339,6 +52806,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutRolesCreatedInput = {
@@ -49380,6 +52849,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutRolesCreatedInput = {
@@ -49423,6 +52894,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRolesInput = {
@@ -49450,6 +52922,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type RolePermissionUpsertWithWhereUniqueWithoutRoleInput = {
@@ -49544,6 +53017,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRolesCreatedInput = {
@@ -49585,6 +53060,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type RolePermissionCreateWithoutPermissionInput = {
@@ -49780,6 +53257,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutUserRolesInput = {
@@ -49821,6 +53300,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutUserRolesInput = {
@@ -49898,6 +53379,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutUserRolesAssignedInput = {
@@ -49939,6 +53422,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutUserRolesAssignedInput = {
@@ -49996,6 +53481,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserRolesInput = {
@@ -50037,6 +53524,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type RoleUpsertWithoutUserRolesInput = {
@@ -50126,6 +53615,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserRolesAssignedInput = {
@@ -50167,6 +53658,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type TenantCreateWithoutWorkflowsInput = {
@@ -50194,6 +53687,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWorkflowsInput = {
@@ -50221,6 +53715,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWorkflowsInput = {
@@ -50308,6 +53803,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutWorkflowsCreatedInput = {
@@ -50349,6 +53846,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutWorkflowsCreatedInput = {
@@ -50556,6 +54055,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWorkflowsInput = {
@@ -50583,6 +54083,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DepartmentUpsertWithoutWorkflowsInput = {
@@ -50682,6 +54183,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkflowsCreatedInput = {
@@ -50723,6 +54226,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type CaseUpsertWithWhereUniqueWithoutWorkflowInput = {
@@ -51518,6 +55023,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesInput = {
@@ -51545,6 +55051,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesInput = {
@@ -51577,6 +55084,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesOriginatedInput = {
@@ -51604,6 +55112,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesOriginatedInput = {
@@ -51636,6 +55145,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCasesCurrentInput = {
@@ -51663,6 +55173,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCasesCurrentInput = {
@@ -51877,6 +55388,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutCasesAssignedInput = {
@@ -51918,6 +55431,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutCasesAssignedInput = {
@@ -51964,6 +55479,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutCasesCreatedInput = {
@@ -52005,6 +55522,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutCasesCreatedInput = {
@@ -52200,6 +55719,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesInput = {
@@ -52227,6 +55747,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutCasesOriginatedInput = {
@@ -52265,6 +55786,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesOriginatedInput = {
@@ -52292,6 +55814,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutCasesCurrentInput = {
@@ -52330,6 +55853,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCasesCurrentInput = {
@@ -52357,6 +55881,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DepartmentUpsertWithoutCasesOriginatingInput = {
@@ -52601,6 +56126,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCasesAssignedInput = {
@@ -52642,6 +56169,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUpsertWithoutCasesCreatedInput = {
@@ -52694,6 +56223,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCasesCreatedInput = {
@@ -52735,6 +56266,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type CaseHistoryUpsertWithWhereUniqueWithoutCaseInput = {
@@ -52948,6 +56481,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutCaseHistoryAsActorInput = {
@@ -52989,6 +56524,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutCaseHistoryAsActorInput = {
@@ -53166,6 +56703,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCaseHistoryAsActorInput = {
@@ -53207,6 +56746,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type TenantCreateWithoutCaseSequencesInput = {
@@ -53234,6 +56775,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCaseSequencesInput = {
@@ -53261,6 +56803,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCaseSequencesInput = {
@@ -53304,6 +56847,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCaseSequencesInput = {
@@ -53331,6 +56875,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CaseCreateWithoutAssignmentsInput = {
@@ -53441,6 +56986,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutAssignmentsAssignedToInput = {
@@ -53482,6 +57029,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutAssignmentsAssignedToInput = {
@@ -53528,6 +57077,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutAssignmentsAssignedByInput = {
@@ -53569,6 +57120,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutAssignmentsAssignedByInput = {
@@ -53701,6 +57254,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignmentsAssignedToInput = {
@@ -53742,6 +57297,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUpsertWithoutAssignmentsAssignedByInput = {
@@ -53794,6 +57351,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignmentsAssignedByInput = {
@@ -53835,6 +57394,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type CaseCreateWithoutReferralsInput = {
@@ -53931,6 +57492,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutReferralsFromInput = {
@@ -53958,6 +57520,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutReferralsFromInput = {
@@ -53990,6 +57553,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutReferralsToInput = {
@@ -54017,6 +57581,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutReferralsToInput = {
@@ -54145,6 +57710,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutReferralsMadeInput = {
@@ -54186,6 +57753,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutReferralsMadeInput = {
@@ -54232,6 +57801,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutReferralsAcceptedInput = {
@@ -54273,6 +57844,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutReferralsAcceptedInput = {
@@ -54319,6 +57892,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutReferralsRejectedInput = {
@@ -54360,6 +57935,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutReferralsRejectedInput = {
@@ -54478,6 +58055,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutReferralsFromInput = {
@@ -54505,6 +58083,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutReferralsToInput = {
@@ -54543,6 +58122,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutReferralsToInput = {
@@ -54570,6 +58150,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type DepartmentUpsertWithoutReferralsFromInput = {
@@ -54716,6 +58297,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferralsMadeInput = {
@@ -54757,6 +58340,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUpsertWithoutReferralsAcceptedInput = {
@@ -54809,6 +58394,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferralsAcceptedInput = {
@@ -54850,6 +58437,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUpsertWithoutReferralsRejectedInput = {
@@ -54902,6 +58491,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferralsRejectedInput = {
@@ -54943,6 +58534,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type CaseCreateWithoutAttachmentsInput = {
@@ -55080,6 +58673,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAttachmentsInput = {
@@ -55107,6 +58701,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAttachmentsInput = {
@@ -55153,6 +58748,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutAttachmentsInput = {
@@ -55194,6 +58791,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutAttachmentsInput = {
@@ -55359,6 +58958,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAttachmentsInput = {
@@ -55386,6 +58986,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutAttachmentsInput = {
@@ -55438,6 +59039,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAttachmentsInput = {
@@ -55479,6 +59082,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type TenantCreateWithoutAuditLogsInput = {
@@ -55506,6 +59111,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutAuditLogsInput = {
@@ -55533,6 +59139,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutAuditLogsInput = {
@@ -55565,6 +59172,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutRelatedAuditLogsInput = {
@@ -55592,6 +59200,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutRelatedAuditLogsInput = {
@@ -55638,6 +59247,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -55679,6 +59290,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -55722,6 +59335,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutAuditLogsInput = {
@@ -55749,6 +59363,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUpsertWithoutRelatedAuditLogsInput = {
@@ -55787,6 +59402,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRelatedAuditLogsInput = {
@@ -55814,6 +59430,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutAuditLogsInput = {
@@ -55866,6 +59483,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -55907,6 +59526,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type TenantCreateWithoutWebhooksInput = {
@@ -55934,6 +59555,7 @@ export namespace Prisma {
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWebhooksInput = {
@@ -55961,6 +59583,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWebhooksInput = {
@@ -56007,6 +59630,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutWebhooksCreatedInput = {
@@ -56048,6 +59673,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutWebhooksCreatedInput = {
@@ -56091,6 +59718,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWebhooksInput = {
@@ -56118,6 +59746,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutWebhooksCreatedInput = {
@@ -56170,6 +59799,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWebhooksCreatedInput = {
@@ -56211,6 +59842,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type TenantCreateWithoutIntegrationsInput = {
@@ -56238,6 +59871,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutIntegrationsInput = {
@@ -56265,6 +59899,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
     chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutIntegrationsInput = {
@@ -56311,6 +59946,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutIntegrationsCreatedInput = {
@@ -56352,6 +59989,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutIntegrationsCreatedInput = {
@@ -56395,6 +60034,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutIntegrationsInput = {
@@ -56422,6 +60062,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutIntegrationsCreatedInput = {
@@ -56474,6 +60115,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutIntegrationsCreatedInput = {
@@ -56515,6 +60158,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type TenantCreateWithoutChatMessagesInput = {
@@ -56542,6 +60187,7 @@ export namespace Prisma {
     webhooks?: WebhookCreateNestedManyWithoutTenantInput
     integrations?: IntegrationCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutChatMessagesInput = {
@@ -56569,6 +60215,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
     integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
     caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutChatMessagesInput = {
@@ -56615,6 +60262,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutChatMessagesSentInput = {
@@ -56656,6 +60305,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutChatMessagesSentInput = {
@@ -56702,6 +60353,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
   }
 
   export type UserUncheckedCreateWithoutChatMessagesReceivedInput = {
@@ -56743,6 +60396,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
     tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
     chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
   }
 
   export type UserCreateOrConnectWithoutChatMessagesReceivedInput = {
@@ -56868,6 +60523,7 @@ export namespace Prisma {
     webhooks?: WebhookUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutChatMessagesInput = {
@@ -56895,6 +60551,7 @@ export namespace Prisma {
     webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type UserUpsertWithoutChatMessagesSentInput = {
@@ -56947,6 +60604,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatMessagesSentInput = {
@@ -56988,6 +60647,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUpsertWithoutChatMessagesReceivedInput = {
@@ -57040,6 +60701,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatMessagesReceivedInput = {
@@ -57081,6 +60744,8 @@ export namespace Prisma {
     userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type DepartmentUpsertWithoutChatMessagesInput = {
@@ -57581,6 +61246,510 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TenantCreateWithoutApiKeysInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    registeredBy?: UserCreateNestedOneWithoutTenantsRegisteredInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    departments?: DepartmentCreateNestedManyWithoutTenantInput
+    roles?: RoleCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowCreateNestedManyWithoutTenantInput
+    cases?: CaseCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogCreateNestedManyWithoutTenantInput
+    relatedAuditLogs?: AuditLogCreateNestedManyWithoutRelatedTenantInput
+    webhooks?: WebhookCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutApiKeysInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: boolean
+    registeredByUserId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutTenantInput
+    roles?: RoleUncheckedCreateNestedManyWithoutTenantInput
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutTenantInput
+    cases?: CaseUncheckedCreateNestedManyWithoutTenantInput
+    casesOriginated?: CaseUncheckedCreateNestedManyWithoutOriginatingTenantInput
+    casesCurrent?: CaseUncheckedCreateNestedManyWithoutCurrentTenantInput
+    referralsFrom?: CaseReferralUncheckedCreateNestedManyWithoutFromTenantInput
+    referralsTo?: CaseReferralUncheckedCreateNestedManyWithoutToTenantInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutTenantInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutTenantInput
+    relatedAuditLogs?: AuditLogUncheckedCreateNestedManyWithoutRelatedTenantInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutTenantInput
+    integrations?: IntegrationUncheckedCreateNestedManyWithoutTenantInput
+    caseSequences?: CaseSequenceUncheckedCreateNestedManyWithoutTenantInput
+    chatMessages?: AgencyChatMessageUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutApiKeysInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutApiKeysInput, TenantUncheckedCreateWithoutApiKeysInput>
+  }
+
+  export type UserCreateWithoutApiKeysCreatedInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    casesCreated?: CaseCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysRevoked?: ApiKeyCreateNestedManyWithoutRevokerInput
+  }
+
+  export type UserUncheckedCreateWithoutApiKeysCreatedInput = {
+    id?: string
+    tenantId: string
+    departmentId?: string | null
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    casesCreated?: CaseUncheckedCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleUncheckedCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowUncheckedCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookUncheckedCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysRevoked?: ApiKeyUncheckedCreateNestedManyWithoutRevokerInput
+  }
+
+  export type UserCreateOrConnectWithoutApiKeysCreatedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutApiKeysCreatedInput, UserUncheckedCreateWithoutApiKeysCreatedInput>
+  }
+
+  export type UserCreateWithoutApiKeysRevokedInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    casesCreated?: CaseCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserUncheckedCreateWithoutApiKeysRevokedInput = {
+    id?: string
+    tenantId: string
+    departmentId?: string | null
+    email: string
+    username: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    nationalId?: string | null
+    isActive?: boolean
+    isEmailVerified?: boolean
+    mustChangePassword?: boolean
+    resetPasswordToken?: string | null
+    resetPasswordExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    casesCreated?: CaseUncheckedCreateNestedManyWithoutCreatorInput
+    casesAssigned?: CaseUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedTo?: AssignmentUncheckedCreateNestedManyWithoutAssigneeInput
+    assignmentsAssignedBy?: AssignmentUncheckedCreateNestedManyWithoutAssignerInput
+    caseHistoryAsActor?: CaseHistoryUncheckedCreateNestedManyWithoutActorInput
+    referralsMade?: CaseReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsAccepted?: CaseReferralUncheckedCreateNestedManyWithoutAccepterInput
+    referralsRejected?: CaseReferralUncheckedCreateNestedManyWithoutRejecterInput
+    attachments?: CaseAttachmentUncheckedCreateNestedManyWithoutUploaderInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    userRoles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
+    rolesCreated?: RoleUncheckedCreateNestedManyWithoutUserInput
+    workflowsCreated?: WorkflowUncheckedCreateNestedManyWithoutCreatorInput
+    webhooksCreated?: WebhookUncheckedCreateNestedManyWithoutCreatorInput
+    integrationsCreated?: IntegrationUncheckedCreateNestedManyWithoutCreatorInput
+    userRolesAssigned?: UserRoleUncheckedCreateNestedManyWithoutAssignerInput
+    tenantsRegistered?: TenantUncheckedCreateNestedManyWithoutRegisteredByInput
+    chatMessagesSent?: AgencyChatMessageUncheckedCreateNestedManyWithoutSenderInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedCreateNestedManyWithoutRecipientInput
+    apiKeysCreated?: ApiKeyUncheckedCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserCreateOrConnectWithoutApiKeysRevokedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutApiKeysRevokedInput, UserUncheckedCreateWithoutApiKeysRevokedInput>
+  }
+
+  export type TenantUpsertWithoutApiKeysInput = {
+    update: XOR<TenantUpdateWithoutApiKeysInput, TenantUncheckedUpdateWithoutApiKeysInput>
+    create: XOR<TenantCreateWithoutApiKeysInput, TenantUncheckedCreateWithoutApiKeysInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutApiKeysInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutApiKeysInput, TenantUncheckedUpdateWithoutApiKeysInput>
+  }
+
+  export type TenantUpdateWithoutApiKeysInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registeredBy?: UserUpdateOneWithoutTenantsRegisteredNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUpdateManyWithoutTenantNestedInput
+    roles?: RoleUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUpdateManyWithoutTenantNestedInput
+    cases?: CaseUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutTenantNestedInput
+    relatedAuditLogs?: AuditLogUpdateManyWithoutRelatedTenantNestedInput
+    webhooks?: WebhookUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutApiKeysInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    registeredByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutTenantNestedInput
+    roles?: RoleUncheckedUpdateManyWithoutTenantNestedInput
+    workflows?: WorkflowUncheckedUpdateManyWithoutTenantNestedInput
+    cases?: CaseUncheckedUpdateManyWithoutTenantNestedInput
+    casesOriginated?: CaseUncheckedUpdateManyWithoutOriginatingTenantNestedInput
+    casesCurrent?: CaseUncheckedUpdateManyWithoutCurrentTenantNestedInput
+    referralsFrom?: CaseReferralUncheckedUpdateManyWithoutFromTenantNestedInput
+    referralsTo?: CaseReferralUncheckedUpdateManyWithoutToTenantNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutTenantNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+    relatedAuditLogs?: AuditLogUncheckedUpdateManyWithoutRelatedTenantNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutTenantNestedInput
+    integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+    caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
+    chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type UserUpsertWithoutApiKeysCreatedInput = {
+    update: XOR<UserUpdateWithoutApiKeysCreatedInput, UserUncheckedUpdateWithoutApiKeysCreatedInput>
+    create: XOR<UserCreateWithoutApiKeysCreatedInput, UserUncheckedCreateWithoutApiKeysCreatedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutApiKeysCreatedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutApiKeysCreatedInput, UserUncheckedUpdateWithoutApiKeysCreatedInput>
+  }
+
+  export type UserUpdateWithoutApiKeysCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutApiKeysCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    casesCreated?: CaseUncheckedUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUncheckedUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUncheckedUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUncheckedUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
+  }
+
+  export type UserUpsertWithoutApiKeysRevokedInput = {
+    update: XOR<UserUpdateWithoutApiKeysRevokedInput, UserUncheckedUpdateWithoutApiKeysRevokedInput>
+    create: XOR<UserCreateWithoutApiKeysRevokedInput, UserUncheckedCreateWithoutApiKeysRevokedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutApiKeysRevokedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutApiKeysRevokedInput, UserUncheckedUpdateWithoutApiKeysRevokedInput>
+  }
+
+  export type UserUpdateWithoutApiKeysRevokedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    casesCreated?: CaseUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutApiKeysRevokedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    nationalId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isEmailVerified?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    casesCreated?: CaseUncheckedUpdateManyWithoutCreatorNestedInput
+    casesAssigned?: CaseUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedTo?: AssignmentUncheckedUpdateManyWithoutAssigneeNestedInput
+    assignmentsAssignedBy?: AssignmentUncheckedUpdateManyWithoutAssignerNestedInput
+    caseHistoryAsActor?: CaseHistoryUncheckedUpdateManyWithoutActorNestedInput
+    referralsMade?: CaseReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsAccepted?: CaseReferralUncheckedUpdateManyWithoutAccepterNestedInput
+    referralsRejected?: CaseReferralUncheckedUpdateManyWithoutRejecterNestedInput
+    attachments?: CaseAttachmentUncheckedUpdateManyWithoutUploaderNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    userRoles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
+    rolesCreated?: RoleUncheckedUpdateManyWithoutUserNestedInput
+    workflowsCreated?: WorkflowUncheckedUpdateManyWithoutCreatorNestedInput
+    webhooksCreated?: WebhookUncheckedUpdateManyWithoutCreatorNestedInput
+    integrationsCreated?: IntegrationUncheckedUpdateManyWithoutCreatorNestedInput
+    userRolesAssigned?: UserRoleUncheckedUpdateManyWithoutAssignerNestedInput
+    tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
+    chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+  }
+
   export type UserCreateManyDepartmentInput = {
     id?: string
     tenantId: string
@@ -57773,6 +61942,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -57814,6 +61985,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -58526,6 +62699,24 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type ApiKeyCreateManyTenantInput = {
+    id?: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    createdBy: string
+    revokedAt?: Date | string | null
+    revokedBy?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -58565,6 +62756,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTenantInput = {
@@ -58606,6 +62799,8 @@ export namespace Prisma {
     tenantsRegistered?: TenantUncheckedUpdateManyWithoutRegisteredByNestedInput
     chatMessagesSent?: AgencyChatMessageUncheckedUpdateManyWithoutSenderNestedInput
     chatMessagesReceived?: AgencyChatMessageUncheckedUpdateManyWithoutRecipientNestedInput
+    apiKeysCreated?: ApiKeyUncheckedUpdateManyWithoutCreatorNestedInput
+    apiKeysRevoked?: ApiKeyUncheckedUpdateManyWithoutRevokerNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutTenantInput = {
@@ -59433,6 +63628,60 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ApiKeyUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutApiKeysCreatedNestedInput
+    revoker?: UserUpdateOneWithoutApiKeysRevokedNestedInput
+  }
+
+  export type ApiKeyUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    revokedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApiKeyUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    revokedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CaseCreateManyCreatorInput = {
     id?: string
     tenantId: string
@@ -59712,6 +63961,42 @@ export namespace Prisma {
     recipientDepartmentId?: string | null
     body: string
     createdAt?: Date | string
+  }
+
+  export type ApiKeyCreateManyCreatorInput = {
+    id?: string
+    tenantId: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    revokedAt?: Date | string | null
+    revokedBy?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ApiKeyCreateManyRevokerInput = {
+    id?: string
+    tenantId: string
+    name: string
+    keyPrefix: string
+    keyHash: string
+    scopes?: ApiKeyCreatescopesInput | string[]
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    lastUsedAt?: Date | string | null
+    lastUsedIp?: string | null
+    createdBy: string
+    revokedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type CaseUpdateWithoutCreatorInput = {
@@ -60515,6 +64800,7 @@ export namespace Prisma {
     integrations?: IntegrationUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutRegisteredByInput = {
@@ -60542,6 +64828,7 @@ export namespace Prisma {
     integrations?: IntegrationUncheckedUpdateManyWithoutTenantNestedInput
     caseSequences?: CaseSequenceUncheckedUpdateManyWithoutTenantNestedInput
     chatMessages?: AgencyChatMessageUncheckedUpdateManyWithoutTenantNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateManyWithoutRegisteredByInput = {
@@ -60613,6 +64900,114 @@ export namespace Prisma {
     recipientDepartmentId?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApiKeyUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutApiKeysNestedInput
+    revoker?: UserUpdateOneWithoutApiKeysRevokedNestedInput
+  }
+
+  export type ApiKeyUncheckedUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    revokedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApiKeyUncheckedUpdateManyWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    revokedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApiKeyUpdateWithoutRevokerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutApiKeysNestedInput
+    creator?: UserUpdateOneRequiredWithoutApiKeysCreatedNestedInput
+  }
+
+  export type ApiKeyUncheckedUpdateWithoutRevokerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ApiKeyUncheckedUpdateManyWithoutRevokerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    keyPrefix?: StringFieldUpdateOperationsInput | string
+    keyHash?: StringFieldUpdateOperationsInput | string
+    scopes?: ApiKeyUpdatescopesInput | string[]
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastUsedIp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RolePermissionCreateManyRoleInput = {

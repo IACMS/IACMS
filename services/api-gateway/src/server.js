@@ -1,7 +1,7 @@
 /**
  * IACMS API Gateway
  * Single entry point for all microservices
- * Handles authentication (session + JWT), RBAC, and request routing
+ * Handles authentication (session + JWT + API key), RBAC, and request routing
  */
 
 import express from 'express';
@@ -14,10 +14,13 @@ import { fileURLToPath } from 'url';
 import { authenticate } from './middleware/auth.middleware.js';
 import { enforcePasswordChanged } from './middleware/passwordChangeGate.middleware.js';
 import { createRbacMiddleware } from './middleware/rbac.middleware.js';
-import { apiRateLimiter, authRateLimiter } from './middleware/rateLimit.middleware.js';
+import { apiRateLimiter, authRateLimiter, partnerApiRateLimiter } from './middleware/rateLimit.middleware.js';
 import { createSessionMiddleware, closeSessionStore } from './config/session.config.js';
 import { closeRedisClient } from './config/redis.config.js';
 import sessionRoutes from './routes/session.routes.js';
+import apiKeyRoutes from './routes/apiKey.routes.js';
+import { queryRouter } from './engine/queryRouter.js';
+import { startOutboxPublisher, stopOutboxPublisher } from './workers/outboxPublisher.js';
 import { setupSwagger } from '../../../shared/swagger.js';
 
 // Load .env from service directory
@@ -115,7 +118,7 @@ async function startServer() {
   app.use(cors({
     origin: corsOriginOption,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'X-API-Key'],
     credentials: true,
   }));
 
@@ -142,7 +145,7 @@ async function startServer() {
       status: 'ok',
       service: 'api-gateway',
       timestamp: new Date().toISOString(),
-      features: { sessionAuth: true, jwtAuth: true },
+      features: { sessionAuth: true, jwtAuth: true, apiKeyAuth: true, partnerQueryApi: true },
     });
   });
 
@@ -165,9 +168,20 @@ async function startServer() {
   // Until first-login password change completes, block APIs (browser session exposes status / logout separately).
   app.use('/api/v1', enforcePasswordChanged);
 
-  // RBAC middleware
+  // RBAC middleware (skip for API key routes — they use scope-based auth)
   const rbacMiddleware = createRbacMiddleware(services.rbac);
-  app.use('/api/v1', rbacMiddleware);
+  app.use('/api/v1', (req, res, next) => {
+    // Skip RBAC for API key authenticated requests (they use scope-based auth)
+    if (req.apiKeyContext) return next();
+    return rbacMiddleware(req, res, next);
+  });
+
+  // ─── Partner API: Unified Query Endpoint ───────────────────────────────
+  // API key authenticated requests go through the query engine directly
+  app.use('/api/v1/query', express.json({ limit: '1mb' }), partnerApiRateLimiter, queryRouter);
+
+  // ─── API Key Management (admin-only, session/JWT auth) ─────────────────
+  app.use('/api/v1/api-keys', express.json(), apiKeyRoutes);
 
   /** Platform operators: reachability of downstream services (HTTP /health), not user RBAC. */
   async function probeDownstreamHealth(url) {
@@ -359,25 +373,36 @@ async function startServer() {
     });
   });
 
+  // Start the audit outbox publisher
+  startOutboxPublisher();
+
   // Start server
   app.listen(PORT, () => {
     console.log(`\nAPI Gateway running on port ${PORT}`);
     console.log('='.repeat(50));
-    console.log('Authentication : Session (Redis) + JWT');
+    console.log('Authentication : Session (Redis) + JWT + API Key');
     console.log('Caching        : Redis (RBAC permissions)');
-    console.log('Rate Limiting  : Redis (per-user / per-IP)');
+    console.log('Rate Limiting  : Redis (per-user / per-IP / per-API-key)');
     console.log('Events         : Kafka');
     console.log('='.repeat(50));
     console.log('Session Routes:');
     console.log('  POST /api/v1/session/login');
     console.log('  POST /api/v1/session/logout');
     console.log('  GET  /api/v1/session/status');
+    console.log('Partner API Routes:');
+    console.log('  POST /api/v1/query             (X-API-Key auth)');
+    console.log('API Key Management Routes:');
+    console.log('  POST   /api/v1/api-keys        (create key)');
+    console.log('  GET    /api/v1/api-keys        (list keys)');
+    console.log('  DELETE /api/v1/api-keys/:id     (revoke key)');
+    console.log('  POST   /api/v1/api-keys/:id/rotate');
     console.log('='.repeat(50));
   });
 
   // Graceful shutdown
   process.on('SIGTERM', async () => {
     console.log('[Gateway] SIGTERM received — shutting down gracefully');
+    stopOutboxPublisher();
     await closeSessionStore();
     await closeRedisClient();
     process.exit(0);

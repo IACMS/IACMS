@@ -24,7 +24,14 @@ const KEY_PREFIX = 'ratelimit:';
  *  - authenticated users  → their user ID
  *  - unauthenticated      → their IP address
  */
+/**
+ * Returns a unique identifier for the requester:
+ *  - API key users       → their API key ID
+ *  - authenticated users → their user ID
+ *  - unauthenticated     → their IP address
+ */
 function getIdentifier(req) {
+  if (req.apiKeyContext?.keyId) return `apikey:${req.apiKeyContext.keyId}`;
   if (req.user?.id) return `user:${req.user.id}`;
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
   return `ip:${ip}`;
@@ -99,5 +106,14 @@ export const authRateLimiter = createRateLimitMiddleware({
  * Default: 100 requests per minute.
  */
 export const apiRateLimiter = createRateLimitMiddleware();
+
+/**
+ * Partner API rate limiter — higher limits for API key authenticated partners.
+ * Default: 200 requests per minute.
+ */
+export const partnerApiRateLimiter = createRateLimitMiddleware({
+  windowSeconds: 60,
+  maxRequests: parseInt(process.env.PARTNER_API_RATE_LIMIT_MAX || '200', 10),
+});
 
 export default createRateLimitMiddleware;
