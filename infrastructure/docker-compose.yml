@@ -97,6 +97,8 @@ services:
       PORT: 3000
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:5174}
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
       IAM_SERVICE_URL: http://iam-service:3001
       AUTH_SERVICE_URL: http://iam-service:3001
       RBAC_SERVICE_URL: http://iam-service:3001
@@ -113,6 +115,8 @@ services:
       RATE_LIMIT_WINDOW_SECONDS: 60
       AUTH_RATE_LIMIT_MAX: 10
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
       iam-service:
