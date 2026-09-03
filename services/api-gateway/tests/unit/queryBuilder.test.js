@@ -74,4 +74,23 @@ describe('queryBuilder', () => {
       buildPrismaQuery(query, 'tenant-1');
     }).toThrow(InvalidQueryError);
   });
+
+  it('should correctly map lt, gt, and neq operators', () => {
+    const query = {
+      entity: 'cases',
+      select: ['id'],
+      filter: {
+        createdAt: { gt: '2023-01-01', lt: '2023-12-31' },
+        status: { neq: 'CLOSED' }
+      }
+    };
+    const result = buildPrismaQuery(query, 'tenant-1');
+    expect(result.args.where.createdAt).toMatchObject({
+      gt: new Date('2023-01-01'),
+      lt: new Date('2023-12-31')
+    });
+    expect(result.args.where.status).toMatchObject({
+      not: 'CLOSED'
+    });
+  });
 });
