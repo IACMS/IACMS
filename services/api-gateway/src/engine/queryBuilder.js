@@ -12,24 +12,38 @@ export function buildPrismaQuery(query, tenantId) {
 
   for (const field of select) {
     const parts = field.split('.');
+    
     if (parts.length === 1) {
       // Top-level field
       if (!allowlist.selectableFields.includes(field)) {
         throw new InvalidQueryError(`Field "${field}" is not queryable on entity "${entity}"`);
       }
       topFields.push(field);
-    } else if (parts.length === 2) {
-      // Relation field (e.g., "assignee.firstName")
-      const [relation, subField] = parts;
-      const relDef = allowlist.relations?.[relation];
-      if (!relDef) throw new InvalidQueryError(`Relation "${relation}" is not available on entity "${entity}"`);
-      if (!relDef.selectableFields.includes(subField)) {
-        throw new InvalidQueryError(`Field "${subField}" is not queryable on relation "${relation}"`);
-      }
-      if (!includes[relation]) includes[relation] = { select: {} };
-      includes[relation].select[subField] = true;
     } else {
-      throw new InvalidQueryError(`Nested relation depth > 1 is not supported in select: "${field}"`);
+      let currentAllowlist = allowlist;
+      let currentIncludesObj = includes;
+
+      for (let i = 0; i < parts.length - 1; i++) {
+        const relation = parts[i];
+        const relDef = currentAllowlist.relations?.[relation];
+        if (!relDef) throw new InvalidQueryError(`Relation "${relation}" is not available`);
+
+        const prismaRel = relDef.prismaRelation || relation;
+        if (!currentIncludesObj[prismaRel]) {
+          currentIncludesObj[prismaRel] = { select: {} };
+          if (relDef.softDelete) {
+            currentIncludesObj[prismaRel].where = { deletedAt: null };
+          }
+        }
+        currentIncludesObj = currentIncludesObj[prismaRel].select;
+        currentAllowlist = relDef; // step down
+      }
+
+      const subField = parts[parts.length - 1];
+      if (!currentAllowlist.selectableFields?.includes(subField)) {
+        throw new InvalidQueryError(`Field "${subField}" is not queryable on relation path "${parts.slice(0, -1).join('.')}"`);
+      }
+      currentIncludesObj[subField] = true;
     }
   }
 

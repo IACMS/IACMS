@@ -154,19 +154,20 @@ describe('Phase 1: Partner API E2E (Mocked)', () => {
     expect(res.body.error.code).toBe('UNAUTHORIZED');
   });
 
-  it('rejects queries that exceed relation depth (Cost limits)', async () => {
+  it('rejects queries that exceed cost limits', async () => {
+    const bigArray = Array(150).fill('open');
     const res = await request(app)
       .post('/api/v1/query')
       .set('X-API-Key', 'iacms_live_testkey123')
       .send({
         operation: 'query',
         entity: 'cases',
-        // Max depth is 3, this is 4 levels deep
-        select: ['assignee.department.manager.firstName']
+        select: ['id'],
+        filter: { status: { in: bigArray } }
       });
 
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('INVALID_QUERY');
-    expect(res.body.error.message).toMatch(/Nested relation depth/);
+    expect(res.body.error.message).toMatch(/Query cost/);
   });
 });

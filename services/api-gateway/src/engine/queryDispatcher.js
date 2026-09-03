@@ -17,6 +17,16 @@ export async function executeQuery(query, context) {
 
   // Virtual entities (like metrics) need special handling
   if (allowlist.isVirtual) {
+    if (entity === 'metrics') {
+      const { executeMetricsQuery } = await import('./metricsHandler.js');
+      const result = await executeMetricsQuery(query, context);
+      
+      const executionTimeMs = Date.now() - startTime;
+      logger.info('Virtual Query executed', { entity, tenantId, resultCount: 1, executionTimeMs, requestId });
+      
+      result.meta = { ...result.meta, executionTimeMs };
+      return result;
+    }
     throw new InvalidQueryError(`Entity "${entity}" is not yet available for querying`);
   }
 

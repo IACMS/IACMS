@@ -93,4 +93,20 @@ describe('queryBuilder', () => {
       not: 'CLOSED'
     });
   });
+  it('should support deep relational queries (depth > 1)', () => {
+    const query = {
+      entity: 'cases',
+      select: ['id', 'workflow.name', 'workflow.steps.name', 'workflow.steps.key']
+    };
+    const result = buildPrismaQuery(query, 'tenant-1');
+    
+    expect(result.args.select).toHaveProperty('id', true);
+    expect(result.args.select).toHaveProperty('workflow');
+    expect(result.args.select.workflow).toHaveProperty('select');
+    expect(result.args.select.workflow.select).toHaveProperty('name', true);
+    expect(result.args.select.workflow.select).toHaveProperty('steps');
+    expect(result.args.select.workflow.select.steps).toHaveProperty('select');
+    expect(result.args.select.workflow.select.steps.select).toHaveProperty('name', true);
+    expect(result.args.select.workflow.select.steps.select).toHaveProperty('key', true);
+  });
 });
