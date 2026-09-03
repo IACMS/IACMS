@@ -5,13 +5,13 @@ export default {
     'dueDate', 'createdAt', 'updatedAt', 'closedAt', 'description', 'referralStatus',
   ],
   filterableFields: {
-    status:         { operators: ['eq', 'in'] },
-    priority:       { operators: ['eq', 'in'] },
-    type:           { operators: ['eq', 'in'] },
-    referralStatus: { operators: ['eq', 'in'] },
-    createdAt:      { operators: ['gte', 'lte'] },
-    updatedAt:      { operators: ['gte', 'lte'] },
-    dueDate:        { operators: ['gte', 'lte'] },
+    status:         { operators: ['eq', 'in', 'neq'] },
+    priority:       { operators: ['eq', 'in', 'neq'] },
+    type:           { operators: ['eq', 'in', 'neq'] },
+    referralStatus: { operators: ['eq', 'in', 'neq'] },
+    createdAt:      { operators: ['gte', 'lte', 'gt', 'lt'] },
+    updatedAt:      { operators: ['gte', 'lte', 'gt', 'lt'] },
+    dueDate:        { operators: ['gte', 'lte', 'gt', 'lt'] },
     title:          { operators: ['contains'] },
     caseNumber:     { operators: ['eq', 'contains'] },
   },
@@ -25,4 +25,6 @@ export default {
   },
   // Max 3 relation depth
   maxRelationDepth: 1,
+  // Records with deletedAt set should never be returned to partners
+  softDelete: true,
 };

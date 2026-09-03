@@ -43,11 +43,19 @@ export function buildPrismaQuery(query, tenantId) {
   const prismaInclude = {};
   for (const [relation, inc] of Object.entries(includes)) {
     const relDef = allowlist.relations[relation];
-    prismaInclude[relDef.prismaRelation || relation] = inc;
+    let relationPayload = inc;
+    
+    // Patch relation leak: if the related entity uses soft-delete,
+    // ensure we don't accidentally return deleted records.
+    if (relDef.softDelete) {
+      relationPayload = { ...inc, where: { deletedAt: null } };
+    }
+    
+    prismaInclude[relDef.prismaRelation || relation] = relationPayload;
   }
 
   // 4. Build where clause with tenant scoping
-  const where = buildWhereClause(filter, allowlist, tenantId, entity);
+  const where = buildWhereClause(filter, allowlist, tenantId);
 
   // 5. Build orderBy
   const orderBy = buildOrderBy(sort, allowlist);
@@ -72,14 +80,16 @@ export function buildPrismaQuery(query, tenantId) {
   };
 }
 
-function buildWhereClause(filter, allowlist, tenantId, entity) {
+function buildWhereClause(filter, allowlist, tenantId) {
   const where = {};
   // Always inject tenant scope
-  if (entity === 'cases') {
-    where.tenantId = tenantId;
+  where.tenantId = tenantId;
+
+  // Generic soft-delete guard: honour the allowlist flag rather than
+  // hardcoding entity names here. Any allowlist that sets softDelete: true
+  // will automatically exclude logically-deleted records.
+  if (allowlist.softDelete) {
     where.deletedAt = null;
-  } else {
-    where.tenantId = tenantId;
   }
 
   if (!filter) return where;
@@ -92,16 +102,19 @@ function buildWhereClause(filter, allowlist, tenantId, entity) {
     if (!fieldDef) throw new InvalidQueryError(`Filter on field "${field}" is not allowed for entity "${allowlist.prismaModel}"`);
 
     if (value && typeof value === 'object' && !Array.isArray(value)) {
-      // Operator-based filter: { gte, lte, in, contains }
+      // Operator-based filter: { gte, lte, gt, lt, neq, in, contains }
       const prismaFilter = {};
       for (const [op, opVal] of Object.entries(value)) {
         if (!fieldDef.operators.includes(op)) {
           throw new InvalidQueryError(`Operator "${op}" is not allowed on field "${field}"`);
         }
-        if (op === 'contains') prismaFilter.contains = opVal;
-        else if (op === 'in') prismaFilter.in = Array.isArray(opVal) ? opVal : [opVal];
-        else if (op === 'gte') prismaFilter.gte = parseFilterValue(opVal, field);
-        else if (op === 'lte') prismaFilter.lte = parseFilterValue(opVal, field);
+        if (op === 'contains')    prismaFilter.contains = opVal;
+        else if (op === 'in')     prismaFilter.in  = Array.isArray(opVal) ? opVal : [opVal];
+        else if (op === 'gte')    prismaFilter.gte = parseFilterValue(opVal, field);
+        else if (op === 'lte')    prismaFilter.lte = parseFilterValue(opVal, field);
+        else if (op === 'gt')     prismaFilter.gt  = parseFilterValue(opVal, field);
+        else if (op === 'lt')     prismaFilter.lt  = parseFilterValue(opVal, field);
+        else if (op === 'neq')    prismaFilter.not = parseFilterValue(opVal, field);
       }
       where[field] = prismaFilter;
     } else {
