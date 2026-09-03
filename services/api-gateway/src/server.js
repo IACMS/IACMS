@@ -19,8 +19,10 @@ import { createSessionMiddleware, closeSessionStore } from './config/session.con
 import { closeRedisClient } from './config/redis.config.js';
 import sessionRoutes from './routes/session.routes.js';
 import apiKeyRoutes from './routes/apiKey.routes.js';
+import webhookRoutes from './routes/webhook.routes.js';
 import { queryRouter } from './engine/queryRouter.js';
 import { startOutboxPublisher, stopOutboxPublisher } from './workers/outboxPublisher.js';
+import { startWebhookDispatcher, stopWebhookDispatcher } from './workers/webhookDispatcher.js';
 import { setupSwagger } from '../../../shared/swagger.js';
 
 // Load .env from service directory
@@ -182,6 +184,9 @@ async function startServer() {
 
   // ─── API Key Management (admin-only, session/JWT auth) ─────────────────
   app.use('/api/v1/api-keys', express.json(), apiKeyRoutes);
+
+  // ─── Webhook Management (admin-only, session/JWT auth) ──────────────────
+  app.use('/api/v1/webhooks', express.json(), webhookRoutes);
 
   /** Platform operators: reachability of downstream services (HTTP /health), not user RBAC. */
   async function probeDownstreamHealth(url) {
@@ -373,8 +378,9 @@ async function startServer() {
     });
   });
 
-  // Start the audit outbox publisher
+  // Start background workers
   startOutboxPublisher();
+  startWebhookDispatcher();
 
   // Start server
   app.listen(PORT, () => {
@@ -403,6 +409,7 @@ async function startServer() {
   process.on('SIGTERM', async () => {
     console.log('[Gateway] SIGTERM received — shutting down gracefully');
     stopOutboxPublisher();
+    stopWebhookDispatcher();
     await closeSessionStore();
     await closeRedisClient();
     process.exit(0);
