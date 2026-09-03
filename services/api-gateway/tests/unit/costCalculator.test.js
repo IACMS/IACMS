@@ -43,4 +43,17 @@ describe('costCalculator', () => {
       computeQueryCost(['id'], { status: { in: bigInArray } }, null);
     }).toThrow(InvalidQueryError);
   });
+  it('should respect allowlist maxRelationDepth override', () => {
+    // Override max depth to 1
+    const allowlist = { maxRelationDepth: 1 };
+    
+    // Depth 1 is allowed
+    const { maxDepth } = computeQueryCost(['id', 'author.name'], null, allowlist);
+    expect(maxDepth).toBe(1);
+    
+    // Depth 2 is rejected
+    expect(() => {
+      computeQueryCost(['id', 'author.company.name'], null, allowlist);
+    }).toThrow(InvalidQueryError);
+  });
 });

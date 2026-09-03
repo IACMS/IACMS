@@ -17,14 +17,26 @@ export default {
   },
   relations: {
     assignee:              { prismaRelation: 'assignee',              selectableFields: ['firstName', 'lastName', 'email'] },
-    currentStep:           { prismaRelation: 'currentStep',           selectableFields: ['name', 'key', 'isFinal', 'isInitial', 'position'] },
-    workflow:              { prismaRelation: 'workflow',              selectableFields: ['name', 'key', 'version', 'status'] },
+    currentStep:           { 
+      prismaRelation: 'currentStep', 
+      selectableFields: ['name', 'key', 'isFinal', 'isInitial', 'position'],
+      relations: {
+        actions: { prismaRelation: 'actions', selectableFields: ['name', 'key'] }
+      }
+    },
+    workflow:              { 
+      prismaRelation: 'workflow', 
+      selectableFields: ['name', 'key', 'version', 'status'],
+      relations: {
+        steps: { prismaRelation: 'steps', selectableFields: ['name', 'key', 'position'] }
+      }
+    },
     originatingDepartment: { prismaRelation: 'originatingDepartment', selectableFields: ['name', 'code'] },
     currentDepartment:     { prismaRelation: 'currentDepartment',     selectableFields: ['name', 'code'] },
     creator:               { prismaRelation: 'creator',               selectableFields: ['firstName', 'lastName'] },
   },
   // Max 3 relation depth
-  maxRelationDepth: 1,
+  maxRelationDepth: 3,
   // Records with deletedAt set should never be returned to partners
   softDelete: true,
 };

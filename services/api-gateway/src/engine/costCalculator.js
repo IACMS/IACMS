@@ -36,8 +36,9 @@ export function computeQueryCost(select, filter, allowlist) {
     }
   }
 
-  if (maxDepth > MAX_RELATION_DEPTH) {
-    throw new InvalidQueryError(`Relation depth ${maxDepth} exceeds maximum of ${MAX_RELATION_DEPTH}`);
+  const limitDepth = allowlist?.maxRelationDepth ?? MAX_RELATION_DEPTH;
+  if (maxDepth > limitDepth) {
+    throw new InvalidQueryError(`Relation depth ${maxDepth} exceeds maximum of ${limitDepth}`);
   }
   if (cost > MAX_QUERY_COST) {
     throw new InvalidQueryError(`Query cost ${cost} exceeds maximum of ${MAX_QUERY_COST}. Reduce selected fields or filters.`);
