@@ -747,13 +747,16 @@ model ApiKey {
 }
 
 model AuditOutbox {
-  id          String    @id @default(uuid()) @db.Uuid
-  tenantId    String    @map("tenant_id") @db.Uuid
-  payload     Json                                      /// Full audit event payload
-  published   Boolean   @default(false)
-  publishedAt DateTime? @map("published_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
+  payload              Json                                      /// Full audit event payload
+  published            Boolean   @default(false)
+  publishedAt          DateTime? @map("published_at")
+  webhookDispatched    Boolean   @default(false) @map("webhook_dispatched")
+  webhookDispatchedAt  DateTime? @map("webhook_dispatched_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
 
   @@index([published, createdAt])
+  @@index([webhookDispatched, published, createdAt])
   @@map("audit_outbox")
 }

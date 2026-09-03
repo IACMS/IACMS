@@ -140,6 +140,11 @@ const permissions = [
   { resource: 'file', action: 'upload', description: 'Upload files (single, batch, chunked)' },
   { resource: 'file', action: 'delete', description: 'Soft-delete files' },
   { resource: 'file', action: 'admin', description: 'Cross-service file admin (list all services)' },
+  // Partner API key management — tenant_admin only
+  { resource: 'apiKeys', action: 'create', description: 'Create partner API keys' },
+  { resource: 'apiKeys', action: 'read',   description: 'List partner API keys' },
+  { resource: 'apiKeys', action: 'revoke', description: 'Revoke partner API keys' },
+  { resource: 'apiKeys', action: 'rotate', description: 'Rotate partner API keys' },
 ];
 
 function platformAdminPermissionKeys() {
