@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.env
+infrastructure/postgres_data
+infrastructure/minio_data
+infrastructure/clamav_data
+npm-debug.log
+.DS_Store

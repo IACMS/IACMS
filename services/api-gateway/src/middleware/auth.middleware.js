@@ -67,6 +67,7 @@ function setUserHeaders(req, user) {
   if (user.roles) {
     req.headers['x-user-roles'] = Array.isArray(user.roles) ? user.roles.join(',') : user.roles;
   }
+  req.headers['x-must-change-password'] = user.mustChangePassword ? 'true' : 'false';
 }
 
 /**

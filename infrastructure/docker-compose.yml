@@ -305,12 +305,12 @@ services:
       - '3009:3009'
     environment:
       PORT: 3009
-      NODE_ENV: production
+      NODE_ENV: development
       WORKER_MODE: standalone
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
-      AUTH_SERVICE_URL: http://auth-service:3001
+      AUTH_SERVICE_URL: http://iam-service:3001
       REDIS_URL: redis://redis:6379
       STORAGE_PROVIDER: minio
       MINIO_ENDPOINT: minio
@@ -346,7 +346,7 @@ services:
       dockerfile: services/file-service/Dockerfile.workers
     container_name: iacms-file-service-workers
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       WORKER_MODE: standalone
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092

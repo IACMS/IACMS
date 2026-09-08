@@ -360,7 +360,7 @@ Postman collections: [`IACMS_Auth_Postman_Collection.json`](../IACMS_Auth_Postma
 ## 9. How to run and verify locally
 
 1. Start infrastructure: `docker compose up -d postgres redis zookeeper kafka` (from `infrastructure/`).
-2. Apply schema + seed: `npx prisma migrate deploy`, `node prisma/seed.js` (see README for `DATABASE_URL` on port **5433**).
+2. Apply schema + seed: `npx prisma migrate deploy`, `node prisma/seed.js` (see README for `DATABASE_URL` on port **5434**).
 3. Start app services: `powershell -File scripts/start-local-services.ps1` from repo root.
 4. Smoke: `GET http://localhost:3000/health`, login with seed credentials (`admin@test-org.com` / `password123`, tenant `TEST-ORG`), create a case with `workflowKey: "standard-case"`.
 

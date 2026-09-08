@@ -2,7 +2,7 @@ import { PrismaClient } from '../generated/prisma/client.js';
 import config from './index.js';
 
 if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5433/iacms?schema=public';
+  process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5434/iacms?schema=public';
 }
 
 const prisma = new PrismaClient({

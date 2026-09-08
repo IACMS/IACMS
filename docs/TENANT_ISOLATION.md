@@ -6,7 +6,8 @@
 ## Rationale
 
 - **Prisma + server-side connection pools** do not give a safe, per-request DB session default. `SET LOCAL app.current_tenant_id` only holds for the lifetime of one transaction/socket; multiplexed pools reuse connections across tenants unless every query is wrapped consistently.
-- The API Gateway remains the trusted source for **`x-tenant-id`** (and **`x-user-id`** / **`x-user-roles`**) after authentication. Downstream services must treat these headers as authoritative and scope every tenant-owned read/write.
+- The API Gateway remains the trusted source for **`x-tenant-id`** (and **`x-user-id`** / **`x-user-roles`**) after authentication. Downstream services scope every tenant-owned read/write using these headers.
+- **Service-to-service trust:** In production, internal microservices reject direct HTTP access via [`requireInternalRequest`](../shared/middleware/requireInternalRequest.js). The gateway injects `x-internal-service-token` on **every** proxied request (including public auth routes). When that token is valid, identity headers are trusted with **zero Postgres queries** — see [`gatewayIdentity.js`](../shared/middleware/gatewayIdentity.js).
 
 ## Non-goals (for now)
 
@@ -15,6 +16,8 @@
 
 ## Implementation hooks
 
+- [`shared/middleware/requireInternalRequest.js`](../shared/middleware/requireInternalRequest.js) — blocks direct service access in production.
+- [`shared/middleware/gatewayIdentity.js`](../shared/middleware/gatewayIdentity.js) — fast-path identity from trusted gateway headers; single DB lookup only in local dev.
 - [`shared/middleware/tenantContext.js`](../shared/middleware/tenantContext.js) parses `x-tenant-id` into **`req.iacmsTenantId`** when present so handlers may use a single accessor (optional).
 - Prefer existing domain helpers (**case** referral scope, **workflow** `where: { tenantId }`) over scattering raw header reads.
 

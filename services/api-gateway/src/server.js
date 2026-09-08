@@ -8,6 +8,7 @@ import express from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -24,6 +25,9 @@ import { queryRouter } from './engine/queryRouter.js';
 import { startOutboxPublisher, stopOutboxPublisher } from './workers/outboxPublisher.js';
 import { startWebhookDispatcher, stopWebhookDispatcher } from './workers/webhookDispatcher.js';
 import { setupSwagger } from '../../../shared/swagger.js';
+import Logger from '../../../shared/common/logger.js';
+import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
+import { forwardProxyIdentity, attachDownstreamHeaders } from './utils/downstreamHeaders.js';
 
 // Load .env from service directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,26 +35,9 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const logger = new Logger('api-gateway');
 
 // Service URLs
-/** Forward identity + RBAC role ids + permissions to downstream microservices */
-function attachDownstreamHeaders(proxyReq, req) {
-  if (!req.user) return;
-  proxyReq.setHeader('x-user-id', req.user.id);
-  proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-  if (req.user.departmentId) proxyReq.setHeader('x-department-id', req.user.departmentId);
-  if (req.user.email) proxyReq.setHeader('x-user-email', req.user.email);
-  const roleIds = req.rbacEnvelope?.roleIds;
-  if (Array.isArray(roleIds) && roleIds.length) {
-    proxyReq.setHeader('x-user-roles', roleIds.join(','));
-  } else if (req.user.roles?.length) {
-    proxyReq.setHeader('x-user-roles', req.user.roles.join(','));
-  }
-  const permissions = req.rbacEnvelope?.permissions;
-  if (Array.isArray(permissions) && permissions.length) {
-    proxyReq.setHeader('x-user-permissions', permissions.join(','));
-  }
-}
 
 const services = {
   iam: process.env.IAM_SERVICE_URL || process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
@@ -98,15 +85,18 @@ function serviceProxy({ target, pathRewrite, label, onProxyReq, onProxyRes }) {
   });
 }
 
-/** Forward identity to microservices (headers are not reliably inherited from req.headers by the proxy). */
-function forwardProxyIdentity(proxyReq, req) {
-  attachDownstreamHeaders(proxyReq, req);
-}
-
 /**
  * Initialize and start the server
  */
 async function startServer() {
+  assertProductionSecrets([
+    { name: 'JWT_SECRET', value: process.env.JWT_SECRET },
+    { name: 'SESSION_SECRET', value: process.env.SESSION_SECRET },
+    { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
+  ]);
+
+  app.use(helmet({ contentSecurityPolicy: false }));
+
   // CORS with credentials for session cookies (comma-separated origins in dev, e.g. Vite 5173 and 5174)
   const corsOriginEnv = process.env.CORS_ORIGIN || 'http://localhost:5173';
   const corsOrigins = corsOriginEnv.split(',').map((o) => o.trim()).filter(Boolean);
@@ -133,7 +123,7 @@ async function startServer() {
     res.on('finish', () => {
       const duration = Date.now() - start;
       const sessionInfo = req.session?.user ? `[Session: ${req.session.user.email}]` : '[No Session]';
-      console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms ${sessionInfo}`);
+      logger.info(`${req.method} ${req.path} ${res.statusCode} ${duration}ms ${sessionInfo}`);
     });
     next();
   });
@@ -372,7 +362,7 @@ async function startServer() {
 
   // Error handler
   app.use((err, req, res, next) => {
-    console.error('Gateway error:', err);
+    logger.error('Gateway error', { message: err.message, path: req.path });
     res.status(err.status || 500).json({
       error: { code: err.code || 'INTERNAL_ERROR', message: err.message || 'Internal server error' },
     });
@@ -384,30 +374,14 @@ async function startServer() {
 
   // Start server
   app.listen(PORT, () => {
-    console.log(`\nAPI Gateway running on port ${PORT}`);
-    console.log('='.repeat(50));
-    console.log('Authentication : Session (Redis) + JWT + API Key');
-    console.log('Caching        : Redis (RBAC permissions)');
-    console.log('Rate Limiting  : Redis (per-user / per-IP / per-API-key)');
-    console.log('Events         : Kafka');
-    console.log('='.repeat(50));
-    console.log('Session Routes:');
-    console.log('  POST /api/v1/session/login');
-    console.log('  POST /api/v1/session/logout');
-    console.log('  GET  /api/v1/session/status');
-    console.log('Partner API Routes:');
-    console.log('  POST /api/v1/query             (X-API-Key auth)');
-    console.log('API Key Management Routes:');
-    console.log('  POST   /api/v1/api-keys        (create key)');
-    console.log('  GET    /api/v1/api-keys        (list keys)');
-    console.log('  DELETE /api/v1/api-keys/:id     (revoke key)');
-    console.log('  POST   /api/v1/api-keys/:id/rotate');
-    console.log('='.repeat(50));
+    logger.info(`API Gateway running on port ${PORT}`, {
+      features: ['sessionAuth', 'jwtAuth', 'apiKeyAuth', 'partnerQueryApi'],
+    });
   });
 
   // Graceful shutdown
   process.on('SIGTERM', async () => {
-    console.log('[Gateway] SIGTERM received — shutting down gracefully');
+    logger.info('SIGTERM received — shutting down gracefully');
     stopOutboxPublisher();
     stopWebhookDispatcher();
     await closeSessionStore();
@@ -417,7 +391,7 @@ async function startServer() {
 }
 
 startServer().catch((err) => {
-  console.error('Failed to start API Gateway:', err);
+  logger.error('Failed to start API Gateway', { message: err.message });
   process.exit(1);
 });
 

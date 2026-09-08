@@ -9,6 +9,8 @@ import workflowRoutes from './routes/workflow.routes.js';
 import referralRoutes from './routes/referral.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
+import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 import './config/database.js';
 
 dotenv.config();
@@ -25,6 +27,12 @@ setupSwagger(app, 'Case Engine Service', PORT);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'case-engine-service', timestamp: new Date().toISOString() });
 });
+
+assertProductionSecrets([
+  { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
+]);
+
+app.use(requireInternalRequest());
 
 app.use('/cases', caseRoutes);
 app.use('/assignments', assignmentRoutes);

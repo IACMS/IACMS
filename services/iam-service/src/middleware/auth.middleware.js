@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { UnauthorizedError, ForbiddenError } from '../../../../shared/common/errors.js';
 import { getRedisClient } from '../config/redis.config.js';
 import prisma from '../config/database.js';
+import { resolveGatewayIdentity } from '../../../../shared/middleware/gatewayIdentity.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'iacms-dev-secret-key-change-in-production';
 
@@ -14,38 +15,15 @@ function trustGatewayForwardedHeaders() {
 /**
  * Browser clients authenticate at the gateway with a session cookie. The gateway sets
  * x-user-id / x-tenant-id on proxied requests but does not always attach Authorization.
- * Load the user from the DB and verify the declared tenant matches the record.
  */
 async function attachUserFromGatewayForwardedIdentity(req, res, next) {
-  const headerUserId = req.headers['x-user-id'];
-  const headerTenantId = req.headers['x-tenant-id'];
-  if (!headerUserId || !headerTenantId) return false;
-
-  const u = await prisma.user.findFirst({
-    where: { id: String(headerUserId), isActive: true },
-    select: {
-      id: true,
-      tenantId: true,
-      departmentId: true,
-      email: true,
-      mustChangePassword: true,
-      userRoles: { select: { roleId: true } },
-    },
-  });
-
-  if (!u || u.tenantId !== String(headerTenantId)) {
+  const user = await resolveGatewayIdentity(prisma, req);
+  if (!user) {
     next(new UnauthorizedError('Invalid forwarded identity'));
     return true;
   }
 
-  req.user = {
-    id: u.id,
-    tenantId: u.tenantId,
-    departmentId: u.departmentId ?? null,
-    email: u.email,
-    mustChangePassword: u.mustChangePassword ?? false,
-    roles: u.userRoles.map((r) => r.roleId),
-  };
+  req.user = user;
   next();
   return true;
 }

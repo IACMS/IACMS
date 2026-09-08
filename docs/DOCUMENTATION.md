@@ -81,7 +81,7 @@
 
 | Container | Port | Purpose |
 |-----------|------|---------|
-| `iacms-postgres` | 5433 | Primary database (Prisma) |
+| `iacms-postgres` | 5434 | Primary database (Prisma) |
 | `iacms-redis` | 6379 | API Gateway: sessions, RBAC cache, rate limits |
 | `iacms-zookeeper` | 2181 | Kafka cluster management |
 | `iacms-kafka` | 9092 (host) / 29092 (internal) | Event message broker |
@@ -888,7 +888,7 @@ npm start
 | Audit Service | 3006 |
 | Integration Service | 3007 |
 | Notification Service | 3008 |
-| PostgreSQL | 5433 |
+| PostgreSQL | 5434 |
 | Zookeeper | 2181 |
 | Kafka | 9092 |
 
@@ -900,7 +900,7 @@ Copy `.env.example` (if present) or create `.env` in each service directory.
 
 ```env
 PORT=3001
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms?schema=public
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/iacms?schema=public
 JWT_SECRET=iacms-dev-secret-key-change-in-production
 JWT_EXPIRES_IN=24h
 JWT_REFRESH_EXPIRES_IN=7d
@@ -920,7 +920,7 @@ REFERRAL_SERVICE_URL=http://localhost:3005
 AUDIT_SERVICE_URL=http://localhost:3006
 INTEGRATION_SERVICE_URL=http://localhost:3007
 NOTIFICATION_SERVICE_URL=http://localhost:3008
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/iacms
 SESSION_SECRET=iacms-session-secret-change-in-production
 SESSION_MAX_AGE=86400
 CORS_ORIGIN=http://localhost:5173
@@ -1007,9 +1007,9 @@ If still occurring: `docker-compose down && docker-compose up -d zookeeper kafka
 ### Database Issues
 
 **Problem:** `Authentication failed against database server`  
-**Fix:** Ensure your `DATABASE_URL` uses port `5433` not `5432`:
+**Fix:** Ensure your `DATABASE_URL` uses port `5434` not `5432`:
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms?schema=public
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/iacms?schema=public
 ```
 
 **Problem:** `Prisma Client not found` or `P1001: Can't reach database`  

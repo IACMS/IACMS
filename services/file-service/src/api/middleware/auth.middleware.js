@@ -1,41 +1,33 @@
 import jwt from 'jsonwebtoken';
 import { UnauthorizedError } from '../../../../../shared/common/errors.js';
+import { resolveGatewayIdentity } from '../../../../../shared/middleware/gatewayIdentity.js';
 import config from '../../config/index.js';
-
-function splitHeaderList(value) {
-  if (!value || typeof value !== 'string') return [];
-  return value.split(',').map((v) => v.trim()).filter(Boolean);
-}
+import prisma from '../../config/database.js';
 
 /**
  * Authentication middleware for the File Service.
  *
- * Supports two modes (matching the gateway pattern used by all IACMS services):
- *
- * 1. Gateway-forwarded headers — preferred when present. The gateway attaches
- *    RBAC permissions on `x-user-permissions`; JWTs do not carry permissions.
+ * 1. Gateway-forwarded headers — trusted when x-internal-service-token is valid
+ *    (zero DB queries); verified against Postgres only in local dev direct access.
  * 2. JWT Bearer token — direct API calls without the gateway.
- *
- * Populates req.user = { id, tenantId, departmentId, email, roles, permissions }
  */
 export async function authenticateToken(req, res, next) {
-  // Mode 1: Gateway-forwarded identity (permissions come from RBAC, not the JWT)
   const userId = req.headers['x-user-id'];
   const tenantId = req.headers['x-tenant-id'];
 
   if (userId && tenantId) {
-    req.user = {
-      id: userId,
-      tenantId,
-      departmentId: req.headers['x-department-id'] || null,
-      email: req.headers['x-user-email'] || null,
-      roles: splitHeaderList(req.headers['x-user-roles']),
-      permissions: splitHeaderList(req.headers['x-user-permissions']),
-    };
-    return next();
+    try {
+      const user = await resolveGatewayIdentity(prisma, req);
+      if (!user) {
+        return next(new UnauthorizedError('Invalid forwarded identity'));
+      }
+      req.user = user;
+      return next();
+    } catch (err) {
+      return next(err);
+    }
   }
 
-  // Mode 2: JWT Bearer token (direct calls — no RBAC permission list unless embedded)
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
