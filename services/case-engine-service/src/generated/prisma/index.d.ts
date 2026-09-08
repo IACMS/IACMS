@@ -35664,6 +35664,8 @@ export namespace Prisma {
     tenantId: string | null
     published: boolean | null
     publishedAt: Date | null
+    webhookDispatched: boolean | null
+    webhookDispatchedAt: Date | null
     createdAt: Date | null
   }
 
@@ -35672,6 +35674,8 @@ export namespace Prisma {
     tenantId: string | null
     published: boolean | null
     publishedAt: Date | null
+    webhookDispatched: boolean | null
+    webhookDispatchedAt: Date | null
     createdAt: Date | null
   }
 
@@ -35681,6 +35685,8 @@ export namespace Prisma {
     payload: number
     published: number
     publishedAt: number
+    webhookDispatched: number
+    webhookDispatchedAt: number
     createdAt: number
     _all: number
   }
@@ -35691,6 +35697,8 @@ export namespace Prisma {
     tenantId?: true
     published?: true
     publishedAt?: true
+    webhookDispatched?: true
+    webhookDispatchedAt?: true
     createdAt?: true
   }
 
@@ -35699,6 +35707,8 @@ export namespace Prisma {
     tenantId?: true
     published?: true
     publishedAt?: true
+    webhookDispatched?: true
+    webhookDispatchedAt?: true
     createdAt?: true
   }
 
@@ -35708,6 +35718,8 @@ export namespace Prisma {
     payload?: true
     published?: true
     publishedAt?: true
+    webhookDispatched?: true
+    webhookDispatchedAt?: true
     createdAt?: true
     _all?: true
   }
@@ -35790,6 +35802,8 @@ export namespace Prisma {
     payload: JsonValue
     published: boolean
     publishedAt: Date | null
+    webhookDispatched: boolean
+    webhookDispatchedAt: Date | null
     createdAt: Date
     _count: AuditOutboxCountAggregateOutputType | null
     _min: AuditOutboxMinAggregateOutputType | null
@@ -35816,6 +35830,8 @@ export namespace Prisma {
     payload?: boolean
     published?: boolean
     publishedAt?: boolean
+    webhookDispatched?: boolean
+    webhookDispatchedAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["auditOutbox"]>
 
@@ -35825,6 +35841,8 @@ export namespace Prisma {
     payload?: boolean
     published?: boolean
     publishedAt?: boolean
+    webhookDispatched?: boolean
+    webhookDispatchedAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["auditOutbox"]>
 
@@ -35834,6 +35852,8 @@ export namespace Prisma {
     payload?: boolean
     published?: boolean
     publishedAt?: boolean
+    webhookDispatched?: boolean
+    webhookDispatchedAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["auditOutbox"]>
 
@@ -35843,10 +35863,12 @@ export namespace Prisma {
     payload?: boolean
     published?: boolean
     publishedAt?: boolean
+    webhookDispatched?: boolean
+    webhookDispatchedAt?: boolean
     createdAt?: boolean
   }
 
-  export type AuditOutboxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "payload" | "published" | "publishedAt" | "createdAt", ExtArgs["result"]["auditOutbox"]>
+  export type AuditOutboxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "payload" | "published" | "publishedAt" | "webhookDispatched" | "webhookDispatchedAt" | "createdAt", ExtArgs["result"]["auditOutbox"]>
 
   export type $AuditOutboxPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AuditOutbox"
@@ -35860,6 +35882,8 @@ export namespace Prisma {
       payload: Prisma.JsonValue
       published: boolean
       publishedAt: Date | null
+      webhookDispatched: boolean
+      webhookDispatchedAt: Date | null
       createdAt: Date
     }, ExtArgs["result"]["auditOutbox"]>
     composites: {}
@@ -36289,6 +36313,8 @@ export namespace Prisma {
     readonly payload: FieldRef<"AuditOutbox", 'Json'>
     readonly published: FieldRef<"AuditOutbox", 'Boolean'>
     readonly publishedAt: FieldRef<"AuditOutbox", 'DateTime'>
+    readonly webhookDispatched: FieldRef<"AuditOutbox", 'Boolean'>
+    readonly webhookDispatchedAt: FieldRef<"AuditOutbox", 'DateTime'>
     readonly createdAt: FieldRef<"AuditOutbox", 'DateTime'>
   }
     
@@ -37125,6 +37151,8 @@ export namespace Prisma {
     payload: 'payload',
     published: 'published',
     publishedAt: 'publishedAt',
+    webhookDispatched: 'webhookDispatched',
+    webhookDispatchedAt: 'webhookDispatchedAt',
     createdAt: 'createdAt'
   };
 
@@ -39913,6 +39941,8 @@ export namespace Prisma {
     payload?: JsonFilter<"AuditOutbox">
     published?: BoolFilter<"AuditOutbox"> | boolean
     publishedAt?: DateTimeNullableFilter<"AuditOutbox"> | Date | string | null
+    webhookDispatched?: BoolFilter<"AuditOutbox"> | boolean
+    webhookDispatchedAt?: DateTimeNullableFilter<"AuditOutbox"> | Date | string | null
     createdAt?: DateTimeFilter<"AuditOutbox"> | Date | string
   }
 
@@ -39922,6 +39952,8 @@ export namespace Prisma {
     payload?: SortOrder
     published?: SortOrder
     publishedAt?: SortOrderInput | SortOrder
+    webhookDispatched?: SortOrder
+    webhookDispatchedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
   }
 
@@ -39934,6 +39966,8 @@ export namespace Prisma {
     payload?: JsonFilter<"AuditOutbox">
     published?: BoolFilter<"AuditOutbox"> | boolean
     publishedAt?: DateTimeNullableFilter<"AuditOutbox"> | Date | string | null
+    webhookDispatched?: BoolFilter<"AuditOutbox"> | boolean
+    webhookDispatchedAt?: DateTimeNullableFilter<"AuditOutbox"> | Date | string | null
     createdAt?: DateTimeFilter<"AuditOutbox"> | Date | string
   }, "id">
 
@@ -39943,6 +39977,8 @@ export namespace Prisma {
     payload?: SortOrder
     published?: SortOrder
     publishedAt?: SortOrderInput | SortOrder
+    webhookDispatched?: SortOrder
+    webhookDispatchedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: AuditOutboxCountOrderByAggregateInput
     _max?: AuditOutboxMaxOrderByAggregateInput
@@ -39958,6 +39994,8 @@ export namespace Prisma {
     payload?: JsonWithAggregatesFilter<"AuditOutbox">
     published?: BoolWithAggregatesFilter<"AuditOutbox"> | boolean
     publishedAt?: DateTimeNullableWithAggregatesFilter<"AuditOutbox"> | Date | string | null
+    webhookDispatched?: BoolWithAggregatesFilter<"AuditOutbox"> | boolean
+    webhookDispatchedAt?: DateTimeNullableWithAggregatesFilter<"AuditOutbox"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"AuditOutbox"> | Date | string
   }
 
@@ -42774,6 +42812,8 @@ export namespace Prisma {
     payload: JsonNullValueInput | InputJsonValue
     published?: boolean
     publishedAt?: Date | string | null
+    webhookDispatched?: boolean
+    webhookDispatchedAt?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -42783,6 +42823,8 @@ export namespace Prisma {
     payload: JsonNullValueInput | InputJsonValue
     published?: boolean
     publishedAt?: Date | string | null
+    webhookDispatched?: boolean
+    webhookDispatchedAt?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -42792,6 +42834,8 @@ export namespace Prisma {
     payload?: JsonNullValueInput | InputJsonValue
     published?: BoolFieldUpdateOperationsInput | boolean
     publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookDispatched?: BoolFieldUpdateOperationsInput | boolean
+    webhookDispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42801,6 +42845,8 @@ export namespace Prisma {
     payload?: JsonNullValueInput | InputJsonValue
     published?: BoolFieldUpdateOperationsInput | boolean
     publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookDispatched?: BoolFieldUpdateOperationsInput | boolean
+    webhookDispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42810,6 +42856,8 @@ export namespace Prisma {
     payload: JsonNullValueInput | InputJsonValue
     published?: boolean
     publishedAt?: Date | string | null
+    webhookDispatched?: boolean
+    webhookDispatchedAt?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -42819,6 +42867,8 @@ export namespace Prisma {
     payload?: JsonNullValueInput | InputJsonValue
     published?: BoolFieldUpdateOperationsInput | boolean
     publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookDispatched?: BoolFieldUpdateOperationsInput | boolean
+    webhookDispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42828,6 +42878,8 @@ export namespace Prisma {
     payload?: JsonNullValueInput | InputJsonValue
     published?: BoolFieldUpdateOperationsInput | boolean
     publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    webhookDispatched?: BoolFieldUpdateOperationsInput | boolean
+    webhookDispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -44817,6 +44869,8 @@ export namespace Prisma {
     payload?: SortOrder
     published?: SortOrder
     publishedAt?: SortOrder
+    webhookDispatched?: SortOrder
+    webhookDispatchedAt?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -44825,6 +44879,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     published?: SortOrder
     publishedAt?: SortOrder
+    webhookDispatched?: SortOrder
+    webhookDispatchedAt?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -44833,6 +44889,8 @@ export namespace Prisma {
     tenantId?: SortOrder
     published?: SortOrder
     publishedAt?: SortOrder
+    webhookDispatched?: SortOrder
+    webhookDispatchedAt?: SortOrder
     createdAt?: SortOrder
   }
 

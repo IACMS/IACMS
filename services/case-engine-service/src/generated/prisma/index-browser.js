@@ -501,6 +501,8 @@ exports.Prisma.AuditOutboxScalarFieldEnum = {
   payload: 'payload',
   published: 'published',
   publishedAt: 'publishedAt',
+  webhookDispatched: 'webhookDispatched',
+  webhookDispatchedAt: 'webhookDispatchedAt',
   createdAt: 'createdAt'
 };
 

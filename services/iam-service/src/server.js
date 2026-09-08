@@ -13,6 +13,8 @@ import permissionRoutes from './routes/permission.routes.js';
 import userRoleRoutes from './routes/user-role.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
+import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 
 // Load .env from service directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -43,7 +45,7 @@ app.use('/tenants/assets', express.static(uploadsDir, { maxAge: '1h' }));
 // Setup Swagger OpenAPI Documentation
 setupSwagger(app, 'IAM Service', PORT);
 
-// Health check
+// Health check (no internal token required)
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -51,6 +53,14 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+assertProductionSecrets([
+  { name: 'JWT_SECRET', value: process.env.JWT_SECRET },
+  { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
+]);
+
+// Block direct access in production — requests must come via the API gateway.
+app.use(requireInternalRequest());
 
 // Routes
 app.use('/auth', authRoutes);

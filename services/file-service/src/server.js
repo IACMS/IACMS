@@ -16,6 +16,8 @@ import prisma from './config/database.js';
 import config from './config/index.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
+import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
@@ -85,6 +87,13 @@ app.get('/metrics', (_req, res) => {
   res.setHeader('Content-Type', 'text/plain; version=0.0.4');
   res.send(metrics.toPrometheus());
 });
+
+assertProductionSecrets([
+  { name: 'JWT_SECRET', value: process.env.JWT_SECRET },
+  { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
+]);
+
+app.use(requireInternalRequest({ skipPaths: ['/health', '/ready', '/metrics'] }));
 
 app.use('/files', fileRoutes);
 app.use('/uploads', chunkRoutes);
