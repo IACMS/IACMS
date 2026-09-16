@@ -106,3 +106,11 @@ services/referral-service/src/generated/
 
 # Prisma generated client (regenerated at build time)
 src/generated/prisma/
+
+# Prisma binary query engines (generated inside Docker, platform-specific)
+*.so.node
+libquery_engine-*.node
+
+# Service upload temp directories
+services/file-service/uploads/tmp/
+services/file-service/uploads/test/
