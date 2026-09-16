@@ -103,3 +103,6 @@ services/case-service/src/generated/
 services/workflow-service/src/generated/
 services/referral-service/src/generated/
 
+
+# Prisma generated client (regenerated at build time)
+src/generated/prisma/
