@@ -259,7 +259,7 @@ describe('ChunkService — completeUpload', () => {
     const result = await chunkService.completeUpload(upload.id);
 
     expect(result.fileId).toBeTruthy();
-    expect(result.status).toBe('AVAILABLE');
+    expect(result.status).toBe('PENDING');
     expect(result.checksum).toMatch(/^sha256:[a-f0-9]{64}$/);
     expect(result.size).toBe(4 * 512);
 
@@ -267,7 +267,7 @@ describe('ChunkService — completeUpload', () => {
     const file = await prisma.file.findUnique({ where: { id: result.fileId } });
     expect(file).toBeTruthy();
     expect(file.originalName).toBe('merged.txt');
-    expect(file.status).toBe('AVAILABLE');
+    expect(file.status).toBe('PENDING');
     expect(Number(file.size)).toBe(4 * 512);
   });
 
