@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ── Infrastructure ────────────────────────────────────────────────────────
 
@@ -227,14 +225,12 @@ services:
     container_name: iacms-notification-service
     ports:
       - '3008:3008'
+    env_file:
+      - ../services/notification-service/.env
     environment:
       PORT: 3008
       KAFKA_BROKERS: kafka:29092
       APP_URL: ${APP_URL:-http://localhost:5173}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
     depends_on:
       kafka:
         condition: service_healthy
@@ -340,10 +336,12 @@ services:
       - iacms-network
 
   # File Management Service workers (virus scan, compress, thumbs, cleanup)
+  # Uses the `workers` stage from the shared Dockerfile (ffmpeg + same deps layer).
   file-service-workers:
     build:
       context: ..
-      dockerfile: services/file-service/Dockerfile.workers
+      dockerfile: services/file-service/Dockerfile
+      target: workers
     container_name: iacms-file-service-workers
     environment:
       NODE_ENV: development
