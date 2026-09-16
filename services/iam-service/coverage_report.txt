@@ -1,0 +1,81 @@
+
+ RUN  v3.2.4 /home/e/code/IACMS/Current/IACMS/services/iam-service
+      Coverage enabled with v8
+
+ ✓ tests/unit/role.controller.test.js (6 tests) 92ms
+stdout | tests/unit/user.controller.test.js > admin.users.controller unit tests > deactivateUser > deactivates target user when valid
+{"timestamp":"2026-09-16T11:33:29.219Z","service":"auth-service","level":"INFO","message":"User deactivated by admin","targetUserId":"u-2","adminId":"admin-123"}
+
+stdout | tests/unit/user.controller.test.js > admin.users.controller unit tests > reactivateUser > reactivates user
+{"timestamp":"2026-09-16T11:33:29.234Z","service":"auth-service","level":"INFO","message":"User reactivated by admin","targetUserId":"u-2","adminId":"admin-123"}
+
+ ✓ tests/unit/user.controller.test.js (5 tests) 88ms
+stdout | tests/unit/auth.password.test.js > auth.password.controller unit tests > forgotPassword > generates token and updates user when email exists
+{"timestamp":"2026-09-16T11:33:30.589Z","service":"auth-service","level":"INFO","message":"Password reset requested","userId":"u-1","email":"user@iacms.org"}
+
+ ✓ tests/unit/auth.password.test.js (3 tests) 28ms
+ ✓ tests/integration/auth.routes.test.js (2 tests) 113ms
+
+ Test Files  4 passed (4)
+      Tests  16 passed (16)
+   Start at  14:33:25
+   Duration  8.65s (transform 1.50s, setup 0ms, collect 5.41s, tests 321ms, environment 19ms, prepare 2.77s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    8.62 |    55.91 |   29.76 |    8.62 |                   
+ src               |       0 |        0 |       0 |       0 |                   
+  server.js        |       0 |        0 |       0 |       0 | 1-81              
+ src/config        |   23.43 |        0 |       0 |   23.43 |                   
+  database.js      |       0 |        0 |       0 |       0 | 1-29              
+  redis.config.js  |   35.71 |      100 |       0 |   35.71 | 17-43,46-50       
+ src/controllers   |    6.11 |    56.25 |   30.76 |    6.11 |                   
+  ...controller.js |       0 |        0 |       0 |       0 | 1-192             
+  ...controller.js |   11.58 |      100 |       0 |   11.58 | ...38-114,120-178 
+  ...controller.js |       0 |        0 |       0 |       0 | 1-1025            
+  ...controller.js |   68.82 |    64.28 |      80 |   68.82 | ...52,163,184-185 
+  ...controller.js |       0 |        0 |       0 |       0 | 1-845             
+  ...controller.js |       0 |        0 |       0 |       0 | 1-129             
+ ...ntrollers/auth |   19.44 |    52.77 |      30 |   19.44 |                   
+  ...controller.js |   32.43 |    45.83 |   55.55 |   32.43 | ...00-401,416-467 
+  ...controller.js |   27.88 |    72.72 |      25 |   27.88 | ...61-174,181-242 
+  ...controller.js |   16.81 |      100 |       0 |   16.81 | 16-47,55-124      
+  ...controller.js |   10.86 |      100 |       0 |   10.86 | ...85-221,228-356 
+  ...controller.js |       0 |        0 |       0 |       0 | 1-242             
+ ...nerated/prisma |       0 |    88.88 |   88.88 |       0 |                   
+  client.js        |       0 |      100 |     100 |       0 | 2-5               
+  default.js       |       0 |      100 |     100 |       0 | 2-5               
+  edge.js          |       0 |      100 |     100 |       0 | 2-632             
+  index-browser.js |       0 |      100 |     100 |       0 | 2-619             
+  index.js         |       0 |      100 |     100 |       0 | 2-654             
+  ..._engine_bg.js |       0 |        0 |       0 |       0 | 1-2               
+  ...ht-loader.mjs |       0 |      100 |     100 |       0 | 2-5               
+  ...er-loader.mjs |       0 |      100 |     100 |       0 | 2-5               
+  wasm.js          |       0 |      100 |     100 |       0 | 2-639             
+ ...prisma/runtime |       0 |      100 |     100 |       0 |                   
+  edge-esm.js      |       0 |      100 |     100 |       0 | 2-35              
+  edge.js          |       0 |      100 |     100 |       0 | 2-35              
+  index-browser.js |       0 |      100 |     100 |       0 | 2-17              
+  library.js       |       0 |      100 |     100 |       0 | 5-136             
+  react-native.js  |       0 |      100 |     100 |       0 | 2-84              
+  ...piler-edge.js |       0 |      100 |     100 |       0 | 2-85              
+  ...ngine-edge.js |       0 |      100 |     100 |       0 | 2-38              
+ src/middleware    |   21.48 |      100 |       0 |   21.48 |                   
+  ...middleware.js |   21.48 |      100 |       0 |   21.48 | ...94-123,130-137 
+ src/routes        |   27.87 |        0 |       0 |   27.87 |                   
+  auth.routes.js   |     100 |      100 |     100 |     100 |                   
+  chat.routes.js   |       0 |        0 |       0 |       0 | 1-10              
+  ...ion.routes.js |       0 |        0 |       0 |       0 | 1-23              
+  ...orm.routes.js |       0 |        0 |       0 |       0 | 1-82              
+  role.routes.js   |       0 |        0 |       0 |       0 | 1-12              
+  tenant.routes.js |       0 |        0 |       0 |       0 | 1-59              
+  ...ole.routes.js |       0 |        0 |       0 |       0 | 1-11              
+ src/utils         |   27.78 |        0 |       0 |   27.78 |                   
+  audit.helpers.js |   31.81 |      100 |       0 |   31.81 | 7-15,19-24        
+  auth.helpers.js  |   45.83 |      100 |       0 |   45.83 | 28-36,44-60,67-85 
+  ...tAdminRole.js |   19.56 |      100 |       0 |   19.56 | 10-44,48-53       
+  platformAuth.js  |       0 |        0 |       0 |       0 | 1-67              
+  validators.js    |   29.52 |      100 |       0 |   29.52 | ...02-326,334-363 
+-------------------|---------|----------|---------|---------|-------------------

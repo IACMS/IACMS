@@ -6,6 +6,11 @@ import * as closeCase         from './closeCase.mutation.js';
 import * as inviteUser        from './inviteUser.mutation.js';
 import * as deactivateUser    from './deactivateUser.mutation.js';
 import * as updateUser        from './updateUser.mutation.js';
+import * as createDepartment  from './createDepartment.mutation.js';
+import * as updateDepartment  from './updateDepartment.mutation.js';
+import * as createAssignment  from './createAssignment.mutation.js';
+import * as createWorkflow    from './createWorkflow.mutation.js';
+import * as updateWorkflowStatus from './updateWorkflowStatus.mutation.js';
 
 const mutations = new Map([
   // ── Phase 0-3 (original) ───────────────────────────────────────────
@@ -22,6 +27,13 @@ const mutations = new Map([
   ['inviteUser',       inviteUser],
   ['deactivateUser',   deactivateUser],
   ['updateUser',       updateUser],
+
+  // ── Phase 5 — Administrative Operations ───────────────────────────
+  ['createDepartment', createDepartment],
+  ['updateDepartment', updateDepartment],
+  ['createAssignment', createAssignment],
+  ['createWorkflow',   createWorkflow],
+  ['updateWorkflowStatus', updateWorkflowStatus],
 ]);
 
 export default mutations;

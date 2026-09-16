@@ -1,0 +1,201 @@
+
+ RUN  v4.1.5 /home/e/code/IACMS/Current/IACMS/services/api-gateway
+      Coverage enabled with v8
+
+ ✓ tests/rbac.middleware.test.js (13 tests) 211ms
+stdout | tests/integration/phase2.e2e.mocked.test.js > Phase 2: Partner API Mutations E2E (Mocked) > createCase > creates a case via API key with valid workflow
+{"timestamp":"2026-09-16T11:21:02.387Z","service":"query-engine:mutations","level":"INFO","message":"Mutation executed","action":"createCase","tenantId":"tenant-123","executionTimeMs":3,"requestId":"req_0a8d2a8858"}
+
+stdout | tests/integration/phase2.e2e.mocked.test.js > Phase 2: Partner API Mutations E2E (Mocked) > executeTransition > executes a valid transition
+{"timestamp":"2026-09-16T11:21:02.432Z","service":"query-engine:mutations","level":"INFO","message":"Mutation executed","action":"executeTransition","tenantId":"tenant-123","executionTimeMs":3,"requestId":"req_0fcee032c0"}
+
+stdout | tests/integration/phase2.e2e.mocked.test.js > Phase 2: Partner API Mutations E2E (Mocked) > createReferral > creates a referral to a valid tenant
+{"timestamp":"2026-09-16T11:21:02.459Z","service":"query-engine:mutations","level":"INFO","message":"Mutation executed","action":"createReferral","tenantId":"tenant-123","executionTimeMs":1,"requestId":"req_dbf497e80c"}
+
+ ✓ tests/integration/phase2.e2e.mocked.test.js (7 tests) 179ms
+stdout | tests/session.redis.store.test.js > Redis session store > createSessionMiddleware fails fast when Redis is unreachable
+Session store: Redis connection closed
+
+ ✓ tests/unit/graphql/schema.test.js (7 tests) 1091ms
+stdout | tests/session.redis.store.test.js > Redis session store > persists session in Redis under iacms:sess: and round-trips via cookie
+Session store: Redis connected
+
+stdout | tests/session.redis.store.test.js > Redis session store > persists session in Redis under iacms:sess: and round-trips via cookie
+Session store: Redis connection closed
+
+ ✓ tests/session.redis.store.test.js (2 tests) 3097ms
+     ✓ createSessionMiddleware fails fast when Redis is unreachable  2446ms
+     ✓ persists session in Redis under iacms:sess: and round-trips via cookie  313ms
+ ✓ tests/integration/phase3.e2e.mocked.test.js (12 tests) 265ms
+ ✓ tests/unit/phase4.mutations.test.js (15 tests) 237ms
+stdout | tests/integration/phase5.e2e.mocked.test.js > Phase 5: Administrative Partner API Mutations > createDepartment > creates a department successfully
+{"timestamp":"2026-09-16T11:21:05.159Z","service":"query-engine:mutations","level":"INFO","message":"Mutation executed","action":"createDepartment","tenantId":"tenant-123","executionTimeMs":1,"requestId":"req_9eb65b900d"}
+
+stdout | tests/integration/phase5.e2e.mocked.test.js > Phase 5: Administrative Partner API Mutations > createDepartment > creates a department successfully
+{
+  success: true,
+  action: 'createDepartment',
+  data: { departmentId: 'dept-123', code: 'HR', name: 'Human Resources' },
+  meta: { executionTimeMs: 1, requestId: 'req_9eb65b900d' }
+}
+
+stdout | tests/integration/phase5.e2e.mocked.test.js > Phase 5: Administrative Partner API Mutations > createAssignment > creates an assignment successfully
+{"timestamp":"2026-09-16T11:21:05.192Z","service":"query-engine:mutations","level":"INFO","message":"Mutation executed","action":"createAssignment","tenantId":"tenant-123","executionTimeMs":1,"requestId":"req_15326042cd"}
+
+stdout | tests/integration/phase5.e2e.mocked.test.js > Phase 5: Administrative Partner API Mutations > createAssignment > creates an assignment successfully
+{
+  success: true,
+  action: 'createAssignment',
+  data: {
+    assignmentId: 'assign-123',
+    caseId: '123e4567-e89b-12d3-a456-426614174000',
+    assignedTo: '123e4567-e89b-12d3-a456-426614174001',
+    assignmentType: 'manual'
+  },
+  meta: { executionTimeMs: 1, requestId: 'req_15326042cd' }
+}
+
+stdout | tests/integration/phase5.e2e.mocked.test.js > Phase 5: Administrative Partner API Mutations > createWorkflow > creates a workflow with steps and transitions
+{"timestamp":"2026-09-16T11:21:05.218Z","service":"query-engine:mutations","level":"INFO","message":"Mutation executed","action":"createWorkflow","tenantId":"tenant-123","executionTimeMs":5,"requestId":"req_1054f68c7d"}
+
+stdout | tests/integration/phase5.e2e.mocked.test.js > Phase 5: Administrative Partner API Mutations > createWorkflow > creates a workflow with steps and transitions
+{
+  success: true,
+  action: 'createWorkflow',
+  data: { workflowId: 'wf-123', key: 'TEST', version: 1, status: 'DRAFT' },
+  meta: { executionTimeMs: 5, requestId: 'req_1054f68c7d' }
+}
+
+ ✓ tests/unit/graphql/audit.plugin.test.js (3 tests) 26ms
+ ✓ tests/integration/phase5.e2e.mocked.test.js (3 tests) 137ms
+ ✓ tests/unit/apiKey.service.test.js (6 tests) 61ms
+stdout | tests/integration/phase1.e2e.mocked.test.js > Phase 1: Partner API E2E (Mocked) > validates the unified query endpoint, partner rate limits, and field sanitization
+{"timestamp":"2026-09-16T11:21:05.980Z","service":"query-engine:dispatcher","level":"INFO","message":"Query executed","entity":"cases","tenantId":"tenant-123","resultCount":1,"executionTimeMs":3,"requestId":"req_a07b1f8eb4"}
+
+ ✓ tests/integration/phase1.e2e.mocked.test.js (3 tests) 129ms
+stdout | tests/unit/graphql/cases.resolver.test.js > GraphQL Cases Resolver > translates GraphQL args into Prisma query
+{"timestamp":"2026-09-16T11:21:06.499Z","service":"graphql:query-resolver","level":"INFO","message":"GraphQL query executed","entity":"cases","tenantId":"tenant-123","resultCount":1,"executionTimeMs":7,"requestId":"req-test-1"}
+
+stdout | tests/unit/graphql/cases.resolver.test.js > GraphQL Cases Resolver > writes an audit record for the query
+{"timestamp":"2026-09-16T11:21:06.526Z","service":"graphql:query-resolver","level":"INFO","message":"GraphQL query executed","entity":"cases","tenantId":"tenant-123","resultCount":1,"executionTimeMs":2,"requestId":"req-test-1"}
+
+stdout | tests/unit/graphql/cases.resolver.test.js > GraphQL Cases Resolver > ensures id is always included in the select fields
+{"timestamp":"2026-09-16T11:21:06.540Z","service":"graphql:query-resolver","level":"INFO","message":"GraphQL query executed","entity":"cases","tenantId":"tenant-123","resultCount":1,"executionTimeMs":2,"requestId":"req-test-1"}
+
+ ✓ tests/unit/graphql/cases.resolver.test.js (3 tests) 78ms
+ ✓ tests/unit/webhook.service.test.js (2 tests) 20ms
+ ✓ tests/unit/queryBuilder.test.js (7 tests) 44ms
+stdout | tests/unit/graphql/mutations.resolver.test.js > GraphQL Mutation Helper — executeMutation > allows execution with exact scope
+{"timestamp":"2026-09-16T11:21:07.985Z","service":"graphql:mutation-resolver","level":"INFO","message":"GraphQL mutation executed","action":"createCase","tenantId":"tenant-123","executionTimeMs":4,"requestId":"req-test-1"}
+
+stdout | tests/unit/graphql/mutations.resolver.test.js > GraphQL Mutation Helper — executeMutation > allows execution with wildcard scope
+{"timestamp":"2026-09-16T11:21:07.991Z","service":"graphql:mutation-resolver","level":"INFO","message":"GraphQL mutation executed","action":"createCase","tenantId":"tenant-123","executionTimeMs":0,"requestId":"req-test-1"}
+
+stdout | tests/unit/graphql/mutations.resolver.test.js > GraphQL Mutation Helper — executeMutation > writes audit record after successful execution
+{"timestamp":"2026-09-16T11:21:08.002Z","service":"graphql:mutation-resolver","level":"INFO","message":"GraphQL mutation executed","action":"createCase","tenantId":"tenant-123","executionTimeMs":1,"requestId":"req-test-1"}
+
+ ✓ tests/unit/graphql/mutations.resolver.test.js (8 tests) 55ms
+ ✓ tests/unit/metricsHandler.test.js (4 tests) 44ms
+ ✓ tests/unit/mutationDispatcher.test.js (3 tests) 83ms
+ ✓ tests/unit/costCalculator.test.js (8 tests) 23ms
+ ✓ tests/unit/graphql/costLimiter.test.js (5 tests) 23ms
+ ✓ tests/unit/graphql/scopeDirective.test.js (8 tests) 21ms
+ ✓ tests/unit/queryValidator.test.js (7 tests) 60ms
+ ✓ tests/migration.postgres-removed.test.js (2 tests) 23ms
+ ✓ tests/unit/downstreamHeaders.test.js (3 tests) 29ms
+ ✓ tests/unit/allowlist.test.js (2 tests) 16ms
+
+ Test Files  23 passed (23)
+      Tests  133 passed (133)
+   Start at  14:20:57
+   Duration  16.69s (transform 3.22s, setup 0ms, import 15.64s, tests 5.95s, environment 16ms)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   31.58 |    27.13 |   25.09 |   76.92 |                   
+ config            |   55.76 |    45.83 |   38.46 |      58 |                   
+  database.js      |      40 |      100 |       0 |      40 | 7-9               
+  redis.config.js  |    5.26 |        0 |       0 |    5.88 | 22-61             
+  ...ion.config.js |   92.85 |    78.57 |   83.33 |   92.85 | 20,95             
+ engine            |   87.36 |    73.13 |     100 |   89.06 |                   
+  auditWriter.js   |      75 |       70 |     100 |      75 | 26                
+  ...Calculator.js |     100 |      100 |     100 |     100 |                   
+  ...icsHandler.js |     100 |      100 |     100 |     100 |                   
+  ...Dispatcher.js |   84.21 |    66.66 |     100 |   85.71 | 36-40,62,95       
+  queryBuilder.js  |   91.66 |    77.46 |     100 |   95.06 | 35,65,137,151     
+  ...Dispatcher.js |   66.66 |     37.5 |     100 |   66.66 | 20-30             
+  queryRouter.js   |   89.47 |       60 |     100 |   88.88 | 15,33             
+  ...yValidator.js |     100 |      100 |     100 |     100 |                   
+  ...Serializer.js |   59.25 |       28 |     100 |   65.21 | 14-15,28-36       
+ engine/allowlists |     100 |      100 |     100 |     100 |                   
+  ....allowlist.js |       0 |        0 |       0 |       0 |                   
+  ....allowlist.js |       0 |        0 |       0 |       0 |                   
+  ....allowlist.js |       0 |        0 |       0 |       0 |                   
+  ....allowlist.js |       0 |        0 |       0 |       0 |                   
+  index.js         |     100 |      100 |     100 |     100 |                   
+  ....allowlist.js |       0 |        0 |       0 |       0 |                   
+  ....allowlist.js |       0 |        0 |       0 |       0 |                   
+  ....allowlist.js |       0 |        0 |       0 |       0 |                   
+  ....allowlist.js |       0 |        0 |       0 |       0 |                   
+ engine/mutations  |   74.35 |    51.68 |      80 |   80.83 |                   
+  ...e.mutation.js |   93.33 |    66.66 |     100 |     100 | 37,63-66          
+  ...t.mutation.js |   82.35 |     62.5 |     100 |   93.33 | 26                
+  ...e.mutation.js |      95 |     87.5 |     100 |     100 | 32                
+  ...t.mutation.js |   85.71 |       50 |     100 |     100 | 21-24             
+  ...l.mutation.js |   73.07 |    61.11 |     100 |   81.81 | 28,39-41          
+  ...w.mutation.js |   82.14 |    42.85 |     100 |      92 | 58-59             
+  ...r.mutation.js |    92.3 |    83.33 |     100 |     100 | 45                
+  ...n.mutation.js |   81.81 |       70 |     100 |      90 | 26,36             
+  index.js         |   66.66 |       50 |      50 |   66.66 | 51                
+  ...r.mutation.js |   79.31 |    66.66 |     100 |   79.31 | 48-55,65,112      
+  ...e.mutation.js |      88 |       60 |     100 |     100 | 50-55             
+  ...t.mutation.js |   13.33 |        0 |       0 |   15.38 | 14-40             
+  ...r.mutation.js |      84 |       50 |     100 |   90.47 | 48,59             
+  ...s.mutation.js |    9.52 |        0 |       0 |   10.52 | 12-48             
+ generated/prisma  |   93.97 |       50 |       0 |   93.97 |                   
+  index.js         |   93.97 |       50 |       0 |   93.97 | 619-629           
+ ...prisma/runtime |   20.46 |    20.97 |   20.43 |      50 |                   
+  library.js       |   20.46 |    20.97 |   20.43 |      50 | ...73-105,116-135 
+ ...hql/directives |   95.83 |    85.71 |     100 |     100 |                   
+  requireScope.js  |   95.83 |    85.71 |     100 |     100 | 49-55             
+ graphql/plugins   |    92.3 |    80.95 |     100 |   95.83 |                   
+  audit.plugin.js  |    92.3 |    80.95 |     100 |   95.83 | 52                
+ graphql/resolvers |    78.5 |    52.32 |   76.92 |   82.29 |                   
+  index.js         |     100 |      100 |     100 |     100 |                   
+  ...tionHelper.js |   73.17 |    44.73 |      50 |   74.35 | ...,39-59,110,129 
+  queryHelper.js   |   81.53 |    58.33 |   88.88 |    87.5 | 65,77,161-170     
+ ...lvers/mutation |      50 |      100 |       0 |     100 |                   
+  ...e.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...e.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...l.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...r.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...n.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...r.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...e.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...r.resolver.js |      50 |      100 |       0 |     100 |                   
+ ...esolvers/query |   56.25 |      100 |    12.5 |     100 |                   
+  ...s.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...s.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...s.resolver.js |     100 |      100 |     100 |     100 |                   
+  ...s.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...s.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...s.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...s.resolver.js |      50 |      100 |       0 |     100 |                   
+  ...s.resolver.js |      50 |      100 |       0 |     100 |                   
+ graphql/schema    |    9.52 |        0 |       0 |    12.5 |                   
+  scalars.js       |       5 |        0 |       0 |    6.66 | 13-36             
+  typeDefs.js      |     100 |      100 |     100 |     100 |                   
+ middleware        |   50.31 |    47.82 |   58.33 |   53.67 |                   
+  ...middleware.js |   11.76 |     12.5 |      25 |   14.28 | 4-8,16-26         
+  ...middleware.js |   24.32 |    40.62 |   33.33 |   25.71 | 34-37,51-105      
+  ...middleware.js |   66.01 |    56.66 |   70.58 |   71.26 | ...93,345,372-394 
+ routes            |   89.23 |    84.84 |   88.88 |   88.88 |                   
+  apiKey.routes.js |   89.23 |    84.84 |   88.88 |   88.88 | ...95,106,123,149 
+ services          |   43.75 |    34.78 |   33.33 |   47.45 |                   
+  ...ey.service.js |   79.31 |    72.72 |   66.66 |   79.31 | ...,72,93,115,133 
+  ...ok.service.js |   14.28 |        0 |   11.11 |   16.66 | 37-99,130-148     
+ utils             |   85.71 |    66.66 |   66.66 |   83.33 |                   
+  ...eamHeaders.js |   85.71 |    66.66 |   66.66 |   83.33 | 29-30,41          
+-------------------|---------|----------|---------|---------|-------------------
