@@ -23,6 +23,7 @@
 import prisma from '../config/database.js';
 import { signPayload } from '../services/webhook.service.js';
 import Logger from '../../../../shared/common/logger.js';
+import dns from 'dns/promises';
 
 const logger = new Logger('webhook-dispatcher');
 
@@ -142,16 +143,60 @@ async function deliverWithRetry(webhook, rawBody, eventName) {
   }
 }
 
+function isPrivateIP(ip) {
+  if (ip.startsWith('::ffff:')) ip = ip.substring(7);
+  const parts = ip.split('.');
+  if (parts.length === 4) {
+    const p1 = parseInt(parts[0], 10);
+    const p2 = parseInt(parts[1], 10);
+    return (
+      p1 === 10 ||
+      (p1 === 172 && p2 >= 16 && p2 <= 31) ||
+      (p1 === 192 && p2 === 168) ||
+      p1 === 127 ||
+      p1 === 0 ||
+      p1 === 169
+    );
+  }
+  if (ip === '::1') return true;
+  if (/^f[cd][0-9a-f]{2}:/i.test(ip)) return true;
+  if (/^fe[89ab][0-9a-f]:/i.test(ip)) return true;
+  return false;
+}
+
 async function deliver(webhook, rawBody, timeoutMs) {
+  let url;
+  try {
+    url = new URL(webhook.url);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error('Unsupported protocol');
+    }
+  } catch (err) {
+    throw new Error('Invalid URL');
+  }
+
+  // SSRF Protection: Resolve DNS and block private IPs
+  const originalHostname = url.hostname;
+  if (originalHostname === 'localhost') throw new Error('Localhost not allowed');
+  
+  const { address, family } = await dns.lookup(originalHostname);
+  if (isPrivateIP(address)) {
+    throw new Error(`SSRF blocked: URL resolves to private IP ${address}`);
+  }
+
+  // Prevent DNS rebinding by fetching the resolved IP directly
+  url.hostname = family === 6 ? `[${address}]` : address;
+
   const signature = signPayload(webhook.secret, rawBody);
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(webhook.url, {
+    const response = await fetch(url.toString(), {
       method: 'POST',
       headers: {
+        'Host': originalHostname,
         'Content-Type': 'application/json',
         'X-IACMS-Signature-256': signature,
         'X-IACMS-Event': rawBody ? JSON.parse(rawBody).event : '',
