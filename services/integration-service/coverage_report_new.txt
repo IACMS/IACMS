@@ -1,0 +1,55 @@
+
+ RUN  v3.2.4 /home/e/code/IACMS/Current/IACMS/services/integration-service
+      Coverage enabled with v8
+
+ ✓ tests/unit/webhook.controller.test.js (9 tests) 44ms
+ ✓ tests/unit/integration.controller.test.js (7 tests) 122ms
+ ✓ tests/integration/routes.test.js (6 tests) 635ms
+   ✓ Integration Service Routes > Webhook Routes > GET /webhooks returns list  309ms
+ ✓ tests/unit/webhook.model.test.js (1 test) 19ms
+ ✓ tests/regression/integration-secrets.test.js (1 test) 50ms
+ ✓ tests/unit/integration.model.test.js (1 test) 16ms
+stdout | tests/integration/models.test.js
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+
+ ↓ tests/integration/models.test.js (3 tests | 3 skipped)
+
+ Test Files  6 passed | 1 skipped (7)
+      Tests  25 passed | 3 skipped (28)
+   Start at  14:20:12
+   Duration  10.93s (transform 892ms, setup 0ms, collect 3.93s, tests 886ms, environment 16ms, prepare 5.23s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   28.96 |    51.04 |    17.4 |   28.96 |                   
+ src               |       0 |        0 |       0 |       0 |                   
+  server.js        |       0 |        0 |       0 |       0 | 1-42              
+ src/config        |       0 |        0 |       0 |       0 |                   
+  database.js      |       0 |        0 |       0 |       0 | 1-25              
+ src/controllers   |      92 |    71.42 |     100 |      92 |                   
+  ...controller.js |   90.65 |    61.11 |     100 |   90.65 | ...,85-86,112-113 
+  ...controller.js |   93.54 |    82.35 |     100 |   93.54 | 57-58,70-71,79-80 
+ ...nerated/prisma |    25.2 |    66.66 |   85.71 |    25.2 |                   
+  client.js        |     100 |      100 |     100 |     100 |                   
+  default.js       |       0 |      100 |     100 |       0 | 2-5               
+  edge.js          |       0 |      100 |     100 |       0 | 2-632             
+  index-browser.js |       0 |      100 |     100 |       0 | 2-619             
+  index.js         |   98.48 |        0 |     100 |   98.48 | 619-628           
+  ..._engine_bg.js |       0 |        0 |       0 |       0 | 1-2               
+  ...ht-loader.mjs |       0 |      100 |     100 |       0 | 2-5               
+  ...er-loader.mjs |       0 |      100 |     100 |       0 | 2-5               
+  wasm.js          |       0 |      100 |     100 |       0 | 2-639             
+ ...prisma/runtime |   17.03 |     49.3 |   15.81 |   17.03 |                   
+  edge-esm.js      |       0 |      100 |     100 |       0 | 2-35              
+  edge.js          |       0 |      100 |     100 |       0 | 2-35              
+  index-browser.js |       0 |      100 |     100 |       0 | 2-17              
+  library.js       |   70.12 |    48.59 |   15.25 |   70.12 | ...1,72-73,79-103 
+  react-native.js  |       0 |      100 |     100 |       0 | 2-84              
+  ...piler-edge.js |       0 |      100 |     100 |       0 | 2-85              
+  ...ngine-edge.js |       0 |      100 |     100 |       0 | 2-38              
+ src/routes        |     100 |      100 |     100 |     100 |                   
+  ...ion.routes.js |     100 |      100 |     100 |     100 |                   
+  ...ook.routes.js |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------

@@ -1,0 +1,74 @@
+
+ RUN  v3.2.4 /home/e/code/IACMS/Current/IACMS/services/case-engine-service
+      Coverage enabled with v8
+
+ ✓ tests/unit/workflow.engine.test.js (6 tests) 20ms
+ ✓ tests/unit/case.controller.test.js (3 tests) 33ms
+ ✓ tests/integration/case.routes.test.js (2 tests) 184ms
+ ✓ tests/unit/referral.controller.test.js (1 test) 19ms
+
+ Test Files  4 passed (4)
+      Tests  12 passed (12)
+   Start at  14:27:23
+   Duration  6.69s (transform 753ms, setup 0ms, collect 2.03s, tests 256ms, environment 3ms, prepare 1.94s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    5.78 |    54.12 |   28.71 |    5.78 |                   
+ src               |       0 |        0 |       0 |       0 |                   
+  server.js        |       0 |        0 |       0 |       0 | 1-50              
+ src/config        |       0 |        0 |       0 |       0 |                   
+  database.js      |       0 |        0 |       0 |       0 | 1-22              
+  eventBus.js      |       0 |        0 |       0 |       0 | 1-7               
+ src/controllers   |    6.21 |    30.43 |   16.98 |    6.21 |                   
+  ...controller.js |       0 |        0 |       0 |       0 | 1-152             
+  ...controller.js |       0 |        0 |       0 |       0 | 1-142             
+  ...controller.js |   14.78 |       50 |   15.78 |   14.78 | ...83-603,606-671 
+  ...controller.js |       0 |        0 |       0 |       0 | 1-386             
+  ...controller.js |   13.91 |    26.92 |   27.27 |   13.91 | ...41-595,598-677 
+  ...controller.js |    4.42 |      100 |       0 |    4.42 | 11-114,120-258    
+  ...controller.js |       0 |        0 |       0 |       0 | 1-155             
+  ...controller.js |       0 |        0 |       0 |       0 | 1-91              
+  ...controller.js |       0 |        0 |       0 |       0 | 1-755             
+ ...nerated/prisma |       0 |    88.88 |   88.88 |       0 |                   
+  client.js        |       0 |      100 |     100 |       0 | 2-5               
+  default.js       |       0 |      100 |     100 |       0 | 2-5               
+  edge.js          |       0 |      100 |     100 |       0 | 2-632             
+  index-browser.js |       0 |      100 |     100 |       0 | 2-619             
+  index.js         |       0 |      100 |     100 |       0 | 2-654             
+  ..._engine_bg.js |       0 |        0 |       0 |       0 | 1-2               
+  ...ht-loader.mjs |       0 |      100 |     100 |       0 | 2-5               
+  ...er-loader.mjs |       0 |      100 |     100 |       0 | 2-5               
+  wasm.js          |       0 |      100 |     100 |       0 | 2-639             
+ ...prisma/runtime |       0 |      100 |     100 |       0 |                   
+  edge-esm.js      |       0 |      100 |     100 |       0 | 2-35              
+  edge.js          |       0 |      100 |     100 |       0 | 2-35              
+  index-browser.js |       0 |      100 |     100 |       0 | 2-17              
+  library.js       |       0 |      100 |     100 |       0 | 5-136             
+  react-native.js  |       0 |      100 |     100 |       0 | 2-84              
+  ...piler-edge.js |       0 |      100 |     100 |       0 | 2-85              
+  ...ngine-edge.js |       0 |      100 |     100 |       0 | 2-38              
+ src/middleware    |       0 |        0 |       0 |       0 |                   
+  ...ayIdentity.js |       0 |        0 |       0 |       0 | 1-17              
+ src/routes        |   20.58 |        0 |       0 |   20.58 |                   
+  ...ent.routes.js |       0 |        0 |       0 |       0 | 1-10              
+  ...ent.routes.js |       0 |        0 |       0 |       0 | 1-10              
+  case.routes.js   |     100 |      100 |     100 |     100 |                   
+  ...ard.routes.js |       0 |        0 |       0 |       0 | 1-9               
+  ...ral.routes.js |       0 |        0 |       0 |       0 | 1-25              
+  ...low.routes.js |       0 |        0 |       0 |       0 | 1-39              
+ src/security      |   64.63 |       40 |      40 |   64.63 |                   
+  ...cessPolicy.js |   64.63 |       40 |      40 |   64.63 | ...65,68-69,78-95 
+ src/services      |   22.46 |    86.66 |   11.11 |   22.46 |                   
+  invariants.js    |   96.36 |    89.65 |     100 |   96.36 | 17-18             
+  ...ion.engine.js |    8.08 |      100 |       0 |    8.08 | ...31-153,156-162 
+  ...flow.cache.js |       0 |        0 |       0 |       0 | 1-57              
+  ...low.client.js |    9.45 |      100 |       0 |    9.45 | 3-40,46-57,61-77  
+ src/utils         |   31.34 |    66.66 |   22.22 |   31.34 |                   
+  case-number.js   |      25 |      100 |       0 |      25 | 7-22              
+  tenant-scope.js  |   68.29 |      100 |      50 |   68.29 | 30-40,43-44       
+  validators.js    |       0 |        0 |       0 |       0 | 1-11              
+  ...te.helpers.js |   14.28 |      100 |       0 |   14.28 | 4-9,12-32,40-70   
+-------------------|---------|----------|---------|---------|-------------------
