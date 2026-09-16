@@ -22,6 +22,7 @@ import sessionRoutes from './routes/session.routes.js';
 import apiKeyRoutes from './routes/apiKey.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import { queryRouter } from './engine/queryRouter.js';
+import { createGraphQLMiddleware } from './graphql/server.js';
 import { startOutboxPublisher, stopOutboxPublisher } from './workers/outboxPublisher.js';
 import { startWebhookDispatcher, stopWebhookDispatcher } from './workers/webhookDispatcher.js';
 import { setupSwagger } from '../../../shared/swagger.js';
@@ -168,9 +169,26 @@ async function startServer() {
     return rbacMiddleware(req, res, next);
   });
 
-  // ─── Partner API: Unified Query Endpoint ───────────────────────────────
-  // API key authenticated requests go through the query engine directly
-  app.use('/api/v1/query', express.json({ limit: '1mb' }), partnerApiRateLimiter, queryRouter);
+  // ─── Partner API: GraphQL Endpoint ──────────────────────────────────────
+  // Standard GraphQL interface for partner agency integrations.
+  // Authentication: X-API-Key header (validated by auth.middleware above).
+  const graphqlMiddleware = await createGraphQLMiddleware();
+  app.use(
+    '/api/v1/graphql',
+    express.json({ limit: '1mb' }),
+    partnerApiRateLimiter,
+    graphqlMiddleware,
+  );
+
+  // ─── Partner API: Legacy JSON Query Endpoint (DEPRECATED) ────────────────
+  // Kept for backward compatibility. Will be removed after migration.
+  // Partners should migrate to POST /api/v1/graphql.
+  app.use('/api/v1/query', express.json({ limit: '1mb' }), partnerApiRateLimiter, (req, res, next) => {
+    res.setHeader('Deprecation', 'true');
+    res.setHeader('Sunset', new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toUTCString());
+    res.setHeader('Link', '</api/v1/graphql>; rel="successor-version"');
+    next();
+  }, queryRouter);
 
   // ─── API Key Management (admin-only, session/JWT auth) ─────────────────
   app.use('/api/v1/api-keys', express.json(), apiKeyRoutes);
@@ -384,6 +402,7 @@ async function startServer() {
     logger.info('SIGTERM received — shutting down gracefully');
     stopOutboxPublisher();
     stopWebhookDispatcher();
+    if (typeof graphqlMiddleware.stop === 'function') await graphqlMiddleware.stop();
     await closeSessionStore();
     await closeRedisClient();
     process.exit(0);
