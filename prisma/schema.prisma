@@ -3,38 +3,45 @@
 // Consolidated workflow engine schema (Sprint 0 multi_tenant_workflow_engine).
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 /// Per-service clients (outputs relative to this `prisma/` directory). Run `npx prisma generate` from repo root.
 generator clientIam {
-  provider = "prisma-client-js"
-  output   = "../services/iam-service/src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../services/iam-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 generator clientCaseEngine {
-  provider = "prisma-client-js"
-  output   = "../services/case-engine-service/src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../services/case-engine-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 generator clientAudit {
-  provider = "prisma-client-js"
-  output   = "../services/audit-service/src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../services/audit-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 generator clientIntegration {
-  provider = "prisma-client-js"
-  output   = "../services/integration-service/src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../services/integration-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 generator clientFile {
-  provider = "prisma-client-js"
-  output   = "../services/file-service/src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../services/file-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 generator clientGateway {
-  provider = "prisma-client-js"
-  output   = "../services/api-gateway/src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../services/api-gateway/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
