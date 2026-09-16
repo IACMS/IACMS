@@ -29,6 +29,8 @@ COPY --from=deps /app/prisma ./prisma
 COPY --from=deps /app/package.json ./package.json
 COPY services/api-gateway/package.json ./services/api-gateway/package.json
 COPY services/api-gateway/src ./services/api-gateway/src
+# Override with the correctly-targeted Prisma binary from the deps stage
+COPY --from=deps /app/services/api-gateway/src/generated ./services/api-gateway/src/generated
 
 WORKDIR /app/services/api-gateway
 EXPOSE 3000

@@ -29,6 +29,7 @@ COPY --from=deps /app/prisma ./prisma
 COPY --from=deps /app/package.json ./package.json
 COPY services/case-engine-service/package.json ./services/case-engine-service/package.json
 COPY services/case-engine-service/src ./services/case-engine-service/src
+COPY --from=deps /app/services/case-engine-service/src/generated ./services/case-engine-service/src/generated
 
 WORKDIR /app/services/case-engine-service
 EXPOSE 3003
