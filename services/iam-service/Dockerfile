@@ -29,6 +29,7 @@ COPY --from=deps /app/prisma ./prisma
 COPY --from=deps /app/package.json ./package.json
 COPY services/iam-service/package.json ./services/iam-service/package.json
 COPY services/iam-service/src ./services/iam-service/src
+COPY --from=deps /app/services/iam-service/src/generated ./services/iam-service/src/generated
 
 WORKDIR /app/services/iam-service
 EXPOSE 3001

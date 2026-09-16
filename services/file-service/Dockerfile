@@ -25,6 +25,7 @@ FROM node:22-alpine AS http
 WORKDIR /app
 COPY --from=deps /app /app
 COPY services/file-service/src ./services/file-service/src
+COPY --from=deps /app/services/file-service/src/generated ./services/file-service/src/generated
 
 WORKDIR /app/services/file-service
 EXPOSE 3009
@@ -38,6 +39,7 @@ RUN apk add --no-cache ffmpeg
 WORKDIR /app
 COPY --from=deps /app /app
 COPY services/file-service/src ./services/file-service/src
+COPY --from=deps /app/services/file-service/src/generated ./services/file-service/src/generated
 
 WORKDIR /app/services/file-service
 ENV WORKER_MODE=standalone

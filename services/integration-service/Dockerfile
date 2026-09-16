@@ -29,6 +29,7 @@ COPY --from=deps /app/prisma ./prisma
 COPY --from=deps /app/package.json ./package.json
 COPY services/integration-service/package.json ./services/integration-service/package.json
 COPY services/integration-service/src ./services/integration-service/src
+COPY --from=deps /app/services/integration-service/src/generated ./services/integration-service/src/generated
 
 WORKDIR /app/services/integration-service
 EXPOSE 3007

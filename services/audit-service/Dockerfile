@@ -29,6 +29,7 @@ COPY --from=deps /app/prisma ./prisma
 COPY --from=deps /app/package.json ./package.json
 COPY services/audit-service/package.json ./services/audit-service/package.json
 COPY services/audit-service/src ./services/audit-service/src
+COPY --from=deps /app/services/audit-service/src/generated ./services/audit-service/src/generated
 
 WORKDIR /app/services/audit-service
 EXPOSE 3006
