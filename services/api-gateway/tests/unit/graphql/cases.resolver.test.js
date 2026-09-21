@@ -24,6 +24,7 @@ const mockPrisma = {
   $transaction: vi.fn(async (callback) => {
     return callback(mockPrisma);
   }),
+  $executeRaw: vi.fn().mockResolvedValue(),
   case: {
     findMany: vi.fn().mockResolvedValue([{ id: 'c1', title: 'Case 1' }]),
     count: vi.fn().mockResolvedValue(1),

@@ -22,7 +22,9 @@ export async function writeAuditRecord(tx, { tenantId, apiKeyId, operation, enti
       },
     });
   } catch (err) {
-    // Audit write failure should not break the request, but log prominently
+    // Audit write failure MUST break the request to enforce the transactional outbox pattern
+    // and prevent silent gaps in the compliance trail.
     logger.error('Failed to write audit outbox record', { error: err.message, requestId });
+    throw err;
   }
 }
