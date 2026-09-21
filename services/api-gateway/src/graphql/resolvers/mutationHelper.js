@@ -99,34 +99,46 @@ export async function executeMutation(action, input, context) {
     });
   }
 
-  // 4. Execute
-  const mutationContext = { tenantId, apiKeyId, prisma, sourceIp, requestId };
+  // 4. Execute and Write Audit Outbox inside a single Transaction
   let result;
   try {
-    result = await mutation.execute(parseResult.data, mutationContext);
+    result = await prisma.$transaction(async (tx) => {
+      // Inject tenant context for RLS
+      await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}::text, true)`;
+
+      // Mock $transaction so the mutation handler doesn't nest transactions
+      // but instead executes within this outer transaction.
+      const txWithMock = Object.create(tx);
+      txWithMock.$transaction = async (cb) => cb(txWithMock);
+
+      const mutationContext = { tenantId, apiKeyId, prisma: txWithMock, sourceIp, requestId };
+      const res = await mutation.execute(parseResult.data, mutationContext);
+
+      // Write audit outbox (blocking — ensures transaction aborts if audit fails)
+      await tx.auditOutbox.create({
+        data: {
+          tenantId,
+          payload: {
+            source: 'partner_api_graphql',
+            apiKeyId,
+            operation: 'mutate',
+            action,
+            data: parseResult.data,
+            result: { success: true },
+            sourceIp,
+            requestId,
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
+
+      return res;
+    });
   } catch (err) {
     const mapped = mapPrismaError(err) ?? mapAppError(err);
     if (mapped) throw mapped;
     throw err; // unknown → 500
   }
-
-  // 5. Write audit outbox (non-blocking — mirrors mutationDispatcher.js)
-  prisma.auditOutbox.create({
-    data: {
-      tenantId,
-      payload: {
-        source: 'partner_api_graphql',
-        apiKeyId,
-        operation: 'mutate',
-        action,
-        data: parseResult.data,
-        result: { success: true },
-        sourceIp,
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
-    },
-  }).catch((err) => logger.error('Failed to write mutation audit record', { error: err.message, requestId }));
 
   const executionTimeMs = Date.now() - startTime;
   logger.info('GraphQL mutation executed', { action, tenantId, executionTimeMs, requestId });

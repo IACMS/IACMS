@@ -31,7 +31,7 @@ import { auditPlugin } from './plugins/audit.plugin.js';
 import { GraphQLError } from 'graphql';
 import { HeaderMap } from '@apollo/server';
 import crypto from 'node:crypto';
-import prisma from '../config/database.js';
+import { prismaPartner as prisma } from '../config/database.js';
 import Logger from '../../../../shared/common/logger.js';
 
 const logger = new Logger('graphql:server');

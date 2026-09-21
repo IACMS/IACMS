@@ -139,12 +139,13 @@ function validateEvents(events) {
 }
 
 function validateUrl(url) {
+  let parsed;
   try {
-    const parsed = new URL(url);
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      throw new ValidationError('Webhook URL must use http or https.');
-    }
+    parsed = new URL(url);
   } catch {
     throw new ValidationError('Webhook URL is not a valid URL.');
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new ValidationError('Webhook URL must use http or https.');
   }
 }

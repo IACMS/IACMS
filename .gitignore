@@ -98,10 +98,7 @@ build/
 dist/
 
 # Per-service Prisma clients (generated; run `npx prisma generate` from repo root)
-services/auth-service/src/generated/
-services/case-service/src/generated/
-services/workflow-service/src/generated/
-services/referral-service/src/generated/
+services/*/src/generated/
 
 
 # Prisma generated client (regenerated at build time)

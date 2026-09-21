@@ -17,6 +17,10 @@ vi.mock('../../../src/engine/mutations/index.js', () => ({
 
 // Mock prisma (not used by helper directly, passed in context)
 const mockPrisma = {
+  $transaction: vi.fn(async (callback) => {
+    return callback(mockPrisma);
+  }),
+  $executeRaw: vi.fn().mockResolvedValue(),
   auditOutbox: { create: vi.fn().mockResolvedValue({}) },
 };
 
@@ -125,8 +129,6 @@ describe('GraphQL Mutation Helper — executeMutation', () => {
 
     await executeMutation('createCase', { title: 'Test' }, buildContext(['*']));
 
-    // Audit is non-blocking (no await), wait a tick
-    await new Promise(r => setTimeout(r, 0));
     expect(mockPrisma.auditOutbox.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({

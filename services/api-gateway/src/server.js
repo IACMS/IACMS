@@ -21,7 +21,7 @@ import { closeRedisClient } from './config/redis.config.js';
 import sessionRoutes from './routes/session.routes.js';
 import apiKeyRoutes from './routes/apiKey.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
-import { queryRouter } from './engine/queryRouter.js';
+
 import { createGraphQLMiddleware } from './graphql/server.js';
 import { startOutboxPublisher, stopOutboxPublisher } from './workers/outboxPublisher.js';
 import { startWebhookDispatcher, stopWebhookDispatcher } from './workers/webhookDispatcher.js';
@@ -180,15 +180,7 @@ async function startServer() {
     graphqlMiddleware,
   );
 
-  // ─── Partner API: Legacy JSON Query Endpoint (DEPRECATED) ────────────────
-  // Kept for backward compatibility. Will be removed after migration.
-  // Partners should migrate to POST /api/v1/graphql.
-  app.use('/api/v1/query', express.json({ limit: '1mb' }), partnerApiRateLimiter, (req, res, next) => {
-    res.setHeader('Deprecation', 'true');
-    res.setHeader('Sunset', new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toUTCString());
-    res.setHeader('Link', '</api/v1/graphql>; rel="successor-version"');
-    next();
-  }, queryRouter);
+
 
   // ─── API Key Management (admin-only, session/JWT auth) ─────────────────
   app.use('/api/v1/api-keys', express.json(), apiKeyRoutes);

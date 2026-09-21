@@ -6,7 +6,7 @@
  * scoping, cost calculation, and auditing logic is preserved.
  */
 import { buildPrismaQuery } from '../../engine/queryBuilder.js';
-import { serializeResults } from '../../engine/responseSerializer.js';
+
 import { writeAuditRecord } from '../../engine/auditWriter.js';
 import { getAllowlist } from '../../engine/allowlists/index.js';
 import { executeMetricsQuery } from '../../engine/metricsHandler.js';
@@ -122,6 +122,9 @@ export async function executeEntityQuery(entity, args, context, info) {
   const { prismaModel, args: prismaArgs, countArgs } = buildPrismaQuery(query, tenantId);
 
   const result = await prisma.$transaction(async (tx) => {
+    // Inject tenant context for RLS
+    await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}::text, true)`;
+
     const [data, total] = await Promise.all([
       tx[prismaModel].findMany(prismaArgs),
       tx[prismaModel].count(countArgs),
