@@ -572,6 +572,7 @@ model Webhook {
   tenant  Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   creator User?   @relation(fields: [createdBy], references: [id])
 
+  @@unique([tenantId, url])
   @@index([tenantId])
   @@index([isActive])
   @@map("webhooks")
