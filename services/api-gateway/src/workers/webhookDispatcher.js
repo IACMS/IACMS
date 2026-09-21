@@ -185,7 +185,11 @@ async function deliver(webhook, rawBody, timeoutMs) {
   }
 
   // Prevent DNS rebinding by fetching the resolved IP directly
-  url.hostname = family === 6 ? `[${address}]` : address;
+  // NOTE: For HTTPS, replacing the hostname with an IP breaks SNI.
+  // We only do this for HTTP to prevent TLS certificate errors.
+  if (url.protocol === 'http:') {
+    url.hostname = family === 6 ? `[${address}]` : address;
+  }
 
   const signature = signPayload(webhook.secret, rawBody);
 
