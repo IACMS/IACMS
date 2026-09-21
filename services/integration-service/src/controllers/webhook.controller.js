@@ -1,5 +1,5 @@
 import prisma from '../config/database.js';
-import { NotFoundError, ValidationError } from '../../../../shared/common/errors.js';
+import { NotFoundError, ValidationError, ConflictError } from '../../../../shared/common/errors.js';
 import EventBus from '../../../../shared/utils/eventBus.js';
 
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'integration-service');
@@ -54,6 +54,9 @@ export async function createWebhook(req, res, next) {
     });
     res.status(201).json({ webhook });
   } catch (error) {
+    if (error.code === 'P2002' && error.meta?.target?.includes('url')) {
+      return next(new ConflictError('A webhook with this URL is already registered for this tenant.'));
+    }
     next(error);
   }
 }
@@ -67,6 +70,9 @@ export async function updateWebhook(req, res, next) {
     await eventBus.publish('webhook.updated', { webhookId: webhook.id });
     res.json({ webhook });
   } catch (error) {
+    if (error.code === 'P2002' && error.meta?.target?.includes('url')) {
+      return next(new ConflictError('A webhook with this URL is already registered for this tenant.'));
+    }
     next(error);
   }
 }
