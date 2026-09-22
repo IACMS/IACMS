@@ -239,7 +239,7 @@ services:
 
   # MinIO — S3-compatible object storage (data-network only, never exposed to clients)
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: iacms-minio
     command: server /data --console-address ":9001"
     ports:
@@ -260,7 +260,7 @@ services:
 
   # MinIO init — creates the iacms-files bucket on first boot
   minio-init:
-    image: minio/mc:latest
+    image: quay.io/minio/mc:latest
     container_name: iacms-minio-init
     depends_on:
       minio:
