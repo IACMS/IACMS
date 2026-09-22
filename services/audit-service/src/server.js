@@ -3,6 +3,8 @@ import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import auditRoutes from './routes/audit.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
+import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
 import { handleAuditLog } from './consumers/audit.consumer.js';
 import './config/database.js';
@@ -24,6 +26,12 @@ setupSwagger(app, 'Audit Service', PORT);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'audit-service', timestamp: new Date().toISOString() });
 });
+
+assertProductionSecrets([
+  { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
+]);
+
+app.use(requireInternalRequest());
 
 // Subscribe to audit events and persist them to the database
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'audit-service');

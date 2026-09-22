@@ -146,6 +146,21 @@ const ROUTE_PERMISSIONS = {
 'GET:/audit/users/:userId/actions': 'audit:read',
 'GET:/audit/compliance/:tenantId': 'audit:read',
 
+  // API Key Management (tenant admin only)
+  'GET:/api-keys/scopes': 'apiKeys:read',
+  'POST:/api-keys': 'apiKeys:create',
+  'GET:/api-keys': 'apiKeys:read',
+  'DELETE:/api-keys/:id': 'apiKeys:revoke',
+  'POST:/api-keys/:id/rotate': 'apiKeys:rotate',
+
+  // Webhook Management (tenant admin only)
+  'POST:/webhooks': 'apiKeys:create',
+  'GET:/webhooks': 'apiKeys:read',
+  'GET:/webhooks/events': 'apiKeys:read',
+  'GET:/webhooks/:id': 'apiKeys:read',
+  'PATCH:/webhooks/:id': 'apiKeys:create',
+  'DELETE:/webhooks/:id': 'apiKeys:revoke',
+
   // File Management Service
   'POST:/files': 'file:upload',
   'POST:/files/batch': 'file:upload',

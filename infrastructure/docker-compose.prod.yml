@@ -1,13 +1,19 @@
+# Production overlay — use with base compose and a filled .env.prod:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
+#
+# Only the API gateway is published on the host. Internal microservices are reachable
+# only on the Docker network. Postgres / Redis bind to localhost for admin access.
+
 services:
   postgres:
     environment:
-      POSTGRES_PASSWORD: "sV81FzBuQFCXLhxa4XFs9/WT092zDDf3"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - '127.0.0.1:5434:5432'
     restart: unless-stopped
 
   redis:
-    command: redis-server --requirepass "q0zfnbW86hgYd5GNMwX54WLOtD+LG+Ja"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
       - '127.0.0.1:6380:6379'
     restart: unless-stopped
@@ -23,140 +29,96 @@ services:
     restart: unless-stopped
 
   minio:
-    image: minio/minio:latest
     environment:
-      MINIO_ROOT_USER: ddff2b5806be361a81a9890f
-      MINIO_ROOT_PASSWORD: "EEFO/IxeE5W5fNFhK0oqghT4H4gIDH1+I01XYiLDOf8="
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     restart: unless-stopped
 
   minio-init:
-    image: minio/mc:latest
     entrypoint: >
       /bin/sh -c "
-        mc alias set local http://minio:9000 ddff2b5806be361a81a9890f 'EEFO/IxeE5W5fNFhK0oqghT4H4gIDH1+I01XYiLDOf8=';
+        mc alias set local http://minio:9000 ${MINIO_ROOT_USER} '${MINIO_ROOT_PASSWORD}';
         mc mb --ignore-existing local/iacms-files;
         mc anonymous set none local/iacms-files;
         exit 0;
       "
 
   clamav:
-    image: clamav/clamav:stable
     restart: unless-stopped
 
   api-gateway:
-    build:
-      context: ..
-      dockerfile: services/api-gateway/Dockerfile
     environment:
-      NODE_ENV: development
-      CORS_ORIGIN: "http://172.21.13.65"
-      REDIS_URL: "redis://:q0zfnbW86hgYd5GNMwX54WLOtD+LG+Ja@redis:6379"
-      SESSION_SECRET: "k/ELNoeJQyCDWU7G5d95qGz43rEMW4jIYZZ/vi8Nk4Q="
+      NODE_ENV: production
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      REDIS_URL: ${REDIS_URL}
+      DATABASE_URL: ${DATABASE_URL}
     ports:
-      - '127.0.0.1:3010:3000'
+      - '127.0.0.1:3000:3000'
     restart: unless-stopped
 
-  auth-service:
-    build:
-      context: ..
-      dockerfile: services/auth-service/Dockerfile
+  iam-service:
+    ports: []
     environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
-      JWT_SECRET: "BgIxe/n6SlyvnFFazwEt6+jICQIS6kyeAgFG7qRqxgI="
-    ports:
-      - '127.0.0.1:3011:3001'
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      DATABASE_URL: ${DATABASE_URL}
     restart: unless-stopped
 
-  rbac-service:
-    build:
-      context: ..
-      dockerfile: services/rbac-service/Dockerfile
+  case-engine-service:
+    ports: []
     environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
-    ports:
-      - '127.0.0.1:3012:3002'
-    restart: unless-stopped
-
-  case-service:
-    build:
-      context: ..
-      dockerfile: services/case-service/Dockerfile
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
-    ports:
-      - '127.0.0.1:3013:3003'
-    restart: unless-stopped
-
-  workflow-service:
-    build:
-      context: ..
-      dockerfile: services/workflow-service/Dockerfile
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
-    ports:
-      - '127.0.0.1:3014:3004'
-    restart: unless-stopped
-
-  referral-service:
-    build:
-      context: ..
-      dockerfile: services/referral-service/Dockerfile
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
-    ports:
-      - '127.0.0.1:3015:3005'
+      NODE_ENV: production
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      DATABASE_URL: ${DATABASE_URL}
     restart: unless-stopped
 
   audit-service:
-    build:
-      context: ..
-      dockerfile: services/audit-service/Dockerfile
+    ports: []
     environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
-    ports:
-      - '127.0.0.1:3016:3006'
+      NODE_ENV: production
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      DATABASE_URL: ${DATABASE_URL}
     restart: unless-stopped
 
   integration-service:
-    build:
-      context: ..
-      dockerfile: services/integration-service/Dockerfile
+    ports: []
     environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
-    ports:
-      - '127.0.0.1:3017:3007'
+      NODE_ENV: production
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      DATABASE_URL: ${DATABASE_URL}
     restart: unless-stopped
 
   notification-service:
-    build:
-      context: ..
-      dockerfile: services/notification-service/Dockerfile
+    ports: []
     environment:
-      NODE_ENV: development
-      APP_URL: "http://172.21.13.65"
-    ports:
-      - '127.0.0.1:3018:3008'
+      NODE_ENV: production
+      APP_URL: ${APP_URL}
     restart: unless-stopped
 
   file-service:
-    build:
-      context: ..
-      dockerfile: services/file-service/Dockerfile
+    ports: []
     environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://postgres:sV81FzBuQFCXLhxa4XFs9%2FWT092zDDf3@iacms-postgres:5432/iacms?schema=public"
-      JWT_SECRET: "BgIxe/n6SlyvnFFazwEt6+jICQIS6kyeAgFG7qRqxgI="
-      MINIO_ACCESS_KEY: ddff2b5806be361a81a9890f
-      MINIO_SECRET_KEY: "EEFO/IxeE5W5fNFhK0oqghT4H4gIDH1+I01XYiLDOf8="
-      REDIS_URL: "redis://:q0zfnbW86hgYd5GNMwX54WLOtD+LG+Ja@redis:6379"
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      AUTH_SERVICE_URL: http://iam-service:3001
       VIRUS_SCAN_ENABLED: 'true'
-    ports:
-      - '127.0.0.1:3019:3009'
+    restart: unless-stopped
+
+  file-service-workers:
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      VIRUS_SCAN_ENABLED: 'true'
     restart: unless-stopped

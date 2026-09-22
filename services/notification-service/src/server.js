@@ -4,6 +4,8 @@ import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import notificationRoutes from './routes/notification.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
+import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
 import {
   handleUserCreated,
@@ -32,6 +34,12 @@ setupSwagger(app, 'Notification Service', PORT);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'notification-service', timestamp: new Date().toISOString() });
 });
+
+assertProductionSecrets([
+  { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
+]);
+
+app.use(requireInternalRequest());
 
 // ── Kafka event subscriptions ─────────────────────────────────────────────────
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'notification-service');

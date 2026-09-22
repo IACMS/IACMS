@@ -1,0 +1,27 @@
+node_modules
+dist
+.git
+.env*
+infrastructure/postgres_data
+infrastructure/minio_data
+infrastructure/clamav_data
+npm-debug.log
+.DS_Store
+# Logs and run artifacts
+.run-logs
+# Test outputs
+coverage
+**/*.test.js
+**/*.spec.js
+# Documentation and scripts (not needed in images)
+docs/
+*.md
+*.ps1
+*.sh
+# IDE / OS artefacts
+.cursor
+.prettierrc.json
+.prettierignore
+.gitignore
+.gitmodules
+.github
