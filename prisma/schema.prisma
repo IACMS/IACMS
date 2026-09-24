@@ -130,6 +130,7 @@ model Tenant {
   caseSequences    CaseSequence[]
   chatMessages     AgencyChatMessage[]
   apiKeys          ApiKey[]
+  chatConversations ChatConversation[]
 
   @@index([code])
   @@index([isActive])
@@ -181,6 +182,8 @@ model User {
   chatMessagesReceived  AgencyChatMessage[] @relation("ChatRecipient")
   apiKeysCreated        ApiKey[]         @relation("ApiKeyCreator")
   apiKeysRevoked        ApiKey[]         @relation("ApiKeyRevoker")
+  chatParticipants      ChatParticipant[] @relation("ChatParticipantUser")
+  chatMessagesSender    ChatMessage[]     @relation("ChatMessageSender")
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -768,3 +771,152 @@ model AuditOutbox {
   @@index([webhookDispatched, published, createdAt])
   @@map("audit_outbox")
 }
+
+// ─── Chat & Messaging Service (New standalone models) ──────────────────────────
+
+model ChatConversation {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  type            ChatConversationType @default(DIRECT)
+  title           String?   @db.VarChar(255)         // null for DIRECT
+  description     String?   @db.Text                  // GROUP only
+  avatarFileId    String?   @map("avatar_file_id") @db.Uuid
+  createdBy       String    @map("created_by") @db.Uuid
+  lastMessageId   String?   @map("last_message_id") @db.Uuid
+  lastMessageAt   DateTime? @map("last_message_at")
+  isArchived      Boolean   @default(false) @map("is_archived")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  participants  ChatParticipant[]
+  messages      ChatMessage[]
+
+  @@index([tenantId, lastMessageAt(sort: Desc)])
+  @@index([tenantId, type])
+  @@map("chat_conversations")
+}
+
+enum ChatConversationType {
+  DIRECT
+  GROUP
+}
+
+model ChatParticipant {
+  id                 String    @id @default(uuid()) @db.Uuid
+  conversationId     String    @map("conversation_id") @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  role               ChatParticipantRole @default(MEMBER)
+  joinedAt           DateTime  @default(now()) @map("joined_at")
+  leftAt             DateTime? @map("left_at")                    // null = active
+  lastReadMessageId  String?   @map("last_read_message_id") @db.Uuid
+  lastReadAt         DateTime? @map("last_read_at")
+  isMuted            Boolean   @default(false) @map("is_muted")
+  isArchived         Boolean   @default(false) @map("is_archived")
+
+  conversation  ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user          User             @relation("ChatParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])                              // one row per user per conversation
+  @@index([userId, conversationId])
+  @@index([conversationId, userId])
+  @@map("chat_participants")
+}
+
+enum ChatParticipantRole {
+  MEMBER
+  ADMIN
+  OWNER
+}
+
+model ChatMessage {
+  id               String    @id @default(uuid()) @db.Uuid
+  conversationId   String    @map("conversation_id") @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  senderId         String    @map("sender_id") @db.Uuid
+  clientMessageId  String    @map("client_message_id")           // client-generated idempotency key
+  messageType      ChatMessageType @default(TEXT)
+  content          String?   @db.Text                            // null for FILE/IMAGE/etc.
+  replyToId        String?   @map("reply_to_id") @db.Uuid
+  editedAt         DateTime? @map("edited_at")
+  deletedAt        DateTime? @map("deleted_at")                  // soft delete
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  conversation  ChatConversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender        User               @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo       ChatMessage?       @relation("ChatMessageReply", fields: [replyToId], references: [id])
+  replies       ChatMessage[]      @relation("ChatMessageReply")
+  attachments   ChatAttachment[]
+  reactions     ChatReaction[]
+  outboxEvents  ChatOutboxEvent[]
+
+  @@unique([conversationId, clientMessageId])                    // idempotency: prevent duplicate sends
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@index([senderId, createdAt(sort: Desc)])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("chat_messages")
+}
+
+enum ChatMessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  FILE
+  SYSTEM                                                         // group join/leave events
+}
+
+model ChatAttachment {
+  id          String   @id @default(uuid()) @db.Uuid
+  messageId   String   @map("message_id") @db.Uuid
+  fileId      String   @map("file_id") @db.Uuid                 // references File table (file-service)
+  fileName    String   @map("file_name")
+  mimeType    String   @map("mime_type")
+  sizeBytes   Int      @map("size_bytes")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  message  ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("chat_attachments")
+}
+
+model ChatReaction {
+  id         String   @id @default(uuid()) @db.Uuid
+  messageId  String   @map("message_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  emoji      String   @db.VarChar(8)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  message  ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@map("chat_reactions")
+}
+
+// Transactional outbox — guarantees Kafka events are published exactly once
+model ChatOutboxEvent {
+  id            String    @id @default(uuid()) @db.Uuid
+  messageId     String?   @map("message_id") @db.Uuid
+  eventType     String    @map("event_type")                     // e.g. "CHAT_MESSAGE_CREATED"
+  payload       Json
+  status        ChatOutboxStatus @default(PENDING)
+  retryCount    Int       @default(0) @map("retry_count")
+  lastErrorAt   DateTime? @map("last_error_at")
+  publishedAt   DateTime? @map("published_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  message  ChatMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("chat_outbox_events")
+}
+
+enum ChatOutboxStatus {
+  PENDING
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+

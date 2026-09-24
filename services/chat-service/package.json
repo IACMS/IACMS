@@ -1,0 +1,32 @@
+{
+  "name": "chat-service",
+  "version": "1.0.0",
+  "description": "IACMS Chat & Messaging Service",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "start:worker": "node src/worker.js",
+    "dev": "node --watch src/server.js",
+    "dev:worker": "node --watch src/worker.js",
+    "test": "vitest run tests/unit tests/regression",
+    "test:integration": "vitest run tests/integration",
+    "test:all": "vitest run",
+    "test:watch": "vitest",
+    "prisma:generate": "prisma generate --schema=../../prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "ioredis": "^5.10.0",
+    "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
+    "prisma": "^6.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2",
+    "vitest": "^3.0.0"
+  }
+}
