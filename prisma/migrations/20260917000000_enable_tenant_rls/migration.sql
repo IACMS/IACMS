@@ -115,11 +115,11 @@ CREATE POLICY tenant_isolation_policy ON "agency_chat_messages" FOR ALL USING (
 -- ALTER TABLE "api_keys" ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE "api_keys" FORCE ROW LEVEL SECURITY;
 -- CREATE POLICY tenant_isolation_policy ON "api_keys" FOR ALL USING (
-
-  current_setting('app.current_tenant_id', true) IS NULL OR
-  current_setting('app.current_tenant_id', true) = '' OR
-  tenant_id = current_setting('app.current_tenant_id', true)::uuid
-);
+--
+--   current_setting('app.current_tenant_id', true) IS NULL OR
+--   current_setting('app.current_tenant_id', true) = '' OR
+--   tenant_id = current_setting('app.current_tenant_id', true)::uuid
+-- );
 
 -- audit_outbox
 ALTER TABLE "audit_outbox" ENABLE ROW LEVEL SECURITY;

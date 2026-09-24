@@ -96,8 +96,8 @@ CREATE POLICY tenant_isolation_policy ON "agency_chat_messages" FOR ALL TO partn
 );
 
 -- CREATE POLICY tenant_isolation_policy ON "api_keys" FOR ALL TO partner_api USING (
-  tenant_id = current_setting('app.current_tenant_id', true)::uuid
-);
+--   tenant_id = current_setting('app.current_tenant_id', true)::uuid
+-- );
 
 CREATE POLICY tenant_isolation_policy ON "audit_outbox" FOR ALL TO partner_api USING (
   tenant_id = current_setting('app.current_tenant_id', true)::uuid
