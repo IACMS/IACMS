@@ -111,10 +111,11 @@ CREATE POLICY tenant_isolation_policy ON "agency_chat_messages" FOR ALL USING (
   tenant_id = current_setting('app.current_tenant_id', true)::uuid
 );
 
--- api_keys
-ALTER TABLE "api_keys" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "api_keys" FORCE ROW LEVEL SECURITY;
-CREATE POLICY tenant_isolation_policy ON "api_keys" FOR ALL USING (
+-- api_keys (temporarily commented out because the table doesn't exist in previous migrations)
+-- ALTER TABLE "api_keys" ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE "api_keys" FORCE ROW LEVEL SECURITY;
+-- CREATE POLICY tenant_isolation_policy ON "api_keys" FOR ALL USING (
+
   current_setting('app.current_tenant_id', true) IS NULL OR
   current_setting('app.current_tenant_id', true) = '' OR
   tenant_id = current_setting('app.current_tenant_id', true)::uuid

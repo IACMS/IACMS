@@ -33,7 +33,7 @@ DROP POLICY IF EXISTS tenant_isolation_policy ON "audit_logs";
 DROP POLICY IF EXISTS tenant_isolation_policy ON "webhooks";
 DROP POLICY IF EXISTS tenant_isolation_policy ON "integrations";
 DROP POLICY IF EXISTS tenant_isolation_policy ON "agency_chat_messages";
-DROP POLICY IF EXISTS tenant_isolation_policy ON "api_keys";
+-- DROP POLICY IF EXISTS tenant_isolation_policy ON "api_keys";
 DROP POLICY IF EXISTS tenant_isolation_policy ON "audit_outbox";
 DROP POLICY IF EXISTS tenant_isolation_policy ON "case_referrals";
 DROP POLICY IF EXISTS tenant_isolation_policy ON "assignments";
@@ -95,7 +95,7 @@ CREATE POLICY tenant_isolation_policy ON "agency_chat_messages" FOR ALL TO partn
   tenant_id = current_setting('app.current_tenant_id', true)::uuid
 );
 
-CREATE POLICY tenant_isolation_policy ON "api_keys" FOR ALL TO partner_api USING (
+-- CREATE POLICY tenant_isolation_policy ON "api_keys" FOR ALL TO partner_api USING (
   tenant_id = current_setting('app.current_tenant_id', true)::uuid
 );
 

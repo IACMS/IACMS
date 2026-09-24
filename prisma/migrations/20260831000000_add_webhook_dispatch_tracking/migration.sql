@@ -1,13 +1,21 @@
--- Migration: Add webhook dispatch tracking to audit_outbox
+-- Migration: Create audit_outbox and add webhook dispatch tracking
 -- Allows the webhook dispatcher worker to track which outbox records have
 -- been delivered to partner webhook endpoints, independently from the Kafka
 -- published flag.
 
-ALTER TABLE "audit_outbox"
-  ADD COLUMN IF NOT EXISTS "webhook_dispatched"     BOOLEAN   NOT NULL DEFAULT FALSE,
-  ADD COLUMN IF NOT EXISTS "webhook_dispatched_at"  TIMESTAMP;
+CREATE TABLE "audit_outbox" (
+    "id" UUID NOT NULL,
+    "tenant_id" UUID NOT NULL,
+    "payload" JSONB NOT NULL,
+    "published" BOOLEAN NOT NULL DEFAULT false,
+    "published_at" TIMESTAMP(3),
+    "webhook_dispatched" BOOLEAN NOT NULL DEFAULT false,
+    "webhook_dispatched_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
--- Composite index used by the dispatcher's poll query:
---   WHERE published = true AND webhook_dispatched = false
-CREATE INDEX IF NOT EXISTS "audit_outbox_webhook_dispatched_published_created_at_idx"
-  ON "audit_outbox" ("webhook_dispatched", "published", "created_at");
+    CONSTRAINT "audit_outbox_pkey" PRIMARY KEY ("id")
+);
+
+CREATE INDEX "audit_outbox_published_created_at_idx" ON "audit_outbox"("published", "created_at");
+CREATE INDEX "audit_outbox_webhook_dispatched_published_created_at_idx" ON "audit_outbox"("webhook_dispatched", "published", "created_at");
+
