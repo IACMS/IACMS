@@ -18,11 +18,6 @@ services:
       - '127.0.0.1:6380:6379'
     restart: unless-stopped
 
-  zookeeper:
-    ports:
-      - '127.0.0.1:2182:2181'
-    restart: unless-stopped
-
   kafka:
     ports:
       - '127.0.0.1:9094:9092'
