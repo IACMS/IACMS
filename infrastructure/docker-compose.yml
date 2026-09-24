@@ -139,7 +139,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
       JWT_EXPIRES_IN: 24h
       JWT_REFRESH_EXPIRES_IN: 7d
-      IAM_SERVICE_URL: http://localhost:3001
+      IAM_SERVICE_URL: http://iam-service:3001
       CASE_ENGINE_SERVICE_URL: http://case-engine-service:3003
       AUDIT_SERVICE_URL: http://audit-service:3006
       INTEGRATION_SERVICE_URL: http://integration-service:3007
@@ -235,7 +235,7 @@ services:
 
   # MinIO — S3-compatible object storage (data-network only, never exposed to clients)
   minio:
-    image: quay.io/minio/minio:latest
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: iacms-minio
     command: server /data --console-address ":9001"
     ports:
@@ -256,7 +256,7 @@ services:
 
   # MinIO init — creates the iacms-files bucket on first boot
   minio-init:
-    image: quay.io/minio/mc:latest
+    image: quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
     container_name: iacms-minio-init
     depends_on:
       minio:
