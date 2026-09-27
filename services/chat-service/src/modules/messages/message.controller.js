@@ -1,5 +1,6 @@
 import * as messageService from './message.service.js';
 import { ValidationError } from '../../../../../shared/common/errors.js';
+import * as wsEvents from '../../websocket/events.js';
 
 /**
  * POST /conversations/:id/messages
@@ -28,6 +29,9 @@ export async function sendMessage(req, res, next) {
       replyToId,
       attachments,
     });
+
+    // Emit real-time event to WebSocket clients
+    wsEvents.emitMessageCreated(message).catch(() => {});
 
     res.status(201).json(message);
   } catch (error) {
@@ -76,6 +80,9 @@ export async function editMessage(req, res, next) {
       newContent: content,
     });
 
+    // Emit real-time event
+    wsEvents.emitMessageUpdated(message).catch(() => {});
+
     res.json(message);
   } catch (error) {
     next(error);
@@ -97,6 +104,9 @@ export async function deleteMessage(req, res, next) {
       userId,
       participantRole,
     });
+
+    // Emit real-time event
+    wsEvents.emitMessageDeleted({ messageId, conversationId, deletedBy: userId }).catch(() => {});
 
     res.status(204).end();
   } catch (error) {
@@ -124,6 +134,9 @@ export async function addReaction(req, res, next) {
       emoji,
     });
 
+    // Emit real-time event
+    wsEvents.emitReactionAdded({ conversationId, messageId, userId, emoji }).catch(() => {});
+
     res.status(201).json(reaction);
   } catch (error) {
     next(error);
@@ -135,10 +148,13 @@ export async function addReaction(req, res, next) {
  */
 export async function removeReaction(req, res, next) {
   try {
-    const { messageId, emoji } = req.params;
+    const { id: conversationId, messageId, emoji } = req.params;
     const { userId } = req.actor;
 
     await messageService.removeReaction({ messageId, userId, emoji });
+
+    // Emit real-time event
+    wsEvents.emitReactionRemoved({ conversationId, messageId, userId, emoji }).catch(() => {});
 
     res.status(204).end();
   } catch (error) {
@@ -164,6 +180,9 @@ export async function markAsRead(req, res, next) {
       userId,
       messageId,
     });
+
+    // Emit real-time event
+    wsEvents.emitReadReceipt({ conversationId, userId, messageId }).catch(() => {});
 
     res.json(receipt);
   } catch (error) {

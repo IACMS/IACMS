@@ -12,6 +12,10 @@ import conversationRoutes from './modules/conversations/conversation.routes.js';
 import messageRoutes from './modules/messages/message.routes.js';
 import participantRoutes from './modules/participants/participant.routes.js';
 
+import { initWebSocketServer } from './websocket/ws.server.js';
+import { getBulkPresence } from './websocket/presence.js';
+import { getStats } from './websocket/connection.registry.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
@@ -32,6 +36,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     service: 'chat-service',
     timestamp: new Date().toISOString(),
+    websocket: getStats(),
   });
 });
 
@@ -56,6 +61,24 @@ app.use('/conversations', conversationRoutes);
 app.use('/conversations/:id/messages', messageRoutes);
 app.use('/conversations/:id/participants', participantRoutes);
 
+// Presence endpoint — get online status for a list of user IDs
+app.post('/presence', async (req, res, next) => {
+  try {
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds)) {
+      return res.status(400).json({ error: 'userIds array required' });
+    }
+    const presenceMap = await getBulkPresence(userIds);
+    const result = {};
+    for (const [id, online] of presenceMap) {
+      result[id] = online;
+    }
+    res.json({ presence: result });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Global error handler
 app.use(errorHandler);
 
@@ -63,9 +86,8 @@ const server = app.listen(PORT, () => {
   console.log(`[chat-service] REST API running on port ${PORT}`);
 });
 
-// Setup WebSocket server (Sprint 4)
-// import { initWebSocketServer } from './websocket/ws.server.js';
-// initWebSocketServer(server);
+// Initialize WebSocket server on the same HTTP server
+initWebSocketServer(server);
 
 export { server };
 export default app;
