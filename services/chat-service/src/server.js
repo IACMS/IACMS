@@ -7,6 +7,11 @@ import Logger from '../../../shared/common/logger.js';
 import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
 import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 
+// Route imports
+import conversationRoutes from './modules/conversations/conversation.routes.js';
+import messageRoutes from './modules/messages/message.routes.js';
+import participantRoutes from './modules/participants/participant.routes.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
@@ -15,15 +20,13 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const app = express();
-const PORT = process.env.PORT || 3009;
+const PORT = process.env.PORT || 3010;
 const logger = new Logger('chat-service');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// setupSwagger(app, 'Chat Service', PORT);
-
-// Health endpoints
+// Health endpoints (before auth middleware — must be publicly reachable)
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -48,20 +51,21 @@ assertProductionSecrets([
 
 app.use(requireInternalRequest());
 
-import conversationRoutes from './modules/conversations/conversation.routes.js';
-
-// ... other imports if any
-
+// ── Routes ──────────────────────────────────────────────────────────────
 app.use('/conversations', conversationRoutes);
+app.use('/conversations/:id/messages', messageRoutes);
+app.use('/conversations/:id/participants', participantRoutes);
 
+// Global error handler
 app.use(errorHandler);
 
 const server = app.listen(PORT, () => {
   console.log(`[chat-service] REST API running on port ${PORT}`);
 });
 
-// Setup WebSocket server (to be implemented)
+// Setup WebSocket server (Sprint 4)
 // import { initWebSocketServer } from './websocket/ws.server.js';
 // initWebSocketServer(server);
 
+export { server };
 export default app;
