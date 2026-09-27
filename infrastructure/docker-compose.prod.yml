@@ -117,3 +117,20 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       VIRUS_SCAN_ENABLED: 'true'
     restart: unless-stopped
+
+  chat-service:
+    ports: []
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    restart: unless-stopped
+
+  chat-service-worker:
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    restart: unless-stopped

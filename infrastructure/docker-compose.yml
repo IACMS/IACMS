@@ -104,6 +104,7 @@ services:
       INTEGRATION_SERVICE_URL: http://integration-service:3007
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
       FILE_SERVICE_URL: http://file-service:3009
+      CHAT_SERVICE_URL: http://chat-service:3010
       REDIS_URL: redis://redis:6379
       RATE_LIMIT_MAX_REQUESTS: 100
       RATE_LIMIT_WINDOW_SECONDS: 60
@@ -120,6 +121,8 @@ services:
       kafka:
         condition: service_healthy
       file-service:
+        condition: service_started
+      chat-service:
         condition: service_started
     networks:
       - iacms-network
@@ -228,6 +231,52 @@ services:
       KAFKA_BROKERS: kafka:29092
       APP_URL: ${APP_URL:-http://localhost:5173}
     depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Chat & Messaging Service (HTTP + WebSocket)
+  chat-service:
+    build:
+      context: ..
+      dockerfile: services/chat-service/Dockerfile
+    container_name: iacms-chat-service
+    ports:
+      - '3010:3010'
+    environment:
+      PORT: 3010
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      IAM_SERVICE_URL: http://iam-service:3001
+      FILE_SERVICE_URL: http://file-service:3009
+      NOTIFICATION_SERVICE_URL: http://notification-service:3008
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Chat Service background workers (outbox publisher, cleanup)
+  chat-service-worker:
+    build:
+      context: ..
+      dockerfile: services/chat-service/Dockerfile
+    container_name: iacms-chat-service-worker
+    command: ['node', 'src/worker.js']
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
       kafka:
         condition: service_healthy
     networks:

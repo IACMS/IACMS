@@ -52,6 +52,7 @@ const services = {
   integration: process.env.INTEGRATION_SERVICE_URL || 'http://localhost:3007',
   notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008',
   file: process.env.FILE_SERVICE_URL || 'http://localhost:3009',
+  chat: process.env.CHAT_SERVICE_URL || 'http://localhost:3010',
 };
 
 /** Fail hung/slow downstreams before the browser's client timeout (~30s). */
@@ -257,10 +258,27 @@ async function startServer() {
     },
   }));
 
-  app.use('/api/v1/chat', serviceProxy({
+  // ── Chat Service (new standalone service) ─────────────────────────────
+  // Legacy chat route — still proxied to iam-service for backwards compat
+  app.use('/api/v1/chat/legacy', serviceProxy({
     target: services.auth,
     pathRewrite: (path) => '/chat' + path,
-    label: 'Auth service',
+    label: 'Auth service (legacy chat)',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
+  // New chat service — conversations, messages, participants, presence
+  app.use('/api/v1/chat/conversations', serviceProxy({
+    target: services.chat,
+    pathRewrite: (path) => '/conversations' + path,
+    label: 'Chat service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
+  app.use('/api/v1/chat/presence', serviceProxy({
+    target: services.chat,
+    pathRewrite: () => '/presence',
+    label: 'Chat service (presence)',
     onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
@@ -383,10 +401,30 @@ async function startServer() {
   startWebhookDispatcher();
 
   // Start server
-  app.listen(PORT, () => {
+  const httpServer = app.listen(PORT, () => {
     logger.info(`API Gateway running on port ${PORT}`, {
-      features: ['sessionAuth', 'jwtAuth', 'apiKeyAuth', 'partnerQueryApi'],
+      features: ['sessionAuth', 'jwtAuth', 'apiKeyAuth', 'partnerQueryApi', 'chatWebSocket'],
     });
+  });
+
+  // WebSocket upgrade — proxy /ws connections to chat-service
+  httpServer.on('upgrade', (req, socket, head) => {
+    // Only proxy WebSocket upgrades for the /ws path
+    if (req.url?.startsWith('/ws')) {
+      const chatWsProxy = createProxyMiddleware({
+        target: services.chat,
+        ws: true,
+        changeOrigin: true,
+        logLevel: 'warn',
+        onError: (err) => {
+          console.error('[gateway] WebSocket proxy error:', err.message);
+          socket.end();
+        },
+      });
+      chatWsProxy.upgrade(req, socket, head);
+    } else {
+      socket.destroy();
+    }
   });
 
   // Graceful shutdown
