@@ -96,8 +96,9 @@ async function processBatch() {
   const succeeded = [];
   const failed = [];
 
-  for (const msg of kafkaMessages) {
-    const eventId = events.find((e) => mapEventTypeToTopic(e.eventType) === msg.topic)?.id;
+  for (let i = 0; i < kafkaMessages.length; i++) {
+    const msg = kafkaMessages[i];
+    const eventId = events[i].id;
     try {
       await producer.send(msg);
       succeeded.push(eventId);

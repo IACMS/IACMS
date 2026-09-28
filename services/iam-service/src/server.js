@@ -6,7 +6,6 @@ import fs from 'fs';
 import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import tenantRoutes from './routes/tenant.routes.js';
-import chatRoutes from './routes/chat.routes.js';
 import platformRoutes from './routes/platform.routes.js';
 import roleRoutes from './routes/role.routes.js';
 import permissionRoutes from './routes/permission.routes.js';
@@ -65,7 +64,6 @@ app.use(requireInternalRequest());
 // Routes
 app.use('/auth', authRoutes);
 app.use('/tenants', tenantRoutes);
-app.use('/chat', chatRoutes);
 app.use('/platform', platformRoutes);
 app.use('/roles', roleRoutes);
 app.use('/permissions', permissionRoutes);
