@@ -259,13 +259,7 @@ async function startServer() {
   }));
 
   // ── Chat Service (new standalone service) ─────────────────────────────
-  // Legacy chat route — still proxied to iam-service for backwards compat
-  app.use('/api/v1/chat/legacy', serviceProxy({
-    target: services.auth,
-    pathRewrite: (path) => '/chat' + path,
-    label: 'Auth service (legacy chat)',
-    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
-  }));
+
 
   // New chat service — conversations, messages, participants, presence
   app.use('/api/v1/chat/conversations', serviceProxy({
