@@ -1,11 +1,15 @@
 import * as conversationService from './conversation.service.js';
 import { ValidationError } from '../../../../../shared/common/errors.js';
+import * as wsEvents from '../../websocket/events.js';
 
 export async function listConversations(req, res, next) {
   try {
-    const { userId, tenantId } = req.actor;
+    const { userId, tenantId, departmentId } = req.actor;
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
     const cursor = req.query.cursor ? String(req.query.cursor) : null;
+
+    // Ensure the user is part of the default agency and department channels
+    await conversationService.ensureDefaultChannels(tenantId, userId, departmentId);
 
     const conversations = await conversationService.listUserConversations({
       tenantId,
@@ -57,6 +61,9 @@ export async function createConversation(req, res, next) {
         participantIds: allParticipants
       });
     }
+
+    const participantUserIds = conversation.participants?.map(p => p.userId) || (type === 'DIRECT' ? [userId, participantId] : allParticipants);
+    wsEvents.emitConversationCreated(conversation, participantUserIds).catch(() => {});
 
     res.status(201).json(conversation);
   } catch (error) {

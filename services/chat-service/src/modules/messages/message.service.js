@@ -1,5 +1,6 @@
 import prisma from '../../config/database.js';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../../../../shared/common/errors.js';
+import * as attachmentService from '../attachments/attachment.service.js';
 
 /**
  * Send a message inside a conversation.
@@ -9,6 +10,16 @@ import { ForbiddenError, NotFoundError, ValidationError } from '../../../../../s
 export async function sendMessage({ conversationId, tenantId, senderId, clientMessageId, messageType, content, replyToId, attachments }) {
   if (!clientMessageId) {
     throw new ValidationError('clientMessageId is required for idempotent message delivery');
+  }
+
+  // Validate attachments
+  if (attachments && attachments.length > 0) {
+    for (const attachment of attachments) {
+      const isOwner = await attachmentService.verifyOwnership(attachment.fileId, senderId);
+      if (!isOwner) {
+        throw new ValidationError(`File ${attachment.fileId} is not authorized for this user`);
+      }
+    }
   }
 
   // Idempotency: if a message with this clientMessageId already exists, return it
@@ -74,7 +85,15 @@ export async function sendMessage({ conversationId, tenantId, senderId, clientMe
       },
     });
 
-    // 3. Write the outbox event (picked up by the outbox worker → Kafka)
+    // 3. Fetch active participant user IDs for real-time fanout and notification delivery
+    const participants = await tx.chatParticipant.findMany({
+      where: { conversationId, leftAt: null },
+      select: { userId: true },
+    });
+    const participantUserIds = participants.map((p) => p.userId);
+    message.participantUserIds = participantUserIds;
+
+    // 4. Write the outbox event (picked up by the outbox worker → Kafka)
     await tx.chatOutboxEvent.create({
       data: {
         messageId: message.id,
@@ -85,8 +104,10 @@ export async function sendMessage({ conversationId, tenantId, senderId, clientMe
           tenantId,
           senderId,
           senderName: `${message.sender.firstName} ${message.sender.lastName}`,
+          recipientIds: participantUserIds,
           messageType: message.messageType,
           content: message.content,
+          contentPreview: message.content,
           replyToId: message.replyToId,
           attachments: message.attachments,
           createdAt: message.createdAt.toISOString(),

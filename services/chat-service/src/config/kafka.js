@@ -11,8 +11,38 @@ export const producer = kafka.producer({
   createPartitioner: Partitioners.DefaultPartitioner,
 });
 
-export const createConsumer = (groupId) => {
-  return kafka.consumer({ groupId });
+export const createConsumer = (groupId, options = {}) => {
+  return kafka.consumer({
+    groupId,
+    allowAutoTopicCreation: true,
+    ...options,
+  });
+};
+
+export const ensureTopicsExist = async (topics) => {
+  const admin = kafka.admin();
+  try {
+    await admin.connect();
+    const existingTopics = await admin.listTopics();
+    const missingTopics = topics.filter((t) => !existingTopics.includes(t));
+    if (missingTopics.length > 0) {
+      console.log(`[kafka] Creating missing topics: ${missingTopics.join(', ')}`);
+      await admin.createTopics({
+        topics: missingTopics.map((topic) => ({
+          topic,
+          numPartitions: 1,
+          replicationFactor: 1,
+        })),
+        waitForLeaders: true,
+      });
+    }
+  } catch (err) {
+    console.warn('[kafka] Note while ensuring topics exist:', err.message);
+  } finally {
+    try {
+      await admin.disconnect();
+    } catch (_) {}
+  }
 };
 
 // Common topics

@@ -11,10 +11,12 @@ export async function emitMessageCreated(message) {
   await publish({
     type: 'MESSAGE_CREATED',
     conversationId: message.conversationId,
+    participantUserIds: message.participantUserIds || [],
     data: {
       id: message.id,
       conversationId: message.conversationId,
       senderId: message.senderId,
+      clientMessageId: message.clientMessageId,
       sender: message.sender,
       messageType: message.messageType,
       content: message.content,
@@ -22,6 +24,15 @@ export async function emitMessageCreated(message) {
       attachments: message.attachments,
       createdAt: message.createdAt,
     },
+  });
+}
+
+export async function emitConversationCreated(conversation, participantUserIds = []) {
+  await publish({
+    type: 'CONVERSATION_CREATED',
+    conversationId: conversation.id,
+    participantUserIds,
+    data: conversation,
   });
 }
 

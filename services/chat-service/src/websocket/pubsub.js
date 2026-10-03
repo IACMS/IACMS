@@ -54,6 +54,37 @@ export async function publish(event) {
 function handleIncomingEvent(event) {
   switch (event.type) {
     case 'MESSAGE_CREATED':
+      // Broadcast to all members subscribed to this conversation
+      registry.broadcastToConversation(event.conversationId, {
+        type: event.type,
+        data: event.data,
+      });
+
+      // Also deliver activity to all participants so their sidebar updates live
+      if (event.participantUserIds && Array.isArray(event.participantUserIds)) {
+        for (const pUserId of event.participantUserIds) {
+          registry.sendToUser(pUserId, {
+            type: 'CONVERSATION_ACTIVITY',
+            data: {
+              conversationId: event.conversationId,
+              message: event.data,
+            },
+          });
+        }
+      }
+      break;
+
+    case 'CONVERSATION_CREATED':
+      if (event.participantUserIds && Array.isArray(event.participantUserIds)) {
+        for (const pUserId of event.participantUserIds) {
+          registry.sendToUser(pUserId, {
+            type: 'CONVERSATION_CREATED',
+            data: event.data,
+          });
+        }
+      }
+      break;
+
     case 'MESSAGE_UPDATED':
     case 'MESSAGE_DELETED':
     case 'REACTION_ADDED':
@@ -101,6 +132,15 @@ function handleIncomingEvent(event) {
         type: event.type,
         data: event.data,
       });
+      break;
+
+    case 'NOTIFICATION_CREATED':
+      if (event.data?.recipientId) {
+        registry.sendToUser(event.data.recipientId, {
+          type: event.type,
+          data: event.data,
+        });
+      }
       break;
 
     default:

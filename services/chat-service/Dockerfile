@@ -1,37 +1,36 @@
-# Base image
-FROM node:20-alpine AS base
-WORKDIR /app
-# Enable corepack for modern package management if needed
-RUN corepack enable
+# syntax=docker/dockerfile:1
+FROM node:22-alpine AS deps
 
-# Build stage
-FROM base AS build
 WORKDIR /app
 COPY package*.json ./
-# Clean install
-RUN npm ci
-# Copy source
-COPY . .
-# We would normally generate prisma here if not using a shared schema
-# However, we rely on the monorepo's shared prisma client setup.
+COPY prisma ./prisma
+COPY shared ./shared
+COPY services/api-gateway/package*.json ./services/api-gateway/
+COPY services/audit-service/package*.json ./services/audit-service/
+COPY services/case-engine-service/package*.json ./services/case-engine-service/
+COPY services/file-service/package*.json ./services/file-service/
+COPY services/iam-service/package*.json ./services/iam-service/
+COPY services/integration-service/package*.json ./services/integration-service/
+COPY services/notification-service/package*.json ./services/notification-service/
+COPY services/chat-service/package*.json ./services/chat-service/
 
-# Production image
-FROM base AS production
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000 --fetch-retries=5
+
+RUN npx prisma generate --schema=prisma/schema.prisma
+RUN npm prune --omit=dev
+
+# ── Runtime ───────────────────────────────────────────────────────────────────
+FROM node:22-alpine AS runtime
+
 WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/shared ./shared
+COPY --from=deps /app/prisma ./prisma
+COPY --from=deps /app/package.json ./package.json
+COPY services/chat-service/package.json ./services/chat-service/package.json
+COPY services/chat-service/src ./services/chat-service/src
 
-# Copy production dependencies
-COPY package*.json ./
-RUN npm ci --omit=dev
-
-# Copy source files
-COPY src/ ./src/
-# Copy the shared directory if needed, typically mounted in docker-compose for dev
-# In production, we need to ensure shared code is available. 
-# We'll adjust based on how IACMS handles shared code across Docker containers.
-
-ENV NODE_ENV=production
-# Default port, overridden by docker-compose
-ENV PORT=3009 
-
-EXPOSE $PORT
+WORKDIR /app/services/chat-service
+EXPOSE 3010
 CMD ["node", "src/server.js"]

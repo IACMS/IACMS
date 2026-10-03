@@ -24,6 +24,19 @@ export async function start() {
 
   console.log(`[outbox-worker] Starting outbox publisher (poll every ${POLL_INTERVAL_MS}ms, batch ${BATCH_SIZE})`);
 
+  try {
+    // Recover events stuck in PUBLISHING from previous crash
+    const recovered = await prisma.chatOutboxEvent.updateMany({
+      where: { status: 'PUBLISHING' },
+      data: { status: 'PENDING' },
+    });
+    if (recovered.count > 0) {
+      console.log(`[outbox-worker] Recovered ${recovered.count} stuck events from PUBLISHING to PENDING`);
+    }
+  } catch (err) {
+    console.error('[outbox-worker] Failed to recover stuck events:', err.message);
+  }
+
   await producer.connect();
   poll();
 }
