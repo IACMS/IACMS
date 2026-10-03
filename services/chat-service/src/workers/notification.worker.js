@@ -109,16 +109,16 @@ async function handleChatMessageCreated(payload) {
     const activeConv = await presence.getActiveConversation(recipientId);
     const isActivelyViewing = activeConv === conversationId;
 
-    // Send notification only if they are offline OR not actively viewing this conversation
-    if (!isOnline || !isActivelyViewing) {
-      await sendNotificationServiceRequest({
-        type: 'CHAT_MESSAGE',
-        recipientId,
-        title: `New message from ${senderName || 'Someone'}`,
-        body: bodyText,
-        data: { conversationId, messageId },
-      });
-    }
+    // Dispatch notification to notification-service for in-app storage, WebSocket fanout, and desktop push
+    console.log(`[notification-worker] Dispatching notification for recipient ${recipientId} on message ${messageId}`);
+
+    await sendNotificationServiceRequest({
+      type: 'CHAT_MESSAGE',
+      recipientId,
+      title: `New message from ${senderName || 'Someone'}`,
+      body: bodyText,
+      data: { conversationId, messageId },
+    });
   }
 }
 
@@ -156,6 +156,7 @@ async function sendNotificationServiceRequest(payload) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}`,
+        'x-internal-service-token': INTERNAL_SERVICE_TOKEN,
       },
       body: JSON.stringify(payload),
     });
