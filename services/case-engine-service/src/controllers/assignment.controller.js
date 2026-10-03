@@ -84,6 +84,7 @@ export async function assignCase(req, res, next) {
       caseId: assignment.caseId,
       assignedTo: assignment.assignedTo,
       tenantId,
+      caseNumber: assignment.case?.caseNumber,
     });
 
     emitAudit({

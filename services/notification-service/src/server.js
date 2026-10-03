@@ -14,6 +14,14 @@ import {
   handleEmailVerificationRequested,
   handleTenantApproved,
 } from './consumers/email.consumer.js';
+import {
+  handleCaseCreated,
+  handleCaseAssigned,
+  handleCaseTransitioned,
+  handleReferralCreated,
+  handleReferralAccepted,
+  handleReferralRejected,
+} from './consumers/case-notification.consumer.js';
 
 dotenv.config();
 
@@ -56,31 +64,16 @@ async function registerSubscriptions() {
     eventBus.subscribe(TOPICS.EMAIL_VERIFICATION_REQUESTED, handleEmailVerificationRequested),
     eventBus.subscribe(TOPICS.TENANT_APPROVED, handleTenantApproved),
 
-    // Case / workflow / referral events (stub handlers — real templates to be added later)
-    eventBus.subscribe(TOPICS.CASE_CREATED, (data) => {
-      logger.info('Case creation notification pending implementation', { caseId: data?.id });
-    }),
-    eventBus.subscribe(TOPICS.CASE_ASSIGNED, (data) => {
-      logger.info('Case assignment notification pending implementation', { caseId: data?.id });
-    }),
+    // Case / workflow / referral events
+    eventBus.subscribe(TOPICS.CASE_CREATED, handleCaseCreated),
+    eventBus.subscribe(TOPICS.CASE_ASSIGNED, handleCaseAssigned),
     eventBus.subscribe(TOPICS.CASE_UPDATED, (data) => {
-      logger.info('Case update notification pending implementation', { caseId: data?.id });
+      logger.info('Case update event received', { caseId: data?.id || data?.caseId });
     }),
-    eventBus.subscribe(TOPICS.CASE_TRANSITIONED, (data) => {
-      logger.info('Case transition notification pending implementation', {
-        caseId: data?.caseId,
-        transitionId: data?.transitionId,
-      });
-    }),
-    eventBus.subscribe(TOPICS.REFERRAL_CREATED, (data) => {
-      logger.info('Referral created notification pending implementation', { referralId: data?.id });
-    }),
-    eventBus.subscribe(TOPICS.REFERRAL_ACCEPTED, (data) => {
-      logger.info('Referral accepted notification pending implementation', { referralId: data?.id });
-    }),
-    eventBus.subscribe(TOPICS.REFERRAL_REJECTED, (data) => {
-      logger.info('Referral rejected notification pending implementation', { referralId: data?.id });
-    }),
+    eventBus.subscribe(TOPICS.CASE_TRANSITIONED, handleCaseTransitioned),
+    eventBus.subscribe(TOPICS.REFERRAL_CREATED, handleReferralCreated),
+    eventBus.subscribe(TOPICS.REFERRAL_ACCEPTED, handleReferralAccepted),
+    eventBus.subscribe(TOPICS.REFERRAL_REJECTED, handleReferralRejected),
   ];
 
   await Promise.all(subscriptions);
@@ -97,6 +90,7 @@ setInterval(() => {
 }, 60_000).unref();
 
 app.use('/notifications', notificationRoutes);
+app.use('/internal/notifications', notificationRoutes);
 
 app.use(errorHandler);
 

@@ -302,6 +302,7 @@ export async function createCase(req, res, next) {
       caseNumber: case_.caseNumber,
       currentStepId: case_.currentStepId,
       actorId,
+      assignedTo: case_.assignedTo,
     });
     await eventBus.publish(TOPICS.AUDIT_LOG, {
       tenantId: caller,
@@ -558,6 +559,9 @@ export async function executeTransition(req, res, next) {
       transitionId,
       fromStepId: case_.currentStepId,
       toStepId: transition.toStepId,
+      actorId: userId,
+      caseNumber: case_.caseNumber,
+      assignedTo: case_.assignedTo,
     });
 
     emitAudit({

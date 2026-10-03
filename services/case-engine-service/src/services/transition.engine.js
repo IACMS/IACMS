@@ -120,6 +120,7 @@ export async function executeTransition(req, caseId, transitionId) {
     actorId,
     comment: comment ?? null,
     caseNumber: updated.caseNumber,
+    assignedTo: updated.assignedTo || caseRow.assignedTo || null,
     occurredAt: new Date().toISOString(),
   });
 

@@ -404,6 +404,7 @@ export async function acceptReferral(req, res, next) {
       toDepartmentId: updated.toDepartmentId,
       acceptedBy: String(accepterId),
       acceptedAt: updated.acceptedAt.toISOString(),
+      referredBy: updated.referredBy,
     });
     await eventBus.publish(TOPICS.AUDIT_LOG, {
       tenantId: updated.fromTenantId,
@@ -512,6 +513,13 @@ export async function assignReferral(req, res, next) {
       return referral;
     });
 
+    await eventBus.publish(TOPICS.CASE_ASSIGNED, {
+      caseId: updated.caseId,
+      assignedTo: String(assignedToUserId),
+      tenantId: updated.toTenantId,
+      assignmentType: 'referral_assignment',
+    });
+
     await eventBus.publish(TOPICS.AUDIT_LOG, {
       tenantId: updated.toTenantId,
       relatedTenantId: updated.fromTenantId,
@@ -572,6 +580,7 @@ export async function rejectReferral(req, res, next) {
       originatingTenantId: updated.fromTenantId,
       currentTenantId: updated.fromTenantId,
       rejectedBy: String(rejId),
+      referredBy: updated.referredBy,
     });
     await eventBus.publish(TOPICS.AUDIT_LOG, {
       tenantId: updated.fromTenantId,
