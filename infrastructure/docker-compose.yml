@@ -90,7 +90,7 @@ services:
     environment:
       PORT: 3000
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:5174}
-      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      JWT_SECRET: ${JWT_SECRET}
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       IAM_SERVICE_URL: http://iam-service:3001
@@ -139,7 +139,7 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
-      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: 24h
       JWT_REFRESH_EXPIRES_IN: 7d
       IAM_SERVICE_URL: http://iam-service:3001
@@ -231,7 +231,10 @@ services:
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
       APP_URL: ${APP_URL:-http://localhost:5173}
-      INTERNAL_SERVICE_TOKEN: internal-dev-secret-change-in-production
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:support@iacms.gov}
     depends_on:
       kafka:
         condition: service_healthy
@@ -253,7 +256,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      JWT_SECRET: ${JWT_SECRET}
       IAM_SERVICE_URL: http://iam-service:3001
       FILE_SERVICE_URL: http://file-service:3009
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
@@ -279,7 +282,7 @@ services:
       KAFKA_BROKERS: kafka:29092
       REDIS_URL: redis://redis:6379
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
-      INTERNAL_SERVICE_TOKEN: internal-dev-secret-change-in-production
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
     depends_on:
       postgres:
         condition: service_healthy
@@ -356,7 +359,7 @@ services:
       WORKER_MODE: standalone
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
-      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      JWT_SECRET: ${JWT_SECRET}
       AUTH_SERVICE_URL: http://iam-service:3001
       REDIS_URL: redis://redis:6379
       STORAGE_PROVIDER: minio

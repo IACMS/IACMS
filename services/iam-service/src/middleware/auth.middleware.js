@@ -4,7 +4,11 @@ import { getRedisClient } from '../config/redis.config.js';
 import prisma from '../config/database.js';
 import { resolveGatewayIdentity } from '../../../../shared/middleware/gatewayIdentity.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'iacms-dev-secret-key-change-in-production';
+if (!process.env.JWT_SECRET) {
+  throw new Error('[iam-auth-middleware] JWT_SECRET environment variable is required. Generate with: openssl rand -base64 64');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
 
 /** When false, only JWT Bearer is accepted (stricter — use if auth-service is reachable without the gateway). */
 function trustGatewayForwardedHeaders() {

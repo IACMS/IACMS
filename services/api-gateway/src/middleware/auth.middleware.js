@@ -11,7 +11,11 @@ import { fetchMustChangePasswordFromAuth } from '../utils/authPasswordStatus.js'
 import { clearPermissionCache } from './rbac.middleware.js';
 import * as apiKeyService from '../services/apiKey.service.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'iacms-dev-secret-key-change-in-production';
+if (!process.env.JWT_SECRET) {
+  throw new Error('[auth-middleware] JWT_SECRET environment variable is required. Generate with: openssl rand -base64 64');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
 
 /**
  * Public routes that don't require authentication

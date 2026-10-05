@@ -102,7 +102,10 @@ const config = {
   },
 
   auth: {
-    jwtSecret: process.env.JWT_SECRET || 'iacms-dev-secret-key-change-in-production',
+    jwtSecret: (() => {
+      if (!process.env.JWT_SECRET) throw new Error('[file-service] JWT_SECRET environment variable is required.');
+      return process.env.JWT_SECRET;
+    })(),
     authServiceUrl: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
   },
 

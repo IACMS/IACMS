@@ -62,7 +62,12 @@ export async function createSessionMiddleware() {
 
   const sessionConfig = {
     store: redisStore,
-    secret: process.env.SESSION_SECRET || 'iacms-session-secret-change-in-production',
+    secret: (() => {
+      if (!process.env.SESSION_SECRET) {
+        throw new Error('[session-config] SESSION_SECRET environment variable is required. Generate with: openssl rand -base64 48');
+      }
+      return process.env.SESSION_SECRET;
+    })(),
     name: 'iacms.sid',
     resave: false,
     saveUninitialized: false,

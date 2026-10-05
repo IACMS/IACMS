@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret-key';
+if (!process.env.JWT_SECRET) {
+  throw new Error('[chat-ws-auth] JWT_SECRET environment variable is required. Generate with: openssl rand -base64 64');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
 
 /**
  * Authenticate a WebSocket connection from the initial HTTP upgrade request.

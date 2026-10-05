@@ -9,7 +9,10 @@ const rootDir = path.resolve(__dirname, '..');
 const commonEnv = {
   ...process.env,
   DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5434/iacms?schema=public',
-  JWT_SECRET: process.env.JWT_SECRET || 'change-this-secret-key-in-production-use-openssl-rand-base64-32',
+  JWT_SECRET: (() => {
+    if (!process.env.JWT_SECRET) throw new Error('[run-all] JWT_SECRET must be set. Copy .env.example to .env and fill in the values.');
+    return process.env.JWT_SECRET;
+  })(),
   REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
   KAFKA_BROKERS: process.env.KAFKA_BROKERS || 'localhost:9092',
   STORAGE_PROVIDER: 'minio',
