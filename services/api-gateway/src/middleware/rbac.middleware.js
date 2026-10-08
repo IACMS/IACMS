@@ -87,6 +87,9 @@ const ROUTE_PERMISSIONS = {
   'DELETE:/workflows/:id/transitions/:transitionId': 'workflows:update',
   'POST:/workflows/:id/publish': 'workflows:update',
 
+  // Users
+  'GET:/users': 'users:read',
+
   // Users (via RBAC service)
   'GET:/rbac/users': 'users:read',
   'GET:/rbac/users/:id': 'users:read',

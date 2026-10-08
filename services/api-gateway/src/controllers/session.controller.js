@@ -3,6 +3,7 @@
  * Handles session-based authentication for web browsers
  */
 
+import jwt from 'jsonwebtoken';
 import { getUserPermissionsWithAvailability } from '../middleware/rbac.middleware.js';
 import { fetchMustChangePasswordFromAuth } from '../utils/authPasswordStatus.js';
 
@@ -172,6 +173,23 @@ export async function sessionStatus(req, res) {
       }
     }
 
+    let accessToken = null;
+    if (process.env.JWT_SECRET) {
+      accessToken = jwt.sign(
+        {
+          id: u.id,
+          tenantId: u.tenantId,
+          departmentId: u.departmentId ?? null,
+          email: u.email,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          roles: Array.isArray(u.roles) ? u.roles : [],
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '8h' }
+      );
+    }
+
     return res.json({
       authenticated: true,
       authMethod: 'session',
@@ -191,6 +209,7 @@ export async function sessionStatus(req, res) {
         createdAt: req.session.createdAt,
         lastAccessed: req.session.lastAccessed,
       },
+      ...(accessToken ? { tokens: { accessToken } } : {}),
     });
   }
 

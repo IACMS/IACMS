@@ -415,13 +415,23 @@ export async function deleteFile(req, res, next) {
   }
 }
 
+function assertFileAccessible(file, action = 'access') {
+  if (file.deleted || file.status === 'DELETED') {
+    throw new NotFoundError('File');
+  }
+  if (file.status === 'FAILED') {
+    throw new AppError(`File is not available (${file.status})`, 409, 'FILE_FAILED');
+  }
+  if (file.status === 'SCANNING' || (file.status === 'PENDING' && config.virusScan.enabled)) {
+    throw new AppError(`File is not available for ${action} (status: ${file.status})`, 409, 'FILE_NOT_AVAILABLE');
+  }
+}
+
 export async function downloadFile(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
-    if (file.status !== 'AVAILABLE') {
-      throw new AppError(`File is not available for download (status: ${file.status})`, 409, 'FILE_NOT_AVAILABLE');
-    }
+    assertFileAccessible(file, 'download');
 
     const storage = StorageFactory.getInstance();
     const stream = await storage.download(file.storagePath);
@@ -449,9 +459,7 @@ export async function viewFile(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
-    if (file.status !== 'AVAILABLE') {
-      throw new AppError(`File is not available for viewing (status: ${file.status})`, 409, 'FILE_NOT_AVAILABLE');
-    }
+    assertFileAccessible(file, 'viewing');
 
     const storage = StorageFactory.getInstance();
     const stream = await storage.download(file.storagePath);
@@ -479,9 +487,7 @@ export async function streamFile(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
-    if (file.status !== 'AVAILABLE') {
-      throw new AppError(`File is not available for streaming (status: ${file.status})`, 409, 'FILE_NOT_AVAILABLE');
-    }
+    assertFileAccessible(file, 'streaming');
 
     const fileSize = Number(file.size);
     const storage = StorageFactory.getInstance();
@@ -560,9 +566,7 @@ export async function getSignedUrl(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
-    if (file.status !== 'AVAILABLE') {
-      throw new AppError(`File is not available (status: ${file.status})`, 409, 'FILE_NOT_AVAILABLE');
-    }
+    assertFileAccessible(file, 'signed URL generation');
 
     const expiresIn = Math.min(Math.max(1, parseInt(req.query.expires || '600', 10)), 86400);
     const storage = StorageFactory.getInstance();

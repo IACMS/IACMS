@@ -30,7 +30,19 @@ export async function sendMessage({ conversationId, tenantId, senderId, clientMe
         clientMessageId,
       },
     },
-    include: { attachments: true, sender: { select: { id: true, firstName: true, lastName: true, username: true } } },
+    include: {
+      attachments: true,
+      sender: { select: { id: true, firstName: true, lastName: true, username: true } },
+      replyTo: {
+        select: {
+          id: true,
+          content: true,
+          messageType: true,
+          senderId: true,
+          sender: { select: { id: true, firstName: true, lastName: true } },
+        },
+      },
+    },
   });
 
   if (existing) {
@@ -73,6 +85,15 @@ export async function sendMessage({ conversationId, tenantId, senderId, clientMe
       include: {
         attachments: true,
         sender: { select: { id: true, firstName: true, lastName: true, username: true } },
+        replyTo: {
+          select: {
+            id: true,
+            content: true,
+            messageType: true,
+            senderId: true,
+            sender: { select: { id: true, firstName: true, lastName: true } },
+          },
+        },
       },
     });
 
@@ -107,7 +128,7 @@ export async function sendMessage({ conversationId, tenantId, senderId, clientMe
           recipientIds: participantUserIds,
           messageType: message.messageType,
           content: message.content,
-          contentPreview: message.content,
+          contentPreview: message.content || (message.messageType === 'IMAGE' ? '📷 Photo' : (message.messageType === 'FILE' ? '📎 Attachment' : '')),
           replyToId: message.replyToId,
           attachments: message.attachments,
           createdAt: message.createdAt.toISOString(),

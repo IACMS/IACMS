@@ -17,7 +17,8 @@ import { enforcePasswordChanged } from './middleware/passwordChangeGate.middlewa
 import { createRbacMiddleware } from './middleware/rbac.middleware.js';
 import { apiRateLimiter, authRateLimiter, partnerApiRateLimiter } from './middleware/rateLimit.middleware.js';
 import { createSessionMiddleware, closeSessionStore } from './config/session.config.js';
-import { closeRedisClient } from './config/redis.config.js';
+import { getRedisClient, closeRedisClient } from './config/redis.config.js';
+import jwt from 'jsonwebtoken';
 import sessionRoutes from './routes/session.routes.js';
 import apiKeyRoutes from './routes/apiKey.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
@@ -56,7 +57,7 @@ const services = {
 };
 
 /** Fail hung/slow downstreams before the browser's client timeout (~30s). */
-const PROXY_TIMEOUT_MS = Number(process.env.PROXY_TIMEOUT_MS || 25_000);
+const PROXY_TIMEOUT_MS = Number(process.env.PROXY_TIMEOUT_MS || 120_000);
 
 function proxyOnError(label) {
   return (err, req, res) => {
@@ -81,9 +82,15 @@ function serviceProxy({ target, pathRewrite, label, onProxyReq, onProxyRes }) {
     pathRewrite,
     timeout: PROXY_TIMEOUT_MS,
     proxyTimeout: PROXY_TIMEOUT_MS,
-    ...(onProxyReq ? { onProxyReq } : {}),
-    ...(onProxyRes ? { onProxyRes } : {}),
-    onError: proxyOnError(label),
+    on: {
+      proxyReq: (proxyReq, req, res) => {
+        if (onProxyReq) onProxyReq(proxyReq, req, res);
+      },
+      proxyRes: (proxyRes, req, res) => {
+        if (onProxyRes) onProxyRes(proxyRes, req, res);
+      },
+      error: proxyOnError(label),
+    },
   });
 }
 
@@ -276,6 +283,13 @@ async function startServer() {
     onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
+  app.use('/api/v1/users', serviceProxy({
+    target: services.auth,
+    pathRewrite: (path) => '/auth/users' + path,
+    label: 'Auth service (users)',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
   app.use('/api/v1/tenants', serviceProxy({
     target: services.auth,
     pathRewrite: (path) => '/tenants' + path,
@@ -402,20 +416,63 @@ async function startServer() {
   });
 
   // WebSocket upgrade — proxy /ws connections to chat-service
-  httpServer.on('upgrade', (req, socket, head) => {
+  const chatWsProxy = createProxyMiddleware({
+    target: services.chat,
+    ws: true,
+    changeOrigin: true,
+    on: {
+      error: (err, req, socket) => {
+        console.error('[gateway] WebSocket proxy error:', err.message);
+        if (socket && !socket.destroyed) {
+          socket.destroy();
+        }
+      },
+    },
+  });
+
+  httpServer.on('upgrade', async (req, socket, head) => {
     // Only proxy WebSocket upgrades for the /ws path
     if (req.url?.startsWith('/ws')) {
-      const chatWsProxy = createProxyMiddleware({
-        target: services.chat,
-        ws: true,
-        changeOrigin: true,
-        logLevel: 'warn',
-        onError: (err) => {
-          console.error('[gateway] WebSocket proxy error:', err.message);
-          socket.end();
-        },
-      });
-      chatWsProxy.upgrade(req, socket, head);
+      try {
+        const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        let token = parsedUrl.searchParams.get('token');
+
+        // If no token in query param or token is 'null'/'undefined', resolve from session cookie
+        if ((!token || token === 'null' || token === 'undefined') && req.headers.cookie) {
+          const sidMatch = req.headers.cookie.match(/(?:^|;\s*)iacms\.sid=s%3A([^;]+)/);
+          if (sidMatch) {
+            const rawSid = decodeURIComponent(sidMatch[1]).split('.')[0];
+            const redis = getRedisClient();
+            if (redis) {
+              const sessionRaw = await redis.get(`sess:${rawSid}`);
+              if (sessionRaw) {
+                const sess = JSON.parse(sessionRaw);
+                if (sess?.user?.id && process.env.JWT_SECRET) {
+                  token = jwt.sign(
+                    {
+                      id: sess.user.id,
+                      tenantId: sess.user.tenantId,
+                      departmentId: sess.user.departmentId || null,
+                      email: sess.user.email,
+                      firstName: sess.user.firstName,
+                      lastName: sess.user.lastName,
+                    },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '8h' }
+                  );
+                  parsedUrl.searchParams.set('token', token);
+                  req.url = `${parsedUrl.pathname}?${parsedUrl.searchParams.toString()}`;
+                }
+              }
+            }
+          }
+        }
+
+        chatWsProxy.upgrade(req, socket, head);
+      } catch (err) {
+        console.error('[gateway] Upgrade error:', err.message);
+        chatWsProxy.upgrade(req, socket, head);
+      }
     } else {
       socket.destroy();
     }

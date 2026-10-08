@@ -21,6 +21,7 @@ export async function emitMessageCreated(message) {
       messageType: message.messageType,
       content: message.content,
       replyToId: message.replyToId,
+      replyTo: message.replyTo,
       attachments: message.attachments,
       createdAt: message.createdAt,
     },

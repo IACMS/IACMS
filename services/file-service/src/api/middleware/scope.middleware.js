@@ -12,9 +12,9 @@ const SCOPE_PERMISSIONS = {
 
 /** Role names still accepted (JWT may carry names in some direct-call paths). */
 const SCOPE_ROLE_NAMES = {
-  'file.upload': ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist'],
-  'file.read':   ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist', 'viewer'],
-  'file.delete': ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist'],
+  'file.upload': ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist', 'supervisor'],
+  'file.read':   ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist', 'supervisor', 'viewer'],
+  'file.delete': ['system_admin', 'tenant_admin', 'case_manager', 'intake_specialist', 'supervisor'],
   'file.admin':  ['system_admin'],
 };
 
