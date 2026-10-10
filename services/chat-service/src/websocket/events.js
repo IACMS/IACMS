@@ -97,3 +97,19 @@ export async function emitParticipantRemoved({ conversationId, userId }) {
     data: { conversationId, userId },
   });
 }
+
+export async function emitMessagePinned({ conversationId, messageId, pinnedBy, message }) {
+  await publish({
+    type: 'MESSAGE_PINNED',
+    conversationId,
+    data: { conversationId, messageId, pinnedBy, message },
+  });
+}
+
+export async function emitMessageUnpinned({ conversationId, unpinnedBy }) {
+  await publish({
+    type: 'MESSAGE_UNPINNED',
+    conversationId,
+    data: { conversationId, unpinnedBy },
+  });
+}

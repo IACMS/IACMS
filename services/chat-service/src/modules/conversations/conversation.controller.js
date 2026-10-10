@@ -118,3 +118,54 @@ export async function archiveConversation(req, res, next) {
     next(error);
   }
 }
+
+export async function pinMessage(req, res, next) {
+  try {
+    const { id: conversationId, messageId } = req.params;
+    const { userId } = req.actor;
+
+    const message = await conversationService.pinMessage({
+      conversationId,
+      messageId
+    });
+
+    wsEvents.emitMessagePinned({
+      conversationId,
+      messageId,
+      pinnedBy: userId,
+      message
+    }).catch(() => {});
+
+    res.json({ success: true, pinnedMessage: message });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function unpinMessage(req, res, next) {
+  try {
+    const { id: conversationId } = req.params;
+    const { userId } = req.actor;
+
+    await conversationService.unpinMessage({ conversationId });
+
+    wsEvents.emitMessageUnpinned({
+      conversationId,
+      unpinnedBy: userId
+    }).catch(() => {});
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getPinnedMessage(req, res, next) {
+  try {
+    const { id: conversationId } = req.params;
+    const pinnedMessage = await conversationService.getPinnedMessage({ conversationId });
+    res.json({ pinnedMessage });
+  } catch (error) {
+    next(error);
+  }
+}

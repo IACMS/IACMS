@@ -1,4 +1,5 @@
 import prisma from '../../config/database.js';
+import { redis } from '../../config/redis.js';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../../../../shared/common/errors.js';
 
 export async function ensureDefaultChannels(tenantId, userId, departmentId) {
@@ -264,7 +265,20 @@ export async function createGroupConversation({ tenantId, createdBy, title, desc
       }
     },
     include: {
-      participants: true
+      participants: {
+        where: { leftAt: null },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              username: true
+            }
+          }
+        }
+      }
     }
   });
 }
@@ -274,7 +288,18 @@ export async function getConversationDetails(conversationId) {
     where: { id: conversationId },
     include: {
       participants: {
-        where: { leftAt: null }
+        where: { leftAt: null },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              username: true
+            }
+          }
+        }
       }
     }
   });
@@ -312,4 +337,45 @@ export async function archiveUserConversation({ conversationId, participantId })
       isArchived: true
     }
   });
+}
+
+export async function pinMessage({ conversationId, messageId }) {
+  const message = await prisma.chatMessage.findUnique({
+    where: { id: messageId },
+    include: {
+      sender: { select: { id: true, firstName: true, lastName: true, email: true } },
+      attachments: true
+    }
+  });
+
+  if (!message || message.conversationId !== conversationId) {
+    throw new NotFoundError('Message not found in this conversation');
+  }
+
+  await redis.set(`chat:conv:${conversationId}:pinned`, messageId);
+  return message;
+}
+
+export async function unpinMessage({ conversationId }) {
+  await redis.del(`chat:conv:${conversationId}:pinned`);
+}
+
+export async function getPinnedMessage({ conversationId }) {
+  const messageId = await redis.get(`chat:conv:${conversationId}:pinned`);
+  if (!messageId) return null;
+
+  const message = await prisma.chatMessage.findUnique({
+    where: { id: messageId },
+    include: {
+      sender: { select: { id: true, firstName: true, lastName: true, email: true } },
+      attachments: true
+    }
+  });
+
+  if (!message || message.deletedAt) {
+    await redis.del(`chat:conv:${conversationId}:pinned`);
+    return null;
+  }
+
+  return message;
 }

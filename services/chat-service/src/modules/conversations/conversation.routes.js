@@ -22,4 +22,9 @@ router.patch('/:id', requireParticipant, conversationController.updateConversati
 // Archive conversation
 router.delete('/:id', requireParticipant, conversationController.archiveConversation);
 
+// Pinned message
+router.get('/:id/pinned', requireParticipant, conversationController.getPinnedMessage);
+router.post('/:id/pin/:messageId', requireParticipant, conversationController.pinMessage);
+router.delete('/:id/pin', requireParticipant, conversationController.unpinMessage);
+
 export default router;

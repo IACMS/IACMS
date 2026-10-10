@@ -89,6 +89,8 @@ function handleIncomingEvent(event) {
     case 'MESSAGE_DELETED':
     case 'REACTION_ADDED':
     case 'REACTION_REMOVED':
+    case 'MESSAGE_PINNED':
+    case 'MESSAGE_UNPINNED':
       // Broadcast to all members subscribed to this conversation
       registry.broadcastToConversation(event.conversationId, {
         type: event.type,

@@ -1,5 +1,6 @@
 import * as participantService from './participant.service.js';
 import { ValidationError } from '../../../../../shared/common/errors.js';
+import * as wsEvents from '../../websocket/events.js';
 
 /**
  * GET /conversations/:id/participants
@@ -32,6 +33,8 @@ export async function addParticipant(req, res, next) {
       userId,
     });
 
+    wsEvents.emitParticipantAdded({ conversationId, participant }).catch(() => {});
+
     res.status(201).json(participant);
   } catch (error) {
     next(error);
@@ -50,6 +53,8 @@ export async function removeParticipant(req, res, next) {
       actorParticipant: req.participant,
       targetUserId,
     });
+
+    wsEvents.emitParticipantRemoved({ conversationId, userId: targetUserId }).catch(() => {});
 
     res.status(204).end();
   } catch (error) {
