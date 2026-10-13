@@ -169,3 +169,43 @@ export async function getPinnedMessage(req, res, next) {
     next(error);
   }
 }
+
+export async function getCaseConversation(req, res, next) {
+  try {
+    const { caseId } = req.params;
+    const { tenantId, userId } = req.actor;
+
+    const result = await conversationService.getCaseConversation({
+      tenantId,
+      userId,
+      caseId
+    });
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function initiateCaseConversation(req, res, next) {
+  try {
+    const { caseId } = req.params;
+    const { tenantId, userId } = req.actor;
+
+    const result = await conversationService.initiateCaseConversation({
+      tenantId,
+      userId,
+      caseId
+    });
+
+    if (result.created) {
+      const participantUserIds = result.conversation.participants?.map(p => p.userId) || [userId];
+      wsEvents.emitConversationCreated(result.conversation, participantUserIds).catch(() => {});
+    }
+
+    res.status(result.created ? 201 : 200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+

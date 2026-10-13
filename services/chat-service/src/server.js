@@ -82,12 +82,16 @@ app.post('/presence', async (req, res, next) => {
 // Global error handler
 app.use(errorHandler);
 
-const server = app.listen(PORT, () => {
-  console.log(`[chat-service] REST API running on port ${PORT}`);
-});
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => {
+    console.log(`[chat-service] REST API running on port ${PORT}`);
+  });
 
-// Initialize WebSocket server on the same HTTP server
-initWebSocketServer(server);
+  // Initialize WebSocket server on the same HTTP server
+  initWebSocketServer(server);
+}
 
 export { server };
 export default app;
+

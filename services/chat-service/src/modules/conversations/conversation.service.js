@@ -379,3 +379,246 @@ export async function getPinnedMessage({ conversationId }) {
 
   return message;
 }
+
+export async function getCaseConversation({ tenantId, userId, caseId }) {
+  if (!caseId) {
+    throw new ValidationError('caseId is required');
+  }
+
+  const caseRecord = await prisma.case.findFirst({
+    where: {
+      id: caseId,
+      deletedAt: null,
+      OR: [
+        { tenantId },
+        { originatingTenantId: tenantId },
+        { currentTenantId: tenantId }
+      ]
+    },
+    select: {
+      id: true,
+      caseNumber: true,
+      title: true,
+      status: true,
+      priority: true,
+      assignedTo: true,
+      createdBy: true
+    }
+  });
+
+  if (!caseRecord) {
+    throw new NotFoundError('Case not found or access denied');
+  }
+
+  const conversation = await prisma.chatConversation.findFirst({
+    where: {
+      tenantId,
+      type: 'GROUP',
+      description: {
+        contains: `"caseId":"${caseId}"`
+      },
+      isArchived: false
+    },
+    include: {
+      participants: {
+        where: { leftAt: null },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              username: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!conversation) {
+    return {
+      exists: false,
+      conversation: null,
+      caseInfo: {
+        id: caseRecord.id,
+        caseNumber: caseRecord.caseNumber,
+        title: caseRecord.title,
+        status: caseRecord.status,
+        priority: caseRecord.priority
+      }
+    };
+  }
+
+  const isParticipant = conversation.participants.some(p => p.userId === userId);
+
+  return {
+    exists: true,
+    isParticipant,
+    conversation,
+    caseInfo: {
+      id: caseRecord.id,
+      caseNumber: caseRecord.caseNumber,
+      title: caseRecord.title,
+      status: caseRecord.status,
+      priority: caseRecord.priority
+    }
+  };
+}
+
+export async function initiateCaseConversation({ tenantId, userId, caseId }) {
+  if (!caseId) {
+    throw new ValidationError('caseId is required');
+  }
+
+  const caseRecord = await prisma.case.findFirst({
+    where: {
+      id: caseId,
+      deletedAt: null,
+      OR: [
+        { tenantId },
+        { originatingTenantId: tenantId },
+        { currentTenantId: tenantId }
+      ]
+    },
+    select: {
+      id: true,
+      caseNumber: true,
+      title: true,
+      status: true,
+      priority: true,
+      assignedTo: true,
+      createdBy: true
+    }
+  });
+
+  if (!caseRecord) {
+    throw new NotFoundError('Case not found or access denied');
+  }
+
+  let conversation = await prisma.chatConversation.findFirst({
+    where: {
+      tenantId,
+      type: 'GROUP',
+      description: {
+        contains: `"caseId":"${caseId}"`
+      },
+      isArchived: false
+    },
+    include: {
+      participants: {
+        where: { leftAt: null }
+      }
+    }
+  });
+
+  if (conversation) {
+    const isMember = conversation.participants.some(p => p.userId === userId);
+    if (!isMember) {
+      await prisma.chatParticipant.upsert({
+        where: {
+          conversationId_userId: {
+            conversationId: conversation.id,
+            userId
+          }
+        },
+        create: {
+          conversationId: conversation.id,
+          userId,
+          role: 'MEMBER'
+        },
+        update: {
+          leftAt: null,
+          role: 'MEMBER'
+        }
+      });
+    }
+    const fullConversation = await getConversationDetails(conversation.id);
+    return {
+      created: false,
+      conversation: fullConversation,
+      caseInfo: {
+        id: caseRecord.id,
+        caseNumber: caseRecord.caseNumber,
+        title: caseRecord.title,
+        status: caseRecord.status,
+        priority: caseRecord.priority
+      }
+    };
+  }
+
+  const initiator = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { firstName: true, lastName: true, username: true }
+  });
+  const initiatorName = (
+    initiator
+      ? `${initiator.firstName || ''} ${initiator.lastName || ''}`.trim() || initiator.username
+      : null
+  ) || 'Investigator';
+
+  const candidateIds = [caseRecord.createdBy, caseRecord.assignedTo, userId].filter(Boolean);
+  const participantIds = [...new Set(candidateIds)];
+
+  const metadataJson = JSON.stringify({
+    caseId: caseRecord.id,
+    caseNumber: caseRecord.caseNumber,
+    caseTitle: caseRecord.title,
+    priority: caseRecord.priority,
+    status: caseRecord.status,
+    initiatedBy: userId,
+    initiatedAt: new Date().toISOString()
+  });
+
+  conversation = await prisma.chatConversation.create({
+    data: {
+      tenantId,
+      type: 'GROUP',
+      title: `Case #${caseRecord.caseNumber}: ${caseRecord.title}`,
+      description: metadataJson,
+      createdBy: userId,
+      participants: {
+        create: participantIds.map(pId => ({
+          userId: pId,
+          role: pId === userId ? 'OWNER' : 'MEMBER'
+        }))
+      }
+    }
+  });
+
+  const welcomeText = `📋 Case Collaboration Room initiated for Case #${caseRecord.caseNumber} (${caseRecord.title}) by ${initiatorName}.\nPriority: ${caseRecord.priority.toUpperCase()} · Status: ${caseRecord.status.toUpperCase()}`;
+
+  const firstMsg = await prisma.chatMessage.create({
+    data: {
+      conversationId: conversation.id,
+      senderId: userId,
+      tenantId,
+      content: welcomeText,
+      messageType: 'SYSTEM'
+    }
+  });
+
+  await prisma.chatConversation.update({
+    where: { id: conversation.id },
+    data: {
+      lastMessageId: firstMsg.id,
+      lastMessageAt: firstMsg.createdAt
+    }
+  });
+
+  const fullConversation = await getConversationDetails(conversation.id);
+
+  return {
+    created: true,
+    conversation: fullConversation,
+    caseInfo: {
+      id: caseRecord.id,
+      caseNumber: caseRecord.caseNumber,
+      title: caseRecord.title,
+      status: caseRecord.status,
+      priority: caseRecord.priority
+    }
+  };
+}
+

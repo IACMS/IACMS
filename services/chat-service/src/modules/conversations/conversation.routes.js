@@ -13,6 +13,10 @@ router.get('/', conversationController.listConversations);
 // Create a DIRECT or GROUP conversation
 router.post('/', conversationController.createConversation);
 
+// Case-linked collaboration rooms (Must be defined before /:id)
+router.get('/case/:caseId', conversationController.getCaseConversation);
+router.post('/case/:caseId', conversationController.initiateCaseConversation);
+
 // Get a single conversation with participants
 router.get('/:id', requireParticipant, conversationController.getConversation);
 
