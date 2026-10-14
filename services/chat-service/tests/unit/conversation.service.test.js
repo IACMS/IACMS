@@ -403,6 +403,7 @@ describe('Conversation Service', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             messageType: 'SYSTEM',
+            clientMessageId: expect.stringContaining('system-case-init'),
             content: expect.stringContaining('Sherlock Holmes'),
           }),
         })

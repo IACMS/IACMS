@@ -594,6 +594,7 @@ export async function initiateCaseConversation({ tenantId, userId, caseId }) {
       conversationId: conversation.id,
       senderId: userId,
       tenantId,
+      clientMessageId: `system-case-init-${caseRecord.id}-${Date.now()}`,
       content: welcomeText,
       messageType: 'SYSTEM'
     }

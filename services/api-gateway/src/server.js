@@ -219,6 +219,7 @@ async function startServer() {
       { key: 'integration', label: 'Integration service', baseUrl: services.integration },
       { key: 'notification', label: 'Notification service', baseUrl: services.notification },
       { key: 'file', label: 'File service', baseUrl: services.file },
+      { key: 'chat', label: 'Chat service (Messaging + Rooms + WS)', baseUrl: services.chat },
     ];
     const probes = await Promise.all(
       definitions.map(async (d) => {

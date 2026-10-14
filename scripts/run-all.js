@@ -34,6 +34,7 @@ const commonEnv = {
   INTEGRATION_SERVICE_URL: 'http://localhost:3007',
   NOTIFICATION_SERVICE_URL: 'http://localhost:3008',
   FILE_SERVICE_URL: 'http://localhost:3009',
+  CHAT_SERVICE_URL: 'http://localhost:3010',
 };
 
 const services = [
@@ -43,6 +44,7 @@ const services = [
   { name: 'integration-service', dir: 'services/integration-service', port: 3007 },
   { name: 'notification-service', dir: 'services/notification-service', port: 3008 },
   { name: 'file-service', dir: 'services/file-service', port: 3009 },
+  { name: 'chat-service', dir: 'services/chat-service', port: 3010 },
   { name: 'api-gateway', dir: 'services/api-gateway', port: 3000 },
 ];
 

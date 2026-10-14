@@ -24,6 +24,11 @@ const SERVICE_URLS = {
   integration: process.env.INTEGRATION_SERVICE_URL || 'http://localhost:3007',
   notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008',
   file: process.env.FILE_SERVICE_URL || 'http://localhost:3009',
+  chat:
+    process.env.CHAT_SERVICE_URL ||
+    (process.env.IAM_SERVICE_URL?.includes('iam-service')
+      ? 'http://chat-service:3010'
+      : 'http://localhost:3010'),
 };
 
 async function probeHealth(baseUrl) {

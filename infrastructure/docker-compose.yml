@@ -150,6 +150,7 @@ services:
       INTEGRATION_SERVICE_URL: http://integration-service:3007
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
       FILE_SERVICE_URL: http://file-service:3009
+      CHAT_SERVICE_URL: http://chat-service:3010
     depends_on:
       postgres:
         condition: service_healthy

@@ -13,6 +13,7 @@ SERVICES=(
   "integration-service:3007"
   "notification-service:3008"
   "file-service:3009"
+  "chat-service:3010"
   "api-gateway:3000"
 )
 
@@ -66,6 +67,7 @@ start_one() {
     export INTEGRATION_SERVICE_URL="http://localhost:3007"
     export NOTIFICATION_SERVICE_URL="http://localhost:3008"
     export FILE_SERVICE_URL="http://localhost:3009"
+    export CHAT_SERVICE_URL="http://localhost:3010"
     nohup node src/server.js </dev/null >>"$LOGDIR/$name.log" 2>&1 &
     local pid=$!
     disown $pid
