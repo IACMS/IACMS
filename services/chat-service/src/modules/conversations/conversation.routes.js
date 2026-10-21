@@ -17,14 +17,18 @@ router.post('/', conversationController.createConversation);
 router.get('/case/:caseId', conversationController.getCaseConversation);
 router.post('/case/:caseId', conversationController.initiateCaseConversation);
 
+// Referral-linked collaboration rooms (Must be defined before /:id)
+router.get('/referral/:referralId', conversationController.getReferralConversation);
+router.post('/referral/:referralId', conversationController.initiateReferralConversation);
+
 // Get a single conversation with participants
 router.get('/:id', requireParticipant, conversationController.getConversation);
 
 // Update GROUP metadata
 router.patch('/:id', requireParticipant, conversationController.updateConversation);
 
-// Archive conversation
-router.delete('/:id', requireParticipant, conversationController.archiveConversation);
+// Delete or archive conversation
+router.delete('/:id', requireParticipant, conversationController.deleteConversation);
 
 // Pinned message
 router.get('/:id/pinned', requireParticipant, conversationController.getPinnedMessage);

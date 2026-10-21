@@ -36,6 +36,10 @@ vi.mock('../../src/config/database.js', () => {
         findFirst: vi.fn(),
         findUnique: vi.fn(),
       },
+      caseReferral: {
+        findFirst: vi.fn(),
+        findUnique: vi.fn(),
+      },
     },
   };
 });
@@ -447,6 +451,192 @@ describe('Conversation Service', () => {
             conversationId_userId: {
               conversationId: 'conv-case-30',
               userId: 'user-new',
+            },
+          },
+        })
+      );
+    });
+  });
+
+  describe('Referral-Linked Collaboration: getReferralConversation & initiateReferralConversation', () => {
+    it('getReferralConversation: throws ValidationError if referralId missing', async () => {
+      await expect(
+        conversationService.getReferralConversation({ tenantId: 't1', userId: 'u1' })
+      ).rejects.toThrow('referralId is required');
+    });
+
+    it('getReferralConversation: throws NotFoundError if referral not found', async () => {
+      prisma.caseReferral.findFirst.mockResolvedValueOnce(null);
+      await expect(
+        conversationService.getReferralConversation({ tenantId: 't1', userId: 'u1', referralId: 'ref-none' })
+      ).rejects.toThrow('Referral not found or access denied');
+    });
+
+    it('getReferralConversation: returns exists: false when room not initiated', async () => {
+      prisma.caseReferral.findFirst.mockResolvedValueOnce({
+        id: 'ref-1',
+        caseId: 'case-1',
+        fromTenantId: 'tenant-1',
+        toTenantId: 'tenant-2',
+        status: 'pending',
+        case: { id: 'case-1', caseNumber: 'CAS-100', title: 'Test Case', status: 'open', priority: 'medium' },
+        fromTenant: { id: 'tenant-1', name: 'Police', code: 'POL' },
+        toTenant: { id: 'tenant-2', name: 'Child Protection', code: 'CPS' },
+      });
+      prisma.chatConversation.findFirst.mockResolvedValueOnce(null);
+
+      const res = await conversationService.getReferralConversation({
+        tenantId: 'tenant-1',
+        userId: 'u1',
+        referralId: 'ref-1',
+      });
+
+      expect(res.exists).toBe(false);
+      expect(res.conversation).toBeNull();
+      expect(res.referralInfo.fromTenantCode).toBe('POL');
+      expect(res.referralInfo.toTenantCode).toBe('CPS');
+    });
+
+    it('getReferralConversation: returns exists: true and participant status when room exists', async () => {
+      prisma.caseReferral.findFirst.mockResolvedValueOnce({
+        id: 'ref-1',
+        caseId: 'case-1',
+        fromTenantId: 'tenant-1',
+        toTenantId: 'tenant-2',
+        status: 'accepted',
+        case: { id: 'case-1', caseNumber: 'CAS-100', title: 'Test Case', status: 'open', priority: 'medium' },
+        fromTenant: { id: 'tenant-1', name: 'Police', code: 'POL' },
+        toTenant: { id: 'tenant-2', name: 'Child Protection', code: 'CPS' },
+      });
+      prisma.chatConversation.findFirst.mockResolvedValueOnce({
+        id: 'conv-ref-1',
+        participants: [{ userId: 'u1', user: { id: 'u1', firstName: 'John' } }],
+      });
+
+      const res = await conversationService.getReferralConversation({
+        tenantId: 'tenant-1',
+        userId: 'u1',
+        referralId: 'ref-1',
+      });
+
+      expect(res.exists).toBe(true);
+      expect(res.isParticipant).toBe(true);
+      expect(res.conversation.id).toBe('conv-ref-1');
+    });
+
+    it('initiateReferralConversation: creates cross-tenant room and enrolls participants with welcome message', async () => {
+      prisma.caseReferral.findFirst.mockResolvedValueOnce({
+        id: 'ref-50',
+        caseId: 'case-50',
+        fromTenantId: 'tenant-pol',
+        toTenantId: 'tenant-cps',
+        status: 'accepted',
+        referredBy: 'user-pol-officer',
+        acceptedBy: 'user-cps-intake',
+        case: { id: 'case-50', caseNumber: 'CAS-2026-0050', title: 'Joint Investigation', status: 'open', priority: 'high', assignedTo: 'user-cps-caseworker' },
+        fromTenant: { id: 'tenant-pol', name: 'Police Dept', code: 'POL' },
+        toTenant: { id: 'tenant-cps', name: 'Child Protection', code: 'CPS' },
+      });
+
+      // No existing room
+      prisma.chatConversation.findFirst.mockResolvedValueOnce(null);
+
+      prisma.user.findUnique.mockResolvedValueOnce({
+        firstName: 'Jane',
+        lastName: 'Doe',
+      });
+
+      prisma.chatConversation.create.mockResolvedValueOnce({
+        id: 'conv-ref-50',
+        type: 'GROUP',
+        title: 'Referral: Case #CAS-2026-0050 (POL → CPS)',
+      });
+
+      prisma.chatMessage.create.mockResolvedValueOnce({
+        id: 'msg-sys-1',
+        createdAt: new Date(),
+      });
+
+      prisma.chatConversation.update.mockResolvedValueOnce({});
+
+      prisma.chatConversation.findUnique.mockResolvedValueOnce({
+        id: 'conv-ref-50',
+        title: 'Referral: Case #CAS-2026-0050 (POL → CPS)',
+        participants: [
+          { userId: 'user-pol-officer' },
+          { userId: 'user-cps-intake' },
+          { userId: 'user-cps-caseworker' },
+          { userId: 'user-caller' },
+        ],
+      });
+
+      const res = await conversationService.initiateReferralConversation({
+        tenantId: 'tenant-pol',
+        userId: 'user-caller',
+        referralId: 'ref-50',
+      });
+
+      expect(res.created).toBe(true);
+      expect(res.conversation.id).toBe('conv-ref-50');
+      expect(prisma.chatConversation.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            title: 'Referral: Case #CAS-2026-0050 (POL → CPS)',
+            tenantId: 'tenant-pol',
+            type: 'GROUP',
+          }),
+        })
+      );
+      expect(prisma.chatMessage.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            messageType: 'SYSTEM',
+            clientMessageId: expect.stringContaining('system-referral-init'),
+            content: expect.stringContaining('POL → CPS'),
+          }),
+        })
+      );
+    });
+
+    it('initiateReferralConversation: joins user to existing room if already created', async () => {
+      prisma.caseReferral.findFirst.mockResolvedValueOnce({
+        id: 'ref-60',
+        caseId: 'case-60',
+        fromTenantId: 'tenant-pol',
+        toTenantId: 'tenant-cps',
+        status: 'pending',
+        case: { id: 'case-60', caseNumber: 'CAS-60', title: 'Case 60' },
+        fromTenant: { id: 'tenant-pol', code: 'POL' },
+        toTenant: { id: 'tenant-cps', code: 'CPS' },
+      });
+
+      // Existing room
+      prisma.chatConversation.findFirst.mockResolvedValueOnce({
+        id: 'conv-ref-60',
+        participants: [{ userId: 'user-other' }],
+      });
+
+      prisma.chatParticipant.upsert.mockResolvedValueOnce({});
+
+      prisma.chatConversation.findUnique.mockResolvedValueOnce({
+        id: 'conv-ref-60',
+        participants: [{ userId: 'user-other' }, { userId: 'user-joiner' }],
+      });
+
+      const res = await conversationService.initiateReferralConversation({
+        tenantId: 'tenant-cps',
+        userId: 'user-joiner',
+        referralId: 'ref-60',
+      });
+
+      expect(res.created).toBe(false);
+      expect(res.conversation.id).toBe('conv-ref-60');
+      expect(prisma.chatParticipant.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            conversationId_userId: {
+              conversationId: 'conv-ref-60',
+              userId: 'user-joiner',
             },
           },
         })

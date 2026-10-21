@@ -97,8 +97,45 @@ export async function updateConversation(req, res, next) {
       description,
       avatarFileId
     });
+
+    if (typeof wsEvents.emitConversationUpdated === 'function') {
+      wsEvents.emitConversationUpdated(conversation).catch(() => {});
+    }
     
     res.json(conversation);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteConversation(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { userId } = req.actor;
+
+    const isOwnerOrAdmin =
+      req.participant.role === 'OWNER' ||
+      req.participant.role === 'ADMIN' ||
+      req.participant.conversation?.createdBy === userId;
+
+    if (isOwnerOrAdmin && req.participant.conversation?.type === 'GROUP') {
+      const result = await conversationService.deleteConversation({
+        conversationId: id,
+        participant: req.participant,
+        userId
+      });
+      if (typeof wsEvents.emitConversationDeleted === 'function') {
+        wsEvents.emitConversationDeleted(result).catch(() => {});
+      }
+      return res.status(204).end();
+    }
+
+    await conversationService.archiveUserConversation({
+      conversationId: id,
+      participantId: req.participant.id
+    });
+
+    res.status(204).end();
   } catch (error) {
     next(error);
   }
@@ -208,4 +245,44 @@ export async function initiateCaseConversation(req, res, next) {
     next(error);
   }
 }
+
+export async function getReferralConversation(req, res, next) {
+  try {
+    const { referralId } = req.params;
+    const { tenantId, userId } = req.actor;
+
+    const result = await conversationService.getReferralConversation({
+      tenantId,
+      userId,
+      referralId
+    });
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function initiateReferralConversation(req, res, next) {
+  try {
+    const { referralId } = req.params;
+    const { tenantId, userId } = req.actor;
+
+    const result = await conversationService.initiateReferralConversation({
+      tenantId,
+      userId,
+      referralId
+    });
+
+    if (result.created) {
+      const participantUserIds = result.conversation.participants?.map(p => p.userId) || [userId];
+      wsEvents.emitConversationCreated(result.conversation, participantUserIds).catch(() => {});
+    }
+
+    res.status(result.created ? 201 : 200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 

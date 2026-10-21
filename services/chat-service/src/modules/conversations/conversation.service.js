@@ -106,7 +106,10 @@ export async function listUserConversations({ tenantId, userId, limit, cursor })
     isArchived: false,
     leftAt: null,
     conversation: {
-      tenantId
+      OR: [
+        { tenantId },
+        { description: { contains: '"referralId"' } }
+      ]
     }
   };
 
@@ -316,18 +319,51 @@ export async function updateGroupMetadata({ conversationId, participant, title, 
     throw new ValidationError('Can only update metadata for GROUP conversations');
   }
 
-  if (participant.role === 'MEMBER') {
+  const isOwnerOrAdmin =
+    participant.role === 'OWNER' ||
+    participant.role === 'ADMIN' ||
+    (Boolean(participant.userId) && Boolean(participant.conversation.createdBy) && participant.conversation.createdBy === participant.userId);
+
+  if (!isOwnerOrAdmin) {
     throw new ForbiddenError('Only ADMIN or OWNER can update group metadata');
   }
 
   return await prisma.chatConversation.update({
     where: { id: conversationId },
     data: {
-      title,
-      description,
-      avatarFileId
+      ...(title !== undefined ? { title: String(title).trim() } : {}),
+      ...(description !== undefined ? { description: description ? String(description).trim() : null } : {}),
+      ...(avatarFileId !== undefined ? { avatarFileId } : {})
     }
   });
+}
+
+export async function deleteConversation({ conversationId, participant, userId }) {
+  const conv = participant.conversation;
+  if (conv.type !== 'GROUP') {
+    throw new ValidationError('Only GROUP conversations can be deleted');
+  }
+
+  if (conv.title === 'Agency Channel') {
+    throw new ForbiddenError('The default Agency Channel cannot be deleted');
+  }
+
+  const isOwnerOrAdmin = participant.role === 'OWNER' || participant.role === 'ADMIN' || conv.createdBy === userId;
+  if (!isOwnerOrAdmin) {
+    throw new ForbiddenError('Only group OWNER or ADMIN can delete this group');
+  }
+
+  const activeParticipants = await prisma.chatParticipant.findMany({
+    where: { conversationId, leftAt: null },
+    select: { userId: true }
+  });
+  const participantUserIds = activeParticipants.map(p => p.userId);
+
+  await prisma.chatConversation.delete({
+    where: { id: conversationId }
+  });
+
+  return { conversationId, participantUserIds };
 }
 
 export async function archiveUserConversation({ conversationId, participantId }) {
@@ -622,4 +658,288 @@ export async function initiateCaseConversation({ tenantId, userId, caseId }) {
     }
   };
 }
+
+export async function getReferralConversation({ tenantId, userId, referralId }) {
+  if (!referralId) {
+    throw new ValidationError('referralId is required');
+  }
+
+  const referral = await prisma.caseReferral.findFirst({
+    where: {
+      id: referralId,
+      OR: [
+        { fromTenantId: tenantId },
+        { toTenantId: tenantId }
+      ]
+    },
+    include: {
+      case: {
+        select: {
+          id: true,
+          caseNumber: true,
+          title: true,
+          status: true,
+          priority: true,
+          assignedTo: true,
+        }
+      },
+      fromTenant: { select: { id: true, name: true, code: true } },
+      toTenant: { select: { id: true, name: true, code: true } },
+      fromDepartment: { select: { id: true, name: true, code: true } },
+      toDepartment: { select: { id: true, name: true, code: true } },
+      referrer: { select: { id: true, firstName: true, lastName: true, email: true, username: true } },
+      accepter: { select: { id: true, firstName: true, lastName: true, email: true, username: true } }
+    }
+  });
+
+  if (!referral) {
+    throw new NotFoundError('Referral not found or access denied');
+  }
+
+  const conversation = await prisma.chatConversation.findFirst({
+    where: {
+      type: 'GROUP',
+      description: {
+        contains: `"referralId":"${referralId}"`
+      },
+      isArchived: false
+    },
+    include: {
+      participants: {
+        where: { leftAt: null },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              username: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const referralInfo = {
+    id: referral.id,
+    caseId: referral.caseId,
+    caseNumber: referral.case?.caseNumber || null,
+    caseTitle: referral.case?.title || null,
+    fromTenantId: referral.fromTenantId,
+    toTenantId: referral.toTenantId,
+    fromTenantCode: referral.fromTenant?.code || 'ORG',
+    toTenantCode: referral.toTenant?.code || 'ORG',
+    fromTenantName: referral.fromTenant?.name || 'Referring Agency',
+    toTenantName: referral.toTenant?.name || 'Receiving Agency',
+    fromDepartmentName: referral.fromDepartment?.name || null,
+    toDepartmentName: referral.toDepartment?.name || null,
+    status: referral.status,
+    referredAt: referral.referredAt,
+    acceptedAt: referral.acceptedAt,
+  };
+
+  if (!conversation) {
+    return {
+      exists: false,
+      conversation: null,
+      referralInfo
+    };
+  }
+
+  const isParticipant = conversation.participants.some(p => p.userId === userId);
+
+  return {
+    exists: true,
+    isParticipant,
+    conversation,
+    referralInfo
+  };
+}
+
+export async function initiateReferralConversation({ tenantId, userId, referralId }) {
+  if (!referralId) {
+    throw new ValidationError('referralId is required');
+  }
+
+  const referral = await prisma.caseReferral.findFirst({
+    where: {
+      id: referralId,
+      OR: [
+        { fromTenantId: tenantId },
+        { toTenantId: tenantId }
+      ]
+    },
+    include: {
+      case: {
+        select: {
+          id: true,
+          caseNumber: true,
+          title: true,
+          status: true,
+          priority: true,
+          assignedTo: true,
+          createdBy: true
+        }
+      },
+      fromTenant: { select: { id: true, name: true, code: true } },
+      toTenant: { select: { id: true, name: true, code: true } },
+      fromDepartment: { select: { id: true, name: true, code: true } },
+      toDepartment: { select: { id: true, name: true, code: true } },
+      referrer: { select: { id: true, firstName: true, lastName: true, username: true } },
+      accepter: { select: { id: true, firstName: true, lastName: true, username: true } }
+    }
+  });
+
+  if (!referral) {
+    throw new NotFoundError('Referral not found or access denied');
+  }
+
+  const referralInfo = {
+    id: referral.id,
+    caseId: referral.caseId,
+    caseNumber: referral.case?.caseNumber || null,
+    caseTitle: referral.case?.title || null,
+    fromTenantId: referral.fromTenantId,
+    toTenantId: referral.toTenantId,
+    fromTenantCode: referral.fromTenant?.code || 'ORG',
+    toTenantCode: referral.toTenant?.code || 'ORG',
+    fromTenantName: referral.fromTenant?.name || 'Referring Agency',
+    toTenantName: referral.toTenant?.name || 'Receiving Agency',
+    fromDepartmentName: referral.fromDepartment?.name || null,
+    toDepartmentName: referral.toDepartment?.name || null,
+    status: referral.status,
+    referredAt: referral.referredAt,
+    acceptedAt: referral.acceptedAt,
+  };
+
+  let conversation = await prisma.chatConversation.findFirst({
+    where: {
+      type: 'GROUP',
+      description: {
+        contains: `"referralId":"${referralId}"`
+      },
+      isArchived: false
+    },
+    include: {
+      participants: {
+        where: { leftAt: null }
+      }
+    }
+  });
+
+  if (conversation) {
+    const isMember = conversation.participants.some(p => p.userId === userId);
+    if (!isMember) {
+      await prisma.chatParticipant.upsert({
+        where: {
+          conversationId_userId: {
+            conversationId: conversation.id,
+            userId
+          }
+        },
+        create: {
+          conversationId: conversation.id,
+          userId,
+          role: 'MEMBER'
+        },
+        update: {
+          leftAt: null,
+          role: 'MEMBER'
+        }
+      });
+    }
+    const fullConversation = await getConversationDetails(conversation.id);
+    return {
+      created: false,
+      conversation: fullConversation,
+      referralInfo
+    };
+  }
+
+  const initiator = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { firstName: true, lastName: true, username: true }
+  });
+  const initiatorName = (
+    initiator
+      ? `${initiator.firstName || ''} ${initiator.lastName || ''}`.trim() || initiator.username
+      : null
+  ) || 'Officer';
+
+  const candidateIds = [
+    referral.referredBy,
+    referral.acceptedBy,
+    referral.case?.assignedTo,
+    userId
+  ].filter(Boolean);
+  const participantIds = [...new Set(candidateIds)];
+
+  const metadataJson = JSON.stringify({
+    referralId: referral.id,
+    caseId: referral.caseId,
+    caseNumber: referral.case?.caseNumber || 'N/A',
+    caseTitle: referral.case?.title || 'Referral Case',
+    fromTenantId: referral.fromTenantId,
+    toTenantId: referral.toTenantId,
+    fromTenantCode: referral.fromTenant?.code || 'ORG',
+    toTenantCode: referral.toTenant?.code || 'ORG',
+    fromDepartmentName: referral.fromDepartment?.name || null,
+    toDepartmentName: referral.toDepartment?.name || null,
+    status: referral.status,
+    initiatedBy: userId,
+    initiatedAt: new Date().toISOString()
+  });
+
+  const fromCode = referral.fromTenant?.code || 'ORG';
+  const toCode = referral.toTenant?.code || 'ORG';
+  const roomTitle = `Referral: Case #${referral.case?.caseNumber || referral.caseId.slice(0, 8)} (${fromCode} → ${toCode})`;
+
+  conversation = await prisma.chatConversation.create({
+    data: {
+      tenantId: referral.fromTenantId,
+      type: 'GROUP',
+      title: roomTitle,
+      description: metadataJson,
+      createdBy: userId,
+      participants: {
+        create: participantIds.map(pId => ({
+          userId: pId,
+          role: pId === userId ? 'OWNER' : 'MEMBER'
+        }))
+      }
+    }
+  });
+
+  const welcomeText = `🤝 Inter-Agency Collaboration Room initiated for Referral on Case #${referral.case?.caseNumber || referral.caseId.slice(0, 8)} (${fromCode} → ${toCode}) by ${initiatorName}.\nReferral Status: ${referral.status.toUpperCase()}`;
+
+  const firstMsg = await prisma.chatMessage.create({
+    data: {
+      conversationId: conversation.id,
+      senderId: userId,
+      tenantId,
+      clientMessageId: `system-referral-init-${referral.id}-${Date.now()}`,
+      content: welcomeText,
+      messageType: 'SYSTEM'
+    }
+  });
+
+  await prisma.chatConversation.update({
+    where: { id: conversation.id },
+    data: {
+      lastMessageId: firstMsg.id,
+      lastMessageAt: firstMsg.createdAt
+    }
+  });
+
+  const fullConversation = await getConversationDetails(conversation.id);
+
+  return {
+    created: true,
+    conversation: fullConversation,
+    referralInfo
+  };
+}
+
 

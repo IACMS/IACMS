@@ -14,14 +14,17 @@ export async function requireParticipant(req, res, next) {
       throw new Error('Conversation ID is missing in route params');
     }
 
-    // Verify conversation belongs to tenant and user is active participant
+    // Verify conversation belongs to tenant or is an authorized cross-tenant referral room
     const participant = await prisma.chatParticipant.findFirst({
       where: {
         conversationId,
         userId,
         leftAt: null,
         conversation: {
-          tenantId
+          OR: [
+            { tenantId },
+            { description: { contains: '"referralId"' } }
+          ]
         }
       },
       include: {

@@ -248,17 +248,15 @@ export async function getTenant(req, res, next) {
 export async function listTenantDepartments(req, res, next) {
   try {
     const { id } = req.params;
-    const { actorTenantId, isSystemAdmin } = await resolveActorContext(req);
-
-    if (!isSystemAdmin && id !== actorTenantId) {
-      throw new NotFoundError('Tenant');
-    }
+    const { isSystemAdmin } = await resolveActorContext(req);
 
     const tenant = await prisma.tenant.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, isActive: true },
     });
-    if (!tenant) throw new NotFoundError('Tenant');
+    if (!tenant || (!tenant.isActive && !isSystemAdmin)) {
+      throw new NotFoundError('Tenant');
+    }
 
     const departments = await prisma.department.findMany({
       where: { tenantId: id, isActive: true },
@@ -290,6 +288,17 @@ export async function validateTenant(req, res, next) {
         name: true,
         code: true,
         isActive: true,
+        departments: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            description: true,
+            isActive: true,
+          },
+          orderBy: [{ name: 'asc' }, { code: 'asc' }],
+        },
       },
     });
 
@@ -304,6 +313,7 @@ export async function validateTenant(req, res, next) {
         name: tenant.name,
         code: tenant.code,
       },
+      departments: tenant.departments || [],
     });
   } catch (error) {
     next(error);

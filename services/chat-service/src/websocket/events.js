@@ -37,6 +37,28 @@ export async function emitConversationCreated(conversation, participantUserIds =
   });
 }
 
+export async function emitConversationUpdated(conversation, participantUserIds = []) {
+  const pIds = participantUserIds.length
+    ? participantUserIds
+    : conversation.participants?.map((p) => p.userId) || [];
+
+  await publish({
+    type: 'CONVERSATION_UPDATED',
+    conversationId: conversation.id,
+    participantUserIds: pIds,
+    data: conversation,
+  });
+}
+
+export async function emitConversationDeleted({ conversationId, participantUserIds = [] }) {
+  await publish({
+    type: 'CONVERSATION_DELETED',
+    conversationId,
+    participantUserIds,
+    data: { conversationId },
+  });
+}
+
 export async function emitMessageUpdated(message) {
   await publish({
     type: 'MESSAGE_UPDATED',

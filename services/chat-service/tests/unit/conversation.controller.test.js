@@ -6,6 +6,8 @@ import * as wsEvents from '../../src/websocket/events.js';
 vi.mock('../../src/modules/conversations/conversation.service.js');
 vi.mock('../../src/websocket/events.js', () => ({
   emitConversationCreated: vi.fn().mockResolvedValue(true),
+  emitConversationUpdated: vi.fn().mockResolvedValue(true),
+  emitConversationDeleted: vi.fn().mockResolvedValue(true),
   emitMessagePinned: vi.fn().mockResolvedValue(true),
   emitMessageUnpinned: vi.fn().mockResolvedValue(true),
 }));
@@ -217,4 +219,58 @@ describe('Conversation Controller', () => {
       expect(wsEvents.emitConversationCreated).not.toHaveBeenCalled();
     });
   });
+
+  describe('Referral-Linked Collaboration: getReferralConversation & initiateReferralConversation', () => {
+    it('getReferralConversation: should return referral room status', async () => {
+      req.params = { referralId: 'ref-123' };
+      conversationService.getReferralConversation.mockResolvedValueOnce({
+        exists: false,
+        conversation: null,
+        referralInfo: { id: 'ref-123' },
+      });
+
+      await conversationController.getReferralConversation(req, res, next);
+      expect(conversationService.getReferralConversation).toHaveBeenCalledWith({
+        tenantId: 't1',
+        userId: 'u1',
+        referralId: 'ref-123',
+      });
+      expect(res.json).toHaveBeenCalledWith({ exists: false, conversation: null, referralInfo: { id: 'ref-123' } });
+    });
+
+    it('initiateReferralConversation: should create room and emit WebSocket event if created', async () => {
+      req.params = { referralId: 'ref-123' };
+      conversationService.initiateReferralConversation.mockResolvedValueOnce({
+        created: true,
+        conversation: { id: 'conv-ref-new', participants: [{ userId: 'u1' }, { userId: 'u2' }] },
+        referralInfo: { id: 'ref-123' },
+      });
+
+      await conversationController.initiateReferralConversation(req, res, next);
+      expect(conversationService.initiateReferralConversation).toHaveBeenCalledWith({
+        tenantId: 't1',
+        userId: 'u1',
+        referralId: 'ref-123',
+      });
+      expect(wsEvents.emitConversationCreated).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'conv-ref-new' }),
+        ['u1', 'u2']
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+    });
+
+    it('initiateReferralConversation: should return 200 if room already exists', async () => {
+      req.params = { referralId: 'ref-123' };
+      conversationService.initiateReferralConversation.mockResolvedValueOnce({
+        created: false,
+        conversation: { id: 'conv-ref-existing', participants: [{ userId: 'u1' }] },
+        referralInfo: { id: 'ref-123' },
+      });
+
+      await conversationController.initiateReferralConversation(req, res, next);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(wsEvents.emitConversationCreated).not.toHaveBeenCalled();
+    });
+  });
 });
+

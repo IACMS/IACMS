@@ -75,10 +75,16 @@ function handleIncomingEvent(event) {
       break;
 
     case 'CONVERSATION_CREATED':
+    case 'CONVERSATION_UPDATED':
+    case 'CONVERSATION_DELETED':
+      registry.broadcastToConversation(event.conversationId, {
+        type: event.type,
+        data: event.data,
+      });
       if (event.participantUserIds && Array.isArray(event.participantUserIds)) {
         for (const pUserId of event.participantUserIds) {
           registry.sendToUser(pUserId, {
-            type: 'CONVERSATION_CREATED',
+            type: event.type,
             data: event.data,
           });
         }

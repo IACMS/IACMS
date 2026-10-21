@@ -178,7 +178,12 @@ async function handleSubscribe(ws, user, conversationId) {
       conversationId,
       userId: user.userId,
       leftAt: null,
-      conversation: { tenantId: user.tenantId },
+      conversation: {
+        OR: [
+          { tenantId: user.tenantId },
+          { description: { contains: '"referralId"' } }
+        ]
+      },
     },
   });
 
