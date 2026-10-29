@@ -102,8 +102,27 @@ export async function revokeRole(req, res, next) {
 
 export async function getUserRoles(req, res, next) {
   try {
+    const tenantId = req.headers['x-tenant-id'] || req.user?.tenantId;
+    const actorRoleIds = await actorRoleIdsFromRequest(req);
+    const actorRoles = await prisma.role.findMany({
+      where: { id: { in: actorRoleIds }, isActive: true },
+    });
+    const actorIsSystem = actorRoles.some((r) => r.name === 'system_admin');
+    const actorIsTenantAdmin = actorRoles.some((r) => r.name === 'tenant_admin');
+    const targetUserId = req.params.userId;
+    const actorUserId = req.headers['x-user-id'] || req.user?.id;
+
+    if (!actorIsSystem && !actorIsTenantAdmin && actorUserId !== targetUserId) {
+      throw new ForbiddenError('Only administrators may view user roles');
+    }
+
+    const where = {
+      userId: targetUserId,
+      ...(actorIsSystem ? {} : { user: { tenantId } }),
+    };
+
     const userRoles = await prisma.userRole.findMany({
-      where: { userId: req.params.userId },
+      where,
       include: {
         role: {
           include: {
@@ -122,7 +141,47 @@ export async function getUserRoles(req, res, next) {
 
 export async function checkPermission(req, res, next) {
   try {
-    res.json({ hasPermission: false }); // Placeholder
+    const { userId, resource, action, permission } = req.body;
+    let resName = resource;
+    let actName = action;
+
+    if (!resName && !actName && permission && typeof permission === 'string') {
+      const parts = permission.split(':');
+      resName = parts[0];
+      actName = parts[1];
+    }
+
+    if (!userId || !resName || !actName) {
+      throw new ValidationError('userId, resource, and action (or permission) are required');
+    }
+
+    const userRoles = await prisma.userRole.findMany({
+      where: {
+        userId,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      include: {
+        role: {
+          include: {
+            rolePermissions: {
+              include: { permission: true },
+            },
+          },
+        },
+      },
+    });
+
+    const hasPermission = userRoles.some((userRole) => {
+      if (!userRole.role?.isActive) return false;
+      return userRole.role.rolePermissions.some(
+        (rp) =>
+          rp.permission &&
+          rp.permission.resource === resName &&
+          rp.permission.action === actName
+      );
+    });
+
+    res.json({ hasPermission, userId, permission: `${resName}:${actName}` });
   } catch (error) {
     next(error);
   }

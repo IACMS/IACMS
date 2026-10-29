@@ -57,6 +57,15 @@ export async function getRole(req, res, next) {
       },
     });
     if (!role) throw new NotFoundError('Role');
+
+    const callerTenantId = req.user?.tenantId || req.headers['x-tenant-id'];
+    const callerRoles = req.user?.roles || (req.headers['x-user-roles'] ? req.headers['x-user-roles'].split(',') : []);
+    const isPlatformAdmin = req.headers['x-user-permissions']?.includes('platform:manage_tenants') || callerRoles.includes('system_admin');
+
+    if (!isPlatformAdmin && role.tenantId !== null && role.tenantId !== callerTenantId) {
+      throw new NotFoundError('Role');
+    }
+
     res.json({ role });
   } catch (error) {
     next(error);
@@ -133,18 +142,24 @@ export async function updateRole(req, res, next) {
         }
       }
 
-      await prisma.rolePermission.deleteMany({
-        where: { roleId },
-      });
+      const txOps = [
+        prisma.rolePermission.deleteMany({
+          where: { roleId },
+        }),
+      ];
 
       if (permissionIds.length > 0) {
-        await prisma.rolePermission.createMany({
-          data: permissionIds.map((permissionId) => ({
-            roleId,
-            permissionId,
-          })),
-        });
+        txOps.push(
+          prisma.rolePermission.createMany({
+            data: permissionIds.map((permissionId) => ({
+              roleId,
+              permissionId,
+            })),
+          }),
+        );
       }
+
+      await prisma.$transaction(txOps);
     }
 
     const role = await prisma.role.update({

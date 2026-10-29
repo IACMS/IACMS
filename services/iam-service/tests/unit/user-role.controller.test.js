@@ -13,6 +13,7 @@ vi.mock('../../src/config/database.js', () => {
       userRole: {
         create: vi.fn(),
         deleteMany: vi.fn(),
+        findMany: vi.fn(),
       },
     },
   };
@@ -23,7 +24,7 @@ vi.mock('../../../../shared/utils/userRoles.js', () => ({
 }));
 
 import prisma from '../../src/config/database.js';
-import { assignRole, revokeRole } from '../../src/controllers/user-role.controller.js';
+import { assignRole, revokeRole, getUserRoles, checkPermission } from '../../src/controllers/user-role.controller.js';
 import { ValidationError, NotFoundError, ForbiddenError } from '../../../../shared/common/errors.js';
 
 describe('User Role Controller', () => {
@@ -34,6 +35,7 @@ describe('User Role Controller', () => {
     req = {
       headers: { 'x-tenant-id': 't-1', 'x-user-id': 'u-1', 'x-user-roles': 'role-admin' },
       body: {},
+      params: {},
     };
     res = {
       status: vi.fn().mockReturnThis(),
@@ -83,6 +85,77 @@ describe('User Role Controller', () => {
 
       expect(prisma.userRole.deleteMany).toHaveBeenCalledWith({ where: { userId: 'u-2', roleId: 'role-1' } });
       expect(res.json).toHaveBeenCalledWith({ message: 'Role revoked' });
+    });
+  });
+
+  describe('getUserRoles', () => {
+    it('allows tenant_admin to view user roles within their tenant', async () => {
+      req.params.userId = 'u-target';
+      prisma.role.findMany.mockResolvedValue([{ id: 'role-admin', name: 'tenant_admin' }]);
+      prisma.userRole.findMany.mockResolvedValue([{ id: 'ur-1', userId: 'u-target', role: { id: 'r-1', name: 'analyst' } }]);
+
+      await getUserRoles(req, res, next);
+
+      expect(prisma.userRole.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: { userId: 'u-target', user: { tenantId: 't-1' } },
+      }));
+      expect(res.json).toHaveBeenCalledWith({ userRoles: expect.any(Array) });
+    });
+
+    it('denies non-admin viewing another user roles', async () => {
+      req.params.userId = 'u-other';
+      req.headers['x-user-id'] = 'u-regular';
+      prisma.role.findMany.mockResolvedValue([{ id: 'role-regular', name: 'case_worker' }]);
+
+      await getUserRoles(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(ForbiddenError));
+    });
+  });
+
+  describe('checkPermission', () => {
+    it('checks permissions accurately and returns hasPermission', async () => {
+      req.body = { userId: 'u-2', resource: 'cases', action: 'read' };
+      prisma.userRole.findMany.mockResolvedValue([
+        {
+          role: {
+            isActive: true,
+            rolePermissions: [
+              { permission: { resource: 'cases', action: 'read' } },
+            ],
+          },
+        },
+      ]);
+
+      await checkPermission(req, res, next);
+
+      expect(res.json).toHaveBeenCalledWith({
+        hasPermission: true,
+        userId: 'u-2',
+        permission: 'cases:read',
+      });
+    });
+
+    it('returns hasPermission false if role does not grant permission', async () => {
+      req.body = { userId: 'u-2', resource: 'cases', action: 'delete' };
+      prisma.userRole.findMany.mockResolvedValue([
+        {
+          role: {
+            isActive: true,
+            rolePermissions: [
+              { permission: { resource: 'cases', action: 'read' } },
+            ],
+          },
+        },
+      ]);
+
+      await checkPermission(req, res, next);
+
+      expect(res.json).toHaveBeenCalledWith({
+        hasPermission: false,
+        userId: 'u-2',
+        permission: 'cases:delete',
+      });
     });
   });
 });

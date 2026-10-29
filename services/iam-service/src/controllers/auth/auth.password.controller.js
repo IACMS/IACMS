@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import prisma from '../../config/database.js';
+import { getRedisClient } from '../../config/redis.config.js';
 import { ValidationError, NotFoundError, UnauthorizedError } from '../../../../../shared/common/errors.js';
 import Logger from '../../../../../shared/common/logger.js';
 import { TOPICS } from '../../../../../shared/utils/eventBus.js';
@@ -20,6 +21,43 @@ export async function forgotPassword(req, res, next) {
     const { email, tenantCode } = req.body;
 
     if (!email) throw new ValidationError('Email is required');
+
+    const redis = getRedisClient();
+    const normalizedEmail = email.trim().toLowerCase();
+    const forgotAttemptsKey = `auth:forgot-password:attempts:${normalizedEmail}`;
+    const forgotLockKey = `auth:forgot-password:lockout:${normalizedEmail}`;
+
+    if (redis) {
+      try {
+        const isLocked = await redis.get(forgotLockKey);
+        if (isLocked) {
+          const ttl = await redis.ttl(forgotLockKey);
+          return res.status(429).json({
+            error: {
+              code: 'RATE_LIMIT_EXCEEDED',
+              message: `Too many password reset requests. Please try again in ${Math.ceil(ttl / 60)} minute(s).`,
+            },
+          });
+        }
+
+        const attempts = await redis.incr(forgotAttemptsKey);
+        if (attempts === 1) {
+          await redis.expire(forgotAttemptsKey, 15 * 60);
+        }
+        if (attempts > 5) {
+          await redis.set(forgotLockKey, '1', 'EX', 15 * 60);
+          await redis.del(forgotAttemptsKey);
+          return res.status(429).json({
+            error: {
+              code: 'RATE_LIMIT_EXCEEDED',
+              message: 'Too many password reset requests. Please try again in 15 minutes.',
+            },
+          });
+        }
+      } catch (err) {
+        // If Redis error, fail open
+      }
+    }
 
     const where = { email: email.trim().toLowerCase() };
     if (tenantCode) {

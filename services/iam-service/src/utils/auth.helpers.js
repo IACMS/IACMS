@@ -46,6 +46,7 @@ export function getEventBus() {
  */
 export function generateTokens(user, roleIds = []) {
   const jti = crypto.randomUUID();
+  const refreshJti = crypto.randomUUID();
 
   const payload = {
     jti,
@@ -58,7 +59,7 @@ export function generateTokens(user, roleIds = []) {
   };
 
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-  const refreshToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
+  const refreshToken = jwt.sign({ id: user.id, jti: refreshJti }, JWT_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
 
   return { accessToken, refreshToken };
 }

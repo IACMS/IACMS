@@ -24,27 +24,35 @@ const PLATFORM_TENANT_CODE = 'ADMIN';
 export async function listUsers(req, res, next) {
   try {
     const { tenantId } = req.user;
+    const page = Math.max(1, parseInt(req.query?.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query?.limit, 10) || 50));
+    const skip = (page - 1) * limit;
 
-    const users = await prisma.user.findMany({
-      where: { tenantId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        departmentId: true,
-        department: {
-          select: { id: true, code: true, name: true },
+    const [total, users] = await Promise.all([
+      prisma.user.count({ where: { tenantId } }),
+      prisma.user.findMany({
+        where: { tenantId },
+        take: limit,
+        skip,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          departmentId: true,
+          department: {
+            select: { id: true, code: true, name: true },
+          },
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          userRoles: {
+            select: { role: { select: { id: true, name: true } } },
+          },
         },
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        userRoles: {
-          select: { role: { select: { id: true, name: true } } },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+        orderBy: { createdAt: 'asc' },
+      }),
+    ]);
 
     const formatted = users.map(u => ({
       id: u.id,
@@ -59,7 +67,15 @@ export async function listUsers(req, res, next) {
       role: u.userRoles?.[0]?.role ?? null,
     }));
 
-    res.json({ users: formatted });
+    res.json({
+      users: formatted,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -228,6 +244,8 @@ export async function assignRole(req, res, next) {
         );
       }
     }
+
+    const priorRole = await prisma.userRole.findFirst({ where: { userId: id } });
 
     await prisma.$transaction([
       prisma.userRole.deleteMany({ where: { userId: id } }),

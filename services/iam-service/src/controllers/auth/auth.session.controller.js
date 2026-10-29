@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database.js';
@@ -177,12 +178,36 @@ export async function refreshToken(req, res, next) {
     if (!token) throw new ValidationError('Refresh token is required');
 
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Check Redis blacklist for revoked refresh token
+    const redis = getRedisClient();
+    if (redis) {
+      const blacklistKey = decoded.jti
+        ? `auth:blacklist:${decoded.jti}`
+        : `auth:blacklist:${crypto.createHash('sha256').update(token).digest('hex')}`;
+      const isBlacklisted = await redis.get(blacklistKey);
+      if (isBlacklisted) throw new UnauthorizedError('Token has been revoked');
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       include: { tenant: true, userRoles: { select: { roleId: true } } },
     });
 
     if (!user || !user.isActive) throw new UnauthorizedError('Invalid token');
+    if (!user.tenant || !user.tenant.isActive) throw new UnauthorizedError('Tenant is inactive');
+
+    // Invalidate the used refresh token (family rotation)
+    if (redis && decoded.exp) {
+      const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) {
+        if (decoded.jti) {
+          await redis.set(`auth:blacklist:${decoded.jti}`, '1', 'EX', ttl);
+        }
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        await redis.set(`auth:blacklist:${tokenHash}`, '1', 'EX', ttl);
+      }
+    }
 
     const roleIds = user.userRoles.map((ur) => ur.roleId);
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, roleIds);
@@ -200,18 +225,38 @@ export async function refreshToken(req, res, next) {
 export async function logout(req, res, next) {
   try {
     const token = req.headers['authorization']?.split(' ')[1];
+    const reqRefreshToken = req.body?.refreshToken || req.headers['x-refresh-token'];
+    const redis = getRedisClient();
+
     if (token) {
       const decoded = jwt.decode(token);
       if (decoded?.jti && decoded?.exp) {
         const ttl = decoded.exp - Math.floor(Date.now() / 1000);
-        if (ttl > 0) {
-          const redis = getRedisClient();
-          if (redis) {
-            await redis.set(`auth:blacklist:${decoded.jti}`, '1', 'EX', ttl);
-          }
+        if (ttl > 0 && redis) {
+          await redis.set(`auth:blacklist:${decoded.jti}`, '1', 'EX', ttl);
         }
       }
     }
+
+    if (reqRefreshToken) {
+      try {
+        const decodedRefresh = jwt.decode(reqRefreshToken);
+        const ttl = (decodedRefresh?.exp || Math.floor(Date.now() / 1000) + 7 * 86400) - Math.floor(Date.now() / 1000);
+        if (ttl > 0 && redis) {
+          if (decodedRefresh?.jti) {
+            await redis.set(`auth:blacklist:${decodedRefresh.jti}`, '1', 'EX', ttl);
+          }
+          const hash = crypto.createHash('sha256').update(reqRefreshToken).digest('hex');
+          await redis.set(`auth:blacklist:${hash}`, '1', 'EX', ttl);
+        }
+      } catch {
+        if (redis) {
+          const hash = crypto.createHash('sha256').update(reqRefreshToken).digest('hex');
+          await redis.set(`auth:blacklist:${hash}`, '1', 'EX', 7 * 86400);
+        }
+      }
+    }
+
     const logoutBus = getEventBus();
     if (logoutBus && req.user) {
       logoutBus

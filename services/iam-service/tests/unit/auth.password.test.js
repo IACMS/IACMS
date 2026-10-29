@@ -1,5 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const mockRedis = {
+  get: vi.fn(),
+  set: vi.fn(),
+  incr: vi.fn(),
+  expire: vi.fn(),
+  del: vi.fn(),
+  ttl: vi.fn(),
+};
+
+vi.mock('../../src/config/redis.config.js', () => ({
+  getRedisClient: vi.fn().mockImplementation(() => mockRedis),
+  closeRedisClient: vi.fn(),
+}));
+
 vi.mock('../../src/config/database.js', () => ({
   default: {
     user: {
@@ -33,6 +47,9 @@ describe('auth.password.controller unit tests', () => {
       status: vi.fn().mockReturnThis(),
     };
     next = vi.fn();
+    mockRedis.get.mockResolvedValue(null);
+    mockRedis.incr.mockResolvedValue(1);
+    mockRedis.ttl.mockResolvedValue(900);
   });
 
   describe('forgotPassword', () => {
@@ -62,12 +79,11 @@ describe('auth.password.controller unit tests', () => {
       prisma.user.findFirst.mockResolvedValueOnce({
         id: 'u-1',
         email: 'user@iacms.org',
-        firstName: 'Bekele',
+        firstName: 'Tesfaye',
         isActive: true,
-        tenantId: 't-1',
-        tenant: { code: 'DCS01' },
+        tenant: { code: 'TENANT' },
       });
-      prisma.user.update.mockResolvedValueOnce({ id: 'u-1' });
+      prisma.user.update.mockResolvedValueOnce({});
 
       await forgotPassword(req, res, next);
 
@@ -83,6 +99,35 @@ describe('auth.password.controller unit tests', () => {
       expect(res.json).toHaveBeenCalledWith({
         message: 'If an account with that email exists, a password reset link has been sent.',
       });
+    });
+
+    it('enforces rate limit and returns 429 when max attempts exceeded', async () => {
+      req.body = { email: 'spam@iacms.org' };
+      mockRedis.incr.mockResolvedValueOnce(6); // 6th attempt
+
+      await forgotPassword(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(429);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'RATE_LIMIT_EXCEEDED' }),
+        })
+      );
+    });
+
+    it('returns 429 immediately when account is locked in Redis', async () => {
+      req.body = { email: 'locked@iacms.org' };
+      mockRedis.get.mockResolvedValueOnce('1'); // lockout active
+      mockRedis.ttl.mockResolvedValueOnce(600);
+
+      await forgotPassword(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(429);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'RATE_LIMIT_EXCEEDED' }),
+        })
+      );
     });
   });
 });
