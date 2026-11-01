@@ -46,11 +46,8 @@ try {
   const { default: providerInstance } = await import('./oauth/oidc.config.js');
   oidcProvider = providerInstance;
 
-  // Mount all OIDC well-known endpoints
+  // Mount all OIDC well-known endpoints (engine callback)
   app.use(oidcProvider.callback());
-
-  // Our custom login/consent interaction UI
-  app.use('/oauth/interaction', interactionRoutes);
 
   logger.info('OIDC provider mounted');
 } catch (err) {
@@ -58,9 +55,12 @@ try {
   logger.warn('OIDC provider not loaded — OAuth2/OIDC features disabled', { reason: err.message });
 }
 
-// ── Body parsers (after OIDC) ─────────────────────────────────────────────────
+// ── Body parsers (after OIDC engine callback) ─────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ── OIDC Interaction UI routes (requires parsed request body) ─────────────────
+app.use('/oauth/interaction', interactionRoutes);
 
 // ── Public static assets ──────────────────────────────────────────────────────
 const uploadsDir = path.join(process.cwd(), 'uploads');

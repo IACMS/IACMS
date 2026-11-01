@@ -4,7 +4,7 @@
  * Registered in server.js AFTER the OIDC provider middleware.
  */
 
-import { Router } from 'express';
+import express, { Router } from 'express';
 import {
   getInteraction,
   postLogin,
@@ -13,6 +13,10 @@ import {
 } from './interaction.controller.js';
 
 const router = Router();
+
+// Body parsers for interaction endpoints (form submissions & JSON SPAs)
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
 // GET  /oauth/interaction/:uid        — render login/consent page (or JSON for SPAs)
 router.get('/:uid', getInteraction);

@@ -99,10 +99,33 @@ const config = {
   jwks: loadJwks(),
 
   // ── Token format ──────────────────────────────────────────────────────────
-  // CRITICAL: must be 'jwt' — default is 'opaque' which breaks offline validation
+  // CRITICAL: must be 'jwt' — default is 'opaque' which breaks offline validation.
+  // customizers.jwt embeds custom claims (tenant_id, roles) into the Access Token JWT.
   formats: {
     AccessToken: 'jwt',
     ClientCredentials: 'jwt',
+    customizers: {
+      async jwt(ctx, token, structuredToken) {
+        if (token.accountId) {
+          const account = await findAccount(ctx, token.accountId);
+          if (account) {
+            const claims = await account.claims('access_token', token.scope);
+            if (claims.tenant_id) structuredToken.payload.tenant_id = claims.tenant_id;
+            if (claims.tenant_code) structuredToken.payload.tenant_code = claims.tenant_code;
+            if (claims.roles) structuredToken.payload.roles = claims.roles;
+            if (claims.department_id) structuredToken.payload.department_id = claims.department_id;
+          }
+        } else if (token.clientId) {
+          const client = await prisma.oAuthClient.findUnique({
+            where: { clientId: token.clientId },
+            select: { tenantId: true },
+          });
+          if (client?.tenantId) {
+            structuredToken.payload.tenant_id = client.tenantId;
+          }
+        }
+      },
+    },
   },
 
   // ── Cookie secret ─────────────────────────────────────────────────────────
@@ -199,14 +222,14 @@ const config = {
   // REQUIRED: we run behind the API gateway
   proxy: true,
 
-  // ── RS256 signing algorithm ───────────────────────────────────────────────
-  whitelistedJWA: {
-    tokenEndpointAuthSigningAlgValues: ['RS256', 'PS256'],
-    introspectionEndpointAuthSigningAlgValues: ['RS256', 'PS256'],
-    revocationEndpointAuthSigningAlgValues: ['RS256', 'PS256'],
+  // ── RS256 signing algorithm (v8/v9 enabledJWA schema) ─────────────────────
+  enabledJWA: {
+    clientAuthSigningAlgValues: ['RS256', 'PS256'],
     idTokenSigningAlgValues: ['RS256'],
     requestObjectSigningAlgValues: ['RS256', 'PS256'],
     userinfoSigningAlgValues: ['RS256'],
+    introspectionSigningAlgValues: ['RS256', 'PS256'],
+    authorizationSigningAlgValues: ['RS256', 'PS256'],
   },
 };
 

@@ -52,6 +52,10 @@ export function decryptClientSecret(ciphertext) {
   const key = getKey();
   const buf = Buffer.from(ciphertext, 'base64');
 
+  if (!buf || buf.length < IV_BYTES + TAG_BYTES) {
+    throw new Error('[client-secret.utils] Invalid ciphertext payload');
+  }
+
   const iv = buf.subarray(0, IV_BYTES);
   const tag = buf.subarray(IV_BYTES, IV_BYTES + TAG_BYTES);
   const encrypted = buf.subarray(IV_BYTES + TAG_BYTES);

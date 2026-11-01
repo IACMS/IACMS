@@ -26,6 +26,10 @@ export async function getInteraction(req, res, next) {
     const details = await provider.interactionDetails(req, res);
     const { uid, prompt, params, session } = details;
 
+    if (req.params.uid && details.uid !== req.params.uid) {
+      throw new ValidationError('Interaction UID mismatch');
+    }
+
     const client = await provider.Client.find(params.client_id);
     if (!client) return res.status(400).json({ error: 'unknown_client' });
 
@@ -53,6 +57,10 @@ export async function postLogin(req, res, next) {
   try {
     const details = await provider.interactionDetails(req, res);
     const { params } = details;
+
+    if (req.params.uid && details.uid !== req.params.uid) {
+      throw new ValidationError('Interaction UID mismatch');
+    }
 
     const { email, password } = req.body ?? {};
     if (!email || !password) throw new ValidationError('email and password are required');
@@ -107,6 +115,10 @@ export async function postConsent(req, res, next) {
     const details = await provider.interactionDetails(req, res);
     const { prompt, session, params } = details;
 
+    if (req.params.uid && details.uid !== req.params.uid) {
+      throw new ValidationError('Interaction UID mismatch');
+    }
+
     if (prompt.name !== 'consent') {
       throw new ValidationError('No consent prompt active');
     }
@@ -145,24 +157,31 @@ export async function postConsent(req, res, next) {
     const newGrantId = await grant.save();
 
     // Persist consent so future visits skip the consent screen
-    await prisma.oAuthConsent.upsert({
-      where: {
-        userId_clientId: {
-          userId: session.accountId,
-          clientId: (await prisma.oAuthClient.findUnique({ where: { clientId: params.client_id } }))?.id ?? params.client_id,
-        },
-      },
-      create: {
-        userId: session.accountId,
-        clientId: (await prisma.oAuthClient.findUnique({ where: { clientId: params.client_id } }))?.id ?? params.client_id,
-        scopes: missingScopes.join(' '),
-      },
-      update: {
-        scopes: missingScopes.join(' '),
-      },
-    }).catch(() => {
-      // Non-fatal — consent record is advisory only; the library's Grant is authoritative
+    const clientRecord = await prisma.oAuthClient.findUnique({
+      where: { clientId: params.client_id },
+      select: { id: true },
     });
+
+    if (clientRecord) {
+      await prisma.oAuthConsent.upsert({
+        where: {
+          userId_clientId: {
+            userId: session.accountId,
+            clientId: clientRecord.id,
+          },
+        },
+        create: {
+          userId: session.accountId,
+          clientId: clientRecord.id,
+          scopes: missingScopes.join(' '),
+        },
+        update: {
+          scopes: missingScopes.join(' '),
+        },
+      }).catch((err) => {
+        logger.warn('Failed to upsert OAuthConsent', { error: err.message });
+      });
+    }
 
     const result = { consent: { grantId: newGrantId } };
     await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: true });
@@ -175,6 +194,10 @@ export async function postConsent(req, res, next) {
 
 export async function abortInteraction(req, res, next) {
   try {
+    const details = await provider.interactionDetails(req, res);
+    if (req.params.uid && details.uid !== req.params.uid) {
+      throw new ValidationError('Interaction UID mismatch');
+    }
     const result = {
       error: 'access_denied',
       error_description: 'End-User aborted interaction',
