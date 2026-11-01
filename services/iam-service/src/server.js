@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import helmet from 'helmet';
 import { errorHandler } from '../../../shared/middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import tenantRoutes from './routes/tenant.routes.js';
@@ -10,6 +11,8 @@ import platformRoutes from './routes/platform.routes.js';
 import roleRoutes from './routes/role.routes.js';
 import permissionRoutes from './routes/permission.routes.js';
 import userRoleRoutes from './routes/user-role.routes.js';
+import oauthClientRoutes from './routes/oauth-clients.routes.js';
+import interactionRoutes from './oauth/interaction/interaction.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
 import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
@@ -25,32 +28,51 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const app = express();
-const PORT = process.env.PORT || 3001; // IAM Service port
+const PORT = process.env.PORT || 3001;
 const logger = new Logger('iam-service');
 
-// Middleware
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false,           // SPA clients handle their own CSP
+  frameguard: { action: 'sameorigin' },   // Allow OIDC interaction page to be framed by same-origin portals
+}));
+
+// ── OIDC Provider ─────────────────────────────────────────────────────────────
+// CRITICAL: must be mounted BEFORE express.json().
+// node-oidc-provider uses its own body parser for /oauth/token, /oauth/userinfo, etc.
+// Parsing the body before the library sees it corrupts those requests.
+let oidcProvider;
+try {
+  const { default: providerInstance } = await import('./oauth/oidc.config.js');
+  oidcProvider = providerInstance;
+
+  // Mount all OIDC well-known endpoints
+  app.use(oidcProvider.callback());
+
+  // Our custom login/consent interaction UI
+  app.use('/oauth/interaction', interactionRoutes);
+
+  logger.info('OIDC provider mounted');
+} catch (err) {
+  // Graceful degradation — service still starts for /auth/* if OIDC env vars are absent
+  logger.warn('OIDC provider not loaded — OAuth2/OIDC features disabled', { reason: err.message });
+}
+
+// ── Body parsers (after OIDC) ─────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Public static assets (tenant logos, etc.)
+// ── Public static assets ──────────────────────────────────────────────────────
 const uploadsDir = path.join(process.cwd(), 'uploads');
-try {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-} catch {
-  // ignore
-}
+try { fs.mkdirSync(uploadsDir, { recursive: true }); } catch { /* ignore */ }
 app.use('/tenants/assets', express.static(uploadsDir, { maxAge: '1h' }));
 
-// Setup Swagger OpenAPI Documentation
+// ── Swagger ───────────────────────────────────────────────────────────────────
 setupSwagger(app, 'IAM Service', PORT);
 
-// Health check (no internal token required)
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'iam-service',
-    timestamp: new Date().toISOString(),
-  });
+// ── Health check (public — no internal token required) ────────────────────────
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', service: 'iam-service', timestamp: new Date().toISOString(), oidc: !!oidcProvider });
 });
 
 assertProductionSecrets([
@@ -58,18 +80,22 @@ assertProductionSecrets([
   { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
 ]);
 
-// Block direct access in production — requests must come via the API gateway.
+// ── Internal-request guard ────────────────────────────────────────────────────
+// All requests must originate from the API gateway (carries INTERNAL_SERVICE_TOKEN).
+// The gateway exposes /oauth/.well-known and /oauth/jwks publicly; internally they
+// still travel through the gateway and carry the token.
 app.use(requireInternalRequest());
 
-// Routes
+// ── Application routes ────────────────────────────────────────────────────────
 app.use('/auth', authRoutes);
 app.use('/tenants', tenantRoutes);
 app.use('/platform', platformRoutes);
 app.use('/roles', roleRoutes);
 app.use('/permissions', permissionRoutes);
 app.use('/user-roles', userRoleRoutes);
+app.use('/oauth/clients', oauthClientRoutes);
 
-// Error handler
+// ── Error handler ─────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
 app.listen(PORT, () => {

@@ -128,6 +128,7 @@ model Tenant {
   caseSequences    CaseSequence[]
   apiKeys          ApiKey[]
   chatConversations ChatConversation[]
+  oauthClients     OAuthClient[]
 
   @@index([code])
   @@index([isActive])
@@ -179,6 +180,7 @@ model User {
   apiKeysRevoked        ApiKey[]         @relation("ApiKeyRevoker")
   chatParticipants      ChatParticipant[] @relation("ChatParticipantUser")
   chatMessagesSender    ChatMessage[]     @relation("ChatMessageSender")
+  oauthConsents         OAuthConsent[]
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -894,3 +896,79 @@ enum ChatOutboxStatus {
   FAILED
 }
 
+// ─── OAuth2 / OIDC (node-oidc-provider) ────────────────────────────────────
+
+/// Generic storage for all node-oidc-provider artefacts
+/// (Session, Grant, AuthorizationCode, AccessToken, RefreshToken,
+///  DeviceCode, Interaction, ReplayDetection, PushedAuthorizationRequest, BackchannelAuthenticationRequest).
+/// The `model_name` field carries the artefact type so one table serves all.
+model OidcPayload {
+  id          String    @id @db.VarChar(255)
+  modelName   String    @map("model_name") @db.VarChar(64)
+  payload     Json
+  grantId     String?   @map("grant_id") @db.VarChar(255)
+  userCode    String?   @map("user_code") @db.VarChar(255)
+  uid         String?   @db.VarChar(255)
+  expiresAt   DateTime? @map("expires_at")
+  consumedAt  DateTime? @map("consumed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([grantId])
+  @@index([userCode])
+  @@index([uid])
+  @@index([modelName, expiresAt])
+  @@map("oidc_payloads")
+}
+
+/// OAuth2 clients registered in the system (first-party and third-party).
+/// The library reads clients dynamically via `findAccount`; we store them here
+/// so platform admins can CRUD them.
+model OAuthClient {
+  id                     String   @id @default(uuid()) @db.Uuid
+  /// client_id sent in OAuth flows — must be globally unique
+  clientId               String   @unique @map("client_id") @db.VarChar(255)
+  /// AES-256-GCM encrypted ciphertext of the client secret (null for public clients)
+  clientSecretCiphertext String?  @map("client_secret_ciphertext") @db.Text
+  /// Human-readable name shown on the consent screen
+  name                   String   @db.VarChar(255)
+  /// Restrict this client to one tenant (null = platform-level / cross-tenant)
+  tenantId               String?  @map("tenant_id") @db.Uuid
+  /// JSON array of allowed redirect URIs
+  redirectUris           Json     @map("redirect_uris")
+  /// JSON array of allowed grant types
+  grantTypes             Json     @map("grant_types")
+  /// JSON array of allowed response types
+  responseTypes          Json     @map("response_types")
+  /// Space-separated allowed scopes (e.g. "openid profile email")
+  scope                  String   @db.Text
+  tokenEndpointAuthMethod String  @default("client_secret_basic") @map("token_endpoint_auth_method") @db.VarChar(64)
+  isActive               Boolean  @default(true) @map("is_active")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  consents OAuthConsent[]
+  tenant   Tenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("oauth_clients")
+}
+
+/// Records which scopes a user has granted to a specific OAuth client.
+/// Used by the interaction controller to skip the consent screen on repeat visits.
+model OAuthConsent {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  clientId  String   @map("client_id") @db.Uuid   /// FK → OAuthClient.id
+  scopes    String   @db.Text                       /// space-separated granted scopes
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clientId])
+  @@index([userId])
+  @@index([clientId])
+  @@map("oauth_consents")
+}

@@ -18,9 +18,13 @@
     "bcryptjs": "^2.4.3",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "helmet": "^8.3.0",
     "ioredis": "^5.10.0",
+    "jose": "^6.2.14",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.1.1",
+    "oidc-provider": "^9.13.3",
+    "openid-client": "^6.8.8",
     "prisma": "^6.0.0"
   },
   "devDependencies": {

@@ -1,0 +1,229 @@
+/**
+ * oidc.config.js
+ * Builds and exports the configured node-oidc-provider instance.
+ *
+ * Design decisions captured from the definitive plan:
+ *  - accessTokenFormat: 'jwt'  (RS256) — required so the API gateway can
+ *    validate tokens offline via JWKS; opaque is the library default.
+ *  - proxy: true  — we're behind the API gateway; trust X-Forwarded-* headers.
+ *  - devInteractions: false  — we provide our own interaction UI.
+ *  - All routes remapped to /oauth/* to avoid collision with /auth/* paths.
+ *  - rotateRefreshToken: true  — library handles family invalidation on reuse.
+ *  - clientCredentials + introspection + revocation + resourceIndicators enabled.
+ *  - OIDC client discovery happens via a DB-backed find function (dynamic clients).
+ *  - OIDC_JWKS_JSON env var must be a JSON string containing the JWKS with RS256 key.
+ *    Generate: node -e "import('jose').then(j=>j.generateKeyPair('RS256',{extractable:true})).then(k=>Promise.all([k.publicKey,k.privateKey].map(x=>import('jose').then(j=>j.exportJWK(x))))).then(([pub,priv])=>console.log(JSON.stringify({keys:[{...priv,use:'sig',alg:'RS256',kid:'iacms-1'}]})))"
+ */
+
+import Provider from 'oidc-provider';
+import { PrismaAdapter } from './prisma.adapter.js';
+import { findAccount } from './find-account.js';
+import { decryptClientSecret } from './client-secret.utils.js';
+import prisma from '../config/database.js';
+import Logger from '../../../../shared/common/logger.js';
+
+const logger = new Logger('iam-oidc');
+
+// ── JWKS ─────────────────────────────────────────────────────────────────────
+
+function loadJwks() {
+  const raw = process.env.OIDC_JWKS_JSON;
+  if (!raw) {
+    throw new Error(
+      '[oidc.config] OIDC_JWKS_JSON env var is missing. ' +
+        'Set it to a JSON string with a JWKS containing at least one RS256 signing key.',
+    );
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error('[oidc.config] OIDC_JWKS_JSON is not valid JSON.');
+  }
+}
+
+// ── Dynamic client lookup ────────────────────────────────────────────────────
+
+/**
+ * The library calls this function when it needs to resolve a client_id that is
+ * not hard-coded in the `clients` array of the config.
+ * We look it up in the OAuthClient table and return the shape the library expects.
+ */
+async function findClient(clientId) {
+  const record = await prisma.oAuthClient.findUnique({
+    where: { clientId, isActive: true },
+  });
+  if (!record) return undefined;
+
+  // Decrypt the secret on the fly — library needs plaintext for comparison
+  let clientSecret;
+  if (record.clientSecretCiphertext) {
+    try {
+      clientSecret = decryptClientSecret(record.clientSecretCiphertext);
+    } catch (err) {
+      logger.error('Failed to decrypt client secret', { clientId, error: err.message });
+      return undefined;
+    }
+  }
+
+  return {
+    client_id: record.clientId,
+    client_secret: clientSecret,
+    client_name: record.name,
+    redirect_uris: Array.isArray(record.redirectUris) ? record.redirectUris : [],
+    grant_types: Array.isArray(record.grantTypes) ? record.grantTypes : ['authorization_code'],
+    response_types: Array.isArray(record.responseTypes) ? record.responseTypes : ['code'],
+    scope: record.scope || 'openid profile email',
+    token_endpoint_auth_method: record.tokenEndpointAuthMethod || 'client_secret_basic',
+    // Pass tenant context for isolation checks in the interaction controller
+    [Symbol.for('tenant_id')]: record.tenantId ?? null,
+  };
+}
+
+// ── Provider configuration ───────────────────────────────────────────────────
+
+const ISSUER = process.env.OIDC_ISSUER || 'http://localhost:3001';
+
+const config = {
+  // ── Storage ──────────────────────────────────────────────────────────────
+  adapter: PrismaAdapter,
+
+  // ── Account resolution ───────────────────────────────────────────────────
+  findAccount,
+
+  // ── Dynamic client resolution (DB-backed) ────────────────────────────────
+  clients: [], // No hard-coded clients — all resolved dynamically
+  // The library calls this when a client_id is not in the `clients` array.
+  // Assign after construction (see bottom of file).
+
+  // ── JWKS ──────────────────────────────────────────────────────────────────
+  jwks: loadJwks(),
+
+  // ── Token format ──────────────────────────────────────────────────────────
+  // CRITICAL: must be 'jwt' — default is 'opaque' which breaks offline validation
+  formats: {
+    AccessToken: 'jwt',
+    ClientCredentials: 'jwt',
+  },
+
+  // ── Cookie secret ─────────────────────────────────────────────────────────
+  cookies: {
+    keys: [process.env.OIDC_COOKIE_SECRET || (() => { throw new Error('[oidc.config] OIDC_COOKIE_SECRET is required'); })()],
+    short: { sameSite: 'Lax', httpOnly: true, secure: process.env.NODE_ENV === 'production' },
+    long: { sameSite: 'Lax', httpOnly: true, secure: process.env.NODE_ENV === 'production' },
+  },
+
+  // ── Enabled features ──────────────────────────────────────────────────────
+  features: {
+    // M2M flows
+    clientCredentials: { enabled: true },
+
+    // Token management
+    introspection: { enabled: true },
+    revocation: { enabled: true },
+
+    // Audience-scoped access tokens
+    resourceIndicators: {
+      enabled: true,
+      defaultResource: (_ctx, _client) => process.env.OIDC_DEFAULT_RESOURCE || 'https://api.iacms.local',
+      getResourceServerInfo: (_ctx, resourceIndicator) => ({
+        scope: 'openid profile email roles',
+        audience: resourceIndicator,
+        accessTokenFormat: 'jwt',
+        accessTokenTTL: 60 * 60, // 1h
+        jwt: { sign: { alg: 'RS256' } },
+      }),
+      useGrantedResource: () => true,
+    },
+
+    // Disable the built-in dev UI — we bring our own
+    devInteractions: { enabled: false },
+  },
+
+  // ── Scopes ────────────────────────────────────────────────────────────────
+  scopes: ['openid', 'offline_access', 'profile', 'email', 'roles'],
+
+  // ── Claims mapping ────────────────────────────────────────────────────────
+  claims: {
+    openid: ['sub'],
+    profile: ['name', 'given_name', 'family_name', 'department_id', 'tenant_id', 'tenant_code'],
+    email: ['email', 'email_verified'],
+    roles: ['roles'],
+  },
+
+  // ── Token TTLs ────────────────────────────────────────────────────────────
+  ttl: {
+    AccessToken: 60 * 60,           // 1h
+    AuthorizationCode: 60,          // 60s (spec minimum)
+    ClientCredentials: 60 * 60,     // 1h
+    Grant: 14 * 24 * 60 * 60,       // 14d
+    IdToken: 60 * 60,               // 1h
+    Interaction: 60 * 60,           // 1h
+    RefreshToken: 14 * 24 * 60 * 60, // 14d
+    Session: 14 * 24 * 60 * 60,     // 14d
+  },
+
+  // ── Refresh token rotation ────────────────────────────────────────────────
+  // Library handles family invalidation on reuse-detect automatically
+  rotateRefreshToken: true,
+
+  // ── Interaction endpoint ───────────────────────────────────────────────────
+  interactions: {
+    // Our interaction controller lives at /oauth/interaction/:uid
+    url(_ctx, interaction) {
+      return `/oauth/interaction/${interaction.uid}`;
+    },
+  },
+
+  // ── Route remapping ───────────────────────────────────────────────────────
+  // Map all well-known OIDC endpoints to /oauth/* to avoid collision with /auth/*
+  routes: {
+    authorization:   '/oauth/authorize',
+    backchannel_authentication: '/oauth/backchannel',
+    code_verification: '/oauth/device',
+    device_authorization: '/oauth/device/auth',
+    end_session:     '/oauth/session/end',
+    introspection:   '/oauth/token/introspect',
+    jwks:            '/oauth/jwks',
+    pushed_authorization_request: '/oauth/par',
+    registration:    '/oauth/register',
+    revocation:      '/oauth/token/revoke',
+    token:           '/oauth/token',
+    userinfo:        '/oauth/userinfo',
+  },
+
+  // ── Discovery document ────────────────────────────────────────────────────
+  // Expose tenant_id in the discovery doc for client convenience
+  extraParams: ['tenant_code'],
+
+  // ── Proxy trust ───────────────────────────────────────────────────────────
+  // REQUIRED: we run behind the API gateway
+  proxy: true,
+
+  // ── RS256 signing algorithm ───────────────────────────────────────────────
+  whitelistedJWA: {
+    tokenEndpointAuthSigningAlgValues: ['RS256', 'PS256'],
+    introspectionEndpointAuthSigningAlgValues: ['RS256', 'PS256'],
+    revocationEndpointAuthSigningAlgValues: ['RS256', 'PS256'],
+    idTokenSigningAlgValues: ['RS256'],
+    requestObjectSigningAlgValues: ['RS256', 'PS256'],
+    userinfoSigningAlgValues: ['RS256'],
+  },
+};
+
+// ── Build provider ────────────────────────────────────────────────────────────
+
+const provider = new Provider(ISSUER, config);
+
+// Wire up the dynamic client resolver (must be done after instantiation)
+provider.Client.find = findClient;
+
+// Surface library errors through our logger
+provider.on('server_error', (ctx, err) => {
+  logger.error('OIDC server error', { error: err.message, stack: err.stack, path: ctx?.path });
+});
+
+provider.on('authorization.error', (ctx, err) => {
+  logger.warn('OIDC authorization error', { error: err.message, path: ctx?.path });
+});
+
+export default provider;
