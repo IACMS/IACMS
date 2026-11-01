@@ -14,6 +14,7 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database.js';
 import provider from '../oidc.config.js';
+import { renderLoginForm, renderConsentForm } from './interaction.views.js';
 import { UnauthorizedError, ForbiddenError, ValidationError } from '../../../../../shared/common/errors.js';
 import Logger from '../../../../../shared/common/logger.js';
 
@@ -33,18 +34,81 @@ export async function getInteraction(req, res, next) {
     const client = await provider.Client.find(params.client_id);
     if (!client) return res.status(400).json({ error: 'unknown_client' });
 
+    const wantsHtml = typeof req.accepts === 'function' && req.accepts(['html', 'json']) === 'html';
     const base = { uid, client_id: params.client_id, scope: params.scope, prompt: prompt.name };
 
     if (prompt.name === 'login') {
+      if (wantsHtml) {
+        return res.send(renderLoginForm({ uid, client, loginHint: params.login_hint ?? null }));
+      }
       return res.json({ ...base, login_hint: params.login_hint ?? null });
     }
 
     if (prompt.name === 'consent') {
       const missingScopes = prompt.details.missingOIDCScope ?? [];
-      return res.json({ ...base, account: session.accountId, missing_scopes: missingScopes });
+
+      // Auto-consent check: if the user already granted these scopes, skip the screen
+      const clientRecord = await prisma.oAuthClient.findUnique({
+        where: { clientId: params.client_id },
+        select: { id: true },
+      });
+
+      if (clientRecord && session?.accountId) {
+        const existingConsent = await prisma.oAuthConsent.findUnique({
+          where: {
+            userId_clientId: {
+              userId: session.accountId,
+              clientId: clientRecord.id,
+            },
+          },
+        });
+
+        if (existingConsent?.scopes) {
+          const granted = new Set(existingConsent.scopes.split(' '));
+          const allGranted = missingScopes.every((s) => granted.has(s));
+
+          if (allGranted) {
+            let grant = details.grantId ? await provider.Grant.find(details.grantId) : null;
+            if (!grant) {
+              grant = new provider.Grant({
+                accountId: session.accountId,
+                clientId: params.client_id,
+              });
+            }
+            if (missingScopes.length) {
+              grant.addOIDCScope(missingScopes.join(' '));
+            }
+            const missingClaims = prompt.details.missingOIDCClaims ?? [];
+            if (missingClaims.length) {
+              grant.addOIDCClaims(missingClaims);
+            }
+            const missingResourceScopes = prompt.details.missingResourceScopes ?? {};
+            for (const [indicator, scopes] of Object.entries(missingResourceScopes)) {
+              grant.addResourceScope(indicator, scopes.join(' '));
+            }
+            const newGrantId = await grant.save();
+            const result = { consent: { grantId: newGrantId } };
+            return await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: true });
+          }
+        }
+      }
+
+      if (wantsHtml) {
+        let accountEmail = null;
+        if (session?.accountId) {
+          const u = await prisma.user.findUnique({ where: { id: session.accountId }, select: { email: true } });
+          accountEmail = u?.email;
+        }
+        return res.send(renderConsentForm({ uid, client, missingScopes, accountEmail }));
+      }
+
+      return res.json({ ...base, account: session?.accountId, missing_scopes: missingScopes });
     }
 
-    // Unknown prompt type — surface it to the client
+    // Default / unknown prompt
+    if (wantsHtml) {
+      return res.send(renderLoginForm({ uid, client, loginHint: params.login_hint ?? null }));
+    }
     return res.json(base);
   } catch (err) {
     next(err);
@@ -54,8 +118,9 @@ export async function getInteraction(req, res, next) {
 // ── POST /oauth/interaction/:uid/login ────────────────────────────────────────
 
 export async function postLogin(req, res, next) {
+  let details;
   try {
-    const details = await provider.interactionDetails(req, res);
+    details = await provider.interactionDetails(req, res);
     const { params } = details;
 
     if (req.params.uid && details.uid !== req.params.uid) {
@@ -104,6 +169,22 @@ export async function postLogin(req, res, next) {
 
     await provider.interactionFinished(req, res, result, { mergeWithLastSubmission: false });
   } catch (err) {
+    const wantsHtml = typeof req.accepts === 'function' && req.accepts(['html', 'json']) === 'html';
+    if (wantsHtml && details?.params?.client_id) {
+      try {
+        const client = await provider.Client.find(details.params.client_id);
+        return res.status(err.statusCode || err.status || 401).send(
+          renderLoginForm({
+            uid: req.params.uid,
+            client,
+            loginHint: req.body?.email,
+            error: err.message,
+          })
+        );
+      } catch {
+        // Fall back to next(err) if re-rendering fails
+      }
+    }
     next(err);
   }
 }

@@ -129,6 +129,7 @@ model Tenant {
   apiKeys          ApiKey[]
   chatConversations ChatConversation[]
   oauthClients     OAuthClient[]
+  oauthProviders   OAuthProvider[]
 
   @@index([code])
   @@index([isActive])
@@ -181,6 +182,7 @@ model User {
   chatParticipants      ChatParticipant[] @relation("ChatParticipantUser")
   chatMessagesSender    ChatMessage[]     @relation("ChatMessageSender")
   oauthConsents         OAuthConsent[]
+  federatedIdentities   FederatedIdentity[]
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -972,3 +974,42 @@ model OAuthConsent {
   @@index([clientId])
   @@map("oauth_consents")
 }
+
+/// Social and enterprise OAuth identity providers configured for SSO.
+model OAuthProvider {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String?  @map("tenant_id") @db.Uuid
+  provider        String   @db.VarChar(64) // 'google' | 'microsoft' | 'github' | 'saml'
+  clientId        String   @map("client_id") @db.VarChar(255)
+  clientSecretEnc String   @map("client_secret_enc") @db.Text // AES-256-GCM encrypted
+  scopes          String[] @default([])
+  isActive        Boolean  @default(true) @map("is_active")
+  config          Json?    // SAML metadata URL, Microsoft tenant ID, etc.
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant              Tenant?             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  federatedIdentities FederatedIdentity[]
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("oauth_providers")
+}
+
+/// Links a user account to an external social/federated identity.
+model FederatedIdentity {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  providerId String   @map("provider_id") @db.Uuid
+  externalId String   @map("external_id") @db.VarChar(255) // 'sub' or immutable id from upstream IdP
+  email      String?  @db.VarChar(255) // Reference email at time of link; never used to auto-link
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider OAuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, externalId])
+  @@index([userId])
+  @@map("federated_identities")
+}
+

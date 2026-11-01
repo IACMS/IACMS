@@ -1,4 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
+
+vi.hoisted(() => {
+  process.env.JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
+});
+
 import request from 'supertest';
 import express from 'express';
 import authRoutes from '../../src/routes/auth.routes.js';

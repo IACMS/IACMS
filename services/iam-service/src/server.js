@@ -44,10 +44,55 @@ app.use(helmet({
 let oidcProvider;
 try {
   const { default: providerInstance } = await import('./oauth/oidc.config.js');
+  const { findAccount } = await import('./oauth/find-account.js');
+  const jose = await import('jose');
   oidcProvider = providerInstance;
 
-  // Mount all OIDC well-known endpoints (engine callback)
-  app.use(oidcProvider.callback());
+  // Mount OIDC engine for protocol endpoints (raw body streams)
+  const oidcCallback = oidcProvider.callback();
+
+  // Cache local JWKS from OIDC_JWKS_JSON for fast offline verification of audience-restricted tokens
+  let localJwks;
+  if (process.env.OIDC_JWKS_JSON) {
+    try {
+      localJwks = jose.createLocalJWKSet(JSON.parse(process.env.OIDC_JWKS_JSON));
+    } catch { /* handled in oidc.config */ }
+  }
+
+  // Custom UserInfo handler for RS256 JWT access tokens
+  // node-oidc-provider's built-in userinfo rejects tokens with aud != undefined.
+  // Standard OIDC clients presenting their RS256 Bearer JWT can retrieve their profile here.
+  app.get('/oauth/userinfo', async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer eyJ') && localJwks) {
+      try {
+        const rawToken = authHeader.slice(7);
+        const { payload } = await jose.jwtVerify(rawToken, localJwks, {
+          issuer: process.env.OIDC_ISSUER || 'http://localhost:3001',
+        });
+        const account = await findAccount(null, payload.sub);
+        if (!account) return res.status(401).json({ error: 'invalid_token' });
+        const claims = await account.claims('userinfo', payload.scope || 'openid profile email roles');
+        return res.json(claims);
+      } catch (err) {
+        return res.status(401).json({ error: 'invalid_token', error_description: err.message });
+      }
+    }
+    return oidcCallback(req, res);
+  });
+
+  app.use((req, res, next) => {
+    const isOidcProtocolPath = (
+      req.path.startsWith('/.well-known') ||
+      (req.path.startsWith('/oauth') &&
+       !req.path.startsWith('/oauth/clients') &&
+       !req.path.startsWith('/oauth/interaction'))
+    );
+    if (isOidcProtocolPath) {
+      return oidcCallback(req, res);
+    }
+    next();
+  });
 
   logger.info('OIDC provider mounted');
 } catch (err) {

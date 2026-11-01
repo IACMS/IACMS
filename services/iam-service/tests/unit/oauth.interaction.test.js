@@ -5,12 +5,14 @@ const { mockPrisma, mockProvider } = vi.hoisted(() => ({
   mockPrisma: {
     user: {
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
     },
     oAuthClient: {
       findUnique: vi.fn(),
     },
     oAuthConsent: {
       upsert: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
   mockProvider: {
@@ -51,6 +53,7 @@ describe('interaction.controller unit tests', () => {
     res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn().mockReturnThis(),
+      send: vi.fn().mockReturnThis(),
     };
     next = vi.fn();
   });
@@ -260,6 +263,99 @@ describe('interaction.controller unit tests', () => {
         },
         { mergeWithLastSubmission: false }
       );
+    });
+  });
+
+  describe('Phase 2: HTML rendering and auto-consent', () => {
+    it('renders HTML login form when request accepts html', async () => {
+      req.accepts = vi.fn().mockReturnValue('html');
+      mockProvider.interactionDetails.mockResolvedValueOnce({
+        uid: 'interaction-uid-123',
+        prompt: { name: 'login' },
+        params: { client_id: 'c-portal', login_hint: 'user@iacms.org' },
+        session: {},
+      });
+      mockProvider.Client.find.mockResolvedValueOnce({ client_id: 'c-portal', client_name: 'IACMS Portal' });
+
+      await getInteraction(req, res, next);
+
+      expect(res.send).toHaveBeenCalledWith(expect.stringContaining('IACMS Portal'));
+      expect(res.send).toHaveBeenCalledWith(expect.stringContaining('<form method="POST"'));
+    });
+
+    it('auto-skips consent prompt if user already granted all requested scopes', async () => {
+      const mockGrant = {
+        addOIDCScope: vi.fn(),
+        save: vi.fn().mockResolvedValueOnce('grant-auto-1'),
+      };
+      mockProvider.Grant.mockImplementationOnce(() => mockGrant);
+
+      mockProvider.interactionDetails.mockResolvedValueOnce({
+        uid: 'interaction-uid-123',
+        prompt: {
+          name: 'consent',
+          details: { missingOIDCScope: ['profile', 'email'] },
+        },
+        session: { accountId: 'u-user-1' },
+        params: { client_id: 'c-portal' },
+      });
+      mockProvider.Client.find.mockResolvedValueOnce({ client_id: 'c-portal' });
+
+      mockPrisma.oAuthClient.findUnique.mockResolvedValueOnce({ id: 'c-uuid-1' });
+      mockPrisma.oAuthConsent.findUnique.mockResolvedValueOnce({
+        scopes: 'openid profile email roles',
+      });
+
+      await getInteraction(req, res, next);
+
+      expect(mockGrant.addOIDCScope).toHaveBeenCalledWith('profile email');
+      expect(mockGrant.save).toHaveBeenCalled();
+      expect(mockProvider.interactionFinished).toHaveBeenCalledWith(
+        req,
+        res,
+        { consent: { grantId: 'grant-auto-1' } },
+        { mergeWithLastSubmission: true }
+      );
+    });
+
+    it('renders HTML consent form when request accepts html and scopes are missing', async () => {
+      req.accepts = vi.fn().mockReturnValue('html');
+      mockProvider.interactionDetails.mockResolvedValueOnce({
+        uid: 'interaction-uid-123',
+        prompt: {
+          name: 'consent',
+          details: { missingOIDCScope: ['roles'] },
+        },
+        session: { accountId: 'u-user-1' },
+        params: { client_id: 'c-portal' },
+      });
+      mockProvider.Client.find.mockResolvedValueOnce({ client_id: 'c-portal', client_name: 'IACMS Portal' });
+      mockPrisma.oAuthClient.findUnique.mockResolvedValueOnce({ id: 'c-uuid-1' });
+      mockPrisma.oAuthConsent.findUnique.mockResolvedValueOnce(null);
+      mockPrisma.user.findUnique.mockResolvedValueOnce({ email: 'user@iacms.org' });
+
+      await getInteraction(req, res, next);
+
+      expect(res.send).toHaveBeenCalledWith(expect.stringContaining('Authorize Application'));
+      expect(res.send).toHaveBeenCalledWith(expect.stringContaining('user@iacms.org'));
+      expect(res.send).toHaveBeenCalledWith(expect.stringContaining('roles'));
+    });
+
+    it('re-renders HTML login form with error on invalid credentials when request accepts html', async () => {
+      req.accepts = vi.fn().mockReturnValue('html');
+      mockProvider.interactionDetails.mockResolvedValueOnce({
+        uid: 'interaction-uid-123',
+        params: { client_id: 'c-portal' },
+      });
+      mockProvider.Client.find.mockResolvedValue({ client_id: 'c-portal', client_name: 'IACMS Portal' });
+      mockPrisma.user.findFirst.mockResolvedValueOnce(null);
+
+      req.body = { email: 'unknown@iacms.org', password: 'password123' };
+
+      await postLogin(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.send).toHaveBeenCalledWith(expect.stringContaining('Invalid credentials'));
     });
   });
 });
