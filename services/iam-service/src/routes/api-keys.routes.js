@@ -11,10 +11,12 @@ import {
   getApiKey,
   rotateApiKey,
   revokeApiKey,
+  getScopes,
 } from '../controllers/api-keys.controller.js';
 
 const router = Router();
 
+router.get('/scopes', getScopes);
 router.get('/', listApiKeys);
 router.post('/', createApiKey);
 router.get('/:id', getApiKey);

@@ -5,6 +5,7 @@ import {
   getApiKey,
   rotateApiKey,
   revokeApiKey,
+  getScopes,
 } from '../../src/controllers/api-keys.controller.js';
 import prisma from '../../src/config/database.js';
 
@@ -182,6 +183,15 @@ describe('api-keys.controller unit tests', () => {
         },
       });
       expect(res.json).toHaveBeenCalledWith({ message: 'API key revoked successfully.' });
+    });
+  });
+
+  describe('getScopes', () => {
+    it('returns available API key scopes', async () => {
+      await getScopes(req, res, next);
+      expect(res.json).toHaveBeenCalledWith({
+        scopes: expect.arrayContaining(['*', 'cases:read', 'workflows:read']),
+      });
     });
   });
 });

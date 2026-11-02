@@ -27,6 +27,29 @@ function getCallerContext(req) {
   return { tenantId, userId };
 }
 
+export const AVAILABLE_SCOPES = [
+  '*',
+  'cases:read',
+  'cases:create',
+  'cases:update',
+  'referrals:read',
+  'referrals:create',
+  'workflows:read',
+  'workflows:update',
+  'assignments:read',
+  'auditLogs:read',
+  'departments:read',
+  'metrics:read',
+];
+
+export async function getScopes(req, res, next) {
+  try {
+    res.json({ scopes: AVAILABLE_SCOPES });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ── POST /api-keys ────────────────────────────────────────────────────────────
 
 export async function createApiKey(req, res, next) {
