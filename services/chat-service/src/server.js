@@ -54,7 +54,10 @@ assertProductionSecrets([
   { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
 ]);
 
-app.use(requireInternalRequest());
+app.use(requireInternalRequest({
+  skipPaths: ['/health', '/health/live', '/health/ready'],
+  allowOAuthBearer: true,
+}));
 
 // ── Routes ──────────────────────────────────────────────────────────────
 app.use('/conversations', conversationRoutes);
@@ -94,4 +97,3 @@ if (process.env.NODE_ENV !== 'test') {
 
 export { server };
 export default app;
-

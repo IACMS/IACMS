@@ -93,7 +93,10 @@ assertProductionSecrets([
   { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
 ]);
 
-app.use(requireInternalRequest({ skipPaths: ['/health', '/ready', '/metrics'] }));
+app.use(requireInternalRequest({
+  skipPaths: ['/health', '/ready', '/metrics', '/api-docs'],
+  allowOAuthBearer: true,
+}));
 
 app.use('/files', fileRoutes);
 app.use('/uploads', chunkRoutes);

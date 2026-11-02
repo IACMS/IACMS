@@ -4,6 +4,7 @@ import auditRoutes from './routes/audit.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
 import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { createOAuthResourceServer } from '../../../shared/middleware/verifyOAuthToken.js';
 import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
 import { handleAuditLog } from './consumers/audit.consumer.js';
@@ -31,7 +32,15 @@ assertProductionSecrets([
   { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
 ]);
 
-app.use(requireInternalRequest());
+app.use(requireInternalRequest({
+  skipPaths: ['/health', '/api-docs'],
+  allowOAuthBearer: true,
+}));
+
+const oauthResourceServer = createOAuthResourceServer({
+  audience: process.env.SERVICE_AUDIENCE || 'https://audit.iacms.gov/api',
+  allowInternalToken: true,
+});
 
 // Subscribe to audit events and persist them to the database
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'audit-service');
@@ -39,7 +48,12 @@ eventBus.subscribe(TOPICS.AUDIT_LOG, handleAuditLog).catch(err =>
   logger.warn('Kafka subscription failed — audit events will not be persisted until Kafka is available', { error: err.message })
 );
 
-app.use('/audit', auditRoutes);
+app.use('/audit', (req, res, next) => {
+  if (req.headers['x-internal-service-token'] && req.headers['x-internal-service-token'] === process.env.INTERNAL_SERVICE_TOKEN) {
+    return next();
+  }
+  return oauthResourceServer(req, res, next);
+}, auditRoutes);
 
 app.use(errorHandler);
 
@@ -48,4 +62,3 @@ app.listen(PORT, () => {
 });
 
 export default app;
-

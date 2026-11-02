@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { authenticateWsRequest } from './ws.auth.js';
+import { authenticateWsRequest, authenticateWsRequestAsync } from './ws.auth.js';
 import * as presence from './presence.js';
 import * as pubsub from './pubsub.js';
 import * as registry from './connection.registry.js';
@@ -36,8 +36,8 @@ export function initWebSocketServer(httpServer) {
     server: httpServer,
     path: '/ws',
     // Verify JWT on the HTTP upgrade before accepting
-    verifyClient: (info, callback) => {
-      const user = authenticateWsRequest(info.req);
+    verifyClient: async (info, callback) => {
+      const user = await authenticateWsRequestAsync(info.req);
       if (!user) {
         callback(false, 401, 'Unauthorized');
         return;

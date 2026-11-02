@@ -103,7 +103,12 @@ const config = {
 
   auth: {
     jwtSecret: (() => {
-      if (!process.env.JWT_SECRET) throw new Error('[file-service] JWT_SECRET environment variable is required.');
+      if (!process.env.JWT_SECRET) {
+        if (process.env.NODE_ENV === 'test') {
+          return 'test-file-service-jwt-secret-placeholder-for-unit-tests';
+        }
+        throw new Error('[file-service] JWT_SECRET environment variable is required.');
+      }
       return process.env.JWT_SECRET;
     })(),
     authServiceUrl: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',

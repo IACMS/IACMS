@@ -310,3 +310,4 @@ model FederatedIdentity {
   @@index([userId])
   @@map("federated_identities")
 }
+

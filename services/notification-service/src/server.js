@@ -5,6 +5,7 @@ import notificationRoutes from './routes/notification.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
 import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { createOAuthResourceServer } from '../../../shared/middleware/verifyOAuthToken.js';
 import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 import EventBus, { TOPICS } from '../../../shared/utils/eventBus.js';
 import {
@@ -47,7 +48,22 @@ assertProductionSecrets([
   { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
 ]);
 
-app.use(requireInternalRequest());
+app.use(requireInternalRequest({
+  skipPaths: ['/health', '/api-docs'],
+  allowOAuthBearer: true,
+}));
+
+const oauthResourceServer = createOAuthResourceServer({
+  audience: process.env.SERVICE_AUDIENCE || 'https://notifications.iacms.gov/api',
+  allowInternalToken: true,
+});
+
+function authenticateNotificationRequest(req, res, next) {
+  if (req.headers['x-internal-service-token'] && req.headers['x-internal-service-token'] === process.env.INTERNAL_SERVICE_TOKEN) {
+    return next();
+  }
+  return oauthResourceServer(req, res, next);
+}
 
 // ── Kafka event subscriptions ─────────────────────────────────────────────────
 const eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'notification-service');
@@ -89,8 +105,8 @@ setInterval(() => {
   logger.warn('Kafka consumer not connected — notification emails will not be sent until Kafka is reachable');
 }, 60_000).unref();
 
-app.use('/notifications', notificationRoutes);
-app.use('/internal/notifications', notificationRoutes);
+app.use('/notifications', authenticateNotificationRequest, notificationRoutes);
+app.use('/internal/notifications', authenticateNotificationRequest, notificationRoutes);
 
 app.use(errorHandler);
 
