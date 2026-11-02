@@ -34,3 +34,4 @@ router.post('/:provider/link', linkProvider);
 router.delete('/:provider', unlinkProvider);
 
 export default router;
+

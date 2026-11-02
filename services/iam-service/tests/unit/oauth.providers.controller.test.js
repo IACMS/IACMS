@@ -194,3 +194,4 @@ describe('oauth-providers.controller unit tests', () => {
     });
   });
 });
+

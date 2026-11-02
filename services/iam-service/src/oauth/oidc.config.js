@@ -10,15 +10,16 @@
  *  - All routes remapped to /oauth/* to avoid collision with /auth/* paths.
  *  - rotateRefreshToken: true  — library handles family invalidation on reuse.
  *  - clientCredentials + introspection + revocation + resourceIndicators enabled.
+ *  - custom grant urn:iacms:grant:api_key enabled for M2M API key token exchange.
  *  - OIDC client discovery happens via a DB-backed find function (dynamic clients).
  *  - OIDC_JWKS_JSON env var must be a JSON string containing the JWKS with RS256 key.
- *    Generate: node -e "import('jose').then(j=>j.generateKeyPair('RS256',{extractable:true})).then(k=>Promise.all([k.publicKey,k.privateKey].map(x=>import('jose').then(j=>j.exportJWK(x))))).then(([pub,priv])=>console.log(JSON.stringify({keys:[{...priv,use:'sig',alg:'RS256',kid:'iacms-1'}]})))"
  */
 
 import Provider from 'oidc-provider';
 import { PrismaAdapter } from './prisma.adapter.js';
 import { findAccount } from './find-account.js';
 import { decryptClientSecret } from './client-secret.utils.js';
+import { GRANT_TYPE, apiKeyGrantHandler, PARAMETERS } from './grants/api-key.grant.js';
 import prisma from '../config/database.js';
 import Logger from '../../../../shared/common/logger.js';
 
@@ -49,6 +50,20 @@ function loadJwks() {
  * We look it up in the OAuthClient table and return the shape the library expects.
  */
 async function findClient(clientId) {
+  // Built-in dedicated M2M client for API key exchanges without separate client secret
+  if (clientId === 'iacms_api_key_client') {
+    return {
+      client_id: 'iacms_api_key_client',
+      client_name: 'IACMS Dedicated API Key Client',
+      redirect_uris: [],
+      grant_types: [GRANT_TYPE],
+      response_types: [],
+      scope: 'openid roles api_key',
+      token_endpoint_auth_method: 'none',
+      [Symbol.for('tenant_id')]: null,
+    };
+  }
+
   const record = await prisma.oAuthClient.findUnique({
     where: { clientId, isActive: true },
   });
@@ -65,12 +80,16 @@ async function findClient(clientId) {
     }
   }
 
+  const configuredGrants = Array.isArray(record.grantTypes) ? record.grantTypes : ['authorization_code'];
+  // Support custom API key grant on registered clients
+  const grant_types = Array.from(new Set([...configuredGrants, GRANT_TYPE]));
+
   return {
     client_id: record.clientId,
     client_secret: clientSecret,
     client_name: record.name,
     redirect_uris: Array.isArray(record.redirectUris) ? record.redirectUris : [],
-    grant_types: Array.isArray(record.grantTypes) ? record.grantTypes : ['authorization_code'],
+    grant_types,
     response_types: Array.isArray(record.responseTypes) ? record.responseTypes : ['code'],
     scope: record.scope || 'openid profile email',
     token_endpoint_auth_method: record.tokenEndpointAuthMethod || 'client_secret_basic',
@@ -100,12 +119,26 @@ const config = {
 
   // ── Token format ──────────────────────────────────────────────────────────
   // CRITICAL: must be 'jwt' — default is 'opaque' which breaks offline validation.
-  // customizers.jwt embeds custom claims (tenant_id, roles) into the Access Token JWT.
+  // customizers.jwt embeds custom claims (tenant_id, roles, api_key_id) into the Access Token JWT.
   formats: {
     AccessToken: 'jwt',
     ClientCredentials: 'jwt',
     customizers: {
       async jwt(ctx, token, structuredToken) {
+        // Embed custom claims attached directly to the token (e.g. from API Key grant)
+        if (token.get?.('api_key_id')) {
+          structuredToken.payload.api_key_id = token.get('api_key_id');
+        }
+        if (token.get?.('tenant_id')) {
+          structuredToken.payload.tenant_id = token.get('tenant_id');
+        }
+        if (token.get?.('tenant_code')) {
+          structuredToken.payload.tenant_code = token.get('tenant_code');
+        }
+        if (token.get?.('roles')) {
+          structuredToken.payload.roles = token.get('roles');
+        }
+
         if (token.accountId) {
           const account = await findAccount(ctx, token.accountId);
           if (account) {
@@ -120,7 +153,7 @@ const config = {
             where: { clientId: token.clientId },
             select: { tenantId: true },
           });
-          if (client?.tenantId) {
+          if (client?.tenantId && !structuredToken.payload.tenant_id) {
             structuredToken.payload.tenant_id = client.tenantId;
           }
         }
@@ -149,7 +182,7 @@ const config = {
       enabled: true,
       defaultResource: (_ctx, _client) => process.env.OIDC_DEFAULT_RESOURCE || 'https://api.iacms.local',
       getResourceServerInfo: (_ctx, resourceIndicator) => ({
-        scope: 'openid profile email roles',
+        scope: 'openid profile email roles api_key',
         audience: resourceIndicator,
         accessTokenFormat: 'jwt',
         accessTokenTTL: 60 * 60, // 1h
@@ -163,7 +196,7 @@ const config = {
   },
 
   // ── Scopes ────────────────────────────────────────────────────────────────
-  scopes: ['openid', 'offline_access', 'profile', 'email', 'roles'],
+  scopes: ['openid', 'offline_access', 'profile', 'email', 'roles', 'api_key'],
 
   // ── Claims mapping ────────────────────────────────────────────────────────
   claims: {
@@ -171,6 +204,7 @@ const config = {
     profile: ['name', 'given_name', 'family_name', 'department_id', 'tenant_id', 'tenant_code'],
     email: ['email', 'email_verified'],
     roles: ['roles'],
+    api_key: ['api_key_id'],
   },
 
   // ── Token TTLs ────────────────────────────────────────────────────────────
@@ -215,11 +249,9 @@ const config = {
   },
 
   // ── Discovery document ────────────────────────────────────────────────────
-  // Expose tenant_id in the discovery doc for client convenience
   extraParams: ['tenant_code'],
 
   // ── Proxy trust ───────────────────────────────────────────────────────────
-  // REQUIRED: we run behind the API gateway
   proxy: true,
 
   // ── RS256 signing algorithm (v8/v9 enabledJWA schema) ─────────────────────
@@ -239,6 +271,9 @@ const provider = new Provider(ISSUER, config);
 
 // Wire up the dynamic client resolver (must be done after instantiation)
 provider.Client.find = findClient;
+
+// Register custom grant: urn:iacms:grant:api_key (Phase 5)
+provider.registerGrantType(GRANT_TYPE, apiKeyGrantHandler, PARAMETERS);
 
 // Surface library errors through our logger
 provider.on('server_error', (ctx, err) => {

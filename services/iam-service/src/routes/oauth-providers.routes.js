@@ -22,3 +22,4 @@ router.patch('/:id', updateProvider);
 router.delete('/:id', deleteProvider);
 
 export default router;
+

@@ -710,6 +710,7 @@ model ServiceRetentionPolicy {
 model ApiKey {
   id          String    @id @default(uuid()) @db.Uuid
   tenantId    String    @map("tenant_id") @db.Uuid
+  oauthClientId String?  @map("oauth_client_id") @db.Uuid
   name        String                                    /// Human label ("Police Desk Integration")
   keyPrefix   String    @map("key_prefix")              /// First 20 chars of raw key for identification
   keyHash     String    @unique @map("key_hash")        /// SHA-256 of the full raw key
@@ -725,11 +726,13 @@ model ApiKey {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  oauthClient OAuthClient? @relation(fields: [oauthClientId], references: [id], onDelete: SetNull)
   creator  User   @relation("ApiKeyCreator", fields: [createdBy], references: [id])
   revoker  User?  @relation("ApiKeyRevoker", fields: [revokedBy], references: [id])
 
   @@index([tenantId])
+  @@index([oauthClientId])
   @@index([keyHash])
   @@index([isActive, expiresAt])
   @@map("api_keys")
@@ -950,6 +953,7 @@ model OAuthClient {
 
   consents OAuthConsent[]
   tenant   Tenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  apiKeys  ApiKey[]
 
   @@index([tenantId])
   @@index([isActive])

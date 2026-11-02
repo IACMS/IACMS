@@ -13,6 +13,7 @@ import permissionRoutes from './routes/permission.routes.js';
 import userRoleRoutes from './routes/user-role.routes.js';
 import oauthClientRoutes from './routes/oauth-clients.routes.js';
 import oauthProviderRoutes from './routes/oauth-providers.routes.js';
+import apiKeyRoutes from './routes/api-keys.routes.js';
 import interactionRoutes from './oauth/interaction/interaction.routes.js';
 import socialRoutes from './oauth/social/social.routes.js';
 import Logger from '../../../shared/common/logger.js';
@@ -146,6 +147,7 @@ app.use('/permissions', permissionRoutes);
 app.use('/user-roles', userRoleRoutes);
 app.use('/oauth/clients', oauthClientRoutes);
 app.use('/oauth/providers', oauthProviderRoutes);
+app.use('/api-keys', apiKeyRoutes);
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use(errorHandler);

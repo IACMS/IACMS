@@ -250,3 +250,4 @@ describe('OAuth2 / Social Federated Login Integration Tests (Phase 4)', () => {
     expect(res.body.result).toEqual({ login: { accountId: 'user-oidc-bridge-99' } });
   });
 });
+

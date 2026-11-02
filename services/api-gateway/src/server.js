@@ -242,6 +242,13 @@ async function startServer() {
     });
   });
 
+  // ── OIDC & OAuth Discovery & Protocol Endpoints ─────────────────────────
+  app.use(['/.well-known', '/oauth'], serviceProxy({
+    target: services.iam,
+    label: 'IAM OIDC service',
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+  }));
+
   // Proxy routes
   app.use('/api/v1/auth', serviceProxy({
     target: services.auth,
