@@ -12,7 +12,9 @@ import roleRoutes from './routes/role.routes.js';
 import permissionRoutes from './routes/permission.routes.js';
 import userRoleRoutes from './routes/user-role.routes.js';
 import oauthClientRoutes from './routes/oauth-clients.routes.js';
+import oauthProviderRoutes from './routes/oauth-providers.routes.js';
 import interactionRoutes from './oauth/interaction/interaction.routes.js';
+import socialRoutes from './oauth/social/social.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
 import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
@@ -86,6 +88,7 @@ try {
       req.path.startsWith('/.well-known') ||
       (req.path.startsWith('/oauth') &&
        !req.path.startsWith('/oauth/clients') &&
+       !req.path.startsWith('/oauth/providers') &&
        !req.path.startsWith('/oauth/interaction'))
     );
     if (isOidcProtocolPath) {
@@ -106,6 +109,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // ── OIDC Interaction UI routes (requires parsed request body) ─────────────────
 app.use('/oauth/interaction', interactionRoutes);
+
+// ── Social & Federated OAuth routes (public redirects and browser callbacks) ──
+app.use('/auth/social', socialRoutes);
 
 // ── Public static assets ──────────────────────────────────────────────────────
 const uploadsDir = path.join(process.cwd(), 'uploads');
@@ -139,6 +145,7 @@ app.use('/roles', roleRoutes);
 app.use('/permissions', permissionRoutes);
 app.use('/user-roles', userRoleRoutes);
 app.use('/oauth/clients', oauthClientRoutes);
+app.use('/oauth/providers', oauthProviderRoutes);
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use(errorHandler);

@@ -97,6 +97,7 @@ describe('interaction.controller unit tests', () => {
         scope: 'openid profile',
         prompt: 'login',
         login_hint: 'user@iacms.org',
+        providers: expect.any(Array),
       });
     });
   });

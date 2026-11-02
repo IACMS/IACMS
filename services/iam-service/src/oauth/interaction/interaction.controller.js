@@ -15,6 +15,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '../../config/database.js';
 import provider from '../oidc.config.js';
 import { renderLoginForm, renderConsentForm } from './interaction.views.js';
+import { getActiveProviders } from '../social/social.service.js';
 import { UnauthorizedError, ForbiddenError, ValidationError } from '../../../../../shared/common/errors.js';
 import Logger from '../../../../../shared/common/logger.js';
 
@@ -34,12 +35,20 @@ export async function getInteraction(req, res, next) {
     const client = await provider.Client.find(params.client_id);
     if (!client) return res.status(400).json({ error: 'unknown_client' });
 
+    const clientTenantId = client[Symbol.for('tenant_id')] ?? null;
+    let providers = [];
+    try {
+      providers = await getActiveProviders(clientTenantId);
+    } catch {
+      providers = ['google', 'microsoft', 'github'];
+    }
+
     const wantsHtml = typeof req.accepts === 'function' && req.accepts(['html', 'json']) === 'html';
-    const base = { uid, client_id: params.client_id, scope: params.scope, prompt: prompt.name };
+    const base = { uid, client_id: params.client_id, scope: params.scope, prompt: prompt.name, providers };
 
     if (prompt.name === 'login') {
       if (wantsHtml) {
-        return res.send(renderLoginForm({ uid, client, loginHint: params.login_hint ?? null }));
+        return res.send(renderLoginForm({ uid, client, loginHint: params.login_hint ?? null, providers }));
       }
       return res.json({ ...base, login_hint: params.login_hint ?? null });
     }
@@ -107,7 +116,7 @@ export async function getInteraction(req, res, next) {
 
     // Default / unknown prompt
     if (wantsHtml) {
-      return res.send(renderLoginForm({ uid, client, loginHint: params.login_hint ?? null }));
+      return res.send(renderLoginForm({ uid, client, loginHint: params.login_hint ?? null, providers }));
     }
     return res.json(base);
   } catch (err) {
@@ -173,12 +182,20 @@ export async function postLogin(req, res, next) {
     if (wantsHtml && details?.params?.client_id) {
       try {
         const client = await provider.Client.find(details.params.client_id);
+        const clientTenantId = client ? client[Symbol.for('tenant_id')] : null;
+        let providers = [];
+        try {
+          providers = await getActiveProviders(clientTenantId);
+        } catch {
+          providers = ['google', 'microsoft', 'github'];
+        }
         return res.status(err.statusCode || err.status || 401).send(
           renderLoginForm({
             uid: req.params.uid,
             client,
             loginHint: req.body?.email,
             error: err.message,
+            providers,
           })
         );
       } catch {
