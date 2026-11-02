@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import * as jose from 'jose';
 import jwt from 'jsonwebtoken';
+const JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
+
+vi.hoisted(() => {
+  process.env.JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
+  process.env.OIDC_ISSUER = 'http://localhost:3001';
+});
+
 import { authenticate, validateJwtToken } from '../../src/middleware/auth.middleware.js';
 
 vi.mock('../../src/utils/authPasswordStatus.js', () => ({
@@ -11,16 +18,12 @@ vi.mock('../../src/services/apiKey.service.js', () => ({
   validateApiKey: vi.fn(),
 }));
 
-describe('Gateway Authentication Middleware - RS256 OIDC & HMAC Token Verification', () => {
+describe('Gateway Authentication Middleware — RS256 OIDC & HMAC Token Verification', () => {
   let rsaPrivateKey;
   let testPublicJwks;
   let req;
   let res;
   let next;
-
-  const JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
-  process.env.JWT_SECRET = JWT_SECRET;
-  process.env.OIDC_ISSUER = 'http://localhost:3001';
 
   beforeAll(async () => {
     const { publicKey, privateKey } = await jose.generateKeyPair('RS256', { extractable: true });

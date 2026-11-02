@@ -2,16 +2,19 @@ import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import * as jose from 'jose';
 import crypto from 'crypto';
 
-const { mockPrisma } = vi.hoisted(() => ({
-  mockPrisma: {
-    oAuthClient: {
-      findUnique: vi.fn(),
+const { mockPrisma } = vi.hoisted(() => {
+  process.env.JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
+  return {
+    mockPrisma: {
+      oAuthClient: {
+        findUnique: vi.fn(),
+      },
+      user: {
+        findUnique: vi.fn(),
+      },
     },
-    user: {
-      findUnique: vi.fn(),
-    },
-  },
-}));
+  };
+});
 
 vi.mock('../../src/config/database.js', () => ({
   default: mockPrisma,

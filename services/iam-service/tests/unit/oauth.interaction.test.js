@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import bcrypt from 'bcryptjs';
 
-const { mockPrisma, mockProvider } = vi.hoisted(() => ({
-  mockPrisma: {
-    user: {
+const { mockPrisma, mockProvider } = vi.hoisted(() => {
+  process.env.JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
+  return {
+    mockPrisma: {
+      user: {
       findFirst: vi.fn(),
       findUnique: vi.fn(),
     },
@@ -23,7 +25,7 @@ const { mockPrisma, mockProvider } = vi.hoisted(() => ({
     },
     Grant: vi.fn(),
   },
-}));
+}; });
 
 vi.mock('../../src/config/database.js', () => ({
   default: mockPrisma,

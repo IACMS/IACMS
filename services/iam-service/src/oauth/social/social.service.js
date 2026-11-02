@@ -141,7 +141,9 @@ export async function getActiveProviders(tenantId = null) {
 
 // ── State Serialization & Verification ──────────────────────────────────────
 
-const STATE_SECRET = process.env.JWT_SECRET || 'state-fallback-secret-at-least-32-chars';
+function getStateSecret() {
+  return process.env.JWT_SECRET || 'state-fallback-secret-at-least-32-chars';
+}
 
 /**
  * Encodes state into a tamper-proof signed JWT with 15-minute TTL.
@@ -152,7 +154,7 @@ export function createSocialState(payload) {
       ...payload,
       nonce: crypto.randomBytes(16).toString('hex'),
     },
-    STATE_SECRET,
+    getStateSecret(),
     { expiresIn: '15m' }
   );
 }
@@ -163,7 +165,7 @@ export function createSocialState(payload) {
 export function verifySocialState(token) {
   if (!token) throw new ValidationError('Missing state parameter');
   try {
-    return jwt.verify(token, STATE_SECRET);
+    return jwt.verify(token, getStateSecret());
   } catch (err) {
     throw new UnauthorizedError('Invalid or expired state parameter: ' + err.message);
   }

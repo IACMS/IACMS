@@ -1,4 +1,9 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
+
+vi.hoisted(() => {
+  process.env.JWT_SECRET = 'social-test-secret-at-least-32-chars-long';
+});
+
 import request from 'supertest';
 import express from 'express';
 import jwt from 'jsonwebtoken';
