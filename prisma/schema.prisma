@@ -8,12 +8,6 @@ generator client {
 }
 
 /// Per-service clients (outputs relative to this `prisma/` directory). Run `npx prisma generate` from repo root.
-generator clientIam {
-  provider      = "prisma-client-js"
-  output        = "../services/iam-service/src/generated/prisma"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
-}
-
 generator clientCaseEngine {
   provider      = "prisma-client-js"
   output        = "../services/case-engine-service/src/generated/prisma"

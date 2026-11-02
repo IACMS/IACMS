@@ -11,7 +11,7 @@
     "test:integration": "vitest run tests/integration",
     "test:all": "vitest run",
     "test:watch": "vitest",
-    "prisma:generate": "prisma generate --schema=../../prisma/schema.prisma"
+    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",

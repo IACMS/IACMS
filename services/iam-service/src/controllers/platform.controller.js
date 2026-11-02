@@ -593,27 +593,17 @@ export async function getTenantPlatformStats(req, res, next) {
     });
     if (!tenant) throw new NotFoundError('Tenant');
 
-    const [userAgg, departmentCount, publishedWorkflowCount, referralRows] = await Promise.all([
+    const [userAgg, departmentCount, roleCount, clientCount, apiKeyCount] = await Promise.all([
       prisma.user.aggregate({
         where: { tenantId, isActive: true },
         _count: { id: true },
         _max: { lastLogin: true },
       }),
       prisma.department.count({ where: { tenantId, isActive: true } }),
-      prisma.workflow.count({ where: { tenantId, status: 'PUBLISHED' } }),
-      prisma.caseReferral.findMany({
-        where: {
-          OR: [{ fromTenantId: tenantId }, { toTenantId: tenantId }],
-        },
-        select: { fromTenantId: true, toTenantId: true },
-      }),
+      prisma.role.count({ where: { tenantId, isActive: true } }),
+      prisma.oAuthClient.count({ where: { tenantId, isActive: true } }),
+      prisma.apiKey.count({ where: { tenantId, isActive: true } }),
     ]);
-
-    const partnerIds = new Set();
-    for (const r of referralRows) {
-      if (r.fromTenantId === tenantId && r.toTenantId !== tenantId) partnerIds.add(r.toTenantId);
-      if (r.toTenantId === tenantId && r.fromTenantId !== tenantId) partnerIds.add(r.fromTenantId);
-    }
 
     res.json({
       success: true,
@@ -626,8 +616,11 @@ export async function getTenantPlatformStats(req, res, next) {
         userCount: userAgg._count.id,
         lastLoginDate: userAgg._max.lastLogin?.toISOString?.() ?? userAgg._max.lastLogin ?? null,
         departmentCount,
-        publishedWorkflowCount,
-        activeReferralPartners: partnerIds.size,
+        roleCount,
+        oauthClientsCount: clientCount,
+        apiKeysCount: apiKeyCount,
+        publishedWorkflowCount: 0,
+        activeReferralPartners: 0,
       },
     });
   } catch (error) {

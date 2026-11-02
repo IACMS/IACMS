@@ -1,0 +1,312 @@
+// Prisma Schema for IAM & OAuth2/OIDC Service
+// Completely decoupled, standalone Identity-as-a-Service (IDaaS)
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Department ─────────────────────────────────────────────────────────────
+
+model Department {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  code        String
+  name        String
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users  User[]
+
+  @@unique([tenantId, code])
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("departments")
+}
+
+// ─── Tenant (Organization / Agency) ─────────────────────────────────────────
+
+model Tenant {
+  id                 String   @id @default(uuid()) @db.Uuid
+  name               String
+  code               String   @unique
+  description        String?  @db.Text
+  config             Json?
+  isActive           Boolean  @default(true) @map("is_active")
+  registeredByUserId String?  @map("registered_by_user_id") @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  registeredBy   User?           @relation("TenantRegistrar", fields: [registeredByUserId], references: [id], onDelete: SetNull)
+  users          User[]
+  departments    Department[]
+  roles          Role[]
+  apiKeys        ApiKey[]
+  oauthClients   OAuthClient[]
+  oauthProviders OAuthProvider[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("tenants")
+}
+
+// ─── User ───────────────────────────────────────────────────────────────────
+
+model User {
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @map("tenant_id") @db.Uuid
+  departmentId             String?   @map("department_id") @db.Uuid
+  email                    String
+  username                 String
+  passwordHash             String    @map("password_hash")
+  firstName                String    @map("first_name")
+  lastName                 String    @map("last_name")
+  phone                    String?
+  nationalId               String?   @map("national_id")
+  isActive                 Boolean   @default(true) @map("is_active")
+  isEmailVerified          Boolean   @default(false) @map("is_email_verified")
+  mustChangePassword       Boolean   @default(false) @map("must_change_password")
+  resetPasswordToken       String?   @map("reset_password_token")
+  resetPasswordExpires     DateTime? @map("reset_password_expires")
+  emailVerificationToken   String?   @map("email_verification_token")
+  emailVerificationExpires DateTime? @map("email_verification_expires")
+  lastLogin                DateTime? @map("last_login")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department          Department?         @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  userRoles           UserRole[]
+  rolesCreated        Role[]
+  userRolesAssigned   UserRole[]          @relation("RoleAssigner")
+  tenantsRegistered   Tenant[]            @relation("TenantRegistrar")
+  apiKeysCreated      ApiKey[]            @relation("ApiKeyCreator")
+  apiKeysRevoked      ApiKey[]            @relation("ApiKeyRevoker")
+  oauthConsents       OAuthConsent[]
+  federatedIdentities FederatedIdentity[]
+
+  @@unique([tenantId, email])
+  @@unique([tenantId, username])
+  @@index([tenantId])
+  @@index([tenantId, departmentId])
+  @@index([email])
+  @@index([username])
+  @@map("users")
+}
+
+// ─── Role ───────────────────────────────────────────────────────────────────
+
+model Role {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String?  @map("tenant_id") @db.Uuid
+  name         String
+  description  String?  @db.Text
+  isSystemRole Boolean  @default(false) @map("is_system_role")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant          Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+  user            User?            @relation(fields: [userId], references: [id])
+  userId          String?          @db.Uuid
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([name])
+  @@map("roles")
+}
+
+// ─── Permission ─────────────────────────────────────────────────────────────
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  resource    String
+  action      String
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rolePermissions RolePermission[]
+
+  @@unique([resource, action])
+  @@index([resource])
+  @@map("permissions")
+}
+
+// ─── RolePermission ─────────────────────────────────────────────────────────
+
+model RolePermission {
+  id           String   @id @default(uuid()) @db.Uuid
+  roleId       String   @map("role_id") @db.Uuid
+  permissionId String   @map("permission_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+// ─── UserRole ───────────────────────────────────────────────────────────────
+
+model UserRole {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  roleId     String    @map("role_id") @db.Uuid
+  assignedBy String?   @map("assigned_by") @db.Uuid
+  assignedAt DateTime  @default(now()) @map("assigned_at")
+  expiresAt  DateTime? @map("expires_at")
+
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assigner User? @relation("RoleAssigner", fields: [assignedBy], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+// ─── M2M API Keys ───────────────────────────────────────────────────────────
+
+model ApiKey {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  oauthClientId String?   @map("oauth_client_id") @db.Uuid
+  name          String
+  keyPrefix     String    @map("key_prefix")
+  keyHash       String    @unique @map("key_hash")
+  scopes        String[]  @default([])
+  isActive      Boolean   @default(true) @map("is_active")
+  expiresAt     DateTime? @map("expires_at")
+  lastUsedAt    DateTime? @map("last_used_at")
+  lastUsedIp    String?   @map("last_used_ip")
+  createdBy     String    @map("created_by") @db.Uuid
+  revokedAt     DateTime? @map("revoked_at")
+  revokedBy     String?   @map("revoked_by") @db.Uuid
+  metadata      Json?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  oauthClient OAuthClient? @relation(fields: [oauthClientId], references: [id], onDelete: SetNull)
+  creator     User         @relation("ApiKeyCreator", fields: [createdBy], references: [id])
+  revoker     User?        @relation("ApiKeyRevoker", fields: [revokedBy], references: [id])
+
+  @@index([tenantId])
+  @@index([oauthClientId])
+  @@index([keyHash])
+  @@index([isActive, expiresAt])
+  @@map("api_keys")
+}
+
+// ─── OAuth2 / OIDC Storage (node-oidc-provider) ─────────────────────────────
+
+model OidcPayload {
+  id         String    @id @db.VarChar(255)
+  modelName  String    @map("model_name") @db.VarChar(64)
+  payload    Json
+  grantId    String?   @map("grant_id") @db.VarChar(255)
+  userCode   String?   @map("user_code") @db.VarChar(255)
+  uid        String?   @db.VarChar(255)
+  expiresAt  DateTime? @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([grantId])
+  @@index([userCode])
+  @@index([uid])
+  @@index([modelName, expiresAt])
+  @@map("oidc_payloads")
+}
+
+model OAuthClient {
+  id                      String   @id @default(uuid()) @db.Uuid
+  clientId                String   @unique @map("client_id") @db.VarChar(255)
+  clientSecretCiphertext  String?  @map("client_secret_ciphertext") @db.Text
+  name                    String   @db.VarChar(255)
+  tenantId                String?  @map("tenant_id") @db.Uuid
+  redirectUris            Json     @map("redirect_uris")
+  grantTypes              Json     @map("grant_types")
+  responseTypes           Json     @map("response_types")
+  scope                   String   @db.Text
+  tokenEndpointAuthMethod String   @default("client_secret_basic") @map("token_endpoint_auth_method") @db.VarChar(64)
+  isActive                Boolean  @default(true) @map("is_active")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  consents OAuthConsent[]
+  tenant   Tenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  apiKeys  ApiKey[]
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("oauth_clients")
+}
+
+model OAuthConsent {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  clientId  String   @map("client_id") @db.Uuid
+  scopes    String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clientId])
+  @@index([userId])
+  @@index([clientId])
+  @@map("oauth_consents")
+}
+
+model OAuthProvider {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String?  @map("tenant_id") @db.Uuid
+  provider        String   @db.VarChar(64)
+  clientId        String   @map("client_id") @db.VarChar(255)
+  clientSecretEnc String   @map("client_secret_enc") @db.Text
+  scopes          String[] @default([])
+  isActive        Boolean  @default(true) @map("is_active")
+  config          Json?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant              Tenant?             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  federatedIdentities FederatedIdentity[]
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("oauth_providers")
+}
+
+model FederatedIdentity {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  providerId String   @map("provider_id") @db.Uuid
+  externalId String   @map("external_id") @db.VarChar(255)
+  email      String?  @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider OAuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, externalId])
+  @@index([userId])
+  @@map("federated_identities")
+}

@@ -182,7 +182,7 @@ const config = {
       enabled: true,
       defaultResource: (_ctx, _client) => process.env.OIDC_DEFAULT_RESOURCE || 'https://api.iacms.local',
       getResourceServerInfo: (_ctx, resourceIndicator) => ({
-        scope: 'openid profile email roles api_key',
+        scope: 'openid profile email roles api_key files:read files:upload files:delete chat:read chat:write chat:admin audit:read audit:write notifications:send cases:read cases:create cases:update',
         audience: resourceIndicator,
         accessTokenFormat: 'jwt',
         accessTokenTTL: 60 * 60, // 1h
@@ -196,7 +196,26 @@ const config = {
   },
 
   // ── Scopes ────────────────────────────────────────────────────────────────
-  scopes: ['openid', 'offline_access', 'profile', 'email', 'roles', 'api_key'],
+  scopes: [
+    'openid',
+    'offline_access',
+    'profile',
+    'email',
+    'roles',
+    'api_key',
+    'files:read',
+    'files:upload',
+    'files:delete',
+    'chat:read',
+    'chat:write',
+    'chat:admin',
+    'audit:read',
+    'audit:write',
+    'notifications:send',
+    'cases:read',
+    'cases:create',
+    'cases:update',
+  ],
 
   // ── Claims mapping ────────────────────────────────────────────────────────
   claims: {
