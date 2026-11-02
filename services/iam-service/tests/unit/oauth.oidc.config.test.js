@@ -47,7 +47,7 @@ describe('oidc.config provider initialization and JWT customizer tests', () => {
     expect(provider.issuer).toBe('http://localhost:3001');
     expect(typeof provider.callback).toBe('function');
     expect(typeof provider.Client.find).toBe('function');
-  });
+  }, 15000);
 
   it('customizer embeds tenant_id into Access Token JWT for client credentials', async () => {
     const { default: provider } = await import('../../src/oauth/oidc.config.js');

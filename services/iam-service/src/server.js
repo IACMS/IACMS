@@ -40,6 +40,15 @@ app.use(helmet({
   frameguard: { action: 'sameorigin' },   // Allow OIDC interaction page to be framed by same-origin portals
 }));
 
+// ── Public OIDC Discovery & JWKS CORS (RFC 7517) ────────────────────────────
+app.use(['/oauth/jwks', '/.well-known/openid-configuration'], (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 // ── OIDC Provider ─────────────────────────────────────────────────────────────
 // CRITICAL: must be mounted BEFORE express.json().
 // node-oidc-provider uses its own body parser for /oauth/token, /oauth/userinfo, etc.

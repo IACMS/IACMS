@@ -254,6 +254,20 @@ const config = {
   // ── Proxy trust ───────────────────────────────────────────────────────────
   proxy: true,
 
+  // ── CORS ───────────────────────────────────────────────────────────────────
+  // Allow per-client origins based on their registered redirect_uris for token/userinfo
+  clientBasedCORS(ctx, origin, client) {
+    if (!origin) return false;
+    try {
+      const allowedOrigins = (client.redirectUris || []).map((uri) => {
+        try { return new URL(uri).origin; } catch { return null; }
+      }).filter(Boolean);
+      return allowedOrigins.includes(origin);
+    } catch {
+      return false;
+    }
+  },
+
   // ── RS256 signing algorithm (v8/v9 enabledJWA schema) ─────────────────────
   enabledJWA: {
     clientAuthSigningAlgValues: ['RS256', 'PS256'],

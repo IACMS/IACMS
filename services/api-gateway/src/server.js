@@ -106,6 +106,15 @@ async function startServer() {
 
   app.use(helmet({ contentSecurityPolicy: false }));
 
+  // ── Public OIDC Discovery & JWKS CORS (RFC 7517) ──────────────────────────
+  app.use(['/.well-known', '/oauth/jwks'], (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+    next();
+  });
+
   // CORS with credentials for session cookies (comma-separated origins in dev, e.g. Vite 5173 and 5174)
   const corsOriginEnv = process.env.CORS_ORIGIN || 'http://localhost:5173';
   const corsOrigins = corsOriginEnv.split(',').map((o) => o.trim()).filter(Boolean);
