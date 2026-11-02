@@ -10,6 +10,7 @@ import referralRoutes from './routes/referral.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
 import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { createOAuthResourceServer } from '../../../shared/middleware/verifyOAuthToken.js';
 import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 import './config/database.js';
 
@@ -32,7 +33,24 @@ assertProductionSecrets([
   { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
 ]);
 
-app.use(requireInternalRequest());
+app.use(requireInternalRequest({
+  skipPaths: ['/health', '/api-docs'],
+  allowOAuthBearer: true,
+}));
+
+const oauthResourceServer = createOAuthResourceServer({
+  audience: process.env.SERVICE_AUDIENCE || 'https://cases.iacms.gov/api',
+  allowInternalToken: true,
+});
+
+function authenticateCaseEngineRequest(req, res, next) {
+  if (req.headers['x-internal-service-token'] && req.headers['x-internal-service-token'] === process.env.INTERNAL_SERVICE_TOKEN) {
+    return next();
+  }
+  return oauthResourceServer(req, res, next);
+}
+
+app.use(authenticateCaseEngineRequest);
 
 app.use('/cases', caseRoutes);
 app.use('/assignments', assignmentRoutes);
