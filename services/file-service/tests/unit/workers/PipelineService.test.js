@@ -1,4 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.hoisted(() => {
+  process.env.JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
+});
+
 import { PipelineService } from '../../../src/application/services/PipelineService.js';
 
 describe('PipelineService.isProcessingComplete', () => {
