@@ -30,9 +30,38 @@ let eventBus = null;
 
 export function getEventBus() {
   if (!eventBus) {
-    eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'auth-service');
+    try {
+      eventBus = new EventBus(process.env.KAFKA_BROKERS || 'localhost:9092', 'auth-service');
+    } catch (error) {
+      logger.warn('Failed to connect to Kafka event bus', { error: error.message });
+    }
   }
   return eventBus;
+}
+
+/**
+ * Generate a signed access token and refresh token for a user.
+ * @param {{ id: string, tenantId: string, departmentId?: string | null, email: string, mustChangePassword?: boolean }} user
+ * @param {string[]} [roleIds] — RBAC role UUIDs (forwarded as x-user-roles by the gateway)
+ */
+export function generateTokens(user, roleIds = []) {
+  const jti = crypto.randomUUID();
+  const refreshJti = crypto.randomUUID();
+
+  const payload = {
+    jti,
+    id: user.id,
+    tenantId: user.tenantId,
+    departmentId: user.departmentId ?? null,
+    email: user.email,
+    mustChangePassword: user.mustChangePassword ?? false,
+    roles: roleIds,
+  };
+
+  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  const refreshToken = jwt.sign({ id: user.id, jti: refreshJti }, JWT_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
+
+  return { accessToken, refreshToken };
 }
 
 export function generateToken(payload) {
@@ -43,22 +72,27 @@ export function generateRefreshToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
 }
 
+/**
+ * Generate a random 12-character temporary password that satisfies PASSWORD_REGEX:
+ * 4 letters + 4 digits + 2 specials + 1 letter + 1 digit, then Fisher-Yates shuffled.
+ */
 export function generateTemporaryPassword() {
-  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lower = 'abcdefghijklmnopqrstuvwxyz';
-  const numbers = '0123456789';
-  const special = '!@#$%^&*';
+  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
+  const digits = '23456789';
+  const specials = '@$!%*#?&';
+  const rand = (str) => str[crypto.randomInt(str.length)];
 
-  let password = '';
-  password += upper[crypto.randomInt(upper.length)];
-  password += lower[crypto.randomInt(lower.length)];
-  password += numbers[crypto.randomInt(numbers.length)];
-  password += special[crypto.randomInt(special.length)];
+  const parts = [
+    rand(letters), rand(letters), rand(letters), rand(letters),
+    rand(digits),  rand(digits),  rand(digits),  rand(digits),
+    rand(specials), rand(specials),
+    rand(letters), rand(digits),
+  ];
 
-  const all = upper + lower + numbers + special;
-  for (let i = 4; i < 12; i++) {
-    password += all[crypto.randomInt(all.length)];
+  for (let i = parts.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(i + 1);
+    [parts[i], parts[j]] = [parts[j], parts[i]];
   }
 
-  return password.split('').sort(() => 0.5 - Math.random()).join('');
+  return parts.join('');
 }
