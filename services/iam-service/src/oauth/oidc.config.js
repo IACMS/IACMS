@@ -27,7 +27,7 @@ const logger = new Logger('iam-oidc');
 
 // ── JWKS ─────────────────────────────────────────────────────────────────────
 
-function loadJwks() {
+export function loadJwks() {
   const raw = process.env.OIDC_JWKS_JSON;
   if (!raw) {
     throw new Error(

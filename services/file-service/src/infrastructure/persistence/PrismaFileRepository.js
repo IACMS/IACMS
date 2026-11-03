@@ -114,6 +114,7 @@ export class PrismaFileRepository {
   }
 
   async list({
+    tenantId,
     service,
     module,
     ownerId,
@@ -128,6 +129,7 @@ export class PrismaFileRepository {
   } = {}) {
     const where = {
       deleted: false,
+      ...(tenantId && { tenantId }),
       ...(!crossService && service ? { service } : {}),
       ...(crossService && service ? { service } : {}),
       ...(module && { module }),

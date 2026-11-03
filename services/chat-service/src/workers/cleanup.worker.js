@@ -43,18 +43,34 @@ async function runCleanup() {
 
     console.log(`[cleanup-worker] Hard-deleted ${deletedMessages.count} old soft-deleted messages.`);
 
-    // 2. Clean up very old outbox events (failed ones > 7 days)
+    // 2. Clean up outbox events:
+    // - Successfully published events older than 7 days
+    // - Failed events older than 14 days
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const deletedEvents = await prisma.chatOutboxEvent.deleteMany({
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
+    const deletedPublished = await prisma.chatOutboxEvent.deleteMany({
       where: {
-        status: 'FAILED',
-        createdAt: {
+        status: 'PUBLISHED',
+        publishedAt: {
+          not: null,
           lt: sevenDaysAgo,
         },
       },
     });
+
+    const deletedFailed = await prisma.chatOutboxEvent.deleteMany({
+      where: {
+        status: 'FAILED',
+        createdAt: {
+          lt: fourteenDaysAgo,
+        },
+      },
+    });
     
-    console.log(`[cleanup-worker] Cleaned up ${deletedEvents.count} old failed outbox events.`);
+    console.log(
+      `[cleanup-worker] Cleaned up outbox events: ${deletedPublished.count} published, ${deletedFailed.count} failed.`
+    );
 
   } catch (err) {
     console.error('[cleanup-worker] Error during cleanup:', err.message);

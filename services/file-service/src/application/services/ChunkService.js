@@ -50,13 +50,14 @@ export class ChunkService {
    * @param {number} opts.chunkSize       - expected size of each chunk in bytes
    * @returns {Promise<object>}           - the ChunkUpload DB record
    */
-  async initUpload({ service, module, ownerId, referenceId, originalName, mimeType, totalSize, totalChunks, chunkSize }) {
+  async initUpload({ tenantId, service, module, ownerId, referenceId, originalName, mimeType, totalSize, totalChunks, chunkSize }) {
     const uploadId  = uuidv4();
     const tempPath  = `tmp/uploads/${uploadId}`;
     const expiresAt = new Date(Date.now() + config.chunk.ttlHours * 60 * 60 * 1000);
 
     const upload = await this.chunkRepo.createUpload({
       id: uploadId,
+      tenantId: tenantId || null,
       service,
       module,
       ownerId,
@@ -220,6 +221,7 @@ export class ChunkService {
       // Create the final File record
       const file = await this.fileRepo.create({
         id: fileId,
+        tenantId:        upload.tenantId || null,
         service:         upload.service,
         module:          upload.module,
         ownerId:         upload.ownerId,

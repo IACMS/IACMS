@@ -37,13 +37,25 @@ describe('Cleanup Worker', () => {
       }
     });
 
+    // Verify it pruned PUBLISHED outbox events older than 7 days
+    expect(prisma.chatOutboxEvent.deleteMany).toHaveBeenCalledWith({
+      where: {
+        status: 'PUBLISHED',
+        publishedAt: {
+          not: null,
+          lt: expect.any(Date),
+        },
+      },
+    });
+
+    // Verify it pruned FAILED outbox events older than 14 days
     expect(prisma.chatOutboxEvent.deleteMany).toHaveBeenCalledWith({
       where: {
         status: 'FAILED',
         createdAt: {
           lt: expect.any(Date),
-        }
-      }
+        },
+      },
     });
 
     worker.stop();

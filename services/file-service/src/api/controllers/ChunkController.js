@@ -51,6 +51,7 @@ export async function initUpload(req, res, next) {
     const upload = await chunkService.initUpload({
       ...result.data,
       ownerId: req.user.id,
+      tenantId: req.tenantId || req.user?.tenantId || null,
     });
 
     logger.info('Upload session created', {

@@ -38,6 +38,12 @@ generator clientGateway {
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
+generator clientIam {
+  provider      = "prisma-client-js"
+  output        = "../services/iam-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -64,6 +70,37 @@ enum ChunkUploadStatus {
   COMPLETE
   FAILED
   EXPIRED
+}
+
+// ─── Case / Referral Enums ───────────────────────────────────────────────────
+
+enum CaseStatus {
+  open
+  in_progress
+  closed
+
+  @@map("case_status")
+}
+
+enum CasePriority {
+  low
+  normal
+  high
+  urgent
+  critical
+
+  @@map("case_priority")
+}
+
+enum ReferralStatus {
+  none
+  pending
+  pending_referral
+  accepted
+  rejected
+  completed
+
+  @@map("referral_status_enum")
 }
 
 model Department {
@@ -124,6 +161,8 @@ model Tenant {
   chatConversations ChatConversation[]
   oauthClients     OAuthClient[]
   oauthProviders   OAuthProvider[]
+  files            File[]             @relation("TenantFiles")
+  chunkUploads     ChunkUpload[]      @relation("TenantChunkUploads")
 
   @@index([code])
   @@index([isActive])
@@ -165,7 +204,6 @@ model User {
   attachments           CaseAttachment[]
   auditLogs             AuditLog[]
   userRoles             UserRole[]
-  rolesCreated          Role[]
   workflowsCreated      Workflow[]
   webhooksCreated       Webhook[]
   integrationsCreated   Integration[]
@@ -184,6 +222,8 @@ model User {
   @@index([tenantId, departmentId])
   @@index([email])
   @@index([username])
+  @@index([resetPasswordToken])
+  @@index([emailVerificationToken])
   @@map("users")
 }
 
@@ -200,8 +240,6 @@ model Role {
   tenant          Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   rolePermissions RolePermission[]
   userRoles       UserRole[]
-  user            User?            @relation(fields: [userId], references: [id])
-  userId          String?          @db.Uuid
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -346,7 +384,7 @@ model Case {
   currentTenantId     String?   @map("current_tenant_id") @db.Uuid
   originatingDepartmentId String? @map("originating_department_id") @db.Uuid
   currentDepartmentId     String? @map("current_department_id") @db.Uuid
-  referralStatus      String    @default("none") @map("referral_status")
+  referralStatus      ReferralStatus @default(none) @map("referral_status")
   workflowId          String    @map("workflow_id") @db.Uuid
   workflowVersion     Int       @default(1) @map("workflow_version")
   caseNumber          String    @map("case_number")
@@ -355,8 +393,8 @@ model Case {
   title               String
   description         String?   @db.Text
   type                String
-  priority            String    @default("normal")
-  status              String    @default("open")
+  priority            CasePriority @default(normal)
+  status              CaseStatus   @default(open)
   data                Json?
   assignedTo          String?   @map("assigned_to") @db.Uuid
   createdBy           String    @map("created_by") @db.Uuid
@@ -460,7 +498,7 @@ model CaseReferral {
   toDepartmentId   String? @map("to_department_id") @db.Uuid
   referralReason String?   @map("referral_reason") @db.Text
   notes          String?   @db.Text
-  status         String    @default("pending")
+  status         ReferralStatus @default(pending)
   referredBy     String    @map("referred_by") @db.Uuid
   acceptedBy     String?   @map("accepted_by") @db.Uuid
   rejectedBy     String?   @map("rejected_by") @db.Uuid
@@ -505,17 +543,21 @@ model CaseAttachment {
   uploadedAt       DateTime  @default(now()) @map("uploaded_at")
   deletedAt        DateTime? @map("deleted_at")
   workflowStepId   String?   @map("workflow_step_id") @db.Uuid
+  /// FK to file-service File record — nullable for legacy rows created before this column existed.
+  fileId           String?   @map("file_id") @db.Uuid
 
   // Relations
   case         Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
   workflowStep WorkflowStep? @relation("WorkflowStepAttachments", fields: [workflowStepId], references: [id], onDelete: SetNull)
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   uploader User   @relation(fields: [uploadedBy], references: [id])
+  file     File?  @relation("CaseAttachmentFile", fields: [fileId], references: [id], onDelete: SetNull)
 
   @@index([caseId])
   @@index([tenantId])
   @@index([uploadedBy])
   @@index([workflowStepId])
+  @@index([fileId])
   @@map("case_attachments")
 }
 
@@ -581,8 +623,10 @@ model Integration {
   type        String
   endpointUrl String?   @map("endpoint_url") @db.Text
   config      Json
-  apiKey      String?   @map("api_key")
-  apiSecret   String?   @map("api_secret")
+  /// AES-256-GCM encrypted ciphertext of the integration API key (null if not applicable)
+  apiKeyEnc   String?   @map("api_key_enc") @db.Text
+  /// AES-256-GCM encrypted ciphertext of the integration API secret (null if not applicable)
+  apiSecretEnc String?  @map("api_secret_enc") @db.Text
   isActive    Boolean   @default(true) @map("is_active")
   lastSyncAt  DateTime? @map("last_sync_at")
   syncStatus  Json?     @map("sync_status")
@@ -606,6 +650,7 @@ model Integration {
 
 model File {
   id                String     @id @default(uuid()) @db.Uuid
+  tenantId          String?    @map("tenant_id") @db.Uuid
   service           String
   module            String
   ownerId           String     @map("owner_id")
@@ -633,9 +678,12 @@ model File {
   createdAt         DateTime   @default(now()) @map("created_at")
   updatedAt         DateTime   @updatedAt @map("updated_at")
 
-  parentVersion File?  @relation("FileVersions", fields: [versionOf], references: [id], onDelete: SetNull)
-  versions      File[] @relation("FileVersions")
+  tenant        Tenant? @relation("TenantFiles", fields: [tenantId], references: [id], onDelete: Cascade)
+  parentVersion File?   @relation("FileVersions", fields: [versionOf], references: [id], onDelete: SetNull)
+  versions      File[]  @relation("FileVersions")
+  caseAttachments CaseAttachment[] @relation("CaseAttachmentFile")
 
+  @@index([tenantId])
   @@index([service, module])
   @@index([ownerId])
   @@index([referenceId])
@@ -649,6 +697,7 @@ model File {
 
 model ChunkUpload {
   id             String            @id @default(uuid()) @db.Uuid
+  tenantId       String?           @map("tenant_id") @db.Uuid
   service        String
   module         String
   ownerId        String            @map("owner_id")
@@ -665,8 +714,10 @@ model ChunkUpload {
   createdAt      DateTime          @default(now()) @map("created_at")
   updatedAt      DateTime          @updatedAt @map("updated_at")
 
+  tenant Tenant? @relation("TenantChunkUploads", fields: [tenantId], references: [id], onDelete: Cascade)
   chunks Chunk[]
 
+  @@index([tenantId])
   @@index([status])
   @@index([expiresAt])
   @@map("chunk_uploads")
@@ -818,7 +869,7 @@ model ChatMessage {
   createdAt        DateTime  @default(now()) @map("created_at")
 
   conversation  ChatConversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender        User               @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  sender        User               @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
   replyTo       ChatMessage?       @relation("ChatMessageReply", fields: [replyToId], references: [id])
   replies       ChatMessage[]      @relation("ChatMessageReply")
   attachments   ChatAttachment[]

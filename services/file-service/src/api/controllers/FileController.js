@@ -20,6 +20,7 @@ const fileRepo = new PrismaFileRepository();
 function serializeFile(file) {
   return {
     id: file.id,
+    tenantId: file.tenantId || null,
     service: file.service,
     module: file.module,
     ownerId: file.ownerId,
@@ -39,6 +40,21 @@ function serializeFile(file) {
     url: `/api/v1/files/${file.id}/view`,
     downloadUrl: `/api/v1/files/${file.id}/download`,
   };
+}
+
+export function assertFileTenantAccess(file, req) {
+  if (!file || !file.tenantId) return; // Legacy files without tenantId
+  const callerTenantId = req.tenantId || req.user?.tenantId;
+  const permissions = Array.isArray(req.user?.permissions) ? req.user.permissions : [];
+  const roles = Array.isArray(req.user?.roles) ? req.user.roles : [];
+  const isCrossTenantAdmin =
+    roles.includes('system_admin') ||
+    permissions.includes('*') ||
+    permissions.includes('file:admin');
+
+  if (!isCrossTenantAdmin && callerTenantId && file.tenantId !== callerTenantId) {
+    throw new NotFoundError('File');
+  }
 }
 
 /**
@@ -143,6 +159,7 @@ export async function upload(req, res, next) {
 
           const file = await fileRepo.create({
             id: fileId,
+            tenantId: req.tenantId || req.user?.tenantId || null,
             service: validatedFields.service,
             module: validatedFields.module,
             ownerId: req.user.id,
@@ -290,6 +307,7 @@ export async function uploadBatch(req, res, next) {
 
           const file = await fileRepo.create({
             id: fileId,
+            tenantId: req.tenantId || req.user?.tenantId || null,
             service: validatedFields.service,
             module: validatedFields.module,
             ownerId: req.user.id,
@@ -341,6 +359,7 @@ export async function getFile(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
+    assertFileTenantAccess(file, req);
     res.json(serializeFile(file));
   } catch (err) {
     next(err);
@@ -360,11 +379,12 @@ export async function listFiles(req, res, next) {
       roles.includes('system_admin');
 
     const crossService = Boolean(query.crossService) && isAdmin;
+    const callerTenantId = req.tenantId || req.user?.tenantId;
 
-    // Non-admin listing is always scoped — prefer explicit service filter;
-    // if missing, do not leak cross-service results.
+    // Non-admin listing is always scoped to caller's tenant
     const result = await fileRepo.list({
       ...query,
+      tenantId: crossService ? undefined : callerTenantId,
       crossService,
     });
 
@@ -383,6 +403,7 @@ export async function deleteFile(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
+    assertFileTenantAccess(file, req);
 
     let scheduledDeleteAt = null;
     if (file.retentionDays !== null && file.retentionDays !== undefined) {
@@ -415,7 +436,10 @@ export async function deleteFile(req, res, next) {
   }
 }
 
-function assertFileAccessible(file, action = 'access') {
+function assertFileAccessible(file, action = 'access', req = null) {
+  if (req) {
+    assertFileTenantAccess(file, req);
+  }
   if (file.deleted || file.status === 'DELETED') {
     throw new NotFoundError('File');
   }
@@ -431,7 +455,7 @@ export async function downloadFile(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
-    assertFileAccessible(file, 'download');
+    assertFileAccessible(file, 'download', req);
 
     const storage = StorageFactory.getInstance();
     const stream = await storage.download(file.storagePath);
@@ -459,7 +483,7 @@ export async function viewFile(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
-    assertFileAccessible(file, 'viewing');
+    assertFileAccessible(file, 'viewing', req);
 
     const storage = StorageFactory.getInstance();
     const stream = await storage.download(file.storagePath);
@@ -487,7 +511,7 @@ export async function streamFile(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
-    assertFileAccessible(file, 'streaming');
+    assertFileAccessible(file, 'streaming', req);
 
     const fileSize = Number(file.size);
     const storage = StorageFactory.getInstance();
@@ -566,7 +590,7 @@ export async function getSignedUrl(req, res, next) {
   try {
     const file = await fileRepo.findById(req.params.id);
     if (!file) throw new NotFoundError('File');
-    assertFileAccessible(file, 'signed URL generation');
+    assertFileAccessible(file, 'signed URL generation', req);
 
     const expiresIn = Math.min(Math.max(1, parseInt(req.query.expires || '600', 10)), 86400);
     const storage = StorageFactory.getInstance();

@@ -188,6 +188,19 @@ export async function getCases(req, res, next) {
       take,
       skip,
     });
+
+    if (req.query.withPagination === 'true' || req.query.includeCount === 'true') {
+      const total = await prisma.case.count({ where });
+      const currentPage = Math.max(1, parseInt(page, 10) || 1);
+      return res.json({
+        cases,
+        total,
+        page: currentPage,
+        pageSize: take,
+        totalPages: Math.ceil(total / take) || 1,
+      });
+    }
+
     res.json({ cases });
   } catch (e) {
     next(e);
@@ -257,41 +270,45 @@ export async function createCase(req, res, next) {
     const initial = full.steps.find(s => s.isInitial);
     if (!initial) throw new WorkflowNotPublishedError('Workflow missing initial step');
 
-    const caseNumber = await generateCaseNumber(caller);
+    const case_ = await prisma.$transaction(async (tx) => {
+      const caseNumber = await generateCaseNumber(caller, tx);
 
-    const case_ = await prisma.case.create({
-      data: {
-        tenantId: caller,
-        originatingTenantId: caller,
-        currentTenantId: caller,
-        originatingDepartmentId: actorDept,
-        currentDepartmentId: actorDept,
-        referralStatus: 'none',
-        caseNumber,
-        title,
-        description,
-        type: req.body.type || 'general',
-        priority: priority || 'normal',
-        status: 'open',
-        workflowId: full.id,
-        workflowVersion: full.version,
-        currentStepId: initial.id,
-        data: data ?? undefined,
-        createdBy: actorId,
-      },
-      include: { currentStep: true, workflow: true, creator: true },
-    });
+      const created = await tx.case.create({
+        data: {
+          tenantId: caller,
+          originatingTenantId: caller,
+          currentTenantId: caller,
+          originatingDepartmentId: actorDept,
+          currentDepartmentId: actorDept,
+          referralStatus: 'none',
+          caseNumber,
+          title,
+          description,
+          type: req.body.type || 'general',
+          priority: priority || 'normal',
+          status: 'open',
+          workflowId: full.id,
+          workflowVersion: full.version,
+          currentStepId: initial.id,
+          data: data ?? undefined,
+          createdBy: actorId,
+        },
+        include: { currentStep: true, workflow: true, creator: true },
+      });
 
-    await prisma.caseHistory.create({
-      data: {
-        caseId: case_.id,
-        tenantId: caller,
-        transitionId: null,
-        fromStepId: null,
-        toStepId: initial.id,
-        actorId,
-        comment: null,
-      },
+      await tx.caseHistory.create({
+        data: {
+          caseId: created.id,
+          tenantId: caller,
+          transitionId: null,
+          fromStepId: null,
+          toStepId: initial.id,
+          actorId,
+          comment: null,
+        },
+      });
+
+      return created;
     });
 
     await eventBus.publish(TOPICS.CASE_CREATED, {

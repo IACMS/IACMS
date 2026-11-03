@@ -87,7 +87,6 @@ model User {
   tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   department          Department?         @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   userRoles           UserRole[]
-  rolesCreated        Role[]
   userRolesAssigned   UserRole[]          @relation("RoleAssigner")
   tenantsRegistered   Tenant[]            @relation("TenantRegistrar")
   apiKeysCreated      ApiKey[]            @relation("ApiKeyCreator")
@@ -101,6 +100,8 @@ model User {
   @@index([tenantId, departmentId])
   @@index([email])
   @@index([username])
+  @@index([resetPasswordToken])
+  @@index([emailVerificationToken])
   @@map("users")
 }
 
@@ -119,8 +120,6 @@ model Role {
   tenant          Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   rolePermissions RolePermission[]
   userRoles       UserRole[]
-  user            User?            @relation(fields: [userId], references: [id])
-  userId          String?          @db.Uuid
 
   @@unique([tenantId, name])
   @@index([tenantId])

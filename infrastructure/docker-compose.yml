@@ -111,6 +111,7 @@ services:
       RATE_LIMIT_MAX_REQUESTS: 100
       RATE_LIMIT_WINDOW_SECONDS: 60
       AUTH_RATE_LIMIT_MAX: 10
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
     depends_on:
       postgres:
         condition: service_healthy
@@ -151,6 +152,11 @@ services:
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
       FILE_SERVICE_URL: http://file-service:3009
       CHAT_SERVICE_URL: http://chat-service:3010
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_DEFAULT_RESOURCE: ${OIDC_DEFAULT_RESOURCE:-https://api.iacms.local}
+      OIDC_COOKIE_SECRET: ${OIDC_COOKIE_SECRET}
+      CLIENT_SECRET_KEY: ${CLIENT_SECRET_KEY}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
     depends_on:
       postgres:
         condition: service_healthy
@@ -213,6 +219,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      INTEGRATION_SECRET_KEY: ${INTEGRATION_SECRET_KEY}
     depends_on:
       postgres:
         condition: service_healthy

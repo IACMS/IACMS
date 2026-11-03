@@ -5,9 +5,31 @@ import Logger from '../../../../shared/common/logger.js';
 const logger = new Logger('outbox-publisher');
 const POLL_INTERVAL_MS = 5000;
 const BATCH_SIZE = 50;
+const PURGE_INTERVAL_MS = 60 * 60 * 1000; // Hourly
 
 let eventBus = null;
 let intervalId = null;
+let purgeIntervalId = null;
+
+async function purgePublishedRecords() {
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const { count } = await prisma.auditOutbox.deleteMany({
+      where: {
+        published: true,
+        publishedAt: {
+          not: null,
+          lt: sevenDaysAgo,
+        },
+      },
+    });
+    if (count > 0) {
+      logger.info('Purged old published audit outbox records', { count });
+    }
+  } catch (err) {
+    logger.error('Failed to purge published audit outbox records', { error: err.message });
+  }
+}
 
 async function publishPendingRecords() {
   try {
@@ -49,6 +71,9 @@ export function startOutboxPublisher() {
   }
 
   intervalId = setInterval(publishPendingRecords, POLL_INTERVAL_MS);
+  purgeIntervalId = setInterval(purgePublishedRecords, PURGE_INTERVAL_MS);
+  // Run an initial purge on startup
+  purgePublishedRecords().catch(() => {});
   logger.info('Outbox publisher started', { pollIntervalMs: POLL_INTERVAL_MS });
 }
 
@@ -56,6 +81,10 @@ export function stopOutboxPublisher() {
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;
+  }
+  if (purgeIntervalId) {
+    clearInterval(purgeIntervalId);
+    purgeIntervalId = null;
   }
   logger.info('Outbox publisher stopped');
 }

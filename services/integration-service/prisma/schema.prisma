@@ -59,8 +59,10 @@ model Integration {
   type        String
   endpointUrl String?   @map("endpoint_url") @db.Text
   config      Json
-  apiKey      String?   @map("api_key")
-  apiSecret   String?   @map("api_secret")
+  /// AES-256-GCM encrypted ciphertext of the integration API key
+  apiKeyEnc   String?   @map("api_key_enc") @db.Text
+  /// AES-256-GCM encrypted ciphertext of the integration API secret
+  apiSecretEnc String?  @map("api_secret_enc") @db.Text
   isActive    Boolean   @default(true) @map("is_active")
   lastSyncAt  DateTime? @map("last_sync_at")
   syncStatus  Json?     @map("sync_status")
