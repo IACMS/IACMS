@@ -13,8 +13,11 @@ import {
   rotateClientSecret,
   deleteClient,
 } from '../controllers/oauth-clients.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+router.use(authenticateToken);
 
 router.get('/',           listClients);
 router.post('/',          createClient);

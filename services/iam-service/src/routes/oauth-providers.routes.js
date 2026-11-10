@@ -12,8 +12,11 @@ import {
   updateProvider,
   deleteProvider,
 } from '../controllers/oauth-providers.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+router.use(authenticateToken);
 
 router.get('/', listProviders);
 router.post('/', createProvider);

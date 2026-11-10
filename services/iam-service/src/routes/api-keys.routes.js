@@ -13,8 +13,11 @@ import {
   revokeApiKey,
   getScopes,
 } from '../controllers/api-keys.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+router.use(authenticateToken);
 
 router.get('/scopes', getScopes);
 router.get('/', listApiKeys);

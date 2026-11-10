@@ -11,18 +11,29 @@ import Logger from '../../../../shared/common/logger.js';
 
 const logger = new Logger('iam-oauth-providers');
 
-function assertPlatformAdmin(req) {
+async function assertPlatformAdmin(req) {
   const perms = req.headers['x-user-permissions'] || '';
-  if (!perms.includes('platform:manage_tenants')) {
-    throw new ForbiddenError('Only platform administrators may manage OAuth providers');
+  if (perms.includes('platform:manage_tenants') || perms.includes('*') || perms.includes('admin:*')) {
+    return;
   }
+  const roleIds = Array.isArray(req.user?.roles) ? req.user.roles.map(String) : [];
+  if (roleIds.length) {
+    const roles = await prisma.role.findMany({
+      where: { id: { in: roleIds }, isActive: true },
+      select: { name: true },
+    });
+    if (roles.some((r) => r.name === 'system_admin')) {
+      return;
+    }
+  }
+  throw new ForbiddenError('Only platform administrators may manage OAuth providers');
 }
 
 // ── GET /oauth/providers ──────────────────────────────────────────────────────
 
 export async function listProviders(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const providers = await prisma.oAuthProvider.findMany({
       select: {
@@ -50,7 +61,7 @@ export async function listProviders(req, res, next) {
 
 export async function createProvider(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const {
       tenantId,
@@ -109,7 +120,7 @@ export async function createProvider(req, res, next) {
 
 export async function getProvider(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const provider = await prisma.oAuthProvider.findUnique({
       where: { id: req.params.id },
@@ -137,7 +148,7 @@ export async function getProvider(req, res, next) {
 
 export async function updateProvider(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const { clientId, clientSecret, scopes, isActive, config } = req.body ?? {};
 
@@ -189,7 +200,7 @@ export async function updateProvider(req, res, next) {
 
 export async function deleteProvider(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const existing = await prisma.oAuthProvider.findUnique({
       where: { id: req.params.id },

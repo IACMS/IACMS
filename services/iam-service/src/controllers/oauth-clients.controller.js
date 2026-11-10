@@ -16,18 +16,29 @@ import Logger from '../../../../shared/common/logger.js';
 
 const logger = new Logger('iam-oauth-clients');
 
-function assertPlatformAdmin(req) {
+async function assertPlatformAdmin(req) {
   const perms = req.headers['x-user-permissions'] || '';
-  if (!perms.includes('platform:manage_tenants')) {
-    throw new ForbiddenError('Only platform administrators may manage OAuth clients');
+  if (perms.includes('platform:manage_tenants') || perms.includes('*') || perms.includes('admin:*')) {
+    return;
   }
+  const roleIds = Array.isArray(req.user?.roles) ? req.user.roles.map(String) : [];
+  if (roleIds.length) {
+    const roles = await prisma.role.findMany({
+      where: { id: { in: roleIds }, isActive: true },
+      select: { name: true },
+    });
+    if (roles.some((r) => r.name === 'system_admin')) {
+      return;
+    }
+  }
+  throw new ForbiddenError('Only platform administrators may manage OAuth clients');
 }
 
 // ── GET /oauth/clients ────────────────────────────────────────────────────────
 
 export async function listClients(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const clients = await prisma.oAuthClient.findMany({
       select: {
@@ -57,7 +68,7 @@ export async function listClients(req, res, next) {
 
 export async function createClient(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const {
       name,
@@ -116,7 +127,7 @@ export async function createClient(req, res, next) {
 
 export async function getClient(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const client = await prisma.oAuthClient.findUnique({
       where: { id: req.params.id },
@@ -147,7 +158,7 @@ export async function getClient(req, res, next) {
 
 export async function updateClient(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const { name, redirectUris, grantTypes, responseTypes, scope, tokenEndpointAuthMethod, isActive } = req.body ?? {};
 
@@ -183,7 +194,7 @@ export async function updateClient(req, res, next) {
 
 export async function rotateClientSecret(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const existing = await prisma.oAuthClient.findUnique({ where: { id: req.params.id } });
     if (!existing) throw new NotFoundError('OAuth client');
@@ -207,7 +218,7 @@ export async function rotateClientSecret(req, res, next) {
 
 export async function deleteClient(req, res, next) {
   try {
-    assertPlatformAdmin(req);
+    await assertPlatformAdmin(req);
 
     const existing = await prisma.oAuthClient.findUnique({ where: { id: req.params.id } });
     if (!existing) throw new NotFoundError('OAuth client');
