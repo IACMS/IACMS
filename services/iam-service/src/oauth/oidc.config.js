@@ -308,8 +308,15 @@ const config = {
 
 const provider = new Provider(ISSUER, config);
 
-// Wire up the dynamic client resolver (must be done after instantiation)
-provider.Client.find = findClient;
+// Wire up the dynamic client resolver (must return a provider.Client instance)
+provider.Client.find = async function (clientId) {
+  const meta = await findClient(clientId);
+  if (!meta) return undefined;
+  if (meta instanceof provider.Client) return meta;
+  const client = new provider.Client(meta);
+  client[Symbol.for('tenant_id')] = meta[Symbol.for('tenant_id')];
+  return client;
+};
 
 // Register custom grant: urn:iacms:grant:api_key (Phase 5)
 provider.registerGrantType(GRANT_TYPE, apiKeyGrantHandler, PARAMETERS);

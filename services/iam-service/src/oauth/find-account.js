@@ -88,7 +88,7 @@ export async function findAccount(ctx, sub, token) {
               ? clientContext
               : await prisma.oAuthClient.findUnique({
                   where: { clientId },
-                  select: { id: true },
+                  select: { id: true, targetAudience: true },
                 });
 
           if (client) {
@@ -104,6 +104,9 @@ export async function findAccount(ctx, sub, token) {
 
             if (appRoles.length > 0) {
               scopedRoles = appRoles.map((ar) => ar.roleId);
+            } else if (client.targetAudience) {
+              // Modern application with defined target audience: strict Zero Trust isolation
+              scopedRoles = [];
             } else {
               // Check if this client has any application-scoped roles configured
               const hasAppRolesConfigured = await prisma.userApplicationRole.count({

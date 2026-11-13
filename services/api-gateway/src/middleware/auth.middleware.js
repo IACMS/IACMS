@@ -19,6 +19,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // ── JWKS Cache for RS256 OIDC Token Verification ─────────────────────────────
 let localJwks = null;
+let remoteJwks = null;
 let lastJwksJson = null;
 
 export function _setLocalJwks(jwks) {
