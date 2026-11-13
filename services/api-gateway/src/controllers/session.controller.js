@@ -213,7 +213,7 @@ export async function sessionStatus(req, res) {
     });
   }
 
-  if (req.user && req.authMethod === 'jwt') {
+  if (req.user && (req.authMethod === 'jwt' || !req.session?.user)) {
     const dbMustChange = await fetchMustChangePasswordFromAuth(req.user.id, req.user.tenantId);
     const mustChangePassword =
       dbMustChange !== null ? dbMustChange : Boolean(req.user.mustChangePassword);

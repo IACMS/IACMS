@@ -118,6 +118,10 @@ async function startServer() {
   // CORS with credentials for session cookies (comma-separated origins in dev, e.g. Vite 5173 and 5174)
   const corsOriginEnv = process.env.CORS_ORIGIN || 'http://localhost:5173';
   const corsOrigins = corsOriginEnv.split(',').map((o) => o.trim()).filter(Boolean);
+  if (process.env.NODE_ENV !== 'production') {
+    if (!corsOrigins.includes('http://localhost:5173')) corsOrigins.push('http://localhost:5173');
+    if (!corsOrigins.includes('http://localhost:5174')) corsOrigins.push('http://localhost:5174');
+  }
   const corsOriginOption =
     corsOrigins.length === 0
       ? 'http://localhost:5173'
@@ -252,8 +256,16 @@ async function startServer() {
   });
 
   // ── OIDC & OAuth Discovery & Protocol Endpoints ─────────────────────────
-  app.use(['/.well-known', '/oauth'], serviceProxy({
+  app.use('/.well-known', serviceProxy({
     target: services.iam,
+    pathRewrite: (path) => '/.well-known' + path,
+    label: 'IAM OIDC discovery',
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+  }));
+
+  app.use('/oauth', serviceProxy({
+    target: services.iam,
+    pathRewrite: (path) => '/oauth' + path,
     label: 'IAM OIDC service',
     onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
   }));

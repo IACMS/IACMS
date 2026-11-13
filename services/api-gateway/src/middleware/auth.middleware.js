@@ -243,6 +243,7 @@ export async function authenticate(req, res, next) {
       roles: Array.isArray(sessionUser.roles) ? sessionUser.roles : [],
       mustChangePassword,
     };
+    req.authMethod = 'session';
 
     setUserHeaders(req, req.user);
     req.session.lastAccessed = new Date().toISOString();
@@ -258,12 +259,13 @@ export async function authenticate(req, res, next) {
 
     if (result.valid) {
       const decoded = result.payload;
+      req.authMethod = 'jwt';
 
       if (result.isOidc) {
         req.user = {
           id: decoded.id,
           tenantId: decoded.tenantId,
-          departmentId: decoded.departmentId,
+          departmentId: decoded.departmentId ?? null,
           email: decoded.email,
           roles: decoded.roles,
           scopes: decoded.scopes,
@@ -272,6 +274,7 @@ export async function authenticate(req, res, next) {
         };
 
         if (decoded.apiKeyId) {
+          req.authMethod = 'api-key';
           req.apiKeyContext = {
             keyId: decoded.apiKeyId,
             scopes: decoded.scopes,
@@ -368,6 +371,7 @@ export async function authenticate(req, res, next) {
 export async function optionalAuth(req, res, next) {
   // Try session first
   if (req.session && req.session.user) {
+    req.authMethod = 'session';
     const sessionUser = req.session.user;
     const prev = Boolean(sessionUser.mustChangePassword);
     const mustChangePassword = await reconcileMustChangePassword(
@@ -388,6 +392,7 @@ export async function optionalAuth(req, res, next) {
     req.user = {
       id: sessionUser.id,
       tenantId: sessionUser.tenantId,
+      departmentId: sessionUser.departmentId ?? null,
       email: sessionUser.email,
       firstName: sessionUser.firstName,
       lastName: sessionUser.lastName,
@@ -402,11 +407,13 @@ export async function optionalAuth(req, res, next) {
   if (token) {
     const result = await validateJwtToken(token);
     if (result.valid) {
+      req.authMethod = 'jwt';
       const decoded = result.payload;
       if (result.isOidc) {
         req.user = {
           id: decoded.id,
           tenantId: decoded.tenantId,
+          departmentId: decoded.departmentId ?? null,
           email: decoded.email,
           roles: decoded.roles,
           mustChangePassword: false,
@@ -421,6 +428,7 @@ export async function optionalAuth(req, res, next) {
         req.user = {
           id: decoded.id,
           tenantId: decoded.tenantId,
+          departmentId: decoded.departmentId ?? null,
           email: decoded.email,
           roles: Array.isArray(decoded.roles) ? decoded.roles : [],
           mustChangePassword,
