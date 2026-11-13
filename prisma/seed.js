@@ -925,6 +925,33 @@ async function main() {
   }
   console.log('Service retention policies seeded.');
 
+  // ── Seed Official IACMS Portal OAuth Client ──
+  await prisma.oAuthClient.upsert({
+    where: { clientId: 'iacms_portal' },
+    update: {
+      name: 'IACMS Case Management Portal',
+      redirectUris: ['http://localhost:5173/auth/callback', 'http://localhost:3000/auth/callback'],
+      grantTypes: ['authorization_code', 'refresh_token'],
+      responseTypes: ['code'],
+      scope: 'openid profile email roles cases:read cases:create cases:update files:read files:upload',
+      targetAudience: 'https://cases.iacms.gov/api',
+      tokenEndpointAuthMethod: 'none',
+      isActive: true,
+    },
+    create: {
+      clientId: 'iacms_portal',
+      name: 'IACMS Case Management Portal',
+      redirectUris: ['http://localhost:5173/auth/callback', 'http://localhost:3000/auth/callback'],
+      grantTypes: ['authorization_code', 'refresh_token'],
+      responseTypes: ['code'],
+      scope: 'openid profile email roles cases:read cases:create cases:update files:read files:upload',
+      targetAudience: 'https://cases.iacms.gov/api',
+      tokenEndpointAuthMethod: 'none',
+      isActive: true,
+    },
+  });
+  console.log('Official iacms_portal OAuth client seeded.');
+
   console.log('═'.repeat(60));
   console.log('🎉 Database updated! All case actions and workflow step transitions are UNBLOCKED.\n');
   console.log('Login Credentials (all passwords are "password123")');
