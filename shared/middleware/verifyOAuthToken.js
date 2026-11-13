@@ -22,7 +22,9 @@ function checkScopeMatch(grantedScopes, requiredScope) {
 
 export function createOAuthResourceServer({
   issuer = process.env.OIDC_ISSUER || 'http://localhost:3001',
-  jwksUri = process.env.OIDC_JWKS_URI || `${(process.env.OIDC_ISSUER || 'http://localhost:3001').replace(/\/$/, '')}/oauth/jwks`,
+  jwksUri = process.env.OIDC_JWKS_URI ||
+    (process.env.INTERNAL_IAM_URL ? `${process.env.INTERNAL_IAM_URL.replace(/\/$/, '')}/oauth/jwks` : null) ||
+    (process.env.KAFKA_BROKERS ? 'http://iam-service:3001/oauth/jwks' : `${(process.env.OIDC_ISSUER || 'http://localhost:3001').replace(/\/$/, '')}/oauth/jwks`),
   audience = null,
   requiredScopes = [],
   allowInternalToken = false,
@@ -154,9 +156,14 @@ export function createOAuthResourceServer({
       return next();
     } catch (err) {
       const isExpired = err.code === 'ERR_JWT_EXPIRED';
-      return res.status(401).json({
-        error: isExpired ? 'token_expired' : 'invalid_token',
-        error_description: isExpired ? 'Authentication token has expired' : err.message,
+      const isAudienceMismatch = err.code === 'ERR_JWT_CLAIM_VALIDATION_FAILED' && err.claim === 'aud';
+      return res.status(isAudienceMismatch ? 403 : 401).json({
+        error: isExpired ? 'token_expired' : (isAudienceMismatch ? 'invalid_audience' : 'invalid_token'),
+        error_description: isExpired
+          ? 'Authentication token has expired'
+          : (isAudienceMismatch
+              ? `Token audience mismatch: this resource server requires audience '${audience}'`
+              : err.message),
       });
     }
   };

@@ -19,7 +19,7 @@ import prisma from '../config/database.js';
  * @param {string} sub  - subject (user ID)
  * @returns {Promise<import('oidc-provider').Account | undefined>}
  */
-export async function findAccount(_ctx, sub) {
+export async function findAccount(ctx, sub, token) {
   const user = await prisma.user.findUnique({
     where: { id: sub },
     select: {
@@ -44,11 +44,11 @@ export async function findAccount(_ctx, sub) {
 
     /**
      * Build the claims object.
-     * `use`     — 'id_token' | 'userinfo'
-     * `scope`   — space-separated scopes requested by the client
-     * `claims`  — voluntary / essential claims from the request
+     * `use`            — 'id_token' | 'userinfo' | 'access_token'
+     * `scope`          — space-separated scopes requested by the client
+     * `clientContext`  — optional client record or client ID for application-scoped roles
      */
-    async claims(_use, scope) {
+    async claims(_use, scope, clientContext) {
       const base = {
         sub: user.id,
         // Always included
@@ -74,7 +74,58 @@ export async function findAccount(_ctx, sub) {
       }
 
       if (scopes.includes('roles')) {
-        base.roles = user.userRoles.map((ur) => ur.roleId);
+        // Resolve target client to support project/application-scoped role isolation
+        const clientId =
+          (typeof clientContext === 'object' ? clientContext?.clientId : clientContext) ||
+          ctx?.oidc?.client?.clientId ||
+          token?.clientId;
+
+        let scopedRoles = [];
+
+        if (clientId) {
+          const client =
+            typeof clientContext === 'object' && clientContext?.id
+              ? clientContext
+              : await prisma.oAuthClient.findUnique({
+                  where: { clientId },
+                  select: { id: true },
+                });
+
+          if (client) {
+            // Check if user has explicit roles assigned for this specific client application
+            const appRoles = await prisma.userApplicationRole.findMany({
+              where: {
+                userId: user.id,
+                oauthClientId: client.id,
+                role: { isActive: true },
+              },
+              select: { roleId: true },
+            });
+
+            if (appRoles.length > 0) {
+              scopedRoles = appRoles.map((ar) => ar.roleId);
+            } else {
+              // Check if this client has any application-scoped roles configured
+              const hasAppRolesConfigured = await prisma.userApplicationRole.count({
+                where: { oauthClientId: client.id },
+              });
+
+              if (hasAppRolesConfigured > 0) {
+                // Application-scoped roles are active for this client, and user has none -> NO access in this project
+                scopedRoles = [];
+              } else {
+                // Fallback for legacy clients prior to application role assignment migration
+                scopedRoles = user.userRoles.map((ur) => ur.roleId);
+              }
+            }
+          } else {
+            scopedRoles = user.userRoles.map((ur) => ur.roleId);
+          }
+        } else {
+          scopedRoles = user.userRoles.map((ur) => ur.roleId);
+        }
+
+        base.roles = scopedRoles;
       }
 
       if (scopes.includes('profile') && user.departmentId) {

@@ -215,6 +215,8 @@ model User {
   chatMessagesSender    ChatMessage[]     @relation("ChatMessageSender")
   oauthConsents         OAuthConsent[]
   federatedIdentities   FederatedIdentity[]
+  userApplicationRoles  UserApplicationRole[]
+  appRolesAssigned      UserApplicationRole[] @relation("AppRoleAssigner")
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
@@ -237,9 +239,10 @@ model Role {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  tenant          Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant          Tenant?               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   rolePermissions RolePermission[]
   userRoles       UserRole[]
+  userApplicationRoles UserApplicationRole[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -992,13 +995,16 @@ model OAuthClient {
   /// Space-separated allowed scopes (e.g. "openid profile email")
   scope                  String   @db.Text
   tokenEndpointAuthMethod String  @default("client_secret_basic") @map("token_endpoint_auth_method") @db.VarChar(64)
+  /// Target resource API audience this client is authorized to request (e.g. "https://cases.iacms.gov/api")
+  targetAudience         String?  @map("target_audience") @db.VarChar(255)
   isActive               Boolean  @default(true) @map("is_active")
   createdAt              DateTime @default(now()) @map("created_at")
   updatedAt              DateTime @updatedAt @map("updated_at")
 
-  consents OAuthConsent[]
-  tenant   Tenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
-  apiKeys  ApiKey[]
+  consents             OAuthConsent[]
+  tenant               Tenant?               @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  apiKeys              ApiKey[]
+  userApplicationRoles UserApplicationRole[]
 
   @@index([tenantId])
   @@index([isActive])
@@ -1060,5 +1066,28 @@ model FederatedIdentity {
   @@unique([providerId, externalId])
   @@index([userId])
   @@map("federated_identities")
+}
+
+/// Binds a user to an explicit role within a specific OAuth client application / project.
+/// Enforces zero-leakage cross-project role isolation (e.g., User is admin in Project B, but has no role in IACMS).
+model UserApplicationRole {
+  id            String       @id @default(uuid()) @db.Uuid
+  userId        String       @map("user_id") @db.Uuid
+  oauthClientId String       @map("oauth_client_id") @db.Uuid
+  roleId        String       @map("role_id") @db.Uuid
+  assignedBy    String?      @map("assigned_by") @db.Uuid
+  assignedAt    DateTime     @default(now()) @map("assigned_at")
+  expiresAt     DateTime?    @map("expires_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  oauthClient OAuthClient @relation(fields: [oauthClientId], references: [id], onDelete: Cascade)
+  role        Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assigner    User?       @relation("AppRoleAssigner", fields: [assignedBy], references: [id])
+
+  @@unique([userId, oauthClientId, roleId])
+  @@index([userId])
+  @@index([oauthClientId])
+  @@index([roleId])
+  @@map("user_application_roles")
 }
 

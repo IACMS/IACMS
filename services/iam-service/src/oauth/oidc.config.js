@@ -139,22 +139,28 @@ const config = {
           structuredToken.payload.roles = token.get('roles');
         }
 
+        let clientRecord = null;
+        if (token.clientId) {
+          clientRecord = await prisma.oAuthClient.findUnique({
+            where: { clientId: token.clientId },
+            select: { id: true, clientId: true, tenantId: true, targetAudience: true },
+          });
+          if (clientRecord?.tenantId && !structuredToken.payload.tenant_id) {
+            structuredToken.payload.tenant_id = clientRecord.tenantId;
+          }
+          if (clientRecord?.targetAudience) {
+            structuredToken.payload.aud = clientRecord.targetAudience;
+          }
+        }
+
         if (token.accountId) {
-          const account = await findAccount(ctx, token.accountId);
+          const account = await findAccount(ctx, token.accountId, token);
           if (account) {
-            const claims = await account.claims('access_token', token.scope);
+            const claims = await account.claims('access_token', token.scope, clientRecord);
             if (claims.tenant_id) structuredToken.payload.tenant_id = claims.tenant_id;
             if (claims.tenant_code) structuredToken.payload.tenant_code = claims.tenant_code;
             if (claims.roles) structuredToken.payload.roles = claims.roles;
             if (claims.department_id) structuredToken.payload.department_id = claims.department_id;
-          }
-        } else if (token.clientId) {
-          const client = await prisma.oAuthClient.findUnique({
-            where: { clientId: token.clientId },
-            select: { tenantId: true },
-          });
-          if (client?.tenantId && !structuredToken.payload.tenant_id) {
-            structuredToken.payload.tenant_id = client.tenantId;
           }
         }
       },

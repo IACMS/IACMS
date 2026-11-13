@@ -51,6 +51,7 @@ export async function listClients(req, res, next) {
         responseTypes: true,
         scope: true,
         tokenEndpointAuthMethod: true,
+        targetAudience: true,
         isActive: true,
         createdAt: true,
         // Never return clientSecretCiphertext
@@ -78,6 +79,7 @@ export async function createClient(req, res, next) {
       responseTypes = ['code'],
       scope = 'openid profile email',
       tokenEndpointAuthMethod = 'client_secret_basic',
+      targetAudience = null,
     } = req.body ?? {};
 
     if (!name) throw new ValidationError('name is required');
@@ -98,6 +100,7 @@ export async function createClient(req, res, next) {
         responseTypes,
         scope,
         tokenEndpointAuthMethod,
+        targetAudience: targetAudience || null,
       },
       select: {
         id: true,
@@ -109,6 +112,7 @@ export async function createClient(req, res, next) {
         responseTypes: true,
         scope: true,
         tokenEndpointAuthMethod: true,
+        targetAudience: true,
         isActive: true,
         createdAt: true,
       },
@@ -141,6 +145,7 @@ export async function getClient(req, res, next) {
         responseTypes: true,
         scope: true,
         tokenEndpointAuthMethod: true,
+        targetAudience: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -160,7 +165,16 @@ export async function updateClient(req, res, next) {
   try {
     await assertPlatformAdmin(req);
 
-    const { name, redirectUris, grantTypes, responseTypes, scope, tokenEndpointAuthMethod, isActive } = req.body ?? {};
+    const {
+      name,
+      redirectUris,
+      grantTypes,
+      responseTypes,
+      scope,
+      tokenEndpointAuthMethod,
+      targetAudience,
+      isActive,
+    } = req.body ?? {};
 
     const existing = await prisma.oAuthClient.findUnique({ where: { id: req.params.id } });
     if (!existing) throw new NotFoundError('OAuth client');
@@ -174,17 +188,167 @@ export async function updateClient(req, res, next) {
         ...(responseTypes !== undefined ? { responseTypes } : {}),
         ...(scope !== undefined ? { scope } : {}),
         ...(tokenEndpointAuthMethod !== undefined ? { tokenEndpointAuthMethod } : {}),
+        ...(targetAudience !== undefined ? { targetAudience: targetAudience || null } : {}),
         ...(isActive !== undefined ? { isActive } : {}),
       },
       select: {
-        id: true, clientId: true, name: true, tenantId: true,
-        redirectUris: true, grantTypes: true, responseTypes: true,
-        scope: true, tokenEndpointAuthMethod: true, isActive: true, updatedAt: true,
+        id: true,
+        clientId: true,
+        name: true,
+        tenantId: true,
+        redirectUris: true,
+        grantTypes: true,
+        responseTypes: true,
+        scope: true,
+        tokenEndpointAuthMethod: true,
+        targetAudience: true,
+        isActive: true,
+        updatedAt: true,
       },
     });
 
     logger.info('OAuth client updated', { clientId: existing.clientId, updatedBy: req.headers['x-user-id'] });
     res.json({ client });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── GET /oauth/clients/:id/users ──────────────────────────────────────────────
+
+export async function listClientUsers(req, res, next) {
+  try {
+    await assertPlatformAdmin(req);
+
+    const client = await prisma.oAuthClient.findUnique({
+      where: { id: req.params.id },
+      select: { id: true, name: true, clientId: true },
+    });
+    if (!client) throw new NotFoundError('OAuth client');
+
+    const appRoles = await prisma.userApplicationRole.findMany({
+      where: { oauthClientId: client.id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            isActive: true,
+            tenant: { select: { id: true, name: true, code: true } },
+          },
+        },
+        role: {
+          select: { id: true, name: true, description: true },
+        },
+      },
+      orderBy: { assignedAt: 'desc' },
+    });
+
+    // Group assigned roles by user
+    const usersMap = new Map();
+    for (const ar of appRoles) {
+      if (!usersMap.has(ar.user.id)) {
+        usersMap.set(ar.user.id, {
+          user: ar.user,
+          roles: [],
+        });
+      }
+      usersMap.get(ar.user.id).roles.push({
+        id: ar.role.id,
+        name: ar.role.name,
+        assignedAt: ar.assignedAt,
+        expiresAt: ar.expiresAt,
+      });
+    }
+
+    res.json({
+      client: { id: client.id, name: client.name, clientId: client.clientId },
+      users: Array.from(usersMap.values()),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── POST /oauth/clients/:id/users ─────────────────────────────────────────────
+
+export async function assignClientUserRole(req, res, next) {
+  try {
+    await assertPlatformAdmin(req);
+
+    const { userId, roleId, expiresAt } = req.body ?? {};
+    if (!userId) throw new ValidationError('userId is required');
+    if (!roleId) throw new ValidationError('roleId is required');
+
+    const client = await prisma.oAuthClient.findUnique({ where: { id: req.params.id } });
+    if (!client) throw new NotFoundError('OAuth client');
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundError('User');
+
+    const role = await prisma.role.findUnique({ where: { id: roleId } });
+    if (!role) throw new NotFoundError('Role');
+
+    const callerId = req.user?.id || req.headers['x-user-id'] || null;
+
+    const assignment = await prisma.userApplicationRole.upsert({
+      where: {
+        userId_oauthClientId_roleId: {
+          userId,
+          oauthClientId: client.id,
+          roleId,
+        },
+      },
+      update: {
+        assignedBy: callerId,
+        assignedAt: new Date(),
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      },
+      create: {
+        userId,
+        oauthClientId: client.id,
+        roleId,
+        assignedBy: callerId,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      },
+      include: {
+        role: { select: { id: true, name: true } },
+      },
+    });
+
+    logger.info('User application role assigned', {
+      clientId: client.clientId,
+      userId,
+      role: role.name,
+      assignedBy: callerId,
+    });
+
+    res.status(201).json({ assignment });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── DELETE /oauth/clients/:id/users/:userId/roles/:roleId ─────────────────────
+
+export async function unassignClientUserRole(req, res, next) {
+  try {
+    await assertPlatformAdmin(req);
+
+    const { id: oauthClientId, userId, roleId } = req.params;
+
+    await prisma.userApplicationRole.deleteMany({
+      where: {
+        oauthClientId,
+        userId,
+        roleId,
+      },
+    });
+
+    logger.info('User application role unassigned', { oauthClientId, userId, roleId });
+    res.json({ message: 'User role removed from application successfully.' });
   } catch (err) {
     next(err);
   }
