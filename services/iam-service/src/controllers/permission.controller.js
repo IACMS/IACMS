@@ -1,5 +1,5 @@
 import prisma from '../config/database.js';
-import { NotFoundError } from '../../../../shared/common/errors.js';
+import { NotFoundError } from '#iam/iamErrors.js';
 
 /**
  * Get all permissions

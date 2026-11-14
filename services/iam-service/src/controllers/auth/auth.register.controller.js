@@ -1,12 +1,14 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database.js';
-import { ValidationError, NotFoundError } from '../../../../../shared/common/errors.js';
-import Logger from '../../../../../shared/common/logger.js';
-import { TOPICS } from '../../../../../shared/utils/eventBus.js';
+import { ValidationError, NotFoundError } from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
+import { TOPICS } from '#iam/iamEventBus.js';
 import { getEventBus, generateTokens, generateTemporaryPassword } from '../../utils/auth.helpers.js';
 import { withAuditClient } from '../../utils/audit.helpers.js';
 import { validateRegisterRequest, validateCreateUserRequest } from '../../utils/validators.js';
+import { enqueueIdentitySnapshot } from '../../identityEvents.js';
+import { syncLegacyTenantMembership } from '../../iamMemberships.js';
 
 const logger = new Logger('auth-service');
 
@@ -45,17 +47,21 @@ export async function register(req, res, next) {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        username: username || email.split('@')[0],
-        passwordHash,
-        firstName,
-        lastName,
-        tenantId: tenant.id,
-        mustChangePassword: true,
-      },
-      include: { tenant: true },
+    const user = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email,
+          username: username || email.split('@')[0],
+          passwordHash,
+          firstName,
+          lastName,
+          tenantId: tenant.id,
+          mustChangePassword: true,
+        },
+        include: { tenant: true },
+      });
+      await syncLegacyTenantMembership(tx, { tenant, user: created });
+      return created;
     });
 
     // Generate email verification token
@@ -69,8 +75,8 @@ export async function register(req, res, next) {
     });
 
     const { accessToken, refreshToken } = generateTokens(user, []);
-
     const bus = getEventBus();
+    await enqueueIdentitySnapshot(user.id);
     if (bus) {
       bus.publish(TOPICS.USER_CREATED, {
         userId: user.id,
@@ -120,7 +126,6 @@ export async function register(req, res, next) {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
-        departmentId: user.departmentId ?? null,
         isEmailVerified: false,
         mustChangePassword: true,
         tenant: { id: user.tenant.id, name: user.tenant.name, code: user.tenant.code },
@@ -226,8 +231,11 @@ export async function resendVerification(req, res, next) {
  */
 export async function createUser(req, res, next) {
   try {
+    if (req.body?.roleId != null) {
+      throw new ValidationError('Role assignments belong to the calling application, not IAM');
+    }
     const actorTenantId = req.headers['x-tenant-id'] || req.user?.tenantId;
-    const { email, firstName, lastName, username, tenantCode, tenantId, roleId, departmentId } = validateCreateUserRequest(
+    const { email, firstName, lastName, username, tenantCode, tenantId } = validateCreateUserRequest(
       req.body,
       actorTenantId,
     );
@@ -246,17 +254,6 @@ export async function createUser(req, res, next) {
     }
     if (!tenant.isActive) throw new ValidationError('Cannot create user for inactive tenant');
 
-    let department = null;
-    if (departmentId) {
-      department = await prisma.department.findFirst({
-        where: { id: departmentId, tenantId: tenant.id, isActive: true },
-        select: { id: true, name: true, code: true },
-      });
-      if (!department) {
-        throw new ValidationError('Department must belong to the same organization and be active');
-      }
-    }
-
     // Duplicate check
     const existing = await prisma.user.findFirst({
       where: {
@@ -272,31 +269,23 @@ export async function createUser(req, res, next) {
     const temporaryPassword = generateTemporaryPassword();
     const passwordHash = await bcrypt.hash(temporaryPassword, 10);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        username: username || email.split('@')[0],
-        passwordHash,
-        firstName,
-        lastName,
-        tenantId: tenant.id,
-        departmentId: department?.id ?? null,
-        isActive: true,
-        mustChangePassword: true,
-      },
-      include: { tenant: true },
-    });
-
-    // Assign role if provided
-    let assignedRole = null;
-    if (roleId) {
-      const role = await prisma.role.findFirst({ where: { id: roleId, isActive: true } });
-      if (!role) throw new NotFoundError('Role');
-      await prisma.userRole.create({
-        data: { userId: user.id, roleId, assignedBy: req.headers['x-user-id'] || null },
+    const user = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email,
+          username: username || email.split('@')[0],
+          passwordHash,
+          firstName,
+          lastName,
+          tenantId: tenant.id,
+          isActive: true,
+          mustChangePassword: true,
+        },
+        include: { tenant: true },
       });
-      assignedRole = { id: role.id, name: role.name };
-    }
+      await syncLegacyTenantMembership(tx, { tenant, user: created });
+      return created;
+    });
 
     const bus = getEventBus();
     if (bus) {
@@ -325,7 +314,7 @@ export async function createUser(req, res, next) {
               action: 'user_created_by_admin',
               userId: req.headers['x-user-id'] || null,
               oldValues: null,
-              newValues: { channel: 'admin_created', roleId: roleId || null, departmentId: department?.id ?? null },
+              newValues: { channel: 'admin_created', roleId: null },
               metadata: {},
             },
             req,
@@ -334,7 +323,7 @@ export async function createUser(req, res, next) {
         .catch(() => {});
     }
 
-    logger.info('Admin created user', { userId: user.id, tenantId: user.tenantId, email: user.email, roleId });
+    logger.info('Admin created user', { userId: user.id, tenantId: user.tenantId, email: user.email });
 
     res.status(201).json({
       message: 'User created. A welcome email with their temporary password has been sent.',
@@ -344,9 +333,8 @@ export async function createUser(req, res, next) {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
-        departmentId: user.departmentId ?? null,
         mustChangePassword: user.mustChangePassword,
-        role: assignedRole,
+        role: null,
         tenant: { id: user.tenant.id, name: user.tenant.name, code: user.tenant.code },
       },
     });

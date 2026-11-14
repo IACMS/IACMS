@@ -25,7 +25,6 @@ const commonEnv = {
   WORKER_MODE: 'embedded',
   IAM_SERVICE_URL: 'http://localhost:3001',
   AUTH_SERVICE_URL: 'http://localhost:3001',
-  RBAC_SERVICE_URL: 'http://localhost:3001',
   CASE_ENGINE_SERVICE_URL: 'http://localhost:3003',
   CASE_SERVICE_URL: 'http://localhost:3003',
   WORKFLOW_SERVICE_URL: 'http://localhost:3003',

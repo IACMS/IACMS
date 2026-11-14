@@ -6,9 +6,10 @@
  */
 
 import { getRedisClient } from '../config/redis.config.js';
+import prisma from '../config/database.js';
 
 const CACHE_TTL_SECONDS = 5 * 60;
-const CACHE_KEY_PREFIX = 'rbac:perms:';
+const CACHE_KEY_PREFIX = 'rbac:perms:iacms:v1:';
 
 /**
  * Route → required permission mapping.
@@ -90,7 +91,7 @@ const ROUTE_PERMISSIONS = {
   // Users
   'GET:/users': 'users:read',
 
-  // Users (via RBAC service)
+  // User administration routes
   'GET:/rbac/users': 'users:read',
   'GET:/rbac/users/:id': 'users:read',
 
@@ -104,7 +105,7 @@ const ROUTE_PERMISSIONS = {
   'PATCH:/auth/users/:id/reactivate': 'users:update',
   'DELETE:/auth/users/:id': 'users:delete',
 
-  // Roles (RBAC service) — listing roles is required for workflow/case UIs to show friendly role names.
+  // IACMS-local roles — listing roles is required for workflow/case UIs to show friendly role names.
   // Allow anyone who can read workflows or users (or formally manage roles) to avoid spurious 403 + global banner.
   'GET:/rbac/roles': ['users:read', 'workflows:read', 'roles:read'],
   'POST:/rbac/roles': 'roles:create',
@@ -217,26 +218,45 @@ function normalizeRbacEnvelope(cached) {
   };
 }
 
-async function fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl) {
+async function fetchUserRbacEnvelope(userId, tenantId) {
   try {
-    const response = await fetch(`${rbacServiceUrl}/permissions/user/${userId}`, {
-      headers: { 'x-user-id': userId, 'x-tenant-id': tenantId },
+    if (!tenantId) return { ok: true, permissions: [], roleIds: [] };
+    const identity = await prisma.identityProjection.findUnique({
+      where: { subjectId_tenantId: { subjectId: String(userId), tenantId: String(tenantId) } },
+      select: { isActive: true, deletedAt: true },
     });
-    if (!response.ok) {
-      console.error('[RBAC] Failed to fetch permissions:', response.status);
-      return { ok: false, permissions: [], roleIds: [] };
-    }
+    // The projection must be reconciled before local RBAC is enabled. Missing
+    // identity state is unavailable policy, while inactive/deleted subjects
+    // receive no IACMS permissions.
+    if (!identity) return { ok: false, permissions: [], roleIds: [] };
+    if (!identity.isActive || identity.deletedAt) return { ok: true, permissions: [], roleIds: [] };
 
-    const data = await response.json();
-
-    const permissions = data.permissions || [];
-
-    const roleIds =
-      data.roleIds?.length
-        ? data.roleIds
-        : Array.from(
-            new Set((data.roles || []).map(r => r.id).filter(Boolean))
-          );
+    const userRoles = await prisma.userRole.findMany({
+      where: {
+        userId,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        role: {
+          isActive: true,
+          ...(tenantId
+            ? { OR: [{ tenantId: String(tenantId) }, { tenantId: null }] }
+            : { tenantId: null }),
+        },
+      },
+      include: {
+        role: {
+          include: {
+            rolePermissions: { include: { permission: true } },
+          },
+        },
+      },
+    });
+    const roles = userRoles.map(({ role }) => role).filter((role) => role?.isActive);
+    const roleIds = [...new Set(roles.map((role) => role.id))];
+    const permissions = [...new Set(roles.flatMap((role) =>
+      (role.rolePermissions || [])
+        .map(({ permission }) => permission && `${permission.resource}:${permission.action}`)
+        .filter(Boolean),
+    ))];
 
     return {
       ok: true,
@@ -244,7 +264,7 @@ async function fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl) {
       roleIds,
     };
   } catch (error) {
-    console.error('[RBAC] Error fetching permissions:', error.message);
+    console.error('[RBAC] Error resolving IACMS-local permissions:', error.message);
 
     return {
       ok: false,
@@ -258,7 +278,7 @@ async function fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl) {
  * Resolve permissions from cache or live RBAC.
  * On live fetch failure, do NOT cache empty permissions.
  */
-async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
+async function resolvePermissions(userId, tenantId) {
   const cacheKey = `${CACHE_KEY_PREFIX}${userId}:${tenantId}`;
   const redis = getRedisClient();
 
@@ -273,7 +293,7 @@ async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
     }
   }
 
-  const result = await fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl);
+  const result = await fetchUserRbacEnvelope(userId, tenantId);
   if (!result.ok) {
     return { permissions: [], roleIds: [], rbacAvailable: false };
   }
@@ -291,14 +311,14 @@ async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
 
 // ─── Redis-backed cache (via resolvePermissions) ─────────────────────────────
 
-export async function getUserPermissions(userId, tenantId, rbacServiceUrl) {
-  const { permissions } = await resolvePermissions(userId, tenantId, rbacServiceUrl);
+export async function getUserPermissions(userId, tenantId) {
+  const { permissions } = await resolvePermissions(userId, tenantId);
   return permissions;
 }
 
 /** Same resolution as getUserPermissions; includes rbacAvailable for session APIs. */
-export async function getUserPermissionsWithAvailability(userId, tenantId, rbacServiceUrl) {
-  return resolvePermissions(userId, tenantId, rbacServiceUrl);
+export async function getUserPermissionsWithAvailability(userId, tenantId) {
+  return resolvePermissions(userId, tenantId);
 }
 
 // ─── Permission check ─────────────────────────────────────────────────────────
@@ -319,7 +339,7 @@ export function hasAnyPermission(userPermissions, requiredList) {
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 
-export function createRbacMiddleware(rbacServiceUrl) {
+export function createRbacMiddleware() {
   return async function rbacMiddleware(req, res, next) {
     if (!req.user) return next();
 
@@ -334,7 +354,6 @@ export function createRbacMiddleware(rbacServiceUrl) {
       const { permissions: userPermissions, roleIds, rbacAvailable } = await getUserPermissionsWithAvailability(
         req.user.id,
         req.user.tenantId,
-        rbacServiceUrl,
       );
 
       req.rbacEnvelope = { permissions: userPermissions, roleIds: roleIds || [], rbacAvailable };
@@ -344,9 +363,9 @@ export function createRbacMiddleware(rbacServiceUrl) {
       if (userPermissions.length) {
         req.headers['x-user-permissions'] = userPermissions.join(',');
       }
-      if (roleIds?.length) {
-        req.headers['x-user-roles'] = roleIds.join(',');
-      }
+      // Always replace token role claims with the authoritative IACMS-local
+      // role assignment result, including the empty-role case.
+      req.headers['x-user-roles'] = (roleIds || []).join(',');
 
       if (!requiredList) return next();
 

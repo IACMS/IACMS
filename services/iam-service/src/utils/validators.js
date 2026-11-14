@@ -3,7 +3,7 @@
  * Simple validation functions for auth service
  */
 
-import { ValidationError } from '../../../../shared/common/errors.js';
+import { ValidationError } from '#iam/iamErrors.js';
 
 /**
  * Email validation regex
@@ -203,7 +203,7 @@ export function validateRegisterRequest(body) {
  * @param headerTenantId - Optional `x-tenant-id` from API gateway (logged-in admin's org)
  */
 export function validateCreateUserRequest(body, headerTenantId) {
-  const { email, firstName, lastName, username, tenantId, tenantCode, roleId, departmentId } = body || {};
+  const { email, firstName, lastName, username, tenantId, tenantCode, roleId } = body || {};
 
   let resolvedTenantId = tenantId;
   const resolvedTenantCode = tenantCode;
@@ -238,7 +238,6 @@ export function validateCreateUserRequest(body, headerTenantId) {
     tenantCode: resolvedTenantCode ? validateTenantCode(resolvedTenantCode) : null,
     tenantId: resolvedTenantId ? validateUUID(String(resolvedTenantId).trim(), 'Tenant ID') : null,
     roleId: roleId ? validateUUID(roleId, 'Role ID') : null,
-    departmentId: departmentId ? validateUUID(departmentId, 'Department ID') : null,
   };
 }
 
@@ -248,13 +247,13 @@ export function validateCreateUserRequest(body, headerTenantId) {
  * Email uniqueness within the tenant is checked in the controller.
  */
 export function validateUpdateUserRequest(body) {
-  const { firstName, lastName, email, phone, departmentId } = body || {};
+  const { firstName, lastName, email, phone } = body || {};
 
   const hasAnyField = firstName !== undefined || lastName !== undefined ||
-    email !== undefined || phone !== undefined || departmentId !== undefined;
+    email !== undefined || phone !== undefined;
 
   if (!hasAnyField) {
-    throw new ValidationError('At least one field (firstName, lastName, email, phone, departmentId) is required');
+    throw new ValidationError('At least one field (firstName, lastName, email, phone) is required');
   }
 
   const result = {};
@@ -279,15 +278,6 @@ export function validateUpdateUserRequest(body) {
       result.phone = null;
     }
   }
-  if (departmentId !== undefined) {
-    // null clears department; a string must be a valid UUID
-    if (departmentId === null || departmentId === '') {
-      result.departmentId = null;
-    } else {
-      result.departmentId = validateUUID(String(departmentId), 'Department ID');
-    }
-  }
-
   return result;
 }
 

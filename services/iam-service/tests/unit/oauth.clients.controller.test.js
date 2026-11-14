@@ -9,6 +9,9 @@ const { mockPrisma } = vi.hoisted(() => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    iamOrganization: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -29,7 +32,7 @@ import {
   rotateClientSecret,
   deleteClient,
 } from '../../src/controllers/oauth-clients.controller.js';
-import { ForbiddenError, ValidationError, NotFoundError } from '../../../../shared/common/errors.js';
+import { ForbiddenError, ValidationError, NotFoundError } from '../../src/iamErrors.js';
 
 describe('oauth-clients.controller unit tests', () => {
   let req, res, next;
@@ -73,6 +76,7 @@ describe('oauth-clients.controller unit tests', () => {
     req.body = {
       name: 'Portal App',
       redirectUris: ['https://portal.iacms.local/callback'],
+      targetAudience: 'https://api.iacms.local',
     };
 
     mockPrisma.oAuthClient.create.mockResolvedValueOnce({
@@ -100,6 +104,25 @@ describe('oauth-clients.controller unit tests', () => {
         clientSecret: expect.any(String),
       })
     );
+  });
+
+  it('binds a client to an active IAM organization', async () => {
+    const organizationId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    req.body = {
+      name: 'New Project',
+      iamOrganizationId: organizationId,
+      redirectUris: ['https://project.example.org/callback'],
+      targetAudience: 'https://api.project.example.org',
+    };
+    mockPrisma.iamOrganization.findUnique.mockResolvedValueOnce({ id: organizationId, isActive: true });
+    mockPrisma.oAuthClient.create.mockResolvedValueOnce({ id: 'client-1', iamOrganizationId: organizationId });
+
+    await createClient(req, res, next);
+
+    expect(mockPrisma.oAuthClient.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ iamOrganizationId: organizationId }),
+    }));
+    expect(res.status).toHaveBeenCalledWith(201);
   });
 
   it('fails client creation if name is missing', async () => {

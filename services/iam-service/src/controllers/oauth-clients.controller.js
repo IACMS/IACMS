@@ -11,12 +11,14 @@
 import crypto from 'crypto';
 import prisma from '../config/database.js';
 import { encryptClientSecret } from '../oauth/client-secret.utils.js';
-import { ValidationError, NotFoundError, ForbiddenError } from '../../../../shared/common/errors.js';
-import Logger from '../../../../shared/common/logger.js';
+import { ValidationError, NotFoundError, ForbiddenError } from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
+import { legacyOrganizationSystem } from '../legacyOrganizationSystem.js';
 
 const logger = new Logger('iam-oauth-clients');
 
 async function assertPlatformAdmin(req) {
+  if (req.iamAdminAuthorized === true) return;
   const perms = req.headers['x-user-permissions'] || '';
   if (perms.includes('platform:manage_tenants') || perms.includes('*') || perms.includes('admin:*')) {
     return;
@@ -46,6 +48,7 @@ export async function listClients(req, res, next) {
         clientId: true,
         name: true,
         tenantId: true,
+        iamOrganizationId: true,
         redirectUris: true,
         grantTypes: true,
         responseTypes: true,
@@ -74,6 +77,7 @@ export async function createClient(req, res, next) {
     const {
       name,
       tenantId,
+      iamOrganizationId,
       redirectUris = [],
       grantTypes = ['authorization_code'],
       responseTypes = ['code'],
@@ -83,11 +87,41 @@ export async function createClient(req, res, next) {
     } = req.body ?? {};
 
     if (!name) throw new ValidationError('name is required');
+    if (iamOrganizationId !== undefined && iamOrganizationId !== null) {
+      if (typeof iamOrganizationId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(iamOrganizationId)) {
+        throw new ValidationError('iamOrganizationId must be a UUID');
+      }
+      const organization = await prisma.iamOrganization.findUnique({
+        where: { id: iamOrganizationId },
+        select: { id: true, isActive: true, externalSystem: true, externalId: true },
+      });
+      if (!organization) throw new NotFoundError('IAM organization');
+      if (!organization.isActive) throw new ValidationError('Cannot bind an OAuth client to an inactive IAM organization');
+      if (tenantId && (organization.externalSystem !== legacyOrganizationSystem() || organization.externalId !== tenantId)) {
+        throw new ValidationError('tenantId and iamOrganizationId must refer to the same mapped organization');
+      }
+    }
+    if (typeof targetAudience !== 'string' || !targetAudience.trim()) {
+      throw new ValidationError('targetAudience is required for new OAuth clients');
+    }
+    try {
+      const parsedAudience = new URL(targetAudience.trim());
+      if (!['https:', 'http:'].includes(parsedAudience.protocol)) throw new Error('unsupported protocol');
+      if (process.env.NODE_ENV === 'production' && parsedAudience.protocol !== 'https:') {
+        throw new Error('HTTPS is required in production');
+      }
+    } catch {
+      throw new ValidationError('targetAudience must be an absolute HTTP(S) URI; use HTTPS in production');
+    }
+    if (tokenEndpointAuthMethod === 'none' && grantTypes.includes('client_credentials')) {
+      throw new ValidationError('Public clients cannot use the client_credentials grant');
+    }
 
-    // Generate a random client_id and secret
-    const clientId = `iacms_${crypto.randomBytes(16).toString('hex')}`;
-    const plainSecret = crypto.randomBytes(32).toString('hex');
-    const clientSecretCiphertext = encryptClientSecret(plainSecret);
+    // Public clients (SPA/native) do not have secrets. Confidential clients receive
+    // a secret once at registration; only its encrypted form is persisted.
+    const clientId = `iam_${crypto.randomBytes(16).toString('hex')}`;
+    const plainSecret = tokenEndpointAuthMethod === 'none' ? null : crypto.randomBytes(32).toString('hex');
+    const clientSecretCiphertext = plainSecret ? encryptClientSecret(plainSecret) : null;
 
     const client = await prisma.oAuthClient.create({
       data: {
@@ -95,6 +129,7 @@ export async function createClient(req, res, next) {
         clientSecretCiphertext,
         name,
         tenantId: tenantId ?? null,
+        iamOrganizationId: iamOrganizationId ?? null,
         redirectUris,
         grantTypes,
         responseTypes,
@@ -107,6 +142,7 @@ export async function createClient(req, res, next) {
         clientId: true,
         name: true,
         tenantId: true,
+        iamOrganizationId: true,
         redirectUris: true,
         grantTypes: true,
         responseTypes: true,
@@ -121,7 +157,7 @@ export async function createClient(req, res, next) {
     logger.info('OAuth client created', { clientId, name, createdBy: req.headers['x-user-id'] });
 
     // Return the plaintext secret ONCE — it cannot be recovered after this
-    res.status(201).json({ client, clientSecret: plainSecret });
+    res.status(201).json({ client, ...(plainSecret ? { clientSecret: plainSecret } : {}) });
   } catch (err) {
     next(err);
   }
@@ -140,6 +176,7 @@ export async function getClient(req, res, next) {
         clientId: true,
         name: true,
         tenantId: true,
+        iamOrganizationId: true,
         redirectUris: true,
         grantTypes: true,
         responseTypes: true,
@@ -173,11 +210,48 @@ export async function updateClient(req, res, next) {
       scope,
       tokenEndpointAuthMethod,
       targetAudience,
+      iamOrganizationId,
       isActive,
     } = req.body ?? {};
 
-    const existing = await prisma.oAuthClient.findUnique({ where: { id: req.params.id } });
+    const existing = await prisma.oAuthClient.findUnique({
+      where: { id: req.params.id },
+      select: { id: true, clientId: true, tenantId: true },
+    });
     if (!existing) throw new NotFoundError('OAuth client');
+
+    if (targetAudience !== undefined) {
+      if (typeof targetAudience !== 'string' || !targetAudience.trim()) {
+        throw new ValidationError('targetAudience cannot be empty');
+      }
+      try {
+        const parsedAudience = new URL(targetAudience.trim());
+        if (!['https:', 'http:'].includes(parsedAudience.protocol)) throw new Error('unsupported protocol');
+        if (process.env.NODE_ENV === 'production' && parsedAudience.protocol !== 'https:') {
+          throw new Error('HTTPS is required in production');
+        }
+      } catch {
+        throw new ValidationError('targetAudience must be an absolute HTTP(S) URI; use HTTPS in production');
+      }
+    }
+
+    if (iamOrganizationId !== undefined && iamOrganizationId !== null) {
+      if (typeof iamOrganizationId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(iamOrganizationId)) {
+        throw new ValidationError('iamOrganizationId must be a UUID');
+      }
+      const organization = await prisma.iamOrganization.findUnique({
+        where: { id: iamOrganizationId },
+        select: { id: true, isActive: true, externalSystem: true, externalId: true },
+      });
+      if (!organization) throw new NotFoundError('IAM organization');
+      if (!organization.isActive) throw new ValidationError('Cannot bind an OAuth client to an inactive IAM organization');
+      if (existing.tenantId && (
+        organization.externalSystem !== legacyOrganizationSystem() ||
+        organization.externalId !== existing.tenantId
+      )) {
+        throw new ValidationError('tenantId and iamOrganizationId must refer to the same mapped organization');
+      }
+    }
 
     const client = await prisma.oAuthClient.update({
       where: { id: req.params.id },
@@ -189,6 +263,7 @@ export async function updateClient(req, res, next) {
         ...(scope !== undefined ? { scope } : {}),
         ...(tokenEndpointAuthMethod !== undefined ? { tokenEndpointAuthMethod } : {}),
         ...(targetAudience !== undefined ? { targetAudience: targetAudience || null } : {}),
+        ...(iamOrganizationId !== undefined ? { iamOrganizationId } : {}),
         ...(isActive !== undefined ? { isActive } : {}),
       },
       select: {
@@ -196,6 +271,7 @@ export async function updateClient(req, res, next) {
         clientId: true,
         name: true,
         tenantId: true,
+        iamOrganizationId: true,
         redirectUris: true,
         grantTypes: true,
         responseTypes: true,

@@ -119,6 +119,5 @@ describe('oidc.config provider initialization and JWT customizer tests', () => {
     expect(decoded.tenant_id).toBe('tenant-uuid-42');
     expect(decoded.tenant_code).toBe('TENANT42');
     expect(decoded.roles).toEqual(['role-admin']);
-    expect(decoded.department_id).toBe('dept-uuid-1');
   });
 });

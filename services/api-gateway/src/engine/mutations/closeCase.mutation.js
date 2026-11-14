@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { NotFoundError, BusinessRuleViolationError } from '../../../../../shared/common/errors.js';
+import { requireApiKeyActor } from './apiKeyActor.js';
 
 /**
  * closeCase mutation
@@ -20,13 +21,7 @@ export const requiredScope = 'cases:update';
 
 export async function execute(data, context) {
   const { tenantId, apiKeyId, prisma } = context;
-
-  // Resolve the actor user for the history entry
-  const apiKey = await prisma.apiKey.findUnique({
-    where: { id: apiKeyId },
-    select: { createdBy: true },
-  });
-  const actorUserId = apiKey.createdBy;
+  const actorUserId = requireApiKeyActor(context);
 
   return await prisma.$transaction(async (tx) => {
     // 1. Load case — must belong to caller's tenant and not be soft-deleted

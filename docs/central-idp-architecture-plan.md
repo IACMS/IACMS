@@ -1,5 +1,8 @@
 # Strategic Blueprint: Central Multi-Project Identity Provider (IdP) & IAM Architecture
 
+> For the repository's current extraction status, ownership boundaries, phases, and acceptance criteria, see [IAM extraction roadmap](IAM_EXTRACTION_ROADMAP.md). This blueprint describes the target multi-project behavior; it is not evidence that IAM has already been extracted into an independent deployment.
+> For the client-facing protocol details, see the [OIDC integration contract](OIDC_INTEGRATION_CONTRACT.md).
+
 ## Executive Summary & Vision
 
 The objective is to establish the `iam-service` as an enterprise-grade, centralized **Identity Provider (IdP) and OAuth 2.0 / OpenID Connect (OIDC) Authorization Server**. 

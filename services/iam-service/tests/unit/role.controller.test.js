@@ -41,7 +41,7 @@ vi.mock('../../src/config/database.js', () => {
 
 import prisma from '../../src/config/database.js';
 import { getRoles, getRole, createRole, updateRole, deleteRole } from '../../src/controllers/role.controller.js';
-import { ValidationError, NotFoundError } from '../../../../shared/common/errors.js';
+import { ValidationError, NotFoundError } from '../../src/iamErrors.js';
 
 describe('Role Controller', () => {
   let req, res, next;

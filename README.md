@@ -142,7 +142,11 @@ Expected:
 
 ## Authentication
 
+The IAM service is being prepared for use as a central OIDC provider by IACMS and future applications. The extraction is in progress; see the [IAM extraction roadmap](docs/IAM_EXTRACTION_ROADMAP.md) for current boundaries and migration phases, and the [central IdP blueprint](docs/central-idp-architecture-plan.md) for the target integration design.
+
 The system supports **two authentication methods**:
+
+For the central IAM's supported client flows, token rules, audiences, and claims, see the [OIDC integration contract](docs/OIDC_INTEGRATION_CONTRACT.md).
 
 ### Session Auth (Web Browsers)
 ```

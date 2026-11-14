@@ -12,8 +12,8 @@ vi.mock('../../src/config/database.js', () => {
       workflowStep: {
         findFirst: vi.fn(),
       },
-      user: {
-        findFirst: vi.fn(),
+      identityProjection: {
+        findUnique: vi.fn(),
       },
     },
   };
@@ -81,7 +81,7 @@ describe('Attachment Controller', () => {
       };
       
       assertCaseMutable.mockResolvedValue({ id: 'c-1', workflowId: 'wf-1', currentStepId: null });
-      prisma.user.findFirst.mockResolvedValue({ id: 'u-1', tenantId: 't-1', isActive: true });
+      prisma.identityProjection.findUnique.mockResolvedValue({ subjectId: 'u-1', isActive: true });
       prisma.caseAttachment.create.mockResolvedValue({ id: 'att-1', ...req.body });
 
       await uploadAttachment(req, res, next);

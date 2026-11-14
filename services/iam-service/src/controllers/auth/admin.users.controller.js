@@ -4,13 +4,14 @@ import {
   NotFoundError,
   ConflictError,
   ForbiddenError,
-} from '../../../../../shared/common/errors.js';
-import Logger from '../../../../../shared/common/logger.js';
-import { TOPICS } from '../../../../../shared/utils/eventBus.js';
+} from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
+import { TOPICS } from '#iam/iamEventBus.js';
 import { validateUpdateUserRequest } from '../../utils/validators.js';
 import { getEventBus } from '../../utils/auth.helpers.js';
 import { allGlobalTenantAdminRoleIds } from '../../utils/globalTenantAdminRole.js';
 import { withAuditClient } from '../../utils/audit.helpers.js';
+import { enqueueIdentitySnapshot } from '../../identityEvents.js';
 
 const logger = new Logger('auth-service');
 
@@ -39,10 +40,6 @@ export async function listUsers(req, res, next) {
           email: true,
           firstName: true,
           lastName: true,
-          departmentId: true,
-          department: {
-            select: { id: true, code: true, name: true },
-          },
           isActive: true,
           lastLogin: true,
           createdAt: true,
@@ -59,8 +56,6 @@ export async function listUsers(req, res, next) {
       email: u.email,
       firstName: u.firstName,
       lastName: u.lastName,
-      departmentId: u.departmentId ?? null,
-      department: u.department ?? null,
       isActive: u.isActive,
       lastLogin: u.lastLogin,
       createdAt: u.createdAt,
@@ -133,7 +128,7 @@ export async function updateUser(req, res, next) {
 
     const existing = await prisma.user.findFirst({
       where: { id, tenantId },
-      select: { id: true, firstName: true, lastName: true, email: true, phone: true, isActive: true, departmentId: true },
+      select: { id: true, firstName: true, lastName: true, email: true, phone: true, isActive: true },
     });
     if (!existing) throw new NotFoundError('User not found');
 
@@ -142,14 +137,6 @@ export async function updateUser(req, res, next) {
         where: { tenantId, email: fields.email, id: { not: id } },
       });
       if (conflict) throw new ConflictError('Email is already in use within this tenant');
-    }
-
-    // Validate departmentId belongs to the same tenant if provided
-    if (fields.departmentId) {
-      const dept = await prisma.department.findFirst({
-        where: { id: fields.departmentId, tenantId, isActive: true },
-      });
-      if (!dept) throw new NotFoundError('Department not found in this tenant');
     }
 
     const updated = await prisma.user.update({
@@ -162,8 +149,6 @@ export async function updateUser(req, res, next) {
         lastName: true,
         phone: true,
         isActive: true,
-        departmentId: true,
-        department: { select: { id: true, code: true, name: true } },
       },
     });
 
@@ -176,6 +161,7 @@ export async function updateUser(req, res, next) {
     }
 
     const bus = getEventBus();
+    await enqueueIdentitySnapshot(updated.id);
     if (bus) {
       bus.publish(TOPICS.USER_UPDATED, { userId: id, tenantId, action: 'updated', fields: keys })
         .catch(err => logger.warn('Failed to publish user.updated event', { error: err.message }));
@@ -336,6 +322,7 @@ export async function deactivateUser(req, res, next) {
     }
 
     await prisma.user.update({ where: { id }, data: { isActive: false } });
+    await enqueueIdentitySnapshot(id);
 
     const bus = getEventBus();
     if (bus) {
@@ -384,6 +371,7 @@ export async function reactivateUser(req, res, next) {
     if (!user) throw new NotFoundError('User not found');
 
     await prisma.user.update({ where: { id }, data: { isActive: true } });
+    await enqueueIdentitySnapshot(id);
 
     const bus = getEventBus();
     if (bus) {
@@ -450,6 +438,7 @@ export async function deleteUser(req, res, next) {
         isActive: false,
       },
     });
+    await enqueueIdentitySnapshot(id, 'deleted');
 
     const bus = getEventBus();
     if (bus) {

@@ -12,10 +12,19 @@ import {
   rotateApiKey,
   revokeApiKey,
   getScopes,
+  validateApiKeyInternal,
+  resolveApiKeyOwnerInternal,
 } from '../controllers/api-keys.controller.js';
 import { authenticateToken } from '../middleware/auth.middleware.js';
+import { requireInternalRequest } from '#iam/iamRequireInternalRequest.js';
 
 const router = Router();
+
+// Service-to-service endpoints are protected by the internal token and must be
+// registered before the human-session middleware below.
+const requireGatewayToken = requireInternalRequest({ skipPaths: [] });
+router.post('/validate', requireGatewayToken, validateApiKeyInternal);
+router.post('/internal/resolve-owner', requireGatewayToken, resolveApiKeyOwnerInternal);
 
 router.use(authenticateToken);
 

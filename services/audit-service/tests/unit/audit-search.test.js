@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { buildAuditSearchOr } from '../../src/controllers/audit.controller.js';
 
 describe('buildAuditSearchOr', () => {
-  it('includes text fields for generic search', () => {
+  it('searches audit text fields without joining IAM user records', () => {
     const or = buildAuditSearchOr('case');
     expect(or).toEqual(
       expect.arrayContaining([
         { action: { contains: 'case', mode: 'insensitive' } },
         { entityType: { contains: 'case', mode: 'insensitive' } },
-        { user: { email: { contains: 'case', mode: 'insensitive' } } },
       ]),
     );
+    expect(or.some((clause) => 'user' in clause)).toBe(false);
     expect(or.some((clause) => 'entityId' in clause)).toBe(false);
   });
 

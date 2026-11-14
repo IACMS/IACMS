@@ -5,7 +5,24 @@
  * Pattern mirrors phase3.e2e.mocked.test.js — no real DB or network needed.
  */
 
-import { vi as jest, describe, it, expect, beforeEach } from 'vitest';
+import { vi, vi as jest, describe, it, expect, beforeEach } from 'vitest';
+import { createIamUser, setIamIdentityActive, updateIamIdentity } from '../../src/services/iamIdentity.service.js';
+
+vi.mock('../../src/services/iamIdentity.service.js', () => ({
+  createIamUser: jest.fn().mockResolvedValue({
+    id: 'user-new', email: 'new@agency.gov', firstName: 'Jane', lastName: 'Doe',
+    username: 'jdoe_a1b2c3', mustChangePassword: true,
+  }),
+  setIamIdentityActive: jest.fn().mockResolvedValue({}),
+  updateIamIdentity: jest.fn().mockImplementation(({ userId, fields }) => Promise.resolve({
+    id: userId,
+    email: 'x@y.com',
+    firstName: fields.firstName || 'Old',
+    lastName: fields.lastName || 'Name',
+    phone: fields.phone || null,
+    updatedAt: new Date(),
+  })),
+}));
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -14,6 +31,7 @@ function makeContext(overrides = {}) {
   return {
     tenantId: 'tenant-aaa',
     apiKeyId: 'key-111',
+    apiKeyOwnerId: 'user-actor',
     sourceIp: '127.0.0.1',
     requestId: 'req-test',
     scopes: ['cases:update', 'users:create', 'users:update'],
@@ -34,11 +52,9 @@ function makePrisma(shape = {}) {
     caseHistory: {
       create: jest.fn().mockResolvedValue({}),
     },
-    user: {
+    identityProjection: {
       findUnique: jest.fn(),
-      findFirst: jest.fn(),
       update: jest.fn(),
-      create: jest.fn(),
     },
     department: {
       findFirst: jest.fn(),
@@ -154,7 +170,7 @@ describe('closeCase mutation', () => {
     const txMock = {
       case: {
         findFirst: jest.fn().mockResolvedValue(fakeCase),
-        update: jest.fn().mockResolvedValue({}),
+        update: jest.fn(),
       },
       caseHistory: { create: jest.fn().mockResolvedValue({}) },
     };
@@ -200,25 +216,21 @@ describe('inviteUser mutation', () => {
   let execute;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const mod = await import('../../src/engine/mutations/inviteUser.mutation.js');
     execute = mod.execute;
   });
 
   it('creates a user with mustChangePassword true', async () => {
-    const newUser = {
-      id: 'user-new', email: 'new@agency.gov',
-      firstName: 'Jane', lastName: 'Doe',
-      username: 'jdoe_a1b2c3',
-      createdAt: new Date(),
-    };
     const txMock = {
-      user: {
-        findUnique: jest.fn().mockResolvedValue(null),
-        create: jest.fn().mockResolvedValue(newUser),
+      $executeRaw: jest.fn(),
+      identityProjection: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        upsert: jest.fn().mockResolvedValue({}),
       },
       department: { findFirst: jest.fn() },
       role: { findUnique: jest.fn() },
-      userRole: { create: jest.fn() },
+      userRole: { create: jest.fn().mockResolvedValue({}) },
     };
     const prisma = {
       $transaction: jest.fn((cb) => cb(txMock)),
@@ -232,14 +244,16 @@ describe('inviteUser mutation', () => {
 
     expect(result.mustChangePassword).toBe(true);
     expect(result.email).toBe('new@agency.gov');
-    expect(txMock.user.create).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ mustChangePassword: true, isActive: true }),
+    expect(createIamUser).toHaveBeenCalledWith(expect.objectContaining({
+      actorId: 'user-actor', tenantId: 'tenant-aaa',
     }));
+    expect(txMock.identityProjection.upsert).toHaveBeenCalled();
   });
 
   it('rejects when email already exists in tenant', async () => {
     const txMock = {
-      user: { findUnique: jest.fn().mockResolvedValue({ id: 'existing-user' }) },
+      $executeRaw: jest.fn(),
+      identityProjection: { findFirst: jest.fn().mockResolvedValue({ subjectId: 'existing-user' }) },
       department: { findFirst: jest.fn() },
       role: { findUnique: jest.fn() },
       userRole: { create: jest.fn() },
@@ -251,14 +265,16 @@ describe('inviteUser mutation', () => {
       { email: 'existing@agency.gov', firstName: 'A', lastName: 'B' },
       ctx,
     )).rejects.toThrow(/already exists/i);
+    expect(createIamUser).not.toHaveBeenCalled();
   });
 
   it('blocks assignment of a system role', async () => {
     const txMock = {
-      user: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn() },
+      $executeRaw: jest.fn(),
+      identityProjection: { findFirst: jest.fn().mockResolvedValue(null) },
       department: { findFirst: jest.fn() },
       role: { findUnique: jest.fn().mockResolvedValue({
-        id: 'sys-role', tenantId: 'tenant-aaa', isSystemRole: true,
+        id: 'sys-role', tenantId: 'tenant-aaa', isSystemRole: true, isActive: true,
       }) },
       userRole: { create: jest.fn() },
     };
@@ -278,6 +294,7 @@ describe('deactivateUser mutation', () => {
   let execute;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const mod = await import('../../src/engine/mutations/deactivateUser.mutation.js');
     execute = mod.execute;
   });
@@ -285,12 +302,11 @@ describe('deactivateUser mutation', () => {
   it('deactivates an active user', async () => {
     const prisma = {
       apiKey: { findUnique: jest.fn().mockResolvedValue({ createdBy: 'user-actor' }) },
-      user: {
-        findFirst: jest.fn().mockResolvedValue({
-          id: 'user-x', email: 'x@y.com',
+      identityProjection: {
+        findUnique: jest.fn().mockResolvedValue({
+          subjectId: 'user-x', email: 'x@y.com',
           firstName: 'X', lastName: 'Y', isActive: true,
         }),
-        update: jest.fn().mockResolvedValue({}),
       },
     };
 
@@ -298,33 +314,31 @@ describe('deactivateUser mutation', () => {
     const result = await execute({ userId: 'user-x' }, ctx);
 
     expect(result.isActive).toBe(false);
-    expect(prisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
-      data: { isActive: false },
-    }));
+    expect(setIamIdentityActive).toHaveBeenCalledWith({ userId: 'user-x', tenantId: 'tenant-aaa', isActive: false });
+    expect(prisma.identityProjection.findUnique).toHaveBeenCalled();
   });
 
   it('blocks self-deactivation (key owner)', async () => {
     const prisma = {
       apiKey: { findUnique: jest.fn().mockResolvedValue({ createdBy: 'user-actor' }) },
-      user: { findFirst: jest.fn(), update: jest.fn() },
+      identityProjection: { findUnique: jest.fn() },
     };
 
     const ctx = { ...makeContext(), prisma };
     // userId === createdBy → should throw ForbiddenError
     await expect(execute({ userId: 'user-actor' }, ctx))
       .rejects.toThrow(/cannot deactivate/i);
-    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(setIamIdentityActive).not.toHaveBeenCalled();
   });
 
   it('returns idempotent message if already inactive', async () => {
     const prisma = {
       apiKey: { findUnique: jest.fn().mockResolvedValue({ createdBy: 'user-actor' }) },
-      user: {
-        findFirst: jest.fn().mockResolvedValue({
-          id: 'user-x', email: 'x@y.com',
+      identityProjection: {
+        findUnique: jest.fn().mockResolvedValue({
+          subjectId: 'user-x', email: 'x@y.com',
           firstName: 'X', lastName: 'Y', isActive: false,
         }),
-        update: jest.fn(),
       },
     };
 
@@ -332,7 +346,7 @@ describe('deactivateUser mutation', () => {
     const result = await execute({ userId: 'user-x' }, ctx);
 
     expect(result.isActive).toBe(false);
-    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(setIamIdentityActive).not.toHaveBeenCalled();
   });
 });
 
@@ -342,6 +356,7 @@ describe('updateUser mutation', () => {
   let execute, schema;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const mod = await import('../../src/engine/mutations/updateUser.mutation.js');
     execute = mod.execute;
     schema = mod.schema;
@@ -349,16 +364,11 @@ describe('updateUser mutation', () => {
 
   it('updates firstName and lastName', async () => {
     const prisma = {
-      user: {
-        findFirst: jest.fn().mockResolvedValue({
-          id: 'user-x', firstName: 'Old', lastName: 'Name', email: 'x@y.com',
+      identityProjection: {
+        findUnique: jest.fn().mockResolvedValue({
+          subjectId: 'user-x', firstName: 'Old', lastName: 'Name', email: 'x@y.com', phone: null, projectedAt: new Date(),
         }),
-        update: jest.fn().mockResolvedValue({
-          id: 'user-x', email: 'x@y.com',
-          firstName: 'New', lastName: 'Name',
-          phone: null,
-          updatedAt: new Date(),
-        }),
+        update: jest.fn(),
       },
       department: { findFirst: jest.fn() },
     };
@@ -370,9 +380,8 @@ describe('updateUser mutation', () => {
     );
 
     expect(result.updatedFields).toContain('firstName');
-    expect(prisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ firstName: 'New' }),
-    }));
+    expect(updateIamIdentity).toHaveBeenCalledWith({ userId: 'user-x', tenantId: 'tenant-aaa', fields: { firstName: 'New' } });
+    expect(prisma.identityProjection.update).not.toHaveBeenCalled();
   });
 
   it('rejects schema when only userId is provided', () => {
@@ -382,9 +391,9 @@ describe('updateUser mutation', () => {
 
   it('throws ValidationError for unknown departmentCode', async () => {
     const prisma = {
-      user: {
-        findFirst: jest.fn().mockResolvedValue({
-          id: 'user-x', firstName: 'A', lastName: 'B', email: 'x@y.com',
+      identityProjection: {
+        findUnique: jest.fn().mockResolvedValue({
+          subjectId: 'user-x', firstName: 'A', lastName: 'B', email: 'x@y.com', phone: null, projectedAt: new Date(),
         }),
         update: jest.fn(),
       },
@@ -396,6 +405,6 @@ describe('updateUser mutation', () => {
       { userId: 'user-x', departmentCode: 'GHOST-DEPT' },
       ctx,
     )).rejects.toThrow(/not found/i);
-    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(prisma.identityProjection.update).not.toHaveBeenCalled();
   });
 });

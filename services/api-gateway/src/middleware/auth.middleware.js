@@ -144,9 +144,12 @@ export async function validateJwtToken(token) {
         tenantCode: payload.tenant_code,
         departmentId: payload.department_id ?? null,
         email: payload.email,
-        roles: Array.isArray(payload.roles) ? payload.roles : (payload.roles ? [payload.roles] : []),
+        roles: Array.isArray(payload.role_ids)
+          ? payload.role_ids
+          : (Array.isArray(payload.roles) ? payload.roles : (payload.roles ? [payload.roles] : [])),
         scopes: payload.scope ? payload.scope.split(' ') : [],
         apiKeyId: payload.api_key_id ?? null,
+        apiKeyOwnerId: payload.api_key_owner_id ?? null,
         mustChangePassword: false,
       };
 
@@ -280,6 +283,7 @@ export async function authenticate(req, res, next) {
             keyId: decoded.apiKeyId,
             scopes: decoded.scopes,
             tenantId: decoded.tenantId,
+            createdBy: decoded.apiKeyOwnerId,
           };
           req.headers['x-api-key-id'] = decoded.apiKeyId;
           req.headers['x-api-key-scopes'] = decoded.scopes.join(',');
@@ -341,6 +345,7 @@ export async function authenticate(req, res, next) {
         scopes: keyData.scopes,
         tenantId: keyData.tenantId,
         tenantCode: keyData.tenantCode,
+        createdBy: keyData.createdBy,
       };
 
       setUserHeaders(req, req.user);
@@ -349,6 +354,14 @@ export async function authenticate(req, res, next) {
 
       return next();
     } catch (error) {
+      if (error.statusCode >= 500) {
+        return res.status(503).json({
+          error: {
+            code: 'IAM_UNAVAILABLE',
+            message: 'API key validation is temporarily unavailable.',
+          },
+        });
+      }
       return res.status(401).json({
         error: {
           code: 'INVALID_API_KEY',

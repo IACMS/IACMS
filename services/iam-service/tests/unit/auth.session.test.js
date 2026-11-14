@@ -47,7 +47,7 @@ vi.mock('../../src/utils/audit.helpers.js', () => ({
 
 import prisma from '../../src/config/database.js';
 import { refreshToken, logout } from '../../src/controllers/auth/auth.session.controller.js';
-import { ValidationError, UnauthorizedError } from '../../../../shared/common/errors.js';
+import { ValidationError, UnauthorizedError } from '../../src/iamErrors.js';
 
 const JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
 

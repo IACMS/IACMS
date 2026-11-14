@@ -6,10 +6,10 @@
 
 import crypto from 'crypto';
 import prisma from '../config/database.js';
-import { ValidationError, NotFoundError, ForbiddenError } from '../../../../shared/common/errors.js';
-import Logger from '../../../../shared/common/logger.js';
+import { ValidationError, NotFoundError, ForbiddenError, UnauthorizedError } from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
 import { getEventBus } from '../utils/auth.helpers.js';
-import { TOPICS } from '../../../../shared/utils/eventBus.js';
+import { TOPICS } from '#iam/iamEventBus.js';
 
 const logger = new Logger('iam-api-keys');
 
@@ -27,11 +27,14 @@ function getCallerContext(req) {
   return { tenantId, userId };
 }
 
-export const AVAILABLE_SCOPES = [
+const DEFAULT_API_KEY_SCOPES = [
   '*',
+  'api:read',
+  'api:write',
   'cases:read',
   'cases:create',
   'cases:update',
+  'cases:write',
   'referrals:read',
   'referrals:create',
   'workflows:read',
@@ -41,10 +44,80 @@ export const AVAILABLE_SCOPES = [
   'departments:read',
   'metrics:read',
 ];
+export const AVAILABLE_SCOPES = (process.env.IAM_API_KEY_SCOPES || DEFAULT_API_KEY_SCOPES.join(','))
+  .split(/[\s,]+/).map((scope) => scope.trim()).filter(Boolean);
+const API_KEY_PREFIX = process.env.IAM_API_KEY_PREFIX || 'iacms_live_';
+
+function validateRequestedScopes(scopes) {
+  if (!Array.isArray(scopes) || scopes.some((scope) => typeof scope !== 'string')) {
+    throw new ValidationError('scopes must be an array of strings');
+  }
+  const unknown = scopes.filter((scope) => !AVAILABLE_SCOPES.includes(scope));
+  if (unknown.length) throw new ValidationError(`Unsupported API key scope: ${unknown.join(', ')}`);
+}
 
 export async function getScopes(req, res, next) {
   try {
     res.json({ scopes: AVAILABLE_SCOPES });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Internal gateway validation endpoint. The gateway sends only the SHA-256
+ * verifier, never the presented raw API key. Route-level internal-token
+ * middleware is applied in api-keys.routes.js.
+ */
+export async function validateApiKeyInternal(req, res, next) {
+  try {
+    const { keyHash, ip } = req.body ?? {};
+    if (typeof keyHash !== 'string' || !/^[a-f0-9]{64}$/i.test(keyHash)) {
+      throw new ValidationError('A SHA-256 API key hash is required');
+    }
+
+    const apiKey = await prisma.apiKey.findUnique({
+      where: { keyHash },
+      include: { tenant: { select: { isActive: true, code: true } } },
+    });
+    if (!apiKey) throw new UnauthorizedError('Invalid API key');
+    if (!apiKey.isActive || apiKey.revokedAt) throw new UnauthorizedError('API key is revoked or inactive');
+    if (apiKey.expiresAt && apiKey.expiresAt <= new Date()) throw new UnauthorizedError('API key has expired');
+    if (!apiKey.tenant?.isActive) throw new UnauthorizedError('Tenant is inactive');
+
+    prisma.apiKey.update({
+      where: { id: apiKey.id },
+      data: { lastUsedAt: new Date(), lastUsedIp: typeof ip === 'string' ? ip.slice(0, 64) : null },
+    }).catch((error) => logger.warn('Failed to update API key last usage', { apiKeyId: apiKey.id, error: error.message }));
+
+    res.json({
+      apiKey: {
+        id: apiKey.id,
+        tenantId: apiKey.tenantId,
+        tenantCode: apiKey.tenant.code,
+        name: apiKey.name,
+        scopes: apiKey.scopes,
+        createdBy: apiKey.createdBy,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** Internal compatibility endpoint for API-key JWTs issued before owner claims. */
+export async function resolveApiKeyOwnerInternal(req, res, next) {
+  try {
+    const { apiKeyId, tenantId } = req.body ?? {};
+    if (typeof apiKeyId !== 'string' || typeof tenantId !== 'string') {
+      throw new ValidationError('API key and tenant identifiers are required');
+    }
+    const apiKey = await prisma.apiKey.findFirst({
+      where: { id: apiKeyId, tenantId },
+      select: { createdBy: true },
+    });
+    if (!apiKey) throw new NotFoundError('API key');
+    res.json({ apiKeyContext: { createdBy: apiKey.createdBy } });
   } catch (err) {
     next(err);
   }
@@ -60,10 +133,11 @@ export async function createApiKey(req, res, next) {
     if (!name || typeof name !== 'string' || !name.trim()) {
       throw new ValidationError('name is required for the API key');
     }
+    validateRequestedScopes(scopes);
 
     // Generate secure opaque API key with distinctive prefix
     const rawSecret = crypto.randomBytes(24).toString('hex');
-    const rawKey = `iacms_live_${rawSecret}`;
+    const rawKey = `${API_KEY_PREFIX}${rawSecret}`;
     const keyPrefix = rawKey.substring(0, 20);
     const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
 
@@ -204,6 +278,8 @@ export async function getApiKey(req, res, next) {
 export async function rotateApiKey(req, res, next) {
   try {
     const { tenantId, userId } = getCallerContext(req);
+    const { scopes } = req.body ?? {};
+    if (scopes !== undefined) validateRequestedScopes(scopes);
 
     const existing = await prisma.apiKey.findFirst({
       where: { id: req.params.id, tenantId },
@@ -216,32 +292,43 @@ export async function rotateApiKey(req, res, next) {
 
     // Generate new secret
     const rawSecret = crypto.randomBytes(24).toString('hex');
-    const rawKey = `iacms_live_${rawSecret}`;
+    const rawKey = `${API_KEY_PREFIX}${rawSecret}`;
     const keyPrefix = rawKey.substring(0, 20);
     const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
 
-    const updated = await prisma.apiKey.update({
-      where: { id: existing.id },
-      data: {
-        keyPrefix,
-        keyHash,
-        lastUsedAt: null,
-        lastUsedIp: null,
-      },
-      select: {
-        id: true,
-        tenantId: true,
-        name: true,
-        keyPrefix: true,
-        scopes: true,
-        isActive: true,
-        expiresAt: true,
-        updatedAt: true,
-      },
+    const created = await prisma.$transaction(async (tx) => {
+      const revoked = await tx.apiKey.updateMany({
+        where: { id: existing.id, tenantId, isActive: true, revokedAt: null },
+        data: { isActive: false, revokedAt: new Date(), revokedBy: userId },
+      });
+      if (revoked.count !== 1) throw new ValidationError('API key changed while rotation was in progress');
+      return tx.apiKey.create({
+        data: {
+          tenantId,
+          name: existing.name,
+          keyPrefix,
+          keyHash,
+          scopes: scopes ?? existing.scopes,
+          expiresAt: existing.expiresAt,
+          createdBy: userId,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          tenantId: true,
+          name: true,
+          keyPrefix: true,
+          scopes: true,
+          isActive: true,
+          expiresAt: true,
+          createdAt: true,
+        },
+      });
     });
 
     logger.info('API key rotated', {
-      apiKeyId: updated.id,
+      apiKeyId: created.id,
+      rotatedFrom: existing.id,
       tenantId,
       rotatedBy: userId,
       keyPrefix,
@@ -252,18 +339,19 @@ export async function rotateApiKey(req, res, next) {
       bus.publish(TOPICS.AUDIT_LOG, {
         tenantId,
         entityType: 'api_key',
-        entityId: updated.id,
+      entityId: created.id,
         action: 'api_key.rotated',
         userId,
         metadata: {
           keyPrefix,
+        rotatedFrom: existing.id,
         },
       }).catch(() => {});
     }
 
     res.json({
       message: 'API key successfully rotated.',
-      apiKey: updated,
+      apiKey: created,
       rawKey,
       warning: 'Store this new raw API key securely. It cannot be displayed again.',
     });

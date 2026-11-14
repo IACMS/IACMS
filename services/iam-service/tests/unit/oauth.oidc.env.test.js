@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { loadJwks } from '../../src/oauth/oidc.config.js';
+import { loadJwks } from '../../src/oauth/jwks.js';
 
 describe('OIDC JWKS and Environment Validation', () => {
   const originalEnv = { ...process.env };

@@ -1,0 +1,14 @@
+# Optional network bridge for an IACMS deployment. IAM keeps its own private
+# PostgreSQL/Redis network and only the IAM service joins the IACMS backplane.
+services:
+  iam-service:
+    networks:
+      iam-private: {}
+      iacms-backplane:
+        aliases:
+          - iam-service
+
+networks:
+  iacms-backplane:
+    external: true
+    name: ${IACMS_DOCKER_NETWORK:-infrastructure_iacms-network}

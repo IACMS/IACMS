@@ -24,7 +24,7 @@ export function attachDownstreamHeaders(proxyReq, req) {
   proxyReq.setHeader('x-must-change-password', req.user.mustChangePassword ? 'true' : 'false');
 
   const roleIds = req.rbacEnvelope?.roleIds;
-  if (Array.isArray(roleIds) && roleIds.length) {
+  if (Array.isArray(roleIds)) {
     proxyReq.setHeader('x-user-roles', roleIds.join(','));
   } else if (req.user.roles?.length) {
     proxyReq.setHeader('x-user-roles', req.user.roles.join(','));

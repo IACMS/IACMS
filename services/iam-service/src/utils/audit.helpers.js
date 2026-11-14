@@ -1,5 +1,5 @@
 /**
- * Canonical audit.log Kafka fields per shared/contracts/audit-event.contract.md
+ * Canonical audit.log Kafka fields consumed by the current IACMS audit service.
  */
 
 /** @param {import('express').Request | undefined | null} req */

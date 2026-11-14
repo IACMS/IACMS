@@ -63,7 +63,7 @@ The repo is an **npm workspace** monorepo: shared code lives under `shared/`, bu
 | Use | Where | Why |
 |-----|--------|-----|
 | **Sessions** | API Gateway | Browser clients use cookies; session state (logged-in user) lives in Redis so any gateway instance can validate the session without hitting Postgres on every request. |
-| **RBAC cache** | API Gateway | Permission lists for a user are cached briefly so every API call does not call rbac-service. |
+| **RBAC cache** | API Gateway | IACMS-local role permissions are cached briefly in Redis; Postgres remains the source of truth. |
 | **Workflow cache** | workflow-service (optional) | Published workflow `full` JSON can be cached for hot reads; if Redis is down, the service falls back to Postgres. |
 
 Redis is **not** the source of truth for cases or workflows — Postgres is. Redis is for **speed** and **ephemeral** or **cacheable** data.

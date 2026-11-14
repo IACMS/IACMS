@@ -3,8 +3,8 @@ import {
   ValidationError,
   NotFoundError,
   ForbiddenError,
-} from '../../../../shared/common/errors.js';
-import { loadUserRoleIdsForUser } from '../../../../shared/utils/userRoles.js';
+} from '#iam/iamErrors.js';
+import { loadUserRoleIdsForUser } from '#iam/iamUserRoles.js';
 
 function parseRoleIdsHeader(headers) {
   const raw = headers['x-user-roles'];

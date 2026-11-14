@@ -67,7 +67,7 @@ function mapAppError(err) {
  * @param {object} context - GraphQL context
  */
 export async function executeMutation(action, input, context) {
-  const { tenantId, apiKeyId, scopes, sourceIp, prisma } = context;
+  const { tenantId, apiKeyId, apiKeyOwnerId, scopes, sourceIp, prisma } = context;
   const requestId = context.requestId ?? `gql_${crypto.randomBytes(5).toString('hex')}`;
   const startTime = Date.now();
 
@@ -99,10 +99,28 @@ export async function executeMutation(action, input, context) {
     });
   }
 
-  // 4. Execute and Write Audit Outbox inside a single Transaction
+  // IAM account creation is an external side effect and cannot participate in
+  // the IACMS PostgreSQL transaction. These handlers commit their local writes
+  // after IAM returns, then record the audit event in a separate DB operation.
   let result;
   try {
-    result = await prisma.$transaction(async (tx) => {
+    if (mutation.externalSideEffect) {
+      const mutationContext = { tenantId, apiKeyId, apiKeyOwnerId, prisma, sourceIp, requestId };
+      result = await mutation.execute(parseResult.data, mutationContext);
+      await prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}::text, true)`;
+        await tx.auditOutbox.create({
+          data: {
+            tenantId,
+            payload: {
+              source: 'partner_api_graphql', apiKeyId, operation: 'mutate', action,
+              data: parseResult.data, result: { success: true }, sourceIp, requestId,
+              timestamp: new Date().toISOString(),
+            },
+          },
+        });
+      });
+    } else result = await prisma.$transaction(async (tx) => {
       // Inject tenant context for RLS
       await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}::text, true)`;
 
@@ -111,7 +129,7 @@ export async function executeMutation(action, input, context) {
       const txWithMock = Object.create(tx);
       txWithMock.$transaction = async (cb) => cb(txWithMock);
 
-      const mutationContext = { tenantId, apiKeyId, prisma: txWithMock, sourceIp, requestId };
+      const mutationContext = { tenantId, apiKeyId, apiKeyOwnerId, prisma: txWithMock, sourceIp, requestId };
       const res = await mutation.execute(parseResult.data, mutationContext);
 
       // Write audit outbox (blocking — ensures transaction aborts if audit fails)

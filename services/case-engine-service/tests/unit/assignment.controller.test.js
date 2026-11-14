@@ -14,8 +14,8 @@ vi.mock('../../src/config/database.js', () => {
         update: vi.fn(),
         updateMany: vi.fn(),
       },
-      user: {
-        findFirst: vi.fn(),
+      identityProjection: {
+        findUnique: vi.fn(),
       },
     },
   };
@@ -82,7 +82,7 @@ describe('Assignment Controller', () => {
     it('assigns a case and publishes event', async () => {
       req.body = { caseId: 'c-1', assignedTo: 'u-2' };
       prisma.case.findFirst.mockResolvedValue({ id: 'c-1', tenantId: 't-1' });
-      prisma.user.findFirst.mockResolvedValue({ id: 'u-2', tenantId: 't-1', isActive: true });
+      prisma.identityProjection.findUnique.mockResolvedValue({ subjectId: 'u-2', isActive: true });
       prisma.assignment.create.mockResolvedValue({ id: 'a-1', caseId: 'c-1', assignedTo: 'u-2', assignmentType: 'manual' });
 
       await assignCase(req, res, next);
@@ -104,7 +104,7 @@ describe('Assignment Controller', () => {
     it('throws ValidationError if assignee missing', async () => {
       req.body = { caseId: 'c-1', assignedTo: 'u-2' };
       prisma.case.findFirst.mockResolvedValue({ id: 'c-1', tenantId: 't-1' });
-      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.identityProjection.findUnique.mockResolvedValue(null);
       await assignCase(req, res, next);
       expect(next).toHaveBeenCalledWith(expect.any(ValidationError));
     });

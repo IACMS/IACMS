@@ -20,8 +20,8 @@ import {
   getActiveProviders,
 } from './social.service.js';
 import { generateTokens } from '../../utils/auth.helpers.js';
-import { ValidationError, UnauthorizedError } from '../../../../../shared/common/errors.js';
-import Logger from '../../../../../shared/common/logger.js';
+import { ValidationError, UnauthorizedError } from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
 
 const logger = new Logger('iam-social-controller');
 

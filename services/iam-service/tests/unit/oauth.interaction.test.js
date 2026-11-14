@@ -41,7 +41,7 @@ import {
   postConsent,
   abortInteraction,
 } from '../../src/oauth/interaction/interaction.controller.js';
-import { ValidationError, UnauthorizedError, ForbiddenError } from '../../../../shared/common/errors.js';
+import { ValidationError, UnauthorizedError } from '../../src/iamErrors.js';
 
 describe('interaction.controller unit tests', () => {
   let req, res, next;
@@ -158,7 +158,7 @@ describe('interaction.controller unit tests', () => {
       req.body = { email: 'user@iacms.org', password: 'correct-pw' };
 
       await postLogin(req, res, next);
-      expect(next).toHaveBeenCalledWith(expect.any(ForbiddenError));
+      expect(next).toHaveBeenCalledWith(expect.any(UnauthorizedError));
     });
 
     it('finishes interaction successfully on valid credentials and tenant match', async () => {

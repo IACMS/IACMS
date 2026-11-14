@@ -14,6 +14,7 @@ function makeContext(overrides = {}) {
   return {
     tenantId: 'tenant-aaa',
     apiKeyId: 'key-111',
+    apiKeyOwnerId: 'user-actor',
     sourceIp: '127.0.0.1',
     requestId: 'req-test',
     scopes: ['cases:update', 'users:create', 'users:update'],

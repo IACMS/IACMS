@@ -1,5 +1,5 @@
 import prisma from '../config/database.js';
-import { ForbiddenError, UnauthorizedError, ValidationError } from '../../../../shared/common/errors.js';
+import { ForbiddenError, UnauthorizedError, ValidationError } from '#iam/iamErrors.js';
 
 export const PLATFORM_TENANT_CODE = 'ADMIN';
 

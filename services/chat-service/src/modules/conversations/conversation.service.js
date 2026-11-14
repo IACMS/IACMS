@@ -6,8 +6,8 @@ export async function ensureDefaultChannels(tenantId, userId, departmentId) {
   // If departmentId wasn't passed via actor, resolve it from the user record
   let actualDeptId = departmentId;
   if (!actualDeptId) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
+    const user = await prisma.identityProjection.findUnique({
+      where: { subjectId_tenantId: { subjectId: userId, tenantId } },
       select: { departmentId: true }
     });
     actualDeptId = user?.departmentId;
@@ -584,8 +584,8 @@ export async function initiateCaseConversation({ tenantId, userId, caseId }) {
     };
   }
 
-  const initiator = await prisma.user.findUnique({
-    where: { id: userId },
+  const initiator = await prisma.identityProjection.findFirst({
+    where: { subjectId: userId, tenantId },
     select: { firstName: true, lastName: true, username: true }
   });
   const initiatorName = (
@@ -858,8 +858,8 @@ export async function initiateReferralConversation({ tenantId, userId, referralI
     };
   }
 
-  const initiator = await prisma.user.findUnique({
-    where: { id: userId },
+  const initiator = await prisma.identityProjection.findFirst({
+    where: { subjectId: userId, tenantId },
     select: { firstName: true, lastName: true, username: true }
   });
   const initiatorName = (

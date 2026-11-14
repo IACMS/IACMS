@@ -16,7 +16,7 @@ function escapeHtml(str) {
 
 const SCOPE_DESCRIPTIONS = {
   openid: 'Verify your identity (OpenID Connect)',
-  profile: 'Access your basic profile information (name, department)',
+  profile: 'Access your basic profile information (name)',
   email: 'View your verified email address',
   roles: 'Access your system roles and authorizations',
   offline_access: 'Maintain access in the background (refresh tokens)',

@@ -1,0 +1,37 @@
+name: IAM Service Build
+
+on:
+  push:
+    branches: [main, master, develop, auth]
+    paths:
+      - 'services/iam-service/**'
+      - '.github/workflows/iam-service.yml'
+  pull_request:
+    branches: [main, master, develop, auth]
+    paths:
+      - 'services/iam-service/**'
+      - '.github/workflows/iam-service.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/iam-service
+    env:
+      DATABASE_URL: postgresql://build:build@localhost:5432/build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: services/iam-service/package-lock.json
+      - name: Install IAM dependencies
+        run: npm ci
+      - name: Validate IAM schema
+        run: npm exec prisma validate -- --schema=./prisma/schema.prisma
+      - name: Generate IAM Prisma client
+        run: npm run prisma:generate
+      - name: Build standalone IAM image
+        run: docker build --tag iam-service:ci .

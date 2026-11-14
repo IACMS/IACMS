@@ -1,6 +1,8 @@
 import { z } from 'zod';
-import { ValidationError, ForbiddenError } from '../../../../../shared/common/errors.js';
+import { AppError, ValidationError, ForbiddenError } from '../../../../../shared/common/errors.js';
 import { randomBytes } from 'crypto';
+import { createIamUser } from '../../services/iamIdentity.service.js';
+import { requireApiKeyActor } from './apiKeyActor.js';
 
 /**
  * inviteUser mutation
@@ -10,10 +12,8 @@ import { randomBytes } from 'crypto';
  *   in other tenants.
  * - roleId, if provided, must belong to the caller's tenant and must NOT be
  *   a system role.
- * - A random initial password is set and mustChangePassword is flagged true,
- *   matching the internal invite flow.
- * - The notification-service's Kafka consumer will automatically send the
- *   welcome/onboarding email as a side effect (no extra wiring required).
+ * - IAM creates and hashes the temporary credential and publishes onboarding.
+ * - IACMS stores the local identity projection, department, and optional role.
  *
  * Scope required: users:create
  */
@@ -28,105 +28,89 @@ export const schema = z.object({
 });
 
 export const requiredScope = 'users:create';
+export const externalSideEffect = true;
 
 export async function execute(data, context) {
   const { tenantId, prisma } = context;
+  const actorId = requireApiKeyActor(context);
 
-  return await prisma.$transaction(async (tx) => {
-    // 1. Check email uniqueness within tenant
-    const existing = await tx.user.findUnique({
-      where: { tenantId_email: { tenantId, email: data.email } },
-      select: { id: true },
+  // Validate all IACMS-owned values under the partner database role's tenant RLS.
+  const { departmentId, role } = await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}::text, true)`;
+    const existing = await tx.identityProjection.findFirst({
+      where: { tenantId, email: data.email }, select: { subjectId: true },
     });
-    if (existing) {
-      throw new ValidationError(`A user with email "${data.email}" already exists in this organization.`);
-    }
+    if (existing) throw new ValidationError(`A user with email "${data.email}" already exists in this organization.`);
 
-    // 2. Resolve departmentId from departmentCode (optional)
-    let departmentId = null;
+    let localDepartmentId = null;
     if (data.departmentCode) {
       const dept = await tx.department.findFirst({
-        where: { tenantId, code: data.departmentCode, isActive: true },
-        select: { id: true },
+        where: { tenantId, code: data.departmentCode, isActive: true }, select: { id: true },
       });
-      if (!dept) {
-        throw new ValidationError(`Department with code "${data.departmentCode}" not found or inactive in this organization.`);
-      }
-      departmentId = dept.id;
+      if (!dept) throw new ValidationError(`Department with code "${data.departmentCode}" not found or inactive in this organization.`);
+      localDepartmentId = dept.id;
     }
 
-    // 3. Validate roleId if provided — must belong to tenant and not be a system role
+    let localRole = null;
     if (data.roleId) {
-      const role = await tx.role.findUnique({
+      localRole = await tx.role.findUnique({
         where: { id: data.roleId },
-        select: { id: true, tenantId: true, isSystemRole: true },
+        select: { id: true, name: true, tenantId: true, isSystemRole: true, isActive: true },
       });
-      if (!role || role.tenantId !== tenantId) {
+      if (!localRole || localRole.tenantId !== tenantId || !localRole.isActive) {
         throw new ValidationError('Role not found in this organization.');
       }
-      if (role.isSystemRole) {
-        throw new ForbiddenError('System roles cannot be assigned via the Partner API.');
-      }
+      if (localRole.isSystemRole) throw new ForbiddenError('System roles cannot be assigned via the Partner API.');
     }
+    return { departmentId: localDepartmentId, role: localRole };
+  });
 
-    // 4. Generate a secure random initial password — user must change on first login
-    const tempPassword = randomBytes(16).toString('hex');
-    // In production this would be bcrypt-hashed; we store a placeholder that
-    // forces mustChangePassword = true so the user sets a real password on login.
-    // The IAM service owns password hashing — we create the row with a sentinel hash.
-    const SENTINEL_HASH = `$partner_api_invite$${randomBytes(8).toString('hex')}`;
+  const emailLocal = data.email.split('@')[0].replace(/[^a-z0-9_.-]/gi, '').slice(0, 45) || 'user';
+  const username = `${emailLocal}_${randomBytes(3).toString('hex')}`;
+  const created = await createIamUser({
+    actorId,
+    tenantId,
+    fields: { email: data.email, firstName: data.firstName, lastName: data.lastName, username },
+  });
+  if (!created?.id) throw new ValidationError('IAM did not return the created identity subject.');
 
-    // Derive username from email local-part, ensure uniqueness with a suffix
-    const emailLocal = data.email.split('@')[0].replace(/[^a-z0-9_.-]/gi, '');
-    const usernameBase = emailLocal.substring(0, 50);
-    const suffix = randomBytes(3).toString('hex'); // e.g. "a3f7c1"
-    const username = `${usernameBase}_${suffix}`;
-
-    // 5. Create the user
-    const newUser = await tx.user.create({
-      data: {
-        tenantId,
-        departmentId,
-        email: data.email,
-        username,
-        passwordHash: SENTINEL_HASH,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone ?? null,
-        isActive: true,
-        isEmailVerified: false,
-        mustChangePassword: true,
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        username: true,
-        createdAt: true,
-      },
-    });
-
-    // 6. Assign role if provided
-    if (data.roleId) {
-      await tx.userRole.create({
-        data: {
-          userId: newUser.id,
-          roleId: data.roleId,
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}::text, true)`;
+      await tx.identityProjection.upsert({
+        where: { subjectId_tenantId: { subjectId: String(created.id), tenantId } },
+        create: {
+          subjectId: String(created.id), tenantId, departmentId,
+          email: created.email, username: created.username || username,
+          firstName: created.firstName || data.firstName, lastName: created.lastName || data.lastName,
+          phone: data.phone ?? null, isActive: true, sourceVersion: 0n, sourceUpdatedAt: new Date(),
+        },
+        update: {
+          departmentId, email: created.email, username: created.username || username,
+          firstName: created.firstName || data.firstName, lastName: created.lastName || data.lastName,
+          phone: data.phone ?? null, isActive: true, deletedAt: null, projectedAt: new Date(),
         },
       });
-    }
+      if (role) {
+        await tx.userRole.create({
+          data: { userId: String(created.id), roleId: role.id, assignedBy: actorId },
+        });
+      }
+    });
+  } catch (error) {
+    throw new AppError(`IAM created subject ${created.id}, but IACMS could not finish local provisioning. Reconcile that subject before retrying.`, 503, 'IAM_PROVISIONING_PARTIAL');
+  }
 
-    return {
-      userId: newUser.id,
-      email: newUser.email,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      username: newUser.username,
-      tenantId,
-      mustChangePassword: true,
-      createdAt: newUser.createdAt.toISOString(),
-      note: 'User has been created. They must set a password on first login.',
-    };
-  });
+  return {
+    userId: created.id,
+    email: created.email,
+    firstName: created.firstName,
+    lastName: created.lastName,
+    username: created.username || username,
+    tenantId,
+    departmentId,
+    mustChangePassword: created.mustChangePassword ?? true,
+    createdAt: new Date().toISOString(),
+    note: 'User has been created. They must set a password on first login.',
+  };
 }

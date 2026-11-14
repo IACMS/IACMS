@@ -12,15 +12,68 @@ export function buildAuditSearchOr(q) {
   const or = [
     { action: { contains: q, mode: 'insensitive' } },
     { entityType: { contains: q, mode: 'insensitive' } },
-    { user: { email: { contains: q, mode: 'insensitive' } } },
-    { user: { firstName: { contains: q, mode: 'insensitive' } } },
-    { user: { lastName: { contains: q, mode: 'insensitive' } } },
   ];
   if (UUID_RE.test(q)) {
     or.push({ entityId: q });
     or.push({ userId: q });
   }
   return or;
+}
+
+/** Attach profile data from IACMS's local projection, never through IAM's User relation. */
+async function attachProjectedUsers(logs) {
+  if (!logs.length) return logs;
+  const pairs = new Map();
+  for (const log of logs) {
+    for (const tenantId of [log.tenantId, log.relatedTenantId].filter(Boolean)) {
+      if (log.userId) pairs.set(`${log.userId}:${tenantId}`, { subjectId: log.userId, tenantId });
+    }
+  }
+  const pairRows = [...pairs.values()];
+  const identities = pairRows.length
+    ? (await Promise.all(Array.from({ length: Math.ceil(pairRows.length / 500) }, (_, index) =>
+        prisma.identityProjection.findMany({
+          where: { OR: pairRows.slice(index * 500, (index + 1) * 500) },
+          select: {
+            subjectId: true, tenantId: true, email: true, username: true,
+            firstName: true, lastName: true, phone: true, isActive: true,
+          },
+        }),
+      ))).flat()
+    : [];
+  const byKey = new Map(identities.map((identity) => [`${identity.subjectId}:${identity.tenantId}`, identity]));
+  return logs.map((log) => {
+    const identity = byKey.get(`${log.userId}:${log.tenantId}`)
+      || byKey.get(`${log.userId}:${log.relatedTenantId}`);
+    return {
+      ...log,
+      user: identity ? {
+        id: identity.subjectId,
+        tenantId: identity.tenantId,
+        email: identity.email,
+        username: identity.username,
+        firstName: identity.firstName,
+        lastName: identity.lastName,
+        phone: identity.phone,
+        isActive: identity.isActive,
+      } : null,
+    };
+  });
+}
+
+async function findIdentitySubjectIds(search) {
+  const rows = await prisma.identityProjection.findMany({
+    where: {
+      OR: [
+        { email: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+      ],
+    },
+    select: { subjectId: true },
+    take: 5000,
+  });
+  return [...new Set(rows.map((row) => row.subjectId))];
 }
 
 function parseDate(value, endOfDay = false) {
@@ -92,22 +145,24 @@ export async function getAuditLogs(req, res, next) {
 
     const q = typeof search === 'string' ? search.trim() : '';
     if (q) {
+      const matchingSubjectIds = await findIdentitySubjectIds(q);
+      const searchOr = buildAuditSearchOr(q);
+      if (matchingSubjectIds.length) searchOr.push({ userId: { in: matchingSubjectIds } });
       where.AND = [
         ...(where.AND ?? []),
-        { OR: buildAuditSearchOr(q) },
+        { OR: searchOr },
       ];
     }
 
     const field = SORT_FIELDS.has(String(sortBy)) ? String(sortBy) : 'createdAt';
     const direction = String(sortDir).toLowerCase() === 'asc' ? 'asc' : 'desc';
 
-    const [logs, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       prisma.auditLog.findMany({
         where,
         include: {
           tenant: true,
           relatedTenant: true,
-          user: true,
         },
         orderBy: { [field]: direction },
         take: limit,
@@ -115,6 +170,7 @@ export async function getAuditLogs(req, res, next) {
       }),
       prisma.auditLog.count({ where }),
     ]);
+    const logs = await attachProjectedUsers(rows);
 
     res.json({
       logs,
@@ -131,15 +187,15 @@ export async function getAuditLogs(req, res, next) {
 
 export async function getAuditLog(req, res, next) {
   try {
-    const log = await prisma.auditLog.findUnique({
+    const row = await prisma.auditLog.findUnique({
       where: { id: req.params.id },
       include: {
         tenant: true,
         relatedTenant: true,
-        user: true,
       },
     });
-    if (!log) throw new NotFoundError('Audit log');
+    if (!row) throw new NotFoundError('Audit log');
+    const [log] = await attachProjectedUsers([row]);
     res.json({ log });
   } catch (error) {
     next(error);
@@ -148,13 +204,13 @@ export async function getAuditLog(req, res, next) {
 
 export async function createAuditLog(req, res, next) {
   try {
-    const log = await prisma.auditLog.create({
+    const row = await prisma.auditLog.create({
       data: req.body,
       include: {
         tenant: true,
-        user: true,
       },
     });
+    const [log] = await attachProjectedUsers([row]);
     // Audit logs are immutable, so we don't publish update events
     res.status(201).json({ log });
   } catch (error) {
@@ -165,19 +221,19 @@ export async function createAuditLog(req, res, next) {
 export async function getAuditLogsByEntity(req, res, next) {
   try {
     const { entityType, entityId } = req.params;
-    const logs = await prisma.auditLog.findMany({
+    const rows = await prisma.auditLog.findMany({
       where: {
         entityType,
         entityId,
       },
       include: {
         tenant: true,
-        user: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+    const logs = await attachProjectedUsers(rows);
     res.json({ logs });
   } catch (error) {
     next(error);
@@ -189,7 +245,7 @@ export async function getCaseAuditTrail(req, res, next) {
     const callerTenant = req.headers['x-tenant-id'];
     if (!callerTenant) throw new ValidationError('x-tenant-id required');
     const { caseId } = req.params;
-    const logs = await prisma.auditLog.findMany({
+    const rows = await prisma.auditLog.findMany({
       where: {
         entityType: 'case',
         entityId: caseId,
@@ -198,11 +254,11 @@ export async function getCaseAuditTrail(req, res, next) {
       include: {
         tenant: true,
         relatedTenant: true,
-        user: true,
       },
       orderBy: { createdAt: 'asc' },
       take: Math.min(parseInt(req.query.limit, 10) || 500, 5000),
     });
+    const logs = await attachProjectedUsers(rows);
     res.json({ logs });
   } catch (e) {
     next(e);

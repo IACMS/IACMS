@@ -19,7 +19,6 @@ if (Test-Path ".env") {
 }
 
 $services = @(
-  @{ Name = "rbac"; Dir = "services/rbac-service"; Port = 3002 },
   @{ Name = "auth"; Dir = "services/auth-service"; Port = 3001 },
   @{ Name = "workflow"; Dir = "services/workflow-service"; Port = 3004 },
   @{ Name = "case"; Dir = "services/case-service"; Port = 3003 },

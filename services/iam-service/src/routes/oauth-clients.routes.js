@@ -16,11 +16,11 @@ import {
   assignClientUserRole,
   unassignClientUserRole,
 } from '../controllers/oauth-clients.controller.js';
-import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authenticateAdminRequest } from '../middleware/admin-auth.middleware.js';
 
 const router = Router();
 
-router.use(authenticateToken);
+router.use(authenticateAdminRequest);
 
 router.get('/',           listClients);
 router.post('/',          createClient);

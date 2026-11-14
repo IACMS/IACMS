@@ -79,10 +79,11 @@ export async function uploadAttachment(req, res, next) {
       }
     }
 
-    const uploader = await prisma.user.findFirst({
-      where: { id: uploadedBy, tenantId, isActive: true },
+    const uploader = await prisma.identityProjection.findUnique({
+      where: { subjectId_tenantId: { subjectId: uploadedBy, tenantId } },
+      select: { subjectId: true, isActive: true },
     });
-    if (!uploader) {
+    if (!uploader || !uploader.isActive) {
       throw new ValidationError('Uploader not found in this tenant');
     }
 

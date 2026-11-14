@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database.js';
 import { getRedisClient } from '../../config/redis.config.js';
-import { ValidationError, UnauthorizedError, NotFoundError } from '../../../../../shared/common/errors.js';
-import Logger from '../../../../../shared/common/logger.js';
-import { TOPICS } from '../../../../../shared/utils/eventBus.js';
+import { ValidationError, UnauthorizedError, NotFoundError } from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
+import { TOPICS } from '#iam/iamEventBus.js';
 import {
   JWT_SECRET,
   LOCKOUT_ATTEMPTS,
@@ -149,7 +149,6 @@ export async function login(req, res, next) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        departmentId: user.departmentId ?? null,
         mustChangePassword: user.mustChangePassword,
         roles: roleIds,
         tenant: {

@@ -4,7 +4,7 @@
  * will embed in ID tokens and UserInfo responses.
  *
  * Custom claims added beyond the standard OIDC set:
- *   tenant_id, tenant_code, department_id, roles
+ *   tenant_id, tenant_code, organization_id, roles
  *
  * The library calls findAccount(ctx, sub, token) during:
  *   - Authorization Code exchange
@@ -13,6 +13,17 @@
  */
 
 import prisma from '../config/database.js';
+import { resolveActiveClientMembership } from './organization-access.js';
+import { legacyOrganizationSystem } from '../legacyOrganizationSystem.js';
+
+async function resolveClient(ctx, token) {
+  if (ctx?.oidc?.client) return ctx.oidc.client;
+  if (!token?.clientId) return null;
+  return prisma.oAuthClient.findUnique({
+    where: { clientId: token.clientId },
+    select: { id: true, clientId: true, tenantId: true, iamOrganizationId: true, targetAudience: true },
+  });
+}
 
 /**
  * @param {import('oidc-provider').KoaContextWithOIDC} _ctx  - Koa context (unused)
@@ -20,6 +31,7 @@ import prisma from '../config/database.js';
  * @returns {Promise<import('oidc-provider').Account | undefined>}
  */
 export async function findAccount(ctx, sub, token) {
+  const client = await resolveClient(ctx, token);
   const user = await prisma.user.findUnique({
     where: { id: sub },
     select: {
@@ -30,14 +42,20 @@ export async function findAccount(ctx, sub, token) {
       isActive: true,
       isEmailVerified: true,
       tenantId: true,
-      departmentId: true,
       tenant: { select: { code: true, isActive: true } },
-      userRoles: { select: { roleId: true } },
+      userRoles: { select: { roleId: true, role: { select: { slug: true, name: true } } } },
     },
   });
 
-  // Reject inactive users or users in inactive tenants
-  if (!user || !user.isActive || !user.tenant?.isActive) return undefined;
+  if (!user || !user.isActive) return undefined;
+
+  const membershipAccess = client
+    ? await resolveActiveClientMembership(prisma, user.id, client)
+    : { required: false, allowed: true, membership: null, organization: null };
+  // Organization-scoped clients require a live IAM membership. Unscoped and
+  // legacy clients keep the legacy tenant-active check until cutover.
+  if (membershipAccess.required && !membershipAccess.allowed) return undefined;
+  if (!membershipAccess.required && !user.tenant?.isActive) return undefined;
 
   return {
     accountId: user.id,
@@ -49,12 +67,23 @@ export async function findAccount(ctx, sub, token) {
      * `clientContext`  — optional client record or client ID for application-scoped roles
      */
     async claims(_use, scope, clientContext) {
-      const base = {
-        sub: user.id,
-        // Always included
-        tenant_id: user.tenantId,
-        tenant_code: user.tenant.code,
-      };
+      const activeAccess = clientContext
+        ? await resolveActiveClientMembership(prisma, user.id, clientContext)
+        : membershipAccess;
+      if (activeAccess.required && !activeAccess.allowed) return {};
+
+      const base = { sub: user.id };
+      if (activeAccess.required) {
+        base.organization_id = activeAccess.organization.id;
+        // Keep the IACMS claim temporarily for clients that still expect it.
+        if (legacyOrganizationSystem() && activeAccess.organization.externalSystem === legacyOrganizationSystem()) {
+          base.tenant_id = activeAccess.organization.externalId;
+          if (activeAccess.tenantId === user.tenantId) base.tenant_code = user.tenant?.code;
+        }
+      } else if (legacyOrganizationSystem() && user.tenantId) {
+        base.tenant_id = user.tenantId;
+        base.tenant_code = user.tenant?.code;
+      }
 
       const scopes = scope ? scope.split(' ') : [];
 
@@ -64,6 +93,7 @@ export async function findAccount(ctx, sub, token) {
           family_name: user.lastName,
           name: `${user.firstName} ${user.lastName}`.trim(),
         });
+        if (activeAccess.required) base.organization_name = activeAccess.organization.name;
       }
 
       if (scopes.includes('email')) {
@@ -73,66 +103,94 @@ export async function findAccount(ctx, sub, token) {
         });
       }
 
-      if (scopes.includes('roles')) {
+      if (scopes.includes('roles') || scopes.includes('iam:admin')) {
         // Resolve target client to support project/application-scoped role isolation
         const clientId =
           (typeof clientContext === 'object' ? clientContext?.clientId : clientContext) ||
           ctx?.oidc?.client?.clientId ||
           token?.clientId;
 
-        let scopedRoles = [];
+        let roleRecords = [];
+        let legacyRoleIds = [];
+        let roleClient = null;
 
         if (clientId) {
-          const client =
+          roleClient =
             typeof clientContext === 'object' && clientContext?.id
               ? clientContext
               : await prisma.oAuthClient.findUnique({
                   where: { clientId },
-                  select: { id: true, targetAudience: true },
+                  select: { id: true, targetAudience: true, tenantId: true, iamOrganizationId: true },
                 });
 
-          if (client) {
+          if (roleClient) {
             // Check if user has explicit roles assigned for this specific client application
             const appRoles = await prisma.userApplicationRole.findMany({
               where: {
                 userId: user.id,
-                oauthClientId: client.id,
+                oauthClientId: roleClient.id,
                 role: { isActive: true },
+                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
               },
-              select: { roleId: true },
+              select: { roleId: true, role: { select: { slug: true, name: true } } },
             });
 
             if (appRoles.length > 0) {
-              scopedRoles = appRoles.map((ar) => ar.roleId);
-            } else if (client.targetAudience) {
-              // Modern application with defined target audience: strict Zero Trust isolation
-              scopedRoles = [];
+              roleRecords = appRoles.map((assignment) => assignment.role);
+              legacyRoleIds = appRoles.map((assignment) => assignment.roleId);
+            } else if (roleClient.targetAudience || activeAccess.required) {
+              // Never inherit legacy tenant/domain roles for a membership-bound client.
+              roleRecords = [];
             } else {
               // Check if this client has any application-scoped roles configured
               const hasAppRolesConfigured = await prisma.userApplicationRole.count({
-                where: { oauthClientId: client.id },
+                where: { oauthClientId: roleClient.id },
               });
 
               if (hasAppRolesConfigured > 0) {
                 // Application-scoped roles are active for this client, and user has none -> NO access in this project
-                scopedRoles = [];
+                roleRecords = [];
               } else {
                 // Fallback for legacy clients prior to application role assignment migration
-                scopedRoles = user.userRoles.map((ur) => ur.roleId);
+                roleRecords = user.userRoles.map((assignment) => assignment.role);
+                legacyRoleIds = user.userRoles.map((assignment) => assignment.roleId);
               }
             }
           } else {
-            scopedRoles = user.userRoles.map((ur) => ur.roleId);
+            roleRecords = activeAccess.required ? [] : user.userRoles.map((assignment) => assignment.role);
+            legacyRoleIds = activeAccess.required ? [] : user.userRoles.map((assignment) => assignment.roleId);
           }
         } else {
-          scopedRoles = user.userRoles.map((ur) => ur.roleId);
+          roleRecords = activeAccess.required ? [] : user.userRoles.map((assignment) => assignment.role);
+          legacyRoleIds = activeAccess.required ? [] : user.userRoles.map((assignment) => assignment.roleId);
         }
 
-        base.roles = scopedRoles;
-      }
+        const legacySystem = legacyOrganizationSystem();
+        const isLegacyIacmsClient = Boolean(
+          !clientId ||
+          (legacySystem && activeAccess.organization?.externalSystem === legacySystem) ||
+          (legacySystem && roleClient?.tenantId && !roleClient?.iamOrganizationId),
+        );
 
-      if (scopes.includes('profile') && user.departmentId) {
-        base.department_id = user.departmentId;
+        const roleIdentifiers = roleRecords
+          .map((role) => role?.slug || role?.name)
+          .filter(Boolean);
+        const resolvedRoles = roleIdentifiers.length ? roleIdentifiers : legacyRoleIds;
+        const roleNamespace = clientId || 'iam';
+
+        if (scopes.includes('roles')) {
+          base.roles = resolvedRoles;
+          if (_use === 'access_token' && isLegacyIacmsClient && roleIdentifiers.length > 0) {
+            base.role_ids = [...new Set(legacyRoleIds)];
+          }
+        }
+
+        const isIamAdmin = roleRecords.some((role) =>
+          ['system-admin', 'iam-admin', 'system_admin'].includes(role?.slug || role?.name),
+        );
+        if (scopes.includes('iam:admin')) {
+          base.iam_admin = isIamAdmin;
+        }
       }
 
       return base;

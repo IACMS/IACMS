@@ -7,7 +7,6 @@ import jwt from 'jsonwebtoken';
 import { getUserPermissionsWithAvailability } from '../middleware/rbac.middleware.js';
 import { fetchMustChangePasswordFromAuth } from '../utils/authPasswordStatus.js';
 
-const rbacServiceUrl = () => process.env.RBAC_SERVICE_URL || 'http://localhost:3002';
 
 /**
  * Session Login
@@ -48,7 +47,7 @@ export async function sessionLogin(req, res, next) {
     let rbacAvailable = true;
 
     if (!mustPw) {
-      const resolved = await getUserPermissionsWithAvailability(user.id, user.tenant.id, rbacServiceUrl());
+      const resolved = await getUserPermissionsWithAvailability(user.id, user.tenant.id);
       permissions = resolved.permissions;
       rbacAvailable = resolved.rbacAvailable;
 
@@ -164,7 +163,7 @@ export async function sessionStatus(req, res) {
     let rbacAvailable = true;
     if (!mustChangePassword) {
       try {
-        const resolved = await getUserPermissionsWithAvailability(u.id, u.tenantId, rbacServiceUrl());
+        const resolved = await getUserPermissionsWithAvailability(u.id, u.tenantId);
         permissions = resolved.permissions;
         rbacAvailable = resolved.rbacAvailable;
       } catch {
@@ -225,7 +224,6 @@ export async function sessionStatus(req, res) {
         const resolved = await getUserPermissionsWithAvailability(
           req.user.id,
           req.user.tenantId,
-          rbacServiceUrl(),
         );
         permissions = resolved.permissions;
         rbacAvailable = resolved.rbacAvailable;

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { BusinessRuleViolationError, NotFoundError } from '../../../../../shared/common/errors.js';
+import { requireApiKeyActor } from './apiKeyActor.js';
 
 export const schema = z.object({
   caseId: z.string().uuid(),
@@ -11,9 +12,7 @@ export const requiredScope = 'cases:update';
 
 export async function execute(data, context) {
   const { tenantId, prisma, apiKeyId } = context;
-
-  const apiKey = await prisma.apiKey.findUnique({ where: { id: apiKeyId }, select: { createdBy: true } });
-  const actorUserId = apiKey.createdBy;
+  const actorUserId = requireApiKeyActor(context);
 
   return await prisma.$transaction(async (tx) => {
     // 1. Find case scoped to tenant

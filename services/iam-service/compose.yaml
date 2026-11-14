@@ -1,0 +1,95 @@
+name: iam
+
+services:
+  iam-postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: iam
+      POSTGRES_USER: iam
+      POSTGRES_PASSWORD: ${IAM_POSTGRES_PASSWORD:?Set IAM_POSTGRES_PASSWORD in the IAM deployment environment}
+    volumes:
+      - iam_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iam -d iam"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [iam-private]
+
+  iam-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - iam_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [iam-private]
+
+  iam-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: ${IAM_MIGRATION_DATABASE_URL:?Set IAM_MIGRATION_DATABASE_URL for the migration job}
+    command: ["npm", "run", "prisma:migrate:deploy"]
+    depends_on:
+      iam-postgres:
+        condition: service_healthy
+    profiles: [migration]
+    networks: [iam-private]
+
+  iam-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${IAM_PORT:-3001}:3001"
+    environment:
+      PORT: 3001
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: ${IAM_DATABASE_URL:?Set IAM_DATABASE_URL to the isolated IAM database URL}
+      REDIS_URL: redis://iam-redis:6379
+      KAFKA_BROKERS: ${IAM_KAFKA_BROKERS:-localhost:9092}
+      IAM_IDENTITY_OUTBOX_ENABLED: ${IAM_IDENTITY_OUTBOX_ENABLED:-false}
+      IAM_ORG_MEMBERSHIPS_ENABLED: ${IAM_ORG_MEMBERSHIPS_ENABLED:-true}
+      IAM_GLOBAL_IDENTITIES_ENABLED: ${IAM_GLOBAL_IDENTITIES_ENABLED:-true}
+      IAM_LEGACY_ORGANIZATION_SYSTEM: ${IAM_LEGACY_ORGANIZATION_SYSTEM:-iacms}
+      IAM_API_KEY_PREFIX: ${IAM_API_KEY_PREFIX:-iam_live_}
+      IAM_API_KEY_SCOPES: ${IAM_API_KEY_SCOPES:-api:read,api:write}
+      JWT_SECRET: ${IAM_JWT_SECRET:?Set IAM_JWT_SECRET in the IAM deployment environment}
+      INTERNAL_SERVICE_TOKEN: ${IAM_INTERNAL_SERVICE_TOKEN:?Set IAM_INTERNAL_SERVICE_TOKEN in the IAM deployment environment}
+      OIDC_ISSUER: ${OIDC_ISSUER:?Set OIDC_ISSUER to the public IAM URL}
+      IAM_ADMIN_AUDIENCE: ${IAM_ADMIN_AUDIENCE:?Set IAM_ADMIN_AUDIENCE for the IAM admin API}
+      OIDC_ACCESS_TOKEN_TTL_SECONDS: ${OIDC_ACCESS_TOKEN_TTL_SECONDS:-600}
+      OIDC_DEFAULT_RESOURCE: ${OIDC_DEFAULT_RESOURCE:-}
+      OIDC_SUPPORTED_SCOPES: ${OIDC_SUPPORTED_SCOPES:-openid offline_access profile email roles}
+      OIDC_RESOURCE_SCOPES: ${OIDC_RESOURCE_SCOPES:-openid profile email roles}
+      OIDC_COOKIE_SECRET: ${OIDC_COOKIE_SECRET:?Set OIDC_COOKIE_SECRET in the IAM deployment environment}
+      CLIENT_SECRET_KEY: ${CLIENT_SECRET_KEY:?Set CLIENT_SECRET_KEY in the IAM deployment environment}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON:?Set OIDC_JWKS_JSON in the IAM deployment environment}
+    depends_on:
+      iam-postgres:
+        condition: service_healthy
+      iam-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks: [iam-private]
+
+volumes:
+  iam_postgres_data:
+  iam_redis_data:
+
+networks:
+  iam-private:
+    driver: bridge

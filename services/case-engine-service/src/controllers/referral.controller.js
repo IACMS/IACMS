@@ -467,11 +467,13 @@ export async function assignReferral(req, res, next) {
       const initialStep = getInitialStep(workflow);
       if (!initialStep) throw new ValidationError('Selected workflow must have an initial step.');
 
-      const assignee = await tx.user.findFirst({
-        where: { id: String(assignedToUserId), tenantId: ref.toTenantId, isActive: true },
-        select: { id: true },
+      const assignee = await tx.identityProjection.findUnique({
+        where: { subjectId_tenantId: { subjectId: String(assignedToUserId), tenantId: ref.toTenantId } },
+        select: { subjectId: true, isActive: true, deletedAt: true },
       });
-      if (!assignee) throw new ValidationError('Assigned user must be active and belong to the receiving agency.');
+      if (!assignee || !assignee.isActive || assignee.deletedAt) {
+        throw new ValidationError('Assigned user must be active and belong to the receiving agency.');
+      }
 
       const metadata = mergeMetadata(ref.metadata, {
         receivingAssignedWorkflowId: workflow.id,
@@ -485,7 +487,7 @@ export async function assignReferral(req, res, next) {
       await tx.assignment.create({
         data: {
           caseId: ref.caseId,
-          assignedTo: assignee.id,
+          assignedTo: assignee.subjectId,
           assignedBy: actorId,
           assignmentType: 'referral_assignment',
           notes: 'Assigned by receiving agency after accepting referral.',
@@ -499,7 +501,7 @@ export async function assignReferral(req, res, next) {
           workflowId: workflow.id,
           workflowVersion: workflow.version,
           currentStepId: initialStep.id,
-          assignedTo: assignee.id,
+          assignedTo: assignee.subjectId,
           referralStatus: 'in_progress',
           currentDepartmentId: ref.toDepartmentId ?? actorDept ?? null,
         },

@@ -2,7 +2,7 @@
  * Redis client for the API Gateway.
  *
  * Used for:
- *  - RBAC permission caching (avoids hitting RBAC service on every request)
+ *  - IACMS-local RBAC permission caching
  *  - Rate limiting (per-user / per-IP request counters)
  *
  * NOT used for:

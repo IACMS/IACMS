@@ -26,8 +26,9 @@ vi.mock('../../src/config/database.js', () => {
         create: vi.fn(),
         count: vi.fn(),
       },
-      user: {
+      identityProjection: {
         findUnique: vi.fn(),
+        findFirst: vi.fn(),
       },
       department: {
         findUnique: vi.fn(),
@@ -361,8 +362,8 @@ describe('Conversation Service', () => {
       // No room exists yet
       prisma.chatConversation.findFirst.mockResolvedValueOnce(null);
 
-      prisma.user.findUnique.mockResolvedValueOnce({
-        id: 'user-lead',
+      prisma.identityProjection.findFirst.mockResolvedValueOnce({
+        subjectId: 'user-lead',
         firstName: 'Sherlock',
         lastName: 'Holmes',
         username: 'sherlock',
@@ -541,7 +542,7 @@ describe('Conversation Service', () => {
       // No existing room
       prisma.chatConversation.findFirst.mockResolvedValueOnce(null);
 
-      prisma.user.findUnique.mockResolvedValueOnce({
+      prisma.identityProjection.findFirst.mockResolvedValueOnce({
         firstName: 'Jane',
         lastName: 'Doe',
       });

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { NotFoundError, ValidationError } from '../../../../../shared/common/errors.js';
+import { updateIamIdentity } from '../../services/iamIdentity.service.js';
 
 /**
  * updateUser mutation
@@ -34,9 +35,9 @@ export async function execute(data, context) {
   const { userId, ...fields } = data;
 
   // 1. Load user — must belong to caller's tenant
-  const user = await prisma.user.findFirst({
-    where: { id: userId, tenantId },
-    select: { id: true, firstName: true, lastName: true, email: true },
+  const user = await prisma.identityProjection.findUnique({
+    where: { subjectId_tenantId: { subjectId: userId, tenantId } },
+    select: { subjectId: true, firstName: true, lastName: true, email: true, phone: true, projectedAt: true },
   });
   if (!user) throw new NotFoundError('User');
 
@@ -61,31 +62,32 @@ export async function execute(data, context) {
   }
 
   // 3. Build the rest of the payload
-  if (fields.firstName !== undefined) updatePayload.firstName = fields.firstName;
-  if (fields.lastName  !== undefined) updatePayload.lastName  = fields.lastName;
-  if ('phone' in fields)              updatePayload.phone     = fields.phone ?? null;
+  const identityFields = {};
+  if (fields.firstName !== undefined) identityFields.firstName = fields.firstName;
+  if (fields.lastName !== undefined) identityFields.lastName = fields.lastName;
+  if ('phone' in fields) identityFields.phone = fields.phone ?? null;
 
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data: updatePayload,
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      phone: true,
-      updatedAt: true,
-    },
-  });
+  const [updated] = await Promise.all([
+    Object.keys(identityFields).length > 0
+      ? updateIamIdentity({ userId, tenantId, fields: identityFields })
+      : Promise.resolve(user),
+    Object.prototype.hasOwnProperty.call(updatePayload, 'departmentId')
+      ? prisma.identityProjection.update({
+        where: { subjectId_tenantId: { subjectId: userId, tenantId } },
+        data: { departmentId: updatePayload.departmentId },
+      })
+      : Promise.resolve(null),
+  ]);
 
   return {
-    userId: updated.id,
+    userId: updated.subjectId || updated.id,
     email: updated.email,
     firstName: updated.firstName,
     lastName: updated.lastName,
-    updatedFields: Object.keys(updatePayload).map((k) =>
-      k === 'departmentId' ? 'departmentCode' : k,
-    ),
-    updatedAt: updated.updatedAt.toISOString(),
+    updatedFields: [
+      ...Object.keys(identityFields),
+      ...Object.keys(updatePayload).map((k) => (k === 'departmentId' ? 'departmentCode' : k)),
+    ],
+    updatedAt: new Date(updated.updatedAt || updated.projectedAt).toISOString(),
   };
 }

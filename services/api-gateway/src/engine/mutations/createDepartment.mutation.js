@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { BusinessRuleViolationError } from '../../../../../shared/common/errors.js';
+import { requireApiKeyActor } from './apiKeyActor.js';
 
 export const schema = z.object({
   code: z.string().min(1).max(50),
@@ -11,9 +12,7 @@ export const requiredScope = 'departments:create';
 
 export async function execute(data, context) {
   const { tenantId, prisma, apiKeyId } = context;
-
-  const apiKey = await prisma.apiKey.findUnique({ where: { id: apiKeyId }, select: { createdBy: true } });
-  const actorUserId = apiKey.createdBy;
+  const actorUserId = requireApiKeyActor(context);
 
   return await prisma.$transaction(async (tx) => {
     // 1. Check uniqueness of code and name within tenant

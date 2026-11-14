@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { UnauthorizedError, ForbiddenError } from '../../../../shared/common/errors.js';
+import { UnauthorizedError, ForbiddenError } from '#iam/iamErrors.js';
 import { getRedisClient } from '../config/redis.config.js';
 import prisma from '../config/database.js';
-import { resolveGatewayIdentity } from '../../../../shared/middleware/gatewayIdentity.js';
+import { resolveGatewayIdentity } from '#iam/iamGatewayIdentity.js';
 
 if (!process.env.JWT_SECRET) {
   throw new Error('[iam-auth-middleware] JWT_SECRET environment variable is required. Generate with: openssl rand -base64 64');

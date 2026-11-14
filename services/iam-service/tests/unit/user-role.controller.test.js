@@ -19,13 +19,13 @@ vi.mock('../../src/config/database.js', () => {
   };
 });
 
-vi.mock('../../../../shared/utils/userRoles.js', () => ({
+vi.mock('../../src/iamUserRoles.js', () => ({
   loadUserRoleIdsForUser: vi.fn().mockResolvedValue([]),
 }));
 
 import prisma from '../../src/config/database.js';
 import { assignRole, revokeRole, getUserRoles, checkPermission } from '../../src/controllers/user-role.controller.js';
-import { ValidationError, NotFoundError, ForbiddenError } from '../../../../shared/common/errors.js';
+import { ValidationError, NotFoundError, ForbiddenError } from '../../src/iamErrors.js';
 
 describe('User Role Controller', () => {
   let req, res, next;

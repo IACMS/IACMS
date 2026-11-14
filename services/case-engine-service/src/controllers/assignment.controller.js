@@ -54,10 +54,11 @@ export async function assignCase(req, res, next) {
     });
     if (!caseRecord) throw new NotFoundError('Case');
 
-    const assignee = await prisma.user.findFirst({
-      where: { id: assignedTo, tenantId, isActive: true },
+    const assignee = await prisma.identityProjection.findUnique({
+      where: { subjectId_tenantId: { subjectId: assignedTo, tenantId } },
+      select: { subjectId: true, isActive: true },
     });
-    if (!assignee) {
+    if (!assignee || !assignee.isActive) {
       throw new ValidationError('Assignee not found or not in this tenant');
     }
 

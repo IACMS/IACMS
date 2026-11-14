@@ -22,6 +22,8 @@ import jwt from 'jsonwebtoken';
 import sessionRoutes from './routes/session.routes.js';
 import apiKeyRoutes from './routes/apiKey.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
+import rbacRoutes from './routes/rbac.routes.js';
+import authRbacRoutes from './routes/authRbac.routes.js';
 
 import { createGraphQLMiddleware } from './graphql/server.js';
 import { startOutboxPublisher, stopOutboxPublisher } from './workers/outboxPublisher.js';
@@ -30,6 +32,7 @@ import { setupSwagger } from '../../../shared/swagger.js';
 import Logger from '../../../shared/common/logger.js';
 import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 import { forwardProxyIdentity, attachDownstreamHeaders } from './utils/downstreamHeaders.js';
+import { startIdentityProjectionConsumer, stopIdentityProjectionConsumer } from './workers/identityProjectionConsumer.js';
 
 // Load .env from service directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,7 +47,6 @@ const logger = new Logger('api-gateway');
 const services = {
   iam: process.env.IAM_SERVICE_URL || process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
   auth: process.env.AUTH_SERVICE_URL || process.env.IAM_SERVICE_URL || 'http://localhost:3001',
-  rbac: process.env.RBAC_SERVICE_URL || process.env.IAM_SERVICE_URL || 'http://localhost:3001',
   caseEngine: process.env.CASE_ENGINE_SERVICE_URL || process.env.CASE_SERVICE_URL || 'http://localhost:3003',
   case: process.env.CASE_SERVICE_URL || process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
   workflow: process.env.WORKFLOW_SERVICE_URL || process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
@@ -183,7 +185,7 @@ async function startServer() {
   app.use('/api/v1', enforcePasswordChanged);
 
   // RBAC middleware (skip for API key routes — they use scope-based auth)
-  const rbacMiddleware = createRbacMiddleware(services.rbac);
+  const rbacMiddleware = createRbacMiddleware();
   app.use('/api/v1', (req, res, next) => {
     // Skip RBAC for API key authenticated requests (they use scope-based auth)
     if (req.apiKeyContext) return next();
@@ -226,7 +228,7 @@ async function startServer() {
 
   app.get('/api/v1/platform/service-probes', async (req, res) => {
     const definitions = [
-      { key: 'iam', label: 'IAM service (Auth + RBAC)', baseUrl: services.iam },
+      { key: 'iam', label: 'IAM service (Authentication)', baseUrl: services.iam },
       { key: 'case-engine', label: 'Case Engine service (Cases + Workflows + Referrals)', baseUrl: services.caseEngine },
       { key: 'audit', label: 'Audit service', baseUrl: services.audit },
       { key: 'integration', label: 'Integration service', baseUrl: services.integration },
@@ -271,6 +273,10 @@ async function startServer() {
   }));
 
   // Proxy routes
+  // Keep browser role administration compatible while its project role data
+  // is served from IACMS-owned tables rather than IAM.
+  app.use('/api/v1/auth', authRbacRoutes);
+
   app.use('/api/v1/auth', serviceProxy({
     target: services.auth,
     pathRewrite: (path) => '/auth' + path,
@@ -326,12 +332,10 @@ async function startServer() {
     onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/rbac', serviceProxy({
-    target: services.rbac,
-    pathRewrite: (path) => path,
-    label: 'RBAC service',
-    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
-  }));
+  // RBAC endpoints and policy evaluation are protected twice: the global
+  // authentication/RBAC middleware above and requireResolvedRbac plus
+  // per-route permission guards inside rbacRoutes.
+  app.use('/api/v1/rbac', express.json(), rbacRoutes);
 
   app.use('/api/v1/dashboard', serviceProxy({
     target: services.case,
@@ -436,6 +440,7 @@ async function startServer() {
   // Start background workers
   startOutboxPublisher();
   startWebhookDispatcher();
+  await startIdentityProjectionConsumer();
 
   // Start server
   const httpServer = app.listen(PORT, () => {
@@ -512,6 +517,7 @@ async function startServer() {
     logger.info('SIGTERM received — shutting down gracefully');
     stopOutboxPublisher();
     stopWebhookDispatcher();
+    await stopIdentityProjectionConsumer();
     if (typeof graphqlMiddleware.stop === 'function') await graphqlMiddleware.stop();
     await closeSessionStore();
     await closeRedisClient();

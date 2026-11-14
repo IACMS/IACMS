@@ -74,6 +74,7 @@ describe('api-key.grant unit tests (Phase 5: urn:iacms:grant:api_key)', () => {
       tenantId: 'tenant-police-1',
       keyHash,
       keyPrefix: rawKey.substring(0, 20),
+      createdBy: 'user-owner-1',
       scopes: ['cases:read', 'cases:write'],
       isActive: true,
       expiresAt: new Date(Date.now() + 86400000),
@@ -102,6 +103,7 @@ describe('api-key.grant unit tests (Phase 5: urn:iacms:grant:api_key)', () => {
     expect(atInstance.set).toHaveBeenCalledWith('tenant_id', 'tenant-police-1');
     expect(atInstance.set).toHaveBeenCalledWith('tenant_code', 'POLICE');
     expect(atInstance.set).toHaveBeenCalledWith('api_key_id', 'key-uuid-1');
+    expect(atInstance.set).toHaveBeenCalledWith('api_key_owner_id', 'user-owner-1');
     expect(atInstance.set).toHaveBeenCalledWith('roles', ['api_key']);
   });
 

@@ -6,6 +6,8 @@ import {
   rotateApiKey,
   revokeApiKey,
   getScopes,
+  validateApiKeyInternal,
+  resolveApiKeyOwnerInternal,
 } from '../../src/controllers/api-keys.controller.js';
 import prisma from '../../src/config/database.js';
 
@@ -15,8 +17,10 @@ vi.mock('../../src/config/database.js', () => ({
       create: vi.fn(),
       findMany: vi.fn(),
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       update: vi.fn(),
     },
+    $transaction: vi.fn(),
   },
 }));
 
@@ -94,6 +98,47 @@ describe('api-keys.controller unit tests', () => {
     });
   });
 
+  describe('validateApiKeyInternal', () => {
+    it('validates a hash and returns tenant and actor context without returning the hash', async () => {
+      req.body = { keyHash: 'a'.repeat(64), ip: '127.0.0.1' };
+      prisma.apiKey.findUnique.mockResolvedValue({
+        id: 'key-1', tenantId: 'tenant-test-1', name: 'Desk key', scopes: ['cases:read'],
+        createdBy: 'user-admin-1', isActive: true, revokedAt: null, expiresAt: null,
+        tenant: { isActive: true, code: 'TN1' },
+      });
+      prisma.apiKey.update.mockResolvedValue({});
+
+      await validateApiKeyInternal(req, res, next);
+
+      expect(prisma.apiKey.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { keyHash: 'a'.repeat(64) } }));
+      expect(res.json).toHaveBeenCalledWith({
+        apiKey: expect.objectContaining({ id: 'key-1', tenantCode: 'TN1', createdBy: 'user-admin-1' }),
+      });
+      expect(JSON.stringify(res.json.mock.calls[0][0])).not.toContain('keyHash');
+    });
+
+    it('rejects malformed hashes', async () => {
+      req.body = { keyHash: 'raw-api-key' };
+      await validateApiKeyInternal(req, res, next);
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+      expect(prisma.apiKey.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('resolveApiKeyOwnerInternal', () => {
+    it('resolves the key owner within the requested tenant', async () => {
+      req.body = { apiKeyId: 'key-1', tenantId: 'tenant-test-1' };
+      prisma.apiKey.findFirst.mockResolvedValue({ createdBy: 'user-admin-1' });
+
+      await resolveApiKeyOwnerInternal(req, res, next);
+
+      expect(prisma.apiKey.findFirst).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: 'key-1', tenantId: 'tenant-test-1' },
+      }));
+      expect(res.json).toHaveBeenCalledWith({ apiKeyContext: { createdBy: 'user-admin-1' } });
+    });
+  });
+
   describe('listApiKeys', () => {
     it('returns API keys scoped to caller tenant without exposing keyHash', async () => {
       prisma.apiKey.findMany.mockResolvedValue([
@@ -124,26 +169,30 @@ describe('api-keys.controller unit tests', () => {
         revokedAt: null,
       });
 
-      prisma.apiKey.update.mockResolvedValue({
-        id: 'k-1',
+      const txUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+      const txCreate = vi.fn().mockResolvedValue({
+        id: 'k-2',
         name: 'Rotated Key',
         keyPrefix: 'iacms_live_newprefix',
+        scopes: ['cases:read'],
       });
+      prisma.$transaction.mockImplementation(async (callback) => callback({ apiKey: { updateMany: txUpdateMany, create: txCreate } }));
 
       await rotateApiKey(req, res, next);
 
-      expect(prisma.apiKey.update).toHaveBeenCalledWith(
+      expect(txUpdateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: 'k-1' },
-          data: expect.objectContaining({
-            keyPrefix: expect.stringMatching(/^iacms_live_/),
-            keyHash: expect.any(String),
-          }),
+          where: { id: 'k-1', tenantId: 'tenant-test-1', isActive: true, revokedAt: null },
+          data: expect.objectContaining({ isActive: false, revokedBy: 'user-admin-1' }),
         })
       );
+      expect(txCreate).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ createdBy: 'user-admin-1', keyHash: expect.any(String) }),
+      }));
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringMatching(/successfully rotated/i),
+          apiKey: expect.objectContaining({ id: 'k-2' }),
           rawKey: expect.stringMatching(/^iacms_live_/),
         })
       );

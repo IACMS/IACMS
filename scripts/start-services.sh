@@ -58,7 +58,6 @@ start_one() {
     export WORKER_MODE="embedded"
     export IAM_SERVICE_URL="http://localhost:3001"
     export AUTH_SERVICE_URL="http://localhost:3001"
-    export RBAC_SERVICE_URL="http://localhost:3001"
     export CASE_ENGINE_SERVICE_URL="http://localhost:3003"
     export CASE_SERVICE_URL="http://localhost:3003"
     export WORKFLOW_SERVICE_URL="http://localhost:3003"

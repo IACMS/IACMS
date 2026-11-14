@@ -69,12 +69,14 @@ export async function addParticipant({ conversationId, actorParticipant, userId 
   }
 
   // Verify user exists and belongs to the same tenant
-  const user = await prisma.user.findFirst({
+  const user = await prisma.identityProjection.findUnique({
     where: {
-      id: userId,
-      tenantId: actorParticipant.conversation.tenantId,
-      isActive: true,
+      subjectId_tenantId: {
+        subjectId: userId,
+        tenantId: actorParticipant.conversation.tenantId,
+      },
     },
+    select: { subjectId: true, isActive: true, firstName: true, lastName: true },
   });
 
   if (!user) {

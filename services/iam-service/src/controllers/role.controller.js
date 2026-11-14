@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
-import { NotFoundError, ValidationError } from '../../../../shared/common/errors.js';
+import { NotFoundError, ValidationError } from '#iam/iamErrors.js';
+import { roleSlug } from '../utils/role-slug.js';
 
 export async function getRoles(req, res, next) {
   try {
@@ -74,15 +75,24 @@ export async function getRole(req, res, next) {
 
 export async function createRole(req, res, next) {
   try {
-    const { name, description, tenantId, isSystemRole, permissionIds } = req.body;
+    const { name, slug: requestedSlug, description, tenantId, isSystemRole, permissionIds } = req.body;
     if (!name || typeof name !== 'string') {
       throw new ValidationError('Role name is required');
     }
 
     const isPlatformAdmin = req.headers['x-user-permissions']?.includes('platform:manage_tenants');
     
+    const slug = requestedSlug === undefined ? roleSlug(name) : String(requestedSlug).trim();
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      throw new ValidationError('slug must be lowercase letters, numbers, and single hyphens');
+    }
+    if (await prisma.role.findUnique({ where: { slug }, select: { id: true } })) {
+      throw new ValidationError('A role with this slug already exists');
+    }
+
     const roleData = {
       name,
+      slug,
       description: description || null,
       tenantId: tenantId || null,
       isSystemRole: Boolean(isSystemRole),
@@ -119,13 +129,22 @@ export async function createRole(req, res, next) {
 export async function updateRole(req, res, next) {
   try {
     const roleId = req.params.id;
-    const { name, description, permissionIds } = req.body;
+    const { name, slug: requestedSlug, description, permissionIds } = req.body;
 
     const existingRole = await prisma.role.findUnique({ 
       where: { id: roleId },
       include: { rolePermissions: { include: { permission: true } } } 
     });
     if (!existingRole) throw new NotFoundError('Role');
+
+    const slug = requestedSlug === undefined ? undefined : String(requestedSlug).trim();
+    if (slug !== undefined) {
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+        throw new ValidationError('slug must be lowercase letters, numbers, and single hyphens');
+      }
+      const duplicate = await prisma.role.findUnique({ where: { slug }, select: { id: true } });
+      if (duplicate && duplicate.id !== roleId) throw new ValidationError('A role with this slug already exists');
+    }
 
     const isPlatformAdmin = req.headers['x-user-permissions']?.includes('platform:manage_tenants');
     const hasPlatformPerms = existingRole.rolePermissions.some((rp) => rp.permission.resource === 'platform');
@@ -166,6 +185,7 @@ export async function updateRole(req, res, next) {
       where: { id: roleId },
       data: {
         ...(name ? { name } : {}),
+        ...(slug !== undefined ? { slug } : {}),
         ...(description !== undefined ? { description } : {}),
       },
       include: {

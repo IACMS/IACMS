@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import helmet from 'helmet';
-import { errorHandler } from '../../../shared/middleware/errorHandler.js';
+import { errorHandler } from '#iam/iamErrorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import tenantRoutes from './routes/tenant.routes.js';
 import platformRoutes from './routes/platform.routes.js';
@@ -14,12 +14,16 @@ import userRoleRoutes from './routes/user-role.routes.js';
 import oauthClientRoutes from './routes/oauth-clients.routes.js';
 import oauthProviderRoutes from './routes/oauth-providers.routes.js';
 import apiKeyRoutes from './routes/api-keys.routes.js';
+import internalIdentityRoutes from './routes/internal-identities.routes.js';
+import iamOrganizationRoutes from './routes/iam-organizations.routes.js';
+import iamIdentityRoutes from './routes/iam-identities.routes.js';
 import interactionRoutes from './oauth/interaction/interaction.routes.js';
 import socialRoutes from './oauth/social/social.routes.js';
-import Logger from '../../../shared/common/logger.js';
-import { setupSwagger } from '../../../shared/swagger.js';
-import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
-import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
+import Logger from '#iam/iamLogger.js';
+import { setupSwagger } from '#iam/iamSwagger.js';
+import { requireInternalRequest } from '#iam/iamRequireInternalRequest.js';
+import { assertProductionSecrets } from '#iam/iamSecrets.js';
+import { startIdentityEventPublisher } from './identityEvents.js';
 
 // Load .env from service directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -145,7 +149,15 @@ assertProductionSecrets([
 // All requests must originate from the API gateway (carries INTERNAL_SERVICE_TOKEN).
 // The gateway exposes /oauth/.well-known and /oauth/jwks publicly; internally they
 // still travel through the gateway and carry the token.
-app.use(requireInternalRequest());
+app.use(requireInternalRequest({
+  skipPaths: [
+    '/health',
+    '/oauth/clients',
+    '/oauth/providers',
+    '/iam/organizations',
+    '/iam/identities',
+  ],
+}));
 
 // ── Application routes ────────────────────────────────────────────────────────
 app.use('/auth', authRoutes);
@@ -157,12 +169,20 @@ app.use('/user-roles', userRoleRoutes);
 app.use('/oauth/clients', oauthClientRoutes);
 app.use('/oauth/providers', oauthProviderRoutes);
 app.use('/api-keys', apiKeyRoutes);
+app.use('/internal/identities', internalIdentityRoutes);
+app.use('/iam/organizations', iamOrganizationRoutes);
+app.use('/iam/identities', iamIdentityRoutes);
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
+const stopIdentityEventPublisher = startIdentityEventPublisher();
 app.listen(PORT, () => {
   logger.info(`IAM Service running on port ${PORT}`);
+});
+
+process.on('SIGTERM', async () => {
+  await stopIdentityEventPublisher();
 });
 
 export default app;

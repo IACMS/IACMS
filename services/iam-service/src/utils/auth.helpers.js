@@ -9,8 +9,8 @@
 
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import EventBus from '../../../../shared/utils/eventBus.js';
-import Logger from '../../../../shared/common/logger.js';
+import EventBus from '#iam/iamEventBus.js';
+import Logger from '#iam/iamLogger.js';
 
 const logger = new Logger('auth-service');
 
@@ -41,7 +41,7 @@ export function getEventBus() {
 
 /**
  * Generate a signed access token and refresh token for a user.
- * @param {{ id: string, tenantId: string, departmentId?: string | null, email: string, mustChangePassword?: boolean }} user
+ * @param {{ id: string, tenantId: string, email: string, mustChangePassword?: boolean }} user
  * @param {string[]} [roleIds] — RBAC role UUIDs (forwarded as x-user-roles by the gateway)
  */
 export function generateTokens(user, roleIds = []) {
@@ -52,7 +52,6 @@ export function generateTokens(user, roleIds = []) {
     jti,
     id: user.id,
     tenantId: user.tenantId,
-    departmentId: user.departmentId ?? null,
     email: user.email,
     mustChangePassword: user.mustChangePassword ?? false,
     roles: roleIds,

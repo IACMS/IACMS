@@ -15,9 +15,9 @@
 
 import crypto from 'crypto';
 import prisma from '../../config/database.js';
-import Logger from '../../../../../shared/common/logger.js';
+import Logger from '#iam/iamLogger.js';
 import { getEventBus } from '../../utils/auth.helpers.js';
-import { TOPICS } from '../../../../../shared/utils/eventBus.js';
+import { TOPICS } from '#iam/iamEventBus.js';
 
 const logger = new Logger('iam-api-key-grant');
 
@@ -177,6 +177,7 @@ export async function apiKeyGrantHandler(ctx) {
   token.set('tenant_id', apiKeyRecord.tenantId);
   token.set('tenant_code', apiKeyRecord.tenant.code);
   token.set('api_key_id', apiKeyRecord.id);
+  token.set('api_key_owner_id', apiKeyRecord.createdBy);
   token.set('roles', ['api_key']);
 
   const tokenValue = await token.save();

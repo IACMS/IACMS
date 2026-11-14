@@ -100,7 +100,7 @@ router.post('/', requireHumanSession, async (req, res, next) => {
 router.get('/', requireHumanSession, async (req, res, next) => {
   try {
     const tenantId = req.user.tenantId;
-    const apiKeys = await listApiKeys(tenantId);
+    const apiKeys = await listApiKeys(tenantId, req.user.id);
     return res.json({ apiKeys });
   } catch (error) {
     next(error);

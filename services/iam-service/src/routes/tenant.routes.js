@@ -2,10 +2,6 @@ import express from 'express';
 import {
   listTenants,
   getTenant,
-  listTenantDepartments,
-  createDepartment,
-  updateDepartment,
-  deactivateDepartment,
   validateTenant,
   updateTenantConfig,
   registerTenant,
@@ -23,10 +19,6 @@ router.post('/register', authenticateTokenOptional, registerTenant);
 router.post('/self-register', selfRegisterTenant);
 router.get('/', listTenants);
 router.get('/validate/:code', validateTenant);
-router.get('/:id/departments', listTenantDepartments);
-router.post('/:id/departments', authenticateToken, createDepartment);
-router.patch('/:id/departments/:deptId', authenticateToken, updateDepartment);
-router.delete('/:id/departments/:deptId', authenticateToken, deactivateDepartment);
 router.get('/:id', getTenant);
 router.patch('/:id/config', updateTenantConfig);
 

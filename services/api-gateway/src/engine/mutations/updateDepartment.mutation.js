@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { BusinessRuleViolationError, NotFoundError } from '../../../../../shared/common/errors.js';
+import { requireApiKeyActor } from './apiKeyActor.js';
 
 export const schema = z.object({
   departmentId: z.string().uuid(),
@@ -12,9 +13,7 @@ export const requiredScope = 'departments:update';
 
 export async function execute(data, context) {
   const { tenantId, prisma, apiKeyId } = context;
-
-  const apiKey = await prisma.apiKey.findUnique({ where: { id: apiKeyId }, select: { createdBy: true } });
-  const actorUserId = apiKey.createdBy;
+  const actorUserId = requireApiKeyActor(context);
 
   return await prisma.$transaction(async (tx) => {
     // 1. Check if department exists

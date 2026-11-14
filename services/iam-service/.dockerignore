@@ -1,0 +1,6 @@
+node_modules
+.env
+.env.*
+coverage
+coverage_report.txt
+src/generated/prisma

@@ -54,15 +54,6 @@ services:
       - '127.0.0.1:3000:3000'
     restart: unless-stopped
 
-  iam-service:
-    ports: []
-    environment:
-      NODE_ENV: production
-      JWT_SECRET: ${JWT_SECRET}
-      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
-      DATABASE_URL: ${DATABASE_URL}
-    restart: unless-stopped
-
   case-engine-service:
     ports: []
     environment:
@@ -104,7 +95,7 @@ services:
       REDIS_URL: ${REDIS_URL}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-      AUTH_SERVICE_URL: http://iam-service:3001
+      AUTH_SERVICE_URL: ${IAM_SERVICE_URL:?Set IAM_SERVICE_URL to the standalone IAM endpoint}
       VIRUS_SCAN_ENABLED: 'true'
     restart: unless-stopped
 

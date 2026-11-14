@@ -15,32 +15,19 @@
  *  - OIDC_JWKS_JSON env var must be a JSON string containing the JWKS with RS256 key.
  */
 
-import Provider from 'oidc-provider';
+import Provider, { errors as OIDC_ERRORS } from 'oidc-provider';
 import { PrismaAdapter } from './prisma.adapter.js';
 import { findAccount } from './find-account.js';
 import { decryptClientSecret } from './client-secret.utils.js';
 import { GRANT_TYPE, apiKeyGrantHandler, PARAMETERS } from './grants/api-key.grant.js';
 import prisma from '../config/database.js';
-import Logger from '../../../../shared/common/logger.js';
+import Logger from '#iam/iamLogger.js';
+import { loadJwks } from './jwks.js';
+export { loadJwks } from './jwks.js';
 
 const logger = new Logger('iam-oidc');
 
 // ── JWKS ─────────────────────────────────────────────────────────────────────
-
-export function loadJwks() {
-  const raw = process.env.OIDC_JWKS_JSON;
-  if (!raw) {
-    throw new Error(
-      '[oidc.config] OIDC_JWKS_JSON env var is missing. ' +
-        'Set it to a JSON string with a JWKS containing at least one RS256 signing key.',
-    );
-  }
-  try {
-    return JSON.parse(raw);
-  } catch {
-    throw new Error('[oidc.config] OIDC_JWKS_JSON is not valid JSON.');
-  }
-}
 
 // ── Dynamic client lookup ────────────────────────────────────────────────────
 
@@ -61,6 +48,7 @@ async function findClient(clientId) {
       scope: 'openid roles api_key',
       token_endpoint_auth_method: 'none',
       [Symbol.for('tenant_id')]: null,
+      [Symbol.for('iam_organization_id')]: null,
     };
   }
 
@@ -95,12 +83,24 @@ async function findClient(clientId) {
     token_endpoint_auth_method: record.tokenEndpointAuthMethod || 'client_secret_basic',
     // Pass tenant context for isolation checks in the interaction controller
     [Symbol.for('tenant_id')]: record.tenantId ?? null,
+    [Symbol.for('iam_organization_id')]: record.iamOrganizationId ?? null,
+    [Symbol.for('target_audience')]: record.targetAudience ?? null,
   };
 }
 
 // ── Provider configuration ───────────────────────────────────────────────────
 
 const ISSUER = process.env.OIDC_ISSUER || 'http://localhost:3001';
+const STANDARD_SCOPES = ['openid', 'offline_access', 'profile', 'email', 'roles', 'api_key', 'iam:admin'];
+const STANDARD_RESOURCE_SCOPES = ['openid', 'profile', 'email', 'roles', 'api_key', 'iam:admin'];
+
+function readScopeList(value, fallback) {
+  if (!value?.trim()) return fallback;
+  return [...new Set(value.split(/[\s,]+/).map((scope) => scope.trim()).filter(Boolean))];
+}
+
+const supportedScopes = readScopeList(process.env.OIDC_SUPPORTED_SCOPES, STANDARD_SCOPES);
+const resourceScopes = readScopeList(process.env.OIDC_RESOURCE_SCOPES, STANDARD_RESOURCE_SCOPES);
 
 const config = {
   // ── Storage ──────────────────────────────────────────────────────────────
@@ -129,6 +129,9 @@ const config = {
         if (token.get?.('api_key_id')) {
           structuredToken.payload.api_key_id = token.get('api_key_id');
         }
+        if (token.get?.('api_key_owner_id')) {
+          structuredToken.payload.api_key_owner_id = token.get('api_key_owner_id');
+        }
         if (token.get?.('tenant_id')) {
           structuredToken.payload.tenant_id = token.get('tenant_id');
         }
@@ -143,13 +146,13 @@ const config = {
         if (token.clientId) {
           clientRecord = await prisma.oAuthClient.findUnique({
             where: { clientId: token.clientId },
-            select: { id: true, clientId: true, tenantId: true, targetAudience: true },
+            select: { id: true, clientId: true, tenantId: true, iamOrganizationId: true, targetAudience: true },
           });
           if (clientRecord?.tenantId && !structuredToken.payload.tenant_id) {
             structuredToken.payload.tenant_id = clientRecord.tenantId;
           }
-          if (clientRecord?.targetAudience) {
-            structuredToken.payload.aud = clientRecord.targetAudience;
+          if (clientRecord?.iamOrganizationId) {
+            structuredToken.payload.organization_id = clientRecord.iamOrganizationId;
           }
         }
 
@@ -159,8 +162,17 @@ const config = {
             const claims = await account.claims('access_token', token.scope, clientRecord);
             if (claims.tenant_id) structuredToken.payload.tenant_id = claims.tenant_id;
             if (claims.tenant_code) structuredToken.payload.tenant_code = claims.tenant_code;
+            if (claims.organization_id) structuredToken.payload.organization_id = claims.organization_id;
             if (claims.roles) structuredToken.payload.roles = claims.roles;
-            if (claims.department_id) structuredToken.payload.department_id = claims.department_id;
+            const tokenScopes = typeof structuredToken.payload.scope === 'string'
+              ? structuredToken.payload.scope.split(/\s+/).filter(Boolean)
+              : [];
+            if (tokenScopes.includes('iam:admin') && claims.iam_admin === true) {
+              structuredToken.payload.iam_admin = true;
+            } else if (tokenScopes.includes('iam:admin')) {
+              structuredToken.payload.scope = tokenScopes.filter((scope) => scope !== 'iam:admin').join(' ');
+            }
+            if (claims.role_ids) structuredToken.payload.role_ids = claims.role_ids;
           }
         }
       },
@@ -186,14 +198,22 @@ const config = {
     // Audience-scoped access tokens
     resourceIndicators: {
       enabled: true,
-      defaultResource: (_ctx, _client) => process.env.OIDC_DEFAULT_RESOURCE || 'https://api.iacms.local',
-      getResourceServerInfo: (_ctx, resourceIndicator) => ({
-        scope: 'openid profile email roles api_key files:read files:upload files:delete chat:read chat:write chat:admin audit:read audit:write notifications:send cases:read cases:create cases:update',
-        audience: resourceIndicator,
-        accessTokenFormat: 'jwt',
-        accessTokenTTL: 60 * 60, // 1h
-        jwt: { sign: { alg: 'RS256' } },
-      }),
+      // No hard-coded audience: deployments may set a legacy default or require clients
+      // to request an explicit resource indicator.
+      defaultResource: (_ctx, _client) => process.env.OIDC_DEFAULT_RESOURCE || undefined,
+      getResourceServerInfo: (_ctx, resourceIndicator, client) => {
+        const registeredAudience = client?.[Symbol.for('target_audience')];
+        if (registeredAudience && registeredAudience !== resourceIndicator) {
+          throw new OIDC_ERRORS.InvalidTarget('client is not authorized for the requested resource');
+        }
+        return {
+          scope: resourceScopes.join(' '),
+          audience: resourceIndicator,
+          accessTokenFormat: 'jwt',
+          accessTokenTTL: Number(process.env.OIDC_ACCESS_TOKEN_TTL_SECONDS || 600),
+          jwt: { sign: { alg: 'RS256' } },
+        };
+      },
       useGrantedResource: () => true,
     },
 
@@ -202,31 +222,12 @@ const config = {
   },
 
   // ── Scopes ────────────────────────────────────────────────────────────────
-  scopes: [
-    'openid',
-    'offline_access',
-    'profile',
-    'email',
-    'roles',
-    'api_key',
-    'files:read',
-    'files:upload',
-    'files:delete',
-    'chat:read',
-    'chat:write',
-    'chat:admin',
-    'audit:read',
-    'audit:write',
-    'notifications:send',
-    'cases:read',
-    'cases:create',
-    'cases:update',
-  ],
+  scopes: supportedScopes,
 
   // ── Claims mapping ────────────────────────────────────────────────────────
   claims: {
     openid: ['sub'],
-    profile: ['name', 'given_name', 'family_name', 'department_id', 'tenant_id', 'tenant_code'],
+    profile: ['name', 'given_name', 'family_name', 'tenant_id', 'tenant_code', 'organization_id', 'organization_name'],
     email: ['email', 'email_verified'],
     roles: ['roles'],
     api_key: ['api_key_id'],
@@ -234,7 +235,7 @@ const config = {
 
   // ── Token TTLs ────────────────────────────────────────────────────────────
   ttl: {
-    AccessToken: 60 * 60,           // 1h
+    AccessToken: Number(process.env.OIDC_ACCESS_TOKEN_TTL_SECONDS || 600),
     AuthorizationCode: 60,          // 60s (spec minimum)
     ClientCredentials: 60 * 60,     // 1h
     Grant: 14 * 24 * 60 * 60,       // 14d
@@ -315,6 +316,7 @@ provider.Client.find = async function (clientId) {
   if (meta instanceof provider.Client) return meta;
   const client = new provider.Client(meta);
   client[Symbol.for('tenant_id')] = meta[Symbol.for('tenant_id')];
+  client[Symbol.for('target_audience')] = meta[Symbol.for('target_audience')];
   return client;
 };
 

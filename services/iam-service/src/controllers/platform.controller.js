@@ -6,10 +6,12 @@ import {
   ValidationError,
   ForbiddenError,
   ConflictError,
-} from '../../../../shared/common/errors.js';
-import { TOPICS } from '../../../../shared/utils/eventBus.js';
+} from '#iam/iamErrors.js';
+import { TOPICS } from '#iam/iamEventBus.js';
 import { getEventBus, generateTemporaryPassword, JWT_SECRET } from '../utils/auth.helpers.js';
 import { withAuditClient } from '../utils/audit.helpers.js';
+import { enqueueIdentitySnapshot } from '../identityEvents.js';
+import { syncLegacyTenantMembership } from '../iamMemberships.js';
 import {
   resolvePlatformActor,
   assertNotPlatformTenant,
@@ -330,6 +332,7 @@ export async function createPlatformUser(req, res, next) {
           isActive: true, createdAt: true, mustChangePassword: true,
         },
       });
+      await syncLegacyTenantMembership(tx, { tenant: platformTenant, user: userRow });
 
       await tx.userRole.create({
         data: {
@@ -344,6 +347,7 @@ export async function createPlatformUser(req, res, next) {
 
     // Publish event for welcome email
     const bus = getEventBus();
+    await enqueueIdentitySnapshot(newUser.id);
     if (bus) {
       bus.publish(TOPICS.USER_CREATED, {
         userId: newUser.id,
@@ -427,6 +431,7 @@ export async function updatePlatformUser(req, res, next) {
         isActive: true, lastLogin: true, createdAt: true,
       },
     });
+    await enqueueIdentitySnapshot(updated.id);
 
     res.json({ success: true, data: { user: updated } });
   } catch (error) {
@@ -463,6 +468,7 @@ export async function deletePlatformUser(req, res, next) {
       where: { id: userId },
       data: { isActive: false },
     });
+    await enqueueIdentitySnapshot(userId);
 
     res.json({ success: true, message: 'Platform user deactivated' });
   } catch (error) {
@@ -593,13 +599,12 @@ export async function getTenantPlatformStats(req, res, next) {
     });
     if (!tenant) throw new NotFoundError('Tenant');
 
-    const [userAgg, departmentCount, roleCount, clientCount, apiKeyCount] = await Promise.all([
+    const [userAgg, roleCount, clientCount, apiKeyCount] = await Promise.all([
       prisma.user.aggregate({
         where: { tenantId, isActive: true },
         _count: { id: true },
         _max: { lastLogin: true },
       }),
-      prisma.department.count({ where: { tenantId, isActive: true } }),
       prisma.role.count({ where: { tenantId, isActive: true } }),
       prisma.oAuthClient.count({ where: { tenantId, isActive: true } }),
       prisma.apiKey.count({ where: { tenantId, isActive: true } }),
@@ -615,7 +620,6 @@ export async function getTenantPlatformStats(req, res, next) {
         createdAt: tenant.createdAt,
         userCount: userAgg._count.id,
         lastLoginDate: userAgg._max.lastLogin?.toISOString?.() ?? userAgg._max.lastLogin ?? null,
-        departmentCount,
         roleCount,
         oauthClientsCount: clientCount,
         apiKeysCount: apiKeyCount,

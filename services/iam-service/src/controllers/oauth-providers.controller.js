@@ -6,12 +6,13 @@
 
 import prisma from '../config/database.js';
 import { encryptClientSecret } from '../oauth/client-secret.utils.js';
-import { ValidationError, NotFoundError, ForbiddenError } from '../../../../shared/common/errors.js';
-import Logger from '../../../../shared/common/logger.js';
+import { ValidationError, NotFoundError, ForbiddenError } from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
 
 const logger = new Logger('iam-oauth-providers');
 
 async function assertPlatformAdmin(req) {
+  if (req.iamAdminAuthorized === true) return;
   const perms = req.headers['x-user-permissions'] || '';
   if (perms.includes('platform:manage_tenants') || perms.includes('*') || perms.includes('admin:*')) {
     return;

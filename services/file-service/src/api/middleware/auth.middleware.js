@@ -76,9 +76,9 @@ export async function authenticateToken(req, res, next) {
 
       const { payload } = await jose.jwtVerify(token, getJwks(), verifyOptions);
 
-      const roles = Array.isArray(payload.roles)
-        ? payload.roles
-        : (payload.roles ? [payload.roles] : []);
+      const roles = Array.isArray(payload.role_ids)
+        ? payload.role_ids
+        : (Array.isArray(payload.roles) ? payload.roles : (payload.roles ? [payload.roles] : []));
 
       req.user = {
         id: payload.sub,

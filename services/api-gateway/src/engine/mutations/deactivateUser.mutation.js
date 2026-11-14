@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { NotFoundError, ForbiddenError } from '../../../../../shared/common/errors.js';
+import { requireApiKeyActor } from './apiKeyActor.js';
+import { setIamIdentityActive } from '../../services/iamIdentity.service.js';
 
 /**
  * deactivateUser mutation
@@ -22,32 +24,27 @@ export const schema = z.object({
 export const requiredScope = 'users:update';
 
 export async function execute(data, context) {
-  const { tenantId, apiKeyId, prisma } = context;
-
-  // Resolve the actor (key owner) to prevent self-deactivation
-  const apiKey = await prisma.apiKey.findUnique({
-    where: { id: apiKeyId },
-    select: { createdBy: true },
-  });
+  const { tenantId, prisma } = context;
+  const actorUserId = requireApiKeyActor(context);
 
   // 1. Self-deactivation guard
-  if (data.userId === apiKey.createdBy) {
+  if (data.userId === actorUserId) {
     throw new ForbiddenError(
       'You cannot deactivate the user that owns this API key. Revoke the key first.',
     );
   }
 
   // 2. Load user — must belong to caller's tenant
-  const user = await prisma.user.findFirst({
-    where: { id: data.userId, tenantId },
-    select: { id: true, email: true, isActive: true, firstName: true, lastName: true },
+  const user = await prisma.identityProjection.findUnique({
+    where: { subjectId_tenantId: { subjectId: data.userId, tenantId } },
+    select: { subjectId: true, email: true, isActive: true, firstName: true, lastName: true },
   });
   if (!user) throw new NotFoundError('User');
 
   // 3. Idempotency — already inactive
   if (!user.isActive) {
     return {
-      userId: user.id,
+      userId: user.subjectId,
       email: user.email,
       isActive: false,
       message: `User "${user.firstName} ${user.lastName}" is already inactive.`,
@@ -55,13 +52,10 @@ export async function execute(data, context) {
   }
 
   // 4. Deactivate
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { isActive: false },
-  });
+  await setIamIdentityActive({ userId: user.subjectId, tenantId, isActive: false });
 
   return {
-    userId: user.id,
+    userId: user.subjectId,
     email: user.email,
     isActive: false,
     message: `User "${user.firstName} ${user.lastName}" has been deactivated.`,

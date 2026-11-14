@@ -130,15 +130,13 @@ Key files:
 | `src/middleware/auth.middleware.js` | JWT verification middleware |
 | `prisma/schema.prisma` | Manages `users` and `tenants` tables |
 
-### RBAC Service (`services/rbac-service`, port 3002)
+### IACMS-local RBAC (API Gateway)
 
-Role-Based Access Control. Manages who can do what.
+Role-Based Access Control is owned by IACMS and served by the API Gateway from IACMS's `roles`, `permissions`, `role_permissions`, and `user_roles` tables. IAM authenticates subjects; IACMS assigns project roles and resolves project permissions.
 
-- Role CRUD
-- Permission CRUD
-- User-role assignments
-- Permission lookup: `GET /permissions/user/:userId`
-- Permission check: `GET /permissions/check/:userId?resource=x&action=y`
+- Role and permission CRUD: `/api/v1/rbac/roles` and `/api/v1/rbac/permissions`
+- User-role assignments: `/api/v1/rbac/user-roles/*`
+- The old `/api/v1/auth/roles` and `/api/v1/auth/users/:id/role` UI paths are temporarily served by the same local controllers.
 
 ### Case Service (`services/case-service`, port 3003)
 
@@ -913,7 +911,6 @@ NODE_ENV=development
 ```env
 PORT=3000
 AUTH_SERVICE_URL=http://localhost:3001
-RBAC_SERVICE_URL=http://localhost:3002
 CASE_SERVICE_URL=http://localhost:3003
 WORKFLOW_SERVICE_URL=http://localhost:3004
 REFERRAL_SERVICE_URL=http://localhost:3005

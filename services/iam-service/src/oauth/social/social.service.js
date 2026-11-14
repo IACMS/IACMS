@@ -18,6 +18,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database.js';
+import { syncLegacyTenantMembership } from '../../iamMemberships.js';
 import { decryptClientSecret } from '../client-secret.utils.js';
 import {
   ValidationError,
@@ -25,10 +26,11 @@ import {
   NotFoundError,
   ConflictError,
   ForbiddenError,
-} from '../../../../../shared/common/errors.js';
-import Logger from '../../../../../shared/common/logger.js';
-import { TOPICS } from '../../../../../shared/utils/eventBus.js';
+} from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
+import { TOPICS } from '#iam/iamEventBus.js';
 import { getEventBus } from '../../utils/auth.helpers.js';
+import { enqueueIdentitySnapshot } from '../../identityEvents.js';
 
 const logger = new Logger('iam-social');
 
@@ -650,6 +652,7 @@ export async function processSocialLogin({ profile, state }) {
       },
       include: { tenant: true },
     });
+    await syncLegacyTenantMembership(tx, { tenant, user: createdUser });
 
     if (defaultRole) {
       await tx.userRole.create({
@@ -687,6 +690,7 @@ export async function processSocialLogin({ profile, state }) {
 
   // Publish event bus notification
   const bus = getEventBus();
+  await enqueueIdentitySnapshot(fullUser.id);
   if (bus) {
     bus.publish(TOPICS.USER_CREATED, {
       userId: fullUser.id,

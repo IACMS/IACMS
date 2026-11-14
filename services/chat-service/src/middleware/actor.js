@@ -85,7 +85,9 @@ export async function attachActor(req, res, next) {
           userId: payload.sub,
           departmentId: payload.department_id ?? null,
           email: payload.email ?? null,
-          roles: Array.isArray(payload.roles) ? payload.roles : (payload.roles ? [payload.roles] : []),
+          roles: Array.isArray(payload.role_ids)
+            ? payload.role_ids
+            : (Array.isArray(payload.roles) ? payload.roles : (payload.roles ? [payload.roles] : [])),
           scopes: typeof payload.scope === 'string' ? payload.scope.split(' ') : [],
           isApiKey: Boolean(payload.api_key_id),
         };
@@ -95,7 +97,10 @@ export async function attachActor(req, res, next) {
         req.headers['x-tenant-id'] = payload.tenant_id;
         req.headers['x-user-id'] = payload.sub;
         if (payload.department_id) req.headers['x-department-id'] = payload.department_id;
-        if (payload.roles) req.headers['x-user-roles'] = Array.isArray(payload.roles) ? payload.roles.join(',') : payload.roles;
+        const roles = Array.isArray(payload.role_ids)
+          ? payload.role_ids
+          : (Array.isArray(payload.roles) ? payload.roles : (payload.roles ? [payload.roles] : []));
+        if (roles.length) req.headers['x-user-roles'] = roles.join(',');
 
         return next();
       } catch (oauthErr) {

@@ -9,8 +9,8 @@ vi.mock('../../src/config/database.js', () => {
         findUnique: vi.fn(),
         update: vi.fn(),
       },
-      user: {
-        findFirst: vi.fn(),
+      identityProjection: {
+        findUnique: vi.fn(),
       },
       $transaction: vi.fn((callback) => {
         const tx = {
@@ -55,7 +55,7 @@ describe('Participant Service - Detailed', () => {
     it('should successfully add user if actor is ADMIN', async () => {
       const actorParticipant = { role: 'ADMIN', conversation: { type: 'GROUP', tenantId: 'tenant-1' } };
       prisma.chatParticipant.findUnique.mockResolvedValueOnce(null); // not already in group
-      prisma.user.findFirst.mockResolvedValueOnce({ id: 'user-2', firstName: 'Jane', lastName: 'Doe', tenantId: 'tenant-1' });
+      prisma.identityProjection.findUnique.mockResolvedValueOnce({ subjectId: 'user-2', firstName: 'Jane', lastName: 'Doe', isActive: true });
 
       const result = await participantService.addParticipant({
         conversationId: 'conv-1',
@@ -81,7 +81,7 @@ describe('Participant Service - Detailed', () => {
     it('should allow MEMBER to remove themselves (leave group)', async () => {
       const actorParticipant = { role: 'MEMBER', userId: 'user-1', conversation: { type: 'GROUP' } };
       prisma.chatParticipant.findUnique.mockResolvedValueOnce({ id: 'part-1', userId: 'user-1', leftAt: null, user: { firstName: 'John', lastName: 'Doe' } });
-      prisma.user.findFirst.mockResolvedValueOnce({ id: 'user-1', firstName: 'John', lastName: 'Doe' });
+      prisma.identityProjection.findUnique.mockResolvedValueOnce({ subjectId: 'user-1', firstName: 'John', lastName: 'Doe', isActive: true });
 
       const result = await participantService.removeParticipant({
         conversationId: 'conv-1',

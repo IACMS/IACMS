@@ -1,10 +1,11 @@
 import prisma from '../../config/database.js';
-import { NotFoundError } from '../../../../../shared/common/errors.js';
-import Logger from '../../../../../shared/common/logger.js';
-import { TOPICS } from '../../../../../shared/utils/eventBus.js';
+import { NotFoundError } from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
+import { TOPICS } from '#iam/iamEventBus.js';
 import { getEventBus } from '../../utils/auth.helpers.js';
 import { withAuditClient } from '../../utils/audit.helpers.js';
 import { validateProfileUpdateRequest } from '../../utils/validators.js';
+import { enqueueIdentitySnapshot } from '../../identityEvents.js';
 
 const logger = new Logger('auth-service');
 
@@ -23,15 +24,11 @@ export async function getProfile(req, res, next) {
         firstName: true,
         lastName: true,
         phone: true,
-        departmentId: true,
         isActive: true,
         isEmailVerified: true,
         mustChangePassword: true,
         lastLogin: true,
         createdAt: true,
-        department: {
-          select: { id: true, code: true, name: true },
-        },
         tenant: {
           select: { id: true, name: true, code: true },
         },
@@ -78,6 +75,7 @@ export async function updateProfile(req, res, next) {
     });
 
     const keys = Object.keys(fields);
+    await enqueueIdentitySnapshot(user.id);
     const oldValues = {};
     const newValues = {};
     for (const k of keys) {

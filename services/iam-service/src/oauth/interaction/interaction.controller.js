@@ -16,8 +16,9 @@ import prisma from '../../config/database.js';
 import provider from '../oidc.config.js';
 import { renderLoginForm, renderConsentForm } from './interaction.views.js';
 import { getActiveProviders } from '../social/social.service.js';
-import { UnauthorizedError, ForbiddenError, ValidationError } from '../../../../../shared/common/errors.js';
-import Logger from '../../../../../shared/common/logger.js';
+import { UnauthorizedError, ValidationError } from '#iam/iamErrors.js';
+import Logger from '#iam/iamLogger.js';
+import { findUserForOAuthClient, resolveClientOrganization } from '../organization-access.js';
 
 const logger = new Logger('iam-oidc-interaction');
 
@@ -146,17 +147,10 @@ export async function postLogin(req, res, next) {
     const clientTenantId = client[Symbol.for('tenant_id')] ?? null;
 
     // Find the user
-    const user = await prisma.user.findFirst({
-      where: {
-        email: email.trim().toLowerCase(),
-        // If the client is tenant-scoped, only look within that tenant
-        ...(clientTenantId ? { tenantId: clientTenantId } : {}),
-        isActive: true,
-      },
-      include: { tenant: { select: { isActive: true } } },
-    });
+    const user = await findUserForOAuthClient(prisma, email.trim().toLowerCase(), client);
+    const organizationContext = await resolveClientOrganization(prisma, client);
 
-    if (!user || !user.tenant?.isActive) {
+    if (!user || (!organizationContext.required && !user.tenant?.isActive)) {
       // Constant-time-ish: always do a bcrypt compare to prevent timing attacks
       await bcrypt.compare(password, '$2b$10$invalidhashpaddingtoconstanttime000000000000000000');
       throw new UnauthorizedError('Invalid credentials');
@@ -164,11 +158,6 @@ export async function postLogin(req, res, next) {
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new UnauthorizedError('Invalid credentials');
-
-    // Tenant isolation check for tenant-scoped clients
-    if (clientTenantId && user.tenantId !== clientTenantId) {
-      throw new ForbiddenError('This application is not available for your account');
-    }
 
     logger.info('OIDC interaction login', { userId: user.id, clientId: params.client_id });
 

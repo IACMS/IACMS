@@ -98,6 +98,7 @@ describe('Gateway Authentication Middleware — RS256 OIDC & HMAC Token Verifica
       tenant_id: 'tenant-police-9',
       tenant_code: 'POLICE',
       api_key_id: 'key-record-uuid',
+      api_key_owner_id: 'key-owner-uuid',
       roles: ['api_key'],
       scope: 'api_key cases:read',
     })
@@ -116,6 +117,7 @@ describe('Gateway Authentication Middleware — RS256 OIDC & HMAC Token Verifica
     expect(req.headers['x-api-key-id']).toBe('key-record-uuid');
     expect(req.headers['x-api-key-scopes']).toBe('api_key,cases:read');
     expect(req.headers['x-tenant-id']).toBe('tenant-police-9');
+    expect(req.apiKeyContext.createdBy).toBe('key-owner-uuid');
   });
 
   it('rejects expired RS256 token with 401 TOKEN_EXPIRED', async () => {

@@ -32,6 +32,7 @@ import { GraphQLError } from 'graphql';
 import { HeaderMap } from '@apollo/server';
 import crypto from 'node:crypto';
 import { prismaPartner as prisma } from '../config/database.js';
+import { resolveApiKeyOwner } from '../services/apiKey.service.js';
 import Logger from '../../../../shared/common/logger.js';
 
 const logger = new Logger('graphql:server');
@@ -117,12 +118,26 @@ export async function createGraphQLMiddleware() {
 
     const requestId = `gql_${crypto.randomBytes(5).toString('hex')}`;
 
+    // New API-key JWTs carry the owner claim. Resolve older, still-valid tokens
+    // through IAM during the rolling deployment instead of reading IAM tables.
+    let apiKeyOwnerId = req.apiKeyContext.createdBy;
+    if (!apiKeyOwnerId) {
+      try {
+        apiKeyOwnerId = await resolveApiKeyOwner(req.apiKeyContext.keyId, req.apiKeyContext.tenantId);
+      } catch {
+        return res.status(503).json({
+          errors: [{ message: 'API key context is temporarily unavailable.', extensions: { code: 'IAM_UNAVAILABLE' } }],
+        });
+      }
+    }
+
     // Build context for resolvers
     const contextValue = {
       tenantId: req.apiKeyContext.tenantId,
       apiKeyId: req.apiKeyContext.keyId,
       scopes:   req.apiKeyContext.scopes,
       tenantCode: req.apiKeyContext.tenantCode,
+      apiKeyOwnerId,
       sourceIp:  req.ip,
       requestId,
       prisma,
