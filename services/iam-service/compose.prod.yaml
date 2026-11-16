@@ -1,0 +1,60 @@
+# Production Compose Example for Central IAM Service
+# Usage:
+#   docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod up -d
+#
+# Production Security Principles:
+# 1. Databases (iam-postgres, iam-redis) are isolated inside the 'iam-private' network.
+# 2. Host ports are never published directly to 0.0.0.0; iam-service binds strictly to localhost (127.0.0.1)
+#    behind a hardened reverse proxy (e.g., NGINX / Caddy / Cloudflare) with TLS termination.
+# 3. Containers restart automatically (always) and resource limits are configured.
+# 4. Critical secrets (JWT_SECRET, OIDC_COOKIE_SECRET, INTERNAL_SERVICE_TOKEN) must be supplied via secure environment.
+
+name: iam-prod
+
+services:
+  iam-postgres:
+    restart: always
+    environment:
+      POSTGRES_DB: iam
+      POSTGRES_USER: ${IAM_POSTGRES_USER:-iam}
+      POSTGRES_PASSWORD: ${IAM_POSTGRES_PASSWORD:?Set IAM_POSTGRES_PASSWORD in production}
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+    ports: []
+
+  iam-redis:
+    restart: always
+    command: ["redis-server", "--requirepass", "${IAM_REDIS_PASSWORD:?Set IAM_REDIS_PASSWORD in production}", "--appendonly", "yes"]
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+    ports: []
+
+  iam-service:
+    restart: always
+    ports:
+      # Expose only on loopback for the reverse proxy; never bind to 0.0.0.0
+      - "127.0.0.1:${IAM_PORT:-3001}:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: ${IAM_DATABASE_URL:?Set IAM_DATABASE_URL in production}
+      REDIS_URL: ${IAM_REDIS_URL:?Set IAM_REDIS_URL in production}
+      KAFKA_BROKERS: ${IAM_KAFKA_BROKERS:?Set IAM_KAFKA_BROKERS in production}
+      JWT_SECRET: ${IAM_JWT_SECRET:?Set IAM_JWT_SECRET in production}
+      INTERNAL_SERVICE_TOKEN: ${IAM_INTERNAL_SERVICE_TOKEN:?Set IAM_INTERNAL_SERVICE_TOKEN in production}
+      OIDC_ISSUER: ${OIDC_ISSUER:?Set OIDC_ISSUER in production}
+      IAM_ADMIN_AUDIENCE: ${IAM_ADMIN_AUDIENCE:?Set IAM_ADMIN_AUDIENCE in production}
+      OIDC_COOKIE_SECRET: ${OIDC_COOKIE_SECRET:?Set OIDC_COOKIE_SECRET in production}
+      CLIENT_SECRET_KEY: ${CLIENT_SECRET_KEY:?Set CLIENT_SECRET_KEY in production}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON:?Set OIDC_JWKS_JSON in production}
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M

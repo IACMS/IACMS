@@ -11,7 +11,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - '5434:5432'
+      - '127.0.0.1:5434:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -27,7 +27,7 @@ services:
     networks:
       - iacms-network
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -43,7 +43,7 @@ services:
     image: confluentinc/cp-kafka:7.5.0
     container_name: iacms-kafka
     ports:
-      - '9092:9092'
+      - '127.0.0.1:9092:9092'
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -86,7 +86,7 @@ services:
       dockerfile: services/api-gateway/Dockerfile
     container_name: iacms-api-gateway
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
     environment:
       PORT: 3000
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:5174}
@@ -135,7 +135,7 @@ services:
       dockerfile: services/case-engine-service/Dockerfile
     container_name: iacms-case-engine-service
     ports:
-      - '3003:3003'
+      - '127.0.0.1:3003:3003'
     environment:
       PORT: 3003
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
@@ -155,7 +155,7 @@ services:
       dockerfile: services/audit-service/Dockerfile
     container_name: iacms-audit-service
     ports:
-      - '3006:3006'
+      - '127.0.0.1:3006:3006'
     environment:
       PORT: 3006
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
@@ -176,7 +176,7 @@ services:
       dockerfile: services/integration-service/Dockerfile
     container_name: iacms-integration-service
     ports:
-      - '3007:3007'
+      - '127.0.0.1:3007:3007'
     environment:
       PORT: 3007
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
@@ -198,7 +198,7 @@ services:
       dockerfile: services/notification-service/Dockerfile
     container_name: iacms-notification-service
     ports:
-      - '3008:3008'
+      - '127.0.0.1:3008:3008'
     env_file:
       - ../services/notification-service/.env
     environment:
@@ -225,7 +225,7 @@ services:
       dockerfile: services/chat-service/Dockerfile
     container_name: iacms-chat-service
     ports:
-      - '3010:3010'
+      - '127.0.0.1:3010:3010'
     environment:
       PORT: 3010
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
@@ -328,7 +328,7 @@ services:
       target: http
     container_name: iacms-file-service
     ports:
-      - '3009:3009'
+      - '127.0.0.1:3009:3009'
     environment:
       PORT: 3009
       NODE_ENV: development
