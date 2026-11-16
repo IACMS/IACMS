@@ -18,9 +18,10 @@ import { legacyOrganizationSystem } from '../legacyOrganizationSystem.js';
 
 async function resolveClient(ctx, token) {
   if (ctx?.oidc?.client) return ctx.oidc.client;
-  if (!token?.clientId) return null;
+  const clientId = typeof token === 'object' ? token?.clientId : token;
+  if (!clientId) return null;
   return prisma.oAuthClient.findUnique({
-    where: { clientId: token.clientId },
+    where: { clientId },
     select: { id: true, clientId: true, tenantId: true, iamOrganizationId: true, targetAudience: true },
   });
 }
@@ -67,9 +68,16 @@ export async function findAccount(ctx, sub, token) {
      * `clientContext`  — optional client record or client ID for application-scoped roles
      */
     async claims(_use, scope, clientContext) {
-      const activeAccess = clientContext
-        ? await resolveActiveClientMembership(prisma, user.id, clientContext)
-        : membershipAccess;
+      let activeAccess = membershipAccess;
+      if (clientContext) {
+        const resolvedContextClient =
+          clientContext.iamOrganizationId !== undefined || clientContext[Symbol.for('iam_organization_id')] !== undefined
+            ? clientContext
+            : await resolveClient(ctx, clientContext);
+        activeAccess = resolvedContextClient
+          ? await resolveActiveClientMembership(prisma, user.id, resolvedContextClient)
+          : membershipAccess;
+      }
       if (activeAccess.required && !activeAccess.allowed) return {};
 
       const base = { sub: user.id };

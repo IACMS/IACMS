@@ -7,6 +7,8 @@ const { mockPrisma } = vi.hoisted(() => ({
     },
     iamOrganization: { findUnique: vi.fn() },
     iamMembership: { findUnique: vi.fn() },
+    oAuthClient: { findUnique: vi.fn() },
+    userApplicationRole: { findMany: vi.fn(), count: vi.fn() },
   },
 }));
 
@@ -19,6 +21,12 @@ import { findAccount } from '../../src/oauth/find-account.js';
 describe('findAccount unit tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPrisma.user.findUnique.mockReset();
+    mockPrisma.iamOrganization.findUnique.mockReset();
+    mockPrisma.iamMembership.findUnique.mockReset();
+    mockPrisma.oAuthClient.findUnique.mockReset();
+    mockPrisma.userApplicationRole.findMany.mockReset();
+    mockPrisma.userApplicationRole.count.mockReset();
   });
 
   it('returns undefined if user does not exist', async () => {
@@ -163,5 +171,59 @@ describe('findAccount unit tests', () => {
 
     await expect(findAccount({ oidc: { client: { iamOrganizationId: 'org-2' } } }, 'u-201'))
       .resolves.toBeUndefined();
+  });
+
+  it('userinfo for organization-bound client resolved via token.clientId returns organization_id and no legacy roles', async () => {
+    mockPrisma.oAuthClient.findUnique.mockResolvedValue({
+      id: 'client-uuid-1',
+      clientId: 'org-app-client',
+      iamOrganizationId: 'org-bound-99',
+      targetAudience: 'http://localhost:3001/admin-api',
+      tenantId: null,
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValueOnce({
+      id: 'u-300',
+      email: 'user300@example.com',
+      firstName: 'Jane',
+      lastName: 'Doe',
+      isActive: true,
+      isEmailVerified: true,
+      tenantId: 'legacy-tenant-id',
+      tenant: { code: 'LEGACY_TENANT', isActive: true },
+      userRoles: [
+        { roleId: 'legacy-role-id-1', role: { slug: 'case-worker', name: 'Case Worker' } },
+        { roleId: 'legacy-role-id-2', role: { slug: 'detective', name: 'Detective' } },
+      ],
+    });
+
+    mockPrisma.iamOrganization.findUnique.mockResolvedValue({
+      id: 'org-bound-99',
+      name: 'Bound Org',
+      slug: 'bound-org',
+      isActive: true,
+      externalSystem: 'external-custom-system',
+      externalId: 'ext-99',
+    });
+
+    mockPrisma.iamMembership.findUnique.mockResolvedValue({
+      id: 'membership-99',
+      subjectId: 'u-300',
+      organizationId: 'org-bound-99',
+      status: 'active',
+    });
+
+    mockPrisma.userApplicationRole.findMany.mockResolvedValue([]);
+
+    const account = await findAccount(null, 'u-300', { clientId: 'org-app-client' });
+
+    expect(account).toBeDefined();
+    expect(account.accountId).toBe('u-300');
+
+    const claims = await account.claims('userinfo', 'openid profile email roles', { clientId: 'org-app-client' });
+
+    expect(claims.organization_id).toBe('org-bound-99');
+    expect(claims.roles).toEqual([]);
+    expect(claims.tenant_id).toBeUndefined();
   });
 });
