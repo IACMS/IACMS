@@ -22,6 +22,16 @@ router.get('/validate/:code', validateTenant);
 router.get('/:id', getTenant);
 router.patch('/:id/config', updateTenantConfig);
 
+export const ALLOWED_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+export const UPLOAD_LIMITS = { fileSize: 5 * 1024 * 1024 }; // 5MB
+
+export function tenantLogoFileFilter(req, file, cb) {
+  if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+    return cb(new Error('Invalid file type. Only PNG, JPEG, or WebP images are allowed.'));
+  }
+  cb(null, true);
+}
+
 const uploadRoot = path.join(process.cwd(), 'uploads');
 const upload = multer({
   storage: multer.diskStorage({
@@ -36,16 +46,24 @@ const upload = multer({
       cb(null, `logo${ext}`);
     },
   }),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    const allowed = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']);
-    if (!allowed.has(file.mimetype)) {
-      return cb(new Error('Invalid file type. Only PNG, JPEG, WebP, or SVG images are allowed.'));
-    }
-    cb(null, true);
-  },
+  limits: UPLOAD_LIMITS,
+  fileFilter: tenantLogoFileFilter,
 });
 
-router.post('/:id/logo', upload.single('file'), uploadTenantLogo);
+router.post(
+  '/:id/logo',
+  (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ error: 'FILE_UPLOAD_ERROR', message: err.message });
+      }
+      if (err) {
+        return res.status(400).json({ error: 'INVALID_FILE_TYPE', message: err.message });
+      }
+      next();
+    });
+  },
+  uploadTenantLogo
+);
 
 export default router;
