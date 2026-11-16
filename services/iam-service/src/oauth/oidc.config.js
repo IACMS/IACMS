@@ -71,12 +71,34 @@ async function findClient(clientId) {
   const configuredGrants = Array.isArray(record.grantTypes) ? record.grantTypes : ['authorization_code'];
   // Support custom API key grant on registered clients
   const grant_types = Array.from(new Set([...configuredGrants, GRANT_TYPE]));
+  const redirect_uris = Array.isArray(record.redirectUris) ? record.redirectUris : [];
+
+  // Derive allowed post-logout redirect URIs from registered redirect URIs:
+  // Allow origin root, /login, and the exact redirect URIs themselves
+  const post_logout_redirect_uris = Array.from(new Set([
+    ...(Array.isArray(record.postLogoutRedirectUris) ? record.postLogoutRedirectUris : []),
+    ...redirect_uris,
+    ...redirect_uris.flatMap((u) => {
+      try {
+        const parsed = new URL(u);
+        return [
+          parsed.origin,
+          `${parsed.origin}/`,
+          `${parsed.origin}/login`,
+          `${parsed.origin}/auth/login`,
+        ];
+      } catch {
+        return [];
+      }
+    }),
+  ]));
 
   return {
     client_id: record.clientId,
     client_secret: clientSecret,
     client_name: record.name,
-    redirect_uris: Array.isArray(record.redirectUris) ? record.redirectUris : [],
+    redirect_uris,
+    post_logout_redirect_uris,
     grant_types,
     response_types: Array.isArray(record.responseTypes) ? record.responseTypes : ['code'],
     scope: record.scope || 'openid profile email',
@@ -236,6 +258,20 @@ const config = {
         };
       },
       useGrantedResource: () => true,
+    },
+
+    // RP-Initiated Logout (OIDC front-channel logout)
+    rpInitiatedLogout: {
+      enabled: true,
+      async logoutSource(ctx, form) {
+        ctx.body = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Signing out...</title></head><body onload="document.forms[0].submit()">${form.replace('</form>', '<input type="hidden" name="logout" value="yes"/></form>')}<script>document.forms[0].submit();</script></body></html>`;
+      },
+      async postLogoutSuccessSource(ctx) {
+        if (ctx.oidc?.params?.post_logout_redirect_uri) {
+          return ctx.redirect(ctx.oidc.params.post_logout_redirect_uri);
+        }
+        ctx.body = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Signed Out</title></head><body style="font-family:sans-serif;text-align:center;padding:50px;"><h2>Signed Out</h2><p>You have been signed out of Central IAM.</p><a href="/login">Return to Login</a></body></html>';
+      },
     },
 
     // Disable the built-in dev UI — we bring our own
