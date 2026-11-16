@@ -197,9 +197,11 @@ app.use('/iam/identities', iamIdentityRoutes);
 app.use(errorHandler);
 
 const stopIdentityEventPublisher = startIdentityEventPublisher();
-app.listen(PORT, () => {
-  logger.info(`IAM Service running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info(`IAM Service running on port ${PORT}`);
+  });
+}
 
 process.on('SIGTERM', async () => {
   await stopIdentityEventPublisher();
