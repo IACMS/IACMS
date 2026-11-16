@@ -86,6 +86,10 @@ export async function createRole(req, res, next) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
       throw new ValidationError('slug must be lowercase letters, numbers, and single hyphens');
     }
+    const RESERVED_ADMIN_SLUGS = new Set(['iam-admin', 'system-admin', 'system_admin']);
+    if (RESERVED_ADMIN_SLUGS.has(slug) && !isPlatformAdmin) {
+      throw new ForbiddenError('Reserved administrator role slugs cannot be created');
+    }
     if (await prisma.role.findUnique({ where: { slug }, select: { id: true } })) {
       throw new ValidationError('A role with this slug already exists');
     }

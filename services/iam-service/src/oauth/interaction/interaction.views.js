@@ -1,7 +1,7 @@
 /**
  * interaction.views.js
- * Lightweight, zero-dependency HTML templates for the OIDC interaction screens.
- * Designed with modern aesthetic, responsive card layout, and accessible form controls.
+ * Zero-dependency, accessible, responsive HTML templates for OIDC interaction screens.
+ * Designed to Auth0 Universal Login / Clerk visual standards.
  */
 
 function escapeHtml(str) {
@@ -14,12 +14,57 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-const SCOPE_DESCRIPTIONS = {
-  openid: 'Verify your identity (OpenID Connect)',
-  profile: 'Access your basic profile information (name)',
-  email: 'View your verified email address',
-  roles: 'Access your system roles and authorizations',
-  offline_access: 'Maintain access in the background (refresh tokens)',
+const SCOPE_META = {
+  openid: {
+    label: 'Verify your identity',
+    description: 'Confirms your account subject identifier with OpenID Connect',
+    warning: false,
+  },
+  profile: {
+    label: 'View your profile info',
+    description: 'Name, username, and basic display details',
+    warning: false,
+  },
+  email: {
+    label: 'View your email address',
+    description: 'Access your verified primary email address',
+    warning: false,
+  },
+  roles: {
+    label: 'See your roles in this app',
+    description: 'Authorizations and access permissions scoped to this application',
+    warning: false,
+  },
+  offline_access: {
+    label: 'Stay signed in',
+    description: 'Maintain access in the background without prompting you to log in repeatedly',
+    warning: false,
+  },
+  'iam:admin': {
+    label: 'IAM Administrator Access',
+    description: 'Full administrative rights to configure identity systems, clients, roles, and organizations',
+    warning: true,
+  },
+  'cases:read': {
+    label: 'Read case records',
+    description: 'View case dossiers, tasks, and historical notes',
+    warning: false,
+  },
+  'cases:create': {
+    label: 'Create new cases',
+    description: 'Initiate new case workflows and register incidents',
+    warning: false,
+  },
+  'cases:update': {
+    label: 'Modify cases',
+    description: 'Update case status, assignees, and execute workflow transitions',
+    warning: false,
+  },
+  'files:upload': {
+    label: 'Upload files and evidence',
+    description: 'Attach documents and media to case files',
+    warning: false,
+  },
 };
 
 const SOCIAL_ICONS = {
@@ -34,30 +79,34 @@ const SOCIAL_LABELS = {
   github: 'Sign in with GitHub',
 };
 
-function baseLayout(title, content) {
+function baseLayout(title, content, client = null) {
+  const accentColor = client?.logo_color || '#4f46e5';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(title)} - IACMS Identity</title>
+  <title>${escapeHtml(title)} - IACMS Central Identity</title>
   <style>
     :root {
-      --primary: #4f46e5;
+      --primary: ${escapeHtml(accentColor)};
       --primary-hover: #4338ca;
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --card-border: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
       --danger-bg: #451a1a;
       --danger-border: #7f1d1d;
       --danger-text: #fca5a5;
+      --warning-bg: #422006;
+      --warning-border: #854d0e;
+      --warning-text: #fef08a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg) 70%);
       color: var(--text);
       min-height: 100vh;
       display: flex;
@@ -69,14 +118,26 @@ function baseLayout(title, content) {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 1rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
       width: 100%;
       max-width: 440px;
       padding: 2.25rem;
     }
     .auth-header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
+    }
+    .auth-logo {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(79, 70, 229, 0.15);
+      border: 1px solid rgba(79, 70, 229, 0.3);
+      border-radius: 0.75rem;
+      color: #818cf8;
     }
     .auth-badge {
       display: inline-block;
@@ -84,7 +145,7 @@ function baseLayout(title, content) {
       font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      padding: 0.35rem 0.75rem;
+      padding: 0.3rem 0.75rem;
       border-radius: 9999px;
       background: rgba(79, 70, 229, 0.15);
       color: #818cf8;
@@ -100,6 +161,7 @@ function baseLayout(title, content) {
       font-size: 0.875rem;
       color: var(--text-muted);
       margin-top: 0.5rem;
+      line-height: 1.4;
     }
     .alert-error {
       background: var(--danger-bg);
@@ -123,7 +185,7 @@ function baseLayout(title, content) {
     .form-input {
       width: 100%;
       padding: 0.75rem 1rem;
-      background: #0f172a;
+      background: #0b0f19;
       border: 1px solid var(--card-border);
       border-radius: 0.5rem;
       color: var(--text);
@@ -160,12 +222,13 @@ function baseLayout(title, content) {
       transform: scale(0.99);
     }
     .btn-secondary {
-      background: #334155;
+      background: #1f2937;
       color: var(--text);
       margin-top: 0.75rem;
+      border: 1px solid #374151;
     }
     .btn-secondary:hover {
-      background: #475569;
+      background: #374151;
     }
     .divider {
       display: flex;
@@ -192,7 +255,7 @@ function baseLayout(title, content) {
       width: 100%;
       padding: 0.75rem 1rem;
       margin-bottom: 0.75rem;
-      background: #0f172a;
+      background: #0b0f19;
       border: 1px solid var(--card-border);
       border-radius: 0.5rem;
       color: var(--text);
@@ -202,8 +265,8 @@ function baseLayout(title, content) {
       transition: background 0.15s ease, border-color 0.15s ease;
     }
     .social-btn:hover {
-      background: #1e293b;
-      border-color: #64748b;
+      background: #1f2937;
+      border-color: #4b5563;
     }
     .social-icon {
       width: 1.25rem;
@@ -220,20 +283,41 @@ function baseLayout(title, content) {
     .scope-item {
       padding: 0.875rem 1rem;
       border-bottom: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(11, 15, 25, 0.6);
     }
     .scope-item:last-child {
       border-bottom: none;
     }
+    .scope-item.scope-warning {
+      background: rgba(66, 32, 6, 0.4);
+      border-left: 3px solid #eab308;
+    }
+    .scope-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
     .scope-name {
       font-weight: 600;
       font-size: 0.875rem;
-      color: #a5b4fc;
+      color: #93c5fd;
+    }
+    .scope-badge-warn {
+      font-size: 0.6875rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--warning-text);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .scope-desc {
       font-size: 0.8125rem;
       color: var(--text-muted);
       margin-top: 0.25rem;
+      line-height: 1.35;
     }
     .auth-footer {
       text-align: center;
@@ -241,13 +325,17 @@ function baseLayout(title, content) {
       font-size: 0.75rem;
       color: var(--text-muted);
     }
+    .auth-footer a {
+      color: #818cf8;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
   <div class="auth-card">
     ${content}
     <div class="auth-footer">
-      Secured by IACMS OpenID Connect Authorization Server
+      Secured by <strong>IACMS Central IAM</strong> &bull; OpenID Connect
     </div>
   </div>
 </body>
@@ -255,7 +343,7 @@ function baseLayout(title, content) {
 }
 
 export function renderLoginForm({ uid, client, loginHint, error, providers = ['google', 'microsoft', 'github'] }) {
-  const clientName = client?.client_name || client?.client_id || 'Application';
+  const clientName = client?.client_name || client?.client_id || 'IACMS Application';
 
   const socialButtonsHtml = Array.isArray(providers) && providers.length > 0
     ? `
@@ -280,51 +368,69 @@ export function renderLoginForm({ uid, client, loginHint, error, providers = ['g
 
   const content = `
     <div class="auth-header">
-      <div class="auth-badge">IACMS Auth</div>
+      <div class="auth-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
+          <path d="M12 11v6"/>
+          <path d="M12 8h.01"/>
+        </svg>
+      </div>
+      <div class="auth-badge">Single Sign-On</div>
       <h1 class="auth-title">Sign in</h1>
       <p class="auth-subtitle">to continue to <strong>${escapeHtml(clientName)}</strong></p>
     </div>
 
-    ${error ? `<div class="alert-error">${escapeHtml(error)}</div>` : ''}
+    ${error ? `<div class="alert-error" role="alert">${escapeHtml(error)}</div>` : ''}
 
     <form method="POST" action="/oauth/interaction/${escapeHtml(uid)}/login">
       <div class="form-group">
-        <label class="form-label" for="email">Email address</label>
-        <input class="form-input" type="email" id="email" name="email" value="${escapeHtml(loginHint || '')}" required autofocus autocomplete="username" />
+        <label class="form-label" for="email">Username or Email</label>
+        <input class="form-input" type="text" id="email" name="email" value="${escapeHtml(loginHint || '')}" required autofocus autocomplete="username" placeholder="name@agency.gov" />
       </div>
 
       <div class="form-group">
         <label class="form-label" for="password">Password</label>
-        <input class="form-input" type="password" id="password" name="password" required autocomplete="current-password" />
+        <input class="form-input" type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••••••" />
       </div>
 
-      <button type="submit" class="btn btn-primary">Sign in with Email</button>
+      <button type="submit" class="btn btn-primary">Sign In</button>
       <a href="/oauth/interaction/${escapeHtml(uid)}/abort" class="btn btn-secondary">Cancel</a>
     </form>
 
     ${socialButtonsHtml}
   `;
-  return baseLayout('Sign in', content);
+  return baseLayout('Sign in', content, client);
 }
 
 export function renderConsentForm({ uid, client, missingScopes, accountEmail }) {
   const clientName = client?.client_name || client?.client_id || 'Application';
   const scopesHtml = (missingScopes || [])
-    .map(
-      (scope) => `
-      <li class="scope-item">
-        <div class="scope-name">${escapeHtml(scope)}</div>
-        <div class="scope-desc">${escapeHtml(SCOPE_DESCRIPTIONS[scope] || 'Access ' + scope + ' information')}</div>
-      </li>
-    `
-    )
+    .map((scope) => {
+      const meta = SCOPE_META[scope] || {
+        label: `Access ${scope}`,
+        description: `Permissions for ${scope}`,
+        warning: scope === 'iam:admin',
+      };
+      return `
+        <li class="scope-item ${meta.warning ? 'scope-warning' : ''}">
+          <div class="scope-header-row">
+            <span class="scope-name">${escapeHtml(meta.label)}</span>
+            ${meta.warning ? '<span class="scope-badge-warn">High Privilege</span>' : ''}
+          </div>
+          <div class="scope-desc">${escapeHtml(meta.description)} <span style="font-family: monospace; font-size: 0.75rem; opacity: 0.7;">(${escapeHtml(scope)})</span></div>
+        </li>
+      `;
+    })
     .join('');
 
   const content = `
     <div class="auth-header">
-      <div class="auth-badge">Permission Request</div>
+      <div class="auth-badge">Scope Authorization</div>
       <h1 class="auth-title">Authorize Application</h1>
-      <p class="auth-subtitle"><strong>${escapeHtml(clientName)}</strong> would like to access your account ${accountEmail ? `(<strong>${escapeHtml(accountEmail)}</strong>)` : ''}:</p>
+      <p class="auth-subtitle">
+        <strong>${escapeHtml(clientName)}</strong> would like to access your account 
+        ${accountEmail ? `(<strong>${escapeHtml(accountEmail)}</strong>)` : ''}:
+      </p>
     </div>
 
     <ul class="scope-list">
@@ -332,9 +438,51 @@ export function renderConsentForm({ uid, client, missingScopes, accountEmail }) 
     </ul>
 
     <form method="POST" action="/oauth/interaction/${escapeHtml(uid)}/confirm">
-      <button type="submit" class="btn btn-primary">Authorize &amp; Continue</button>
-      <a href="/oauth/interaction/${escapeHtml(uid)}/abort" class="btn btn-secondary">Decline</a>
+      <button type="submit" class="btn btn-primary">Allow Access</button>
+      <a href="/oauth/interaction/${escapeHtml(uid)}/abort" class="btn btn-secondary">Deny</a>
     </form>
   `;
-  return baseLayout('Authorize Application', content);
+  return baseLayout('Authorize Access', content, client);
+}
+
+export function renderNotMemberForm({ uid, client, organizationName, userEmail }) {
+  const clientName = client?.client_name || client?.client_id || 'Application';
+  const orgTitle = organizationName || 'the required organization';
+
+  const content = `
+    <div class="auth-header">
+      <div class="auth-badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">Access Restricted</div>
+      <h1 class="auth-title">Not an Organization Member</h1>
+      <p class="auth-subtitle">
+        Your account ${userEmail ? `(<strong>${escapeHtml(userEmail)}</strong>)` : ''} does not have an active membership in <strong>${escapeHtml(orgTitle)}</strong>.
+      </p>
+    </div>
+
+    <div class="alert-error" style="background: rgba(30, 41, 59, 0.8); border-color: #334155; color: #cbd5e1; margin-bottom: 1.5rem;">
+      <strong>${escapeHtml(clientName)}</strong> is restricted to members of <strong>${escapeHtml(orgTitle)}</strong>. Please contact your organization administrator to request an access invitation.
+    </div>
+
+    <a href="/oauth/interaction/${escapeHtml(uid)}" class="btn btn-primary">Sign in with different account</a>
+    <a href="/oauth/interaction/${escapeHtml(uid)}/abort" class="btn btn-secondary">Return to Application</a>
+  `;
+  return baseLayout('Membership Required', content, client);
+}
+
+export function renderErrorForm({ title, message, errorDetails, clientName }) {
+  const content = `
+    <div class="auth-header">
+      <div class="auth-badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">OIDC Error</div>
+      <h1 class="auth-title">${escapeHtml(title || 'Authorization Error')}</h1>
+      <p class="auth-subtitle">${escapeHtml(message || 'An error occurred during authentication.')}</p>
+    </div>
+
+    ${errorDetails ? `<div class="alert-error">${escapeHtml(errorDetails)}</div>` : ''}
+
+    <p style="font-size: 0.8125rem; color: var(--text-muted); text-align: center; margin-bottom: 1.5rem;">
+      For security reasons, unvalidated redirect requests cannot be followed. Please notify the administrator of ${escapeHtml(clientName || 'this application')}.
+    </p>
+
+    <button onclick="window.history.back()" class="btn btn-secondary">Go Back</button>
+  `;
+  return baseLayout(title || 'Error', content);
 }

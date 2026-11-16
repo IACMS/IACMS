@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import jwt from 'jsonwebtoken';
 import { createLocalJWKSet, jwtVerify } from 'jose';
 import { UnauthorizedError, ForbiddenError } from '#iam/iamErrors.js';
 import prisma from '../config/database.js';
@@ -111,17 +112,80 @@ async function authorizeOidcAdmin(req) {
   req.iamAdminAuthType = 'oidc';
 }
 
+async function authorizeBearerAdmin(req) {
+  const authorization = req.headers.authorization || '';
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  if (!match) throw new UnauthorizedError('An IAM administrator access token is required');
+
+  const token = match[1];
+
+  // 1. Try RS256 OIDC Token
+  let oidcFailed = false;
+  try {
+    await authorizeOidcAdmin(req);
+    return;
+  } catch (err) {
+    if (err instanceof ForbiddenError) throw err;
+    oidcFailed = true;
+  }
+
+  // 2. Try direct HMAC JWT_SECRET session token (platform administrator)
+  if (oidcFailed && process.env.JWT_SECRET) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (decoded && decoded.id) {
+        const user = await prisma.user.findFirst({
+          where: { id: decoded.id, isActive: true },
+          include: {
+            tenant: { select: { id: true, code: true, isActive: true } },
+            userRoles: { include: { role: { select: { id: true, name: true, slug: true } } } },
+          },
+        });
+
+        if (!user || !user.tenant?.isActive) {
+          throw new UnauthorizedError('Inactive user or organization');
+        }
+
+        const isPlatformTenant = user.tenant?.code === 'ADMIN';
+        const roleSlugs = user.userRoles.map((ur) => ur.role?.slug || ur.role?.name);
+        const hasAdminRole = roleSlugs.some((r) => ['system_admin', 'system-admin', 'iam-admin'].includes(r));
+
+        if (isPlatformTenant || hasAdminRole) {
+          req.user = {
+            id: user.id,
+            tenantId: user.tenantId,
+            email: user.email,
+            roles: roleSlugs,
+            permissions: ['iam:admin', 'platform:manage_tenants', '*'],
+          };
+          req.iamAdminAuthorized = true;
+          req.iamAdminAuthType = 'session';
+          return;
+        }
+        throw new ForbiddenError('IAM administrator access is required');
+      }
+    } catch (jwtErr) {
+      if (jwtErr instanceof ForbiddenError || jwtErr instanceof UnauthorizedError) throw jwtErr;
+    }
+  }
+
+  throw new UnauthorizedError('Invalid IAM administrator access token');
+}
+
 /**
- * Admin APIs accept either the existing trusted IACMS gateway call or a
- * user-facing OIDC token with IAM audience, admin scope, and a live app role.
+ * Admin APIs accept either the existing trusted IACMS gateway call, a
+ * direct platform admin session JWT, or an OIDC access token.
  */
 export async function authenticateAdminRequest(req, res, next) {
   try {
     const expected = process.env.INTERNAL_SERVICE_TOKEN;
-    if (timingSafeSecretMatch(req.headers['x-internal-service-token'], expected)) {
+    const hasGatewayToken = timingSafeSecretMatch(req.headers['x-internal-service-token'], expected);
+    const hasGatewayHeaders = Boolean(req.headers['x-user-id'] && req.headers['x-tenant-id']);
+
+    if (hasGatewayToken && hasGatewayHeaders) {
       await authorizeGatewayAdmin(req);
     } else {
-      await authorizeOidcAdmin(req);
+      await authorizeBearerAdmin(req);
     }
     return next();
   } catch (error) {

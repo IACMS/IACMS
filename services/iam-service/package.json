@@ -17,6 +17,8 @@
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:migrate:deploy": "prisma migrate deploy --schema=./prisma/schema.prisma",
     "prisma:migrate:status": "prisma migrate status --schema=./prisma/schema.prisma",
+    "seed:admin-client": "node scripts/seed-admin-portal-client.js",
+    "db:setup": "prisma generate --schema=./prisma/schema.prisma && prisma migrate deploy --schema=./prisma/schema.prisma && node scripts/seed-admin-portal-client.js",
     "data:backfill-memberships": "node scripts/backfill-legacy-iam-memberships.js"
   },
   "dependencies": {

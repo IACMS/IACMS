@@ -1,3 +1,4 @@
+import './env.js';
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -86,9 +87,10 @@ try {
         const { payload } = await jose.jwtVerify(rawToken, localJwks, {
           issuer: process.env.OIDC_ISSUER || 'http://localhost:3001',
         });
-        const account = await findAccount(null, payload.sub);
+        const clientId = payload.client_id || payload.azp || null;
+        const account = await findAccount(null, payload.sub, clientId ? { clientId } : null);
         if (!account) return res.status(401).json({ error: 'invalid_token' });
-        const claims = await account.claims('userinfo', payload.scope || 'openid profile email roles');
+        const claims = await account.claims('userinfo', payload.scope || 'openid profile email roles', clientId ? { clientId } : null);
         return res.json(claims);
       } catch (err) {
         return res.status(401).json({ error: 'invalid_token', error_description: err.message });
@@ -152,11 +154,17 @@ assertProductionSecrets([
 app.use(requireInternalRequest({
   skipPaths: [
     '/health',
+    '/favicon.ico',
+    '/auth',
+    '/roles',
+    '/permissions',
+    '/api-keys',
     '/oauth/clients',
     '/oauth/providers',
     '/iam/organizations',
     '/iam/identities',
   ],
+  allowOAuthBearer: true,
 }));
 
 // ── Application routes ────────────────────────────────────────────────────────

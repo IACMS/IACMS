@@ -14,7 +14,7 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database.js';
 import provider from '../oidc.config.js';
-import { renderLoginForm, renderConsentForm } from './interaction.views.js';
+import { renderLoginForm, renderConsentForm, renderNotMemberForm, renderErrorForm } from './interaction.views.js';
 import { getActiveProviders } from '../social/social.service.js';
 import { UnauthorizedError, ValidationError } from '#iam/iamErrors.js';
 import Logger from '#iam/iamLogger.js';
@@ -151,6 +151,29 @@ export async function postLogin(req, res, next) {
     const organizationContext = await resolveClientOrganization(prisma, client);
 
     if (!user || (!organizationContext.required && !user.tenant?.isActive)) {
+      if (organizationContext.required) {
+        const potentialUser = await prisma.user.findFirst({
+          where: { email: email.trim().toLowerCase(), isActive: true },
+        });
+        if (potentialUser && (await bcrypt.compare(password, potentialUser.passwordHash))) {
+          const wantsHtml = typeof req.accepts === 'function' && req.accepts(['html', 'json']) === 'html';
+          if (wantsHtml) {
+            return res.status(403).send(
+              renderNotMemberForm({
+                uid: req.params.uid,
+                client,
+                organizationName: organizationContext.organization?.name,
+                userEmail: potentialUser.email,
+              })
+            );
+          }
+          return res.status(403).json({
+            error: 'access_denied',
+            error_description: 'Active organization membership required',
+            organization: organizationContext.organization?.name,
+          });
+        }
+      }
       // Constant-time-ish: always do a bcrypt compare to prevent timing attacks
       await bcrypt.compare(password, '$2b$10$invalidhashpaddingtoconstanttime000000000000000000');
       throw new UnauthorizedError('Invalid credentials');
