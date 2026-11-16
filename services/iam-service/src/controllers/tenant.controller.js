@@ -59,7 +59,7 @@ async function assertPlatformAdminRegistrar(req) {
   return registrarId;
 }
 
-async function resolveActorContext(req) {
+export async function resolveActorContext(req) {
   const actorUserId = req.user?.id ? String(req.user.id) : (req.headers['x-user-id'] ? String(req.headers['x-user-id']) : null);
   const actorTenantId = req.user?.tenantId ? String(req.user.tenantId) : (req.headers['x-tenant-id'] ? String(req.headers['x-tenant-id']) : null);
   let roleIds = parseRoleIdsFromHeaders(req);

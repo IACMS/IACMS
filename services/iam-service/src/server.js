@@ -135,11 +135,13 @@ const uploadsDir = path.join(process.cwd(), 'uploads');
 try { fs.mkdirSync(uploadsDir, { recursive: true }); } catch { /* ignore */ }
 app.use('/tenants/assets', (req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "default-src 'none'");
   next();
 }, express.static(uploadsDir, {
   maxAge: '1h',
   setHeaders: (res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'");
   },
 }));
 
