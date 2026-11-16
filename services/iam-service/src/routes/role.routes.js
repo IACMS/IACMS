@@ -1,7 +1,10 @@
 import express from 'express';
 import { getRoles, getRole, createRole, updateRole, deleteRole } from '../controllers/role.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
+
+router.use(authenticateToken);
 
 router.get('/', getRoles);
 router.get('/:id', getRole);

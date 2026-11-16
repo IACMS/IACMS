@@ -5,8 +5,11 @@ import {
   getUserPermissions, 
   checkPermission 
 } from '../controllers/permission.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
+
+router.use(authenticateToken);
 
 // Get all permissions
 router.get('/', getPermissions);

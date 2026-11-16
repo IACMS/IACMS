@@ -60,12 +60,15 @@ async function assertPlatformAdminRegistrar(req) {
 }
 
 async function resolveActorContext(req) {
-  const actorUserId = req.headers['x-user-id'] ? String(req.headers['x-user-id']) : null;
-  const actorTenantId = req.headers['x-tenant-id'] ? String(req.headers['x-tenant-id']) : null;
+  const actorUserId = req.user?.id ? String(req.user.id) : (req.headers['x-user-id'] ? String(req.headers['x-user-id']) : null);
+  const actorTenantId = req.user?.tenantId ? String(req.user.tenantId) : (req.headers['x-tenant-id'] ? String(req.headers['x-tenant-id']) : null);
   let roleIds = parseRoleIdsFromHeaders(req);
+  if (!roleIds.length && Array.isArray(req.user?.roles)) {
+    roleIds = req.user.roles;
+  }
 
   if (!actorUserId || !actorTenantId) {
-    throw new ValidationError('Tenant ID and User ID are required in headers');
+    throw new UnauthorizedError('Authentication required');
   }
 
   // Gateway should send `x-user-roles`; hydrate from DB when missing (older sessions / partial tokens).

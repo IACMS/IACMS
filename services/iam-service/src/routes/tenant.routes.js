@@ -17,10 +17,11 @@ const router = express.Router();
 
 router.post('/register', authenticateTokenOptional, registerTenant);
 router.post('/self-register', selfRegisterTenant);
-router.get('/', listTenants);
 router.get('/validate/:code', validateTenant);
-router.get('/:id', getTenant);
-router.patch('/:id/config', updateTenantConfig);
+
+router.get('/', authenticateToken, listTenants);
+router.get('/:id', authenticateToken, getTenant);
+router.patch('/:id/config', authenticateToken, updateTenantConfig);
 
 export const ALLOWED_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 export const UPLOAD_LIMITS = { fileSize: 5 * 1024 * 1024 }; // 5MB

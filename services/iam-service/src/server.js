@@ -164,16 +164,17 @@ app.use(requireInternalRequest({
   skipPaths: [
     '/health',
     '/favicon.ico',
-    '/auth',
-    '/roles',
-    '/permissions',
-    '/api-keys',
+    '/auth/login',
+    '/auth/refresh',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/social',
     '/oauth/clients',
     '/oauth/providers',
     '/iam/organizations',
     '/iam/identities',
   ],
-  allowOAuthBearer: true,
 }));
 
 // ── Application routes ────────────────────────────────────────────────────────
