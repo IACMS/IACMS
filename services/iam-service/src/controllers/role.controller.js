@@ -5,26 +5,20 @@ import { isPlatformAdminRequest, hasValidInternalToken } from '../utils/internal
 
 export async function getRoles(req, res, next) {
   try {
-    const { tenantId } = req.query;
     const isPlatformAdmin = isPlatformAdminRequest(req);
+    const callerTenantId = req.user?.tenantId || (hasValidInternalToken(req) ? req.headers['x-tenant-id'] : null);
     
-    /** Global roles (`tenant_id` null) plus the requesting tenant’s scoped roles. */
     let where = {};
-    if (tenantId && String(tenantId).length > 0) {
+    if (isPlatformAdmin) {
+      const { tenantId } = req.query;
+      if (tenantId && String(tenantId).length > 0) {
+        where = { OR: [{ tenantId: null }, { tenantId: String(tenantId) }] };
+      }
+    } else {
+      // Non-platform admin: getRoles must NEVER list other tenants' roles to a tenant admin.
+      // Ignore query tenantId and strictly scope to caller's tenant + global non-platform roles.
       where = { 
-        OR: [{ tenantId: null }, { tenantId: String(tenantId) }],
-        // Prevent regular tenants from seeing platform admin roles
-        rolePermissions: {
-          none: {
-            permission: {
-              resource: 'platform',
-            },
-          },
-        },
-      };
-    } else if (!isPlatformAdmin) {
-      // If no tenantId provided but not a platform admin, hide platform roles
-      where = { 
+        OR: callerTenantId ? [{ tenantId: null }, { tenantId: String(callerTenantId) }] : [{ tenantId: null }],
         rolePermissions: {
           none: {
             permission: {
@@ -94,11 +88,15 @@ export async function createRole(req, res, next) {
     }
 
     const callerTenantId = req.user?.tenantId || (hasValidInternalToken(req) ? req.headers['x-tenant-id'] : null);
+    if (!isPlatformAdmin && !callerTenantId) {
+      throw new ForbiddenError('Tenant context is required to create a role');
+    }
+
     const roleData = {
       name,
       slug,
       description: description || null,
-      tenantId: isPlatformAdmin ? (tenantId || null) : (callerTenantId || null),
+      tenantId: isPlatformAdmin ? (tenantId || null) : callerTenantId,
       isSystemRole: isPlatformAdmin ? Boolean(isSystemRole) : false,
     };
 
