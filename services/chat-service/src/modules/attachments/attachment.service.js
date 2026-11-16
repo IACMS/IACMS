@@ -1,10 +1,10 @@
 import prisma from '../../config/database.js';
 
 const FILE_SERVICE_URL = process.env.FILE_SERVICE_URL || 'http://file-service:3009';
-if (!process.env.INTERNAL_SERVICE_TOKEN) {
+if (!process.env.INTERNAL_SERVICE_TOKEN && process.env.NODE_ENV === 'production') {
   throw new Error('[attachment-service] INTERNAL_SERVICE_TOKEN environment variable is required.');
 }
-const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
+const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN || 'dev-internal-service-token';
 
 /**
  * Verify that the user uploaded the file to the File Service.

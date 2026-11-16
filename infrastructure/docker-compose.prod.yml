@@ -92,6 +92,10 @@ services:
     environment:
       NODE_ENV: production
       APP_URL: ${APP_URL}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:support@iacms.gov}
     restart: unless-stopped
 
   file-service:
@@ -111,6 +115,8 @@ services:
   file-service-workers:
     environment:
       NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
@@ -131,6 +137,7 @@ services:
   chat-service-worker:
     environment:
       NODE_ENV: production
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
     restart: unless-stopped

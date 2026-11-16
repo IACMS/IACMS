@@ -142,6 +142,8 @@ export async function listUserConversations({ tenantId, userId, limit, cursor })
             select: {
               userId: true,
               role: true,
+              lastReadMessageId: true,
+              lastReadAt: true,
               user: {
                 select: {
                   id: true,
@@ -203,6 +205,8 @@ export async function findOrCreateDirectConversation({ tenantId, user1Id, user2I
         select: {
           userId: true,
           role: true,
+          lastReadMessageId: true,
+          lastReadAt: true,
           user: {
             select: {
               firstName: true,
@@ -238,6 +242,8 @@ export async function findOrCreateDirectConversation({ tenantId, user1Id, user2I
         select: {
           userId: true,
           role: true,
+          lastReadMessageId: true,
+          lastReadAt: true,
           user: {
             select: {
               firstName: true,

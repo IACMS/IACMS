@@ -219,8 +219,12 @@ function normalizeRbacEnvelope(cached) {
 
 async function fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl) {
   try {
+    const headers = { 'x-user-id': userId, 'x-tenant-id': tenantId };
+    if (process.env.INTERNAL_SERVICE_TOKEN) {
+      headers['x-internal-service-token'] = process.env.INTERNAL_SERVICE_TOKEN;
+    }
     const response = await fetch(`${rbacServiceUrl}/permissions/user/${userId}`, {
-      headers: { 'x-user-id': userId, 'x-tenant-id': tenantId },
+      headers,
     });
     if (!response.ok) {
       console.error('[RBAC] Failed to fetch permissions:', response.status);

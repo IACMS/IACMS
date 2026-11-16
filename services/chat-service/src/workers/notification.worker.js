@@ -4,10 +4,10 @@ import * as pubsub from '../websocket/pubsub.js';
 import prisma from '../config/database.js';
 
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3008';
-if (!process.env.INTERNAL_SERVICE_TOKEN) {
+if (!process.env.INTERNAL_SERVICE_TOKEN && process.env.NODE_ENV === 'production') {
   throw new Error('[notification-worker] INTERNAL_SERVICE_TOKEN environment variable is required.');
 }
-const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
+const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN || 'dev-internal-service-token';
 
 
 let isRunning = false;

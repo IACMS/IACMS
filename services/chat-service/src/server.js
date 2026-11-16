@@ -71,7 +71,7 @@ app.post('/presence', async (req, res, next) => {
     const presenceMap = await getBulkPresence(userIds);
     const result = {};
     for (const [id, online] of presenceMap) {
-      result[id] = online;
+      result[id] = online ? 'ONLINE' : 'OFFLINE';
     }
     res.json({ presence: result });
   } catch (error) {

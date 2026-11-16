@@ -123,6 +123,10 @@ function handleIncomingEvent(event) {
             type: 'PRESENCE_CHANGE',
             data: event.data,
           });
+          registry.broadcastToConversation(convId, {
+            type: 'PRESENCE_UPDATE',
+            data: event.data,
+          });
         }
       }
       break;

@@ -250,6 +250,6 @@ async function broadcastPresenceChange(userId, isOnline) {
   await pubsub.publish({
     type: 'PRESENCE_CHANGE',
     conversationIds,
-    data: { userId, isOnline },
+    data: { userId, isOnline, status: isOnline ? 'ONLINE' : 'OFFLINE' },
   });
 }
