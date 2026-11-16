@@ -55,10 +55,11 @@ export function generateTokens(user, roleIds = []) {
     email: user.email,
     mustChangePassword: user.mustChangePassword ?? false,
     roles: roleIds,
+    type: 'access',
   };
 
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-  const refreshToken = jwt.sign({ id: user.id, jti: refreshJti }, JWT_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
+  const refreshToken = jwt.sign({ id: user.id, jti: refreshJti, type: 'refresh' }, JWT_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
 
   return { accessToken, refreshToken };
 }

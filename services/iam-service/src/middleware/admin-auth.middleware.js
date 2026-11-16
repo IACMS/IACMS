@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { createLocalJWKSet, jwtVerify } from 'jose';
 import { UnauthorizedError, ForbiddenError } from '#iam/iamErrors.js';
 import prisma from '../config/database.js';
+import { getRedisClient } from '../config/redis.config.js';
 import { resolveGatewayIdentity } from '#iam/iamGatewayIdentity.js';
 import { loadJwks } from '../oauth/jwks.js';
 
@@ -134,11 +135,35 @@ async function authorizeBearerAdmin(req) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       if (decoded && decoded.id) {
+        if (decoded.type === 'refresh' || (!decoded.roles && !decoded.tenantId)) {
+          throw new UnauthorizedError('Invalid IAM administrator access token');
+        }
+
+        if (decoded.jti) {
+          try {
+            const redis = getRedisClient();
+            if (redis) {
+              const isBlacklisted = await redis.get(`auth:blacklist:${decoded.jti}`);
+              if (isBlacklisted) {
+                throw new UnauthorizedError('Token has been revoked');
+              }
+            }
+          } catch (err) {
+            if (err instanceof UnauthorizedError) throw err;
+          }
+        }
+
         const user = await prisma.user.findFirst({
           where: { id: decoded.id, isActive: true },
           include: {
             tenant: { select: { id: true, code: true, isActive: true } },
-            userRoles: { include: { role: { select: { id: true, name: true, slug: true } } } },
+            userRoles: {
+              where: {
+                role: { isActive: true },
+                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+              },
+              include: { role: { select: { id: true, name: true, slug: true, isActive: true } } },
+            },
           },
         });
 
@@ -146,23 +171,34 @@ async function authorizeBearerAdmin(req) {
           throw new UnauthorizedError('Inactive user or organization');
         }
 
-        const isPlatformTenant = user.tenant?.code === 'ADMIN';
-        const roleSlugs = user.userRoles.map((ur) => ur.role?.slug || ur.role?.name);
-        const hasAdminRole = roleSlugs.some((r) => ['system_admin', 'system-admin', 'iam-admin'].includes(r));
-
-        if (isPlatformTenant || hasAdminRole) {
-          req.user = {
-            id: user.id,
-            tenantId: user.tenantId,
-            email: user.email,
-            roles: roleSlugs,
-            permissions: ['iam:admin', 'platform:manage_tenants', '*'],
-          };
-          req.iamAdminAuthorized = true;
-          req.iamAdminAuthType = 'session';
-          return;
+        if (decoded.mustChangePassword || user.mustChangePassword) {
+          throw new ForbiddenError('Password change required');
         }
-        throw new ForbiddenError('IAM administrator access is required');
+
+        const now = new Date();
+        const activeAdminRoles = (user.userRoles || []).filter((ur) => {
+          const role = ur.role;
+          if (!role || role.isActive === false) return false;
+          if (ur.expiresAt && new Date(ur.expiresAt) <= now) return false;
+          const slug = role.slug || role.name;
+          return ['system_admin', 'system-admin', 'iam-admin'].includes(slug);
+        });
+
+        if (activeAdminRoles.length === 0) {
+          throw new ForbiddenError('IAM administrator access is required');
+        }
+
+        const roleSlugs = activeAdminRoles.map((ur) => ur.role?.slug || ur.role?.name);
+        req.user = {
+          id: user.id,
+          tenantId: user.tenantId,
+          email: user.email,
+          roles: roleSlugs,
+          permissions: ['iam:admin'],
+        };
+        req.iamAdminAuthorized = true;
+        req.iamAdminAuthType = 'session';
+        return;
       }
     } catch (jwtErr) {
       if (jwtErr instanceof ForbiddenError || jwtErr instanceof UnauthorizedError) throw jwtErr;
