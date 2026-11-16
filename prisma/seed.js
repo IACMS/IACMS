@@ -317,6 +317,10 @@ async function createReferralIntakeWorkflow({ tenantId, createdBy }) {
 }
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Seed scripts cannot run in production environments.');
+  }
+
   console.log('🌱 Starting Portal Seed (Active & Actionable Cases Edition)...\n');
 
   await clearDatabase();
@@ -362,7 +366,8 @@ async function main() {
     },
   });
 
-  const passwordHash = await bcrypt.hash('password123', 10);
+  const seedPassword = process.env.SEED_DEFAULT_PASSWORD || process.env.SEED_ADMIN_PASSWORD || process.env.SEED_PASSWORD || 'password123';
+  const passwordHash = await bcrypt.hash(seedPassword, 10);
   const platformUser = await prisma.user.create({
     data: {
       id: SYSTEM_USER_ID,
@@ -374,7 +379,7 @@ async function main() {
       lastName: 'Administrator',
       isActive: true,
       isEmailVerified: true,
-      mustChangePassword: false,
+      mustChangePassword: true,
       lastLogin: daysAgo(1),
     },
   });
@@ -450,7 +455,7 @@ async function main() {
           lastName: s.last,
           isActive: true,
           isEmailVerified: true,
-          mustChangePassword: false,
+          mustChangePassword: true,
           lastLogin: hoursAgo(Math.floor(Math.random() * 5) + 1),
         },
       });

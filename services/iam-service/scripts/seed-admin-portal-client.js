@@ -14,6 +14,10 @@ import Logger from '#iam/iamLogger.js';
 const logger = new Logger('seed-admin-portal-client');
 
 export async function seedAdminPortalClient() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Seed scripts cannot run in production environments.');
+  }
+
   logger.info('Starting seed for Admin Portal OAuth client and seed credentials...');
 
   // 1. Ensure 'iam-admin' role exists
@@ -169,7 +173,7 @@ export async function seedAdminPortalClient() {
   });
   logger.info('Upserted iacms_case_management OAuthClient', { id: iacmsClient.id });
 
-  // 5. Seed Superadmin User (platform.admin@iacms.gov.example / password123)
+  // 5. Seed Superadmin User (platform.admin@iacms.gov.example)
   let adminTenant = await prisma.tenant.findUnique({ where: { code: 'ADMIN' } });
   if (!adminTenant) {
     adminTenant = await prisma.tenant.create({
@@ -182,7 +186,10 @@ export async function seedAdminPortalClient() {
     });
   }
 
-  const passwordHash = await bcrypt.hash('password123', 10);
+  const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD || process.env.SEED_DEFAULT_PASSWORD || 'password123';
+  const seedTenantPassword = process.env.SEED_TENANT_ADMIN_PASSWORD || seedAdminPassword;
+  const adminPasswordHash = await bcrypt.hash(seedAdminPassword, 10);
+  const tenantPasswordHash = await bcrypt.hash(seedTenantPassword, 10);
 
   let adminUser = await prisma.user.findFirst({
     where: { email: 'platform.admin@iacms.gov.example' },
@@ -194,19 +201,21 @@ export async function seedAdminPortalClient() {
         tenantId: adminTenant.id,
         email: 'platform.admin@iacms.gov.example',
         username: 'platform.admin',
-        passwordHash,
+        passwordHash: adminPasswordHash,
         firstName: 'Platform',
         lastName: 'Admin',
         isEmailVerified: true,
         isActive: true,
+        mustChangePassword: true,
       },
     });
     logger.info('Created Superadmin user: platform.admin@iacms.gov.example');
   } else {
-    // Ensure password is reset to password123 in case it was modified
+    // Never reset an existing admin's password
+    logger.info('Superadmin user already exists; preserving existing password and credentials');
     await prisma.user.update({
       where: { id: adminUser.id },
-      data: { passwordHash, isActive: true },
+      data: { isActive: true },
     });
   }
 
@@ -268,18 +277,21 @@ export async function seedAdminPortalClient() {
         tenantId: dcsTenant.id,
         email: 'admin@dcs-01.gov.example',
         username: 'dcs01_admin',
-        passwordHash,
+        passwordHash: tenantPasswordHash,
         firstName: 'Dana',
         lastName: 'Reed',
         isEmailVerified: true,
         isActive: true,
+        mustChangePassword: true,
       },
     });
     logger.info('Created Tenant Admin user: admin@dcs-01.gov.example');
   } else {
+    // Never reset an existing tenant admin's password
+    logger.info('Tenant Admin user already exists; preserving existing password and credentials');
     await prisma.user.update({
       where: { id: dcsUser.id },
-      data: { passwordHash, isActive: true },
+      data: { isActive: true },
     });
   }
 
