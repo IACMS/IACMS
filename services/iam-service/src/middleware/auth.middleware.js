@@ -56,6 +56,10 @@ export async function authenticateToken(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
+    if (decoded.type === 'refresh' || (decoded.type && decoded.type !== 'access')) {
+      return next(new UnauthorizedError('Invalid token type'));
+    }
+
     // Check blacklist (non-fatal if Redis is down — fail open)
     if (decoded.jti) {
       try {
@@ -104,6 +108,10 @@ export async function authenticateTokenOptional(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    if (decoded.type === 'refresh' || (decoded.type && decoded.type !== 'access')) {
+      return next(new UnauthorizedError('Invalid token type'));
+    }
 
     if (decoded.jti) {
       try {

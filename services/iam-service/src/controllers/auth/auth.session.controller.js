@@ -178,6 +178,10 @@ export async function refreshToken(req, res, next) {
 
     const decoded = jwt.verify(token, JWT_SECRET);
 
+    if (decoded.type !== 'refresh') {
+      throw new UnauthorizedError('Invalid token type');
+    }
+
     // Check Redis blacklist for revoked refresh token
     const redis = getRedisClient();
     if (redis) {

@@ -1,6 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+
+vi.mock('../../src/config/database.js', () => ({
+  default: {
+    tenant: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}));
 
 describe('Item 3: Uploads hardening and CSP verification', () => {
   const tenantRoutesPath = path.resolve(process.cwd(), 'src/routes/tenant.routes.js');

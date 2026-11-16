@@ -80,7 +80,7 @@ describe('auth.session.controller unit tests', () => {
     });
 
     it('throws UnauthorizedError if token is blacklisted in Redis', async () => {
-      const token = jwt.sign({ id: 'u-1', jti: 'jti-revoked' }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: 'u-1', jti: 'jti-revoked', type: 'refresh' }, JWT_SECRET, { expiresIn: '7d' });
       req.body = { refreshToken: token };
       mockRedis.get.mockResolvedValueOnce('1'); // blacklisted
 
@@ -90,7 +90,7 @@ describe('auth.session.controller unit tests', () => {
     });
 
     it('throws UnauthorizedError if user is inactive', async () => {
-      const token = jwt.sign({ id: 'u-1', jti: 'jti-valid' }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: 'u-1', jti: 'jti-valid', type: 'refresh' }, JWT_SECRET, { expiresIn: '7d' });
       req.body = { refreshToken: token };
       prisma.user.findUnique.mockResolvedValueOnce({
         id: 'u-1',
@@ -105,7 +105,7 @@ describe('auth.session.controller unit tests', () => {
     });
 
     it('throws UnauthorizedError if tenant is inactive (Bug 5)', async () => {
-      const token = jwt.sign({ id: 'u-1', jti: 'jti-valid' }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: 'u-1', jti: 'jti-valid', type: 'refresh' }, JWT_SECRET, { expiresIn: '7d' });
       req.body = { refreshToken: token };
       prisma.user.findUnique.mockResolvedValueOnce({
         id: 'u-1',
@@ -122,7 +122,7 @@ describe('auth.session.controller unit tests', () => {
     });
 
     it('issues new token pair and blacklists old refresh token on success', async () => {
-      const token = jwt.sign({ id: 'u-1', jti: 'jti-valid' }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: 'u-1', jti: 'jti-valid', type: 'refresh' }, JWT_SECRET, { expiresIn: '7d' });
       req.body = { refreshToken: token };
       prisma.user.findUnique.mockResolvedValueOnce({
         id: 'u-1',
