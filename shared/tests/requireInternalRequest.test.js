@@ -61,4 +61,23 @@ describe('requireInternalRequest', () => {
     const { err } = await run(middleware, mockReq('/cases'));
     expect(err?.message).toMatch(/INTERNAL_SERVICE_TOKEN/i);
   });
+
+  it('is exported via shared/common with timing-safe comparison', async () => {
+    const { requireInternalRequest: commonGuard } = await import('../common/index.js');
+    expect(typeof commonGuard).toBe('function');
+
+    process.env.INTERNAL_SERVICE_TOKEN = 'secret-token-12345';
+    const middleware = commonGuard();
+    const { err: wrongErr } = await run(
+      middleware,
+      mockReq('/cases', { 'x-internal-service-token': 'wrong-token' }),
+    );
+    expect(wrongErr?.message).toMatch(/Direct service access/i);
+
+    const { err: validErr } = await run(
+      middleware,
+      mockReq('/cases', { 'x-internal-service-token': 'secret-token-12345' }),
+    );
+    expect(validErr).toBeUndefined();
+  });
 });

@@ -9,7 +9,15 @@
  * are allowed (local dev / direct service debugging).
  */
 
+import crypto from 'node:crypto';
 import { ForbiddenError } from '../common/errors.js';
+
+function timingSafeMatch(actual, expected) {
+  if (typeof actual !== 'string' || typeof expected !== 'string') return false;
+  const actualBytes = Buffer.from(actual);
+  const expectedBytes = Buffer.from(expected);
+  return actualBytes.length === expectedBytes.length && crypto.timingSafeEqual(actualBytes, expectedBytes);
+}
 
 const DEFAULT_SKIP = ['/health'];
 
@@ -39,7 +47,7 @@ export function requireInternalRequest(options = {}) {
     }
 
     const provided = req.headers['x-internal-service-token'];
-    if (provided !== expected) {
+    if (!timingSafeMatch(provided, expected)) {
       return next(new ForbiddenError('Direct service access is not allowed. Use the API gateway.'));
     }
 

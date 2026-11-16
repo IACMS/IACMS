@@ -9,7 +9,7 @@ import workflowRoutes from './routes/workflow.routes.js';
 import referralRoutes from './routes/referral.routes.js';
 import Logger from '../../../shared/common/logger.js';
 import { setupSwagger } from '../../../shared/swagger.js';
-import { requireInternalRequest } from '../../../shared/middleware/requireInternalRequest.js';
+import { requireInternalRequest } from '../../../shared/common/requireInternalRequest.js';
 import { createOAuthResourceServer } from '../../../shared/middleware/verifyOAuthToken.js';
 import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
 import './config/database.js';
