@@ -99,8 +99,14 @@ function readScopeList(value, fallback) {
   return [...new Set(value.split(/[\s,]+/).map((scope) => scope.trim()).filter(Boolean))];
 }
 
-const supportedScopes = readScopeList(process.env.OIDC_SUPPORTED_SCOPES, STANDARD_SCOPES);
-const resourceScopes = readScopeList(process.env.OIDC_RESOURCE_SCOPES, STANDARD_RESOURCE_SCOPES);
+const supportedScopes = Array.from(new Set([
+  ...readScopeList(process.env.OIDC_SUPPORTED_SCOPES, STANDARD_SCOPES),
+  'iam:admin',
+]));
+const resourceScopes = Array.from(new Set([
+  ...readScopeList(process.env.OIDC_RESOURCE_SCOPES, STANDARD_RESOURCE_SCOPES),
+  'iam:admin',
+]));
 
 const config = {
   // ── Storage ──────────────────────────────────────────────────────────────
@@ -182,8 +188,20 @@ const config = {
   // ── Cookie secret ─────────────────────────────────────────────────────────
   cookies: {
     keys: [process.env.OIDC_COOKIE_SECRET || (() => { throw new Error('[oidc.config] OIDC_COOKIE_SECRET is required'); })()],
-    short: { sameSite: 'Lax', httpOnly: true, secure: process.env.NODE_ENV === 'production' },
-    long: { sameSite: 'Lax', httpOnly: true, secure: process.env.NODE_ENV === 'production' },
+    short: {
+      sameSite: 'Lax',
+      httpOnly: true,
+      secure: process.env.OIDC_COOKIE_SECURE !== undefined
+        ? process.env.OIDC_COOKIE_SECURE === 'true'
+        : (process.env.NODE_ENV === 'production' && (process.env.OIDC_ISSUER || '').startsWith('https://')),
+    },
+    long: {
+      sameSite: 'Lax',
+      httpOnly: true,
+      secure: process.env.OIDC_COOKIE_SECURE !== undefined
+        ? process.env.OIDC_COOKIE_SECURE === 'true'
+        : (process.env.NODE_ENV === 'production' && (process.env.OIDC_ISSUER || '').startsWith('https://')),
+    },
   },
 
   // ── Enabled features ──────────────────────────────────────────────────────
@@ -198,9 +216,12 @@ const config = {
     // Audience-scoped access tokens
     resourceIndicators: {
       enabled: true,
-      // No hard-coded audience: deployments may set a legacy default or require clients
-      // to request an explicit resource indicator.
-      defaultResource: (_ctx, _client) => process.env.OIDC_DEFAULT_RESOURCE || undefined,
+      // Default to the client's registered audience or configured global fallback
+      defaultResource: (_ctx, client) => {
+        const clientAudience = client?.[Symbol.for('target_audience')];
+        if (clientAudience) return clientAudience;
+        return process.env.OIDC_DEFAULT_RESOURCE || undefined;
+      },
       getResourceServerInfo: (_ctx, resourceIndicator, client) => {
         const registeredAudience = client?.[Symbol.for('target_audience')];
         if (registeredAudience && registeredAudience !== resourceIndicator) {

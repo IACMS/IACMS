@@ -36,6 +36,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const app = express();
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 3001;
 const logger = new Logger('iam-service');
 

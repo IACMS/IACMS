@@ -68,8 +68,8 @@ services:
       IAM_ADMIN_AUDIENCE: ${IAM_ADMIN_AUDIENCE:?Set IAM_ADMIN_AUDIENCE for the IAM admin API}
       OIDC_ACCESS_TOKEN_TTL_SECONDS: ${OIDC_ACCESS_TOKEN_TTL_SECONDS:-600}
       OIDC_DEFAULT_RESOURCE: ${OIDC_DEFAULT_RESOURCE:-}
-      OIDC_SUPPORTED_SCOPES: ${OIDC_SUPPORTED_SCOPES:-openid offline_access profile email roles}
-      OIDC_RESOURCE_SCOPES: ${OIDC_RESOURCE_SCOPES:-openid profile email roles}
+      OIDC_SUPPORTED_SCOPES: ${OIDC_SUPPORTED_SCOPES:-openid offline_access profile email roles api_key iam:admin}
+      OIDC_RESOURCE_SCOPES: ${OIDC_RESOURCE_SCOPES:-openid profile email roles api_key iam:admin}
       OIDC_COOKIE_SECRET: ${OIDC_COOKIE_SECRET:?Set OIDC_COOKIE_SECRET in the IAM deployment environment}
       CLIENT_SECRET_KEY: ${CLIENT_SECRET_KEY:?Set CLIENT_SECRET_KEY in the IAM deployment environment}
       OIDC_JWKS_JSON: ${OIDC_JWKS_JSON:?Set OIDC_JWKS_JSON in the IAM deployment environment}
