@@ -22,7 +22,10 @@ describe('IAM global identity creation', () => {
     vi.clearAllMocks();
     process.env.IAM_GLOBAL_IDENTITIES_ENABLED = 'true';
     req = {
-      headers: { 'x-user-permissions': 'platform:manage_tenants' },
+      headers: {
+        'x-user-permissions': 'platform:manage_tenants',
+        'x-internal-service-token': process.env.INTERNAL_SERVICE_TOKEN || 'iacms-internal-service-token-dev',
+      },
       body: { email: 'person@example.test', password: 'very-secure-password', firstName: 'Global', lastName: 'User' },
     };
     res = { status: vi.fn().mockReturnThis(), json: vi.fn((payload) => payload) };

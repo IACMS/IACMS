@@ -1,11 +1,12 @@
 import prisma from '../config/database.js';
 import { NotFoundError, ValidationError } from '#iam/iamErrors.js';
 import { roleSlug } from '../utils/role-slug.js';
+import { isPlatformAdminRequest } from '../utils/internalToken.js';
 
 export async function getRoles(req, res, next) {
   try {
     const { tenantId } = req.query;
-    const isPlatformAdmin = req.headers['x-user-permissions']?.includes('platform:manage_tenants');
+    const isPlatformAdmin = isPlatformAdminRequest(req);
     
     /** Global roles (`tenant_id` null) plus the requesting tenant’s scoped roles. */
     let where = {};
@@ -60,8 +61,7 @@ export async function getRole(req, res, next) {
     if (!role) throw new NotFoundError('Role');
 
     const callerTenantId = req.user?.tenantId || req.headers['x-tenant-id'];
-    const callerRoles = req.user?.roles || (req.headers['x-user-roles'] ? req.headers['x-user-roles'].split(',') : []);
-    const isPlatformAdmin = req.headers['x-user-permissions']?.includes('platform:manage_tenants') || callerRoles.includes('system_admin');
+    const isPlatformAdmin = isPlatformAdminRequest(req);
 
     if (!isPlatformAdmin && role.tenantId !== null && role.tenantId !== callerTenantId) {
       throw new NotFoundError('Role');
@@ -80,7 +80,7 @@ export async function createRole(req, res, next) {
       throw new ValidationError('Role name is required');
     }
 
-    const isPlatformAdmin = req.headers['x-user-permissions']?.includes('platform:manage_tenants');
+    const isPlatformAdmin = isPlatformAdminRequest(req);
     
     const slug = requestedSlug === undefined ? roleSlug(name) : String(requestedSlug).trim();
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
@@ -150,7 +150,7 @@ export async function updateRole(req, res, next) {
       if (duplicate && duplicate.id !== roleId) throw new ValidationError('A role with this slug already exists');
     }
 
-    const isPlatformAdmin = req.headers['x-user-permissions']?.includes('platform:manage_tenants');
+    const isPlatformAdmin = isPlatformAdminRequest(req);
     const hasPlatformPerms = existingRole.rolePermissions.some((rp) => rp.permission.resource === 'platform');
     
     if (hasPlatformPerms && !isPlatformAdmin) {
@@ -213,7 +213,7 @@ export async function deleteRole(req, res, next) {
     });
     if (!existingRole) throw new NotFoundError('Role');
 
-    const isPlatformAdmin = req.headers['x-user-permissions']?.includes('platform:manage_tenants');
+    const isPlatformAdmin = isPlatformAdminRequest(req);
     const hasPlatformPerms = existingRole.rolePermissions.some((rp) => rp.permission.resource === 'platform');
 
     if (hasPlatformPerms && !isPlatformAdmin) {

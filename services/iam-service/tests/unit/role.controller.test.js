@@ -79,6 +79,7 @@ describe('Role Controller', () => {
 
     it('allows platform admins to see all non-tenant specific roles', async () => {
       req.headers['x-user-permissions'] = 'platform:manage_tenants';
+      req.headers['x-internal-service-token'] = process.env.INTERNAL_SERVICE_TOKEN || 'iacms-internal-service-token-dev';
       prisma.role.findMany.mockResolvedValue([{ id: '1', name: 'PlatformAdmin', tenantId: null }]);
 
       await getRoles(req, res, next);

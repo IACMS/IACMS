@@ -1,11 +1,12 @@
+import { timingSafeMatch, hasValidInternalToken } from './utils/internalToken.js';
+
 function splitHeaderList(value) {
   if (!value || typeof value !== 'string') return [];
   return value.split(',').map((item) => item.trim()).filter(Boolean);
 }
 
 function hasValidInternalServiceToken(req) {
-  const expected = process.env.INTERNAL_SERVICE_TOKEN;
-  return Boolean(expected && req.headers['x-internal-service-token'] === expected);
+  return hasValidInternalToken(req);
 }
 
 function buildUserFromGatewayHeaders(req) {
@@ -33,7 +34,7 @@ async function verifyGatewayHeadersInDatabase(prisma, req) {
   return {
     id: user.id, tenantId: user.tenantId,
     email: user.email, roles: user.userRoles.map((row) => row.roleId),
-    permissions: identity.permissions, mustChangePassword: user.mustChangePassword ?? false,
+    permissions: [], mustChangePassword: user.mustChangePassword ?? false,
   };
 }
 

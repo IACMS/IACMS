@@ -11,12 +11,11 @@ import Logger from '#iam/iamLogger.js';
 
 const logger = new Logger('iam-oauth-providers');
 
-async function assertPlatformAdmin(req) {
-  if (req.iamAdminAuthorized === true) return;
-  const perms = req.headers['x-user-permissions'] || '';
-  if (perms.includes('platform:manage_tenants') || perms.includes('*') || perms.includes('admin:*')) {
-    return;
-  }
+import { isPlatformAdminRequest } from '../utils/internalToken.js';
+
+export async function assertPlatformAdmin(req) {
+  if (isPlatformAdminRequest(req)) return;
+
   const roleIds = Array.isArray(req.user?.roles) ? req.user.roles.map(String) : [];
   if (roleIds.length) {
     const roles = await prisma.role.findMany({

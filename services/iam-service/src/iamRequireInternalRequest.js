@@ -1,4 +1,5 @@
 import { ForbiddenError } from './iamErrors.js';
+import { timingSafeMatch } from './utils/internalToken.js';
 
 const DEFAULT_SKIP = ['/health'];
 
@@ -15,7 +16,7 @@ export function requireInternalRequest(options = {}) {
       if (process.env.NODE_ENV === 'production') return next(new ForbiddenError('Service is misconfigured: INTERNAL_SERVICE_TOKEN is required in production'));
       return next();
     }
-    if (req.headers['x-internal-service-token'] !== expected) {
+    if (!timingSafeMatch(req.headers['x-internal-service-token'], expected)) {
       return next(new ForbiddenError('Direct service access is not allowed. Use the API gateway.'));
     }
     return next();

@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { ForbiddenError, UnauthorizedError, ValidationError } from '#iam/iamErrors.js';
+import { isPlatformAdminRequest } from './internalToken.js';
 
 export const PLATFORM_TENANT_CODE = 'ADMIN';
 
@@ -27,13 +28,7 @@ export async function resolvePlatformActor(req) {
     throw new ValidationError('Tenant ID and User ID are required in headers');
   }
 
-  const permissions = parsePermissionsFromHeaders(req);
-  const hasPlatformPerm =
-    permissions.includes('platform:manage_tenants') ||
-    permissions.includes('*') ||
-    permissions.includes('admin:*');
-
-  let isSystemAdmin = hasPlatformPerm;
+  let isSystemAdmin = isPlatformAdminRequest(req);
 
   if (!isSystemAdmin) {
     const roleIds = parseRoleIdsFromHeaders(req);

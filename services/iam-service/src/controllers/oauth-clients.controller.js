@@ -14,15 +14,13 @@ import { encryptClientSecret } from '../oauth/client-secret.utils.js';
 import { ValidationError, NotFoundError, ForbiddenError } from '#iam/iamErrors.js';
 import Logger from '#iam/iamLogger.js';
 import { legacyOrganizationSystem } from '../legacyOrganizationSystem.js';
+import { isPlatformAdminRequest } from '../utils/internalToken.js';
 
 const logger = new Logger('iam-oauth-clients');
 
-async function assertPlatformAdmin(req) {
-  if (req.iamAdminAuthorized === true) return;
-  const perms = req.headers['x-user-permissions'] || '';
-  if (perms.includes('platform:manage_tenants') || perms.includes('*') || perms.includes('admin:*')) {
-    return;
-  }
+export async function assertPlatformAdmin(req) {
+  if (isPlatformAdminRequest(req)) return;
+
   const roleIds = Array.isArray(req.user?.roles) ? req.user.roles.map(String) : [];
   if (roleIds.length) {
     const roles = await prisma.role.findMany({

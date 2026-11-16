@@ -1,15 +1,13 @@
 import prisma from '../config/database.js';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '#iam/iamErrors.js';
 import { enqueueIdentitySnapshot } from '../identityEvents.js';
+import { isPlatformAdminRequest } from '../utils/internalToken.js';
 
 const membershipStatuses = new Set(['active', 'inactive', 'pending', 'suspended']);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function assertPlatformAdmin(req) {
-  if (req.iamAdminAuthorized === true) return;
-  const raw = req.headers['x-user-permissions'] || '';
-  const permissions = Array.isArray(raw) ? raw.join(',') : String(raw);
-  if (permissions.split(/[\s,]+/).some((permission) => ['platform:manage_tenants', '*', 'admin:*'].includes(permission))) return;
+  if (isPlatformAdminRequest(req)) return;
 
   const roleIds = Array.isArray(req.user?.roles) ? req.user.roles.map(String) : [];
   if (roleIds.length) {

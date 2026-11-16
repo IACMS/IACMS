@@ -29,7 +29,14 @@ describe('IAM organization controller', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPrisma.$transaction.mockImplementation((callback) => callback(mockPrisma));
-    req = { headers: { 'x-user-permissions': 'platform:manage_tenants' }, params: {}, body: {} };
+    req = {
+      headers: {
+        'x-user-permissions': 'platform:manage_tenants',
+        'x-internal-service-token': process.env.INTERNAL_SERVICE_TOKEN || 'iacms-internal-service-token-dev',
+      },
+      params: {},
+      body: {},
+    };
     res = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis() };
     next = vi.fn();
   });

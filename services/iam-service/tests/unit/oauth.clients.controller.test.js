@@ -43,6 +43,7 @@ describe('oauth-clients.controller unit tests', () => {
       headers: {
         'x-user-permissions': 'platform:manage_tenants',
         'x-user-id': 'admin-uuid',
+        'x-internal-service-token': process.env.INTERNAL_SERVICE_TOKEN || 'iacms-internal-service-token-dev',
       },
       params: {},
       body: {},
