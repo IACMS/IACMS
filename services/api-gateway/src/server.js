@@ -31,7 +31,7 @@ import { startWebhookDispatcher, stopWebhookDispatcher } from './workers/webhook
 import { setupSwagger } from '../../../shared/swagger.js';
 import Logger from '../../../shared/common/logger.js';
 import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
-import { forwardProxyIdentity, attachDownstreamHeaders } from './utils/downstreamHeaders.js';
+import { forwardProxyIdentity, attachDownstreamHeaders, stripInboundGatewayHeaders } from './utils/downstreamHeaders.js';
 import { startIdentityProjectionConsumer, stopIdentityProjectionConsumer } from './workers/identityProjectionConsumer.js';
 
 // Load .env from service directory
@@ -140,6 +140,9 @@ async function startServer() {
 
   // Cookie parser
   app.use(cookieParser());
+
+  // Strip inbound internal headers (prevent client spoofing)
+  app.use(stripInboundGatewayHeaders);
 
   // Request logging
   app.use((req, res, next) => {
