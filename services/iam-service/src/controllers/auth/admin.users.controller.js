@@ -12,6 +12,7 @@ import { getEventBus } from '../../utils/auth.helpers.js';
 import { allGlobalTenantAdminRoleIds } from '../../utils/globalTenantAdminRole.js';
 import { withAuditClient } from '../../utils/audit.helpers.js';
 import { enqueueIdentitySnapshot } from '../../identityEvents.js';
+import { isReservedAdminRole } from '../../utils/role-slug.js';
 
 const logger = new Logger('auth-service');
 
@@ -212,13 +213,14 @@ export async function assignRole(req, res, next) {
     });
     if (!role) throw new NotFoundError('Role not found or not accessible in this tenant');
 
-    if (role.name === 'system_admin') {
+    if (isReservedAdminRole(role)) {
       // Multiple system_admin users are allowed; each must live in the platform (ADMIN) tenant.
       // Only an existing system_admin may grant this role (no self-serve promotion from org admins).
       const callerRoleIds = Array.isArray(req.user.roles) ? req.user.roles : [];
       const callerRoles = await prisma.role.findMany({ where: { id: { in: callerRoleIds } } });
-      if (!callerRoles.some((r) => r.name === 'system_admin')) {
-        throw new ForbiddenError('Only system administrators may assign the system_admin role');
+      const callerIsAdmin = callerRoles.some((r) => isReservedAdminRole(r)) || req.iamAdminAuthorized === true;
+      if (!callerIsAdmin) {
+        throw new ForbiddenError('Only system administrators may assign reserved administrator roles');
       }
       const targetTenant = await prisma.tenant.findUnique({
         where: { id: user.tenantId },

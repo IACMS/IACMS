@@ -1,7 +1,7 @@
 import prisma from '../config/database.js';
-import { NotFoundError, ValidationError } from '#iam/iamErrors.js';
-import { roleSlug } from '../utils/role-slug.js';
-import { isPlatformAdminRequest } from '../utils/internalToken.js';
+import { NotFoundError, ValidationError, ForbiddenError } from '#iam/iamErrors.js';
+import { roleSlug, RESERVED_ADMIN_SLUGS, isReservedAdminRole } from '../utils/role-slug.js';
+import { isPlatformAdminRequest, hasValidInternalToken } from '../utils/internalToken.js';
 
 export async function getRoles(req, res, next) {
   try {
@@ -86,20 +86,20 @@ export async function createRole(req, res, next) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
       throw new ValidationError('slug must be lowercase letters, numbers, and single hyphens');
     }
-    const RESERVED_ADMIN_SLUGS = new Set(['iam-admin', 'system-admin', 'system_admin']);
-    if (RESERVED_ADMIN_SLUGS.has(slug) && !isPlatformAdmin) {
+    if ((RESERVED_ADMIN_SLUGS.has(slug) || isReservedAdminRole({ name, slug })) && !isPlatformAdmin) {
       throw new ForbiddenError('Reserved administrator role slugs cannot be created');
     }
     if (await prisma.role.findUnique({ where: { slug }, select: { id: true } })) {
       throw new ValidationError('A role with this slug already exists');
     }
 
+    const callerTenantId = req.user?.tenantId || (hasValidInternalToken(req) ? req.headers['x-tenant-id'] : null);
     const roleData = {
       name,
       slug,
       description: description || null,
-      tenantId: tenantId || null,
-      isSystemRole: Boolean(isSystemRole),
+      tenantId: isPlatformAdmin ? (tenantId || null) : (callerTenantId || null),
+      isSystemRole: isPlatformAdmin ? Boolean(isSystemRole) : false,
     };
 
     if (Array.isArray(permissionIds) && permissionIds.length > 0) {
@@ -142,9 +142,16 @@ export async function updateRole(req, res, next) {
     if (!existingRole) throw new NotFoundError('Role');
 
     const slug = requestedSlug === undefined ? undefined : String(requestedSlug).trim();
+    if (existingRole && isReservedAdminRole(existingRole) && !isPlatformAdmin) {
+      throw new ForbiddenError('Reserved administrator role slugs cannot be updated');
+    }
+
     if (slug !== undefined) {
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
         throw new ValidationError('slug must be lowercase letters, numbers, and single hyphens');
+      }
+      if ((RESERVED_ADMIN_SLUGS.has(slug) || isReservedAdminRole({ name, slug })) && !isPlatformAdmin) {
+        throw new ForbiddenError('Reserved administrator role slugs cannot be updated');
       }
       const duplicate = await prisma.role.findUnique({ where: { slug }, select: { id: true } });
       if (duplicate && duplicate.id !== roleId) throw new ValidationError('A role with this slug already exists');

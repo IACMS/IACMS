@@ -5,6 +5,7 @@ import {
   ForbiddenError,
 } from '#iam/iamErrors.js';
 import { loadUserRoleIdsForUser } from '#iam/iamUserRoles.js';
+import { isReservedAdminRole } from '../utils/role-slug.js';
 
 function parseRoleIdsHeader(headers) {
   const raw = headers['x-user-roles'];
@@ -16,8 +17,8 @@ async function assertMayManageRoles(actorRoleIds, tenantIdHeader, targetUserId, 
   const actorRoles = await prisma.role.findMany({
     where: { id: { in: actorRoleIds }, isActive: true },
   });
-  const actorIsSystem = actorRoles.some((r) => r.name === 'system_admin');
-  const actorIsTenantAdmin = actorRoles.some((r) => r.name === 'tenant_admin');
+  const actorIsSystem = actorRoles.some((r) => isReservedAdminRole(r));
+  const actorIsTenantAdmin = actorRoles.some((r) => r.name === 'tenant_admin' || r.slug === 'tenant-admin');
 
   if (!actorIsSystem && !actorIsTenantAdmin) {
     throw new ForbiddenError('Only tenant administrators or system administrators may manage roles');
@@ -32,8 +33,8 @@ async function assertMayManageRoles(actorRoleIds, tenantIdHeader, targetUserId, 
     }
   }
 
-  if (targetRole?.name === 'system_admin' && !actorIsSystem) {
-    throw new ForbiddenError('Only system administrators may assign or revoke the system_admin role');
+  if (isReservedAdminRole(targetRole) && !actorIsSystem) {
+    throw new ForbiddenError('Only system administrators may assign or revoke reserved administrator roles');
   }
 }
 
