@@ -13,12 +13,25 @@ function parseRoleIdsHeader(headers) {
   return raw.split(',').map((s) => s.trim()).filter(Boolean);
 }
 
-async function assertMayManageRoles(actorRoleIds, tenantIdHeader, targetUserId, targetRole) {
-  const actorRoles = await prisma.role.findMany({
-    where: { id: { in: actorRoleIds }, isActive: true },
-  });
-  const actorIsSystem = actorRoles.some((r) => isReservedAdminRole(r));
-  const actorIsTenantAdmin = actorRoles.some((r) => r.name === 'tenant_admin' || r.slug === 'tenant-admin');
+async function assertMayManageRoles(actorRoleIds, tenantIdHeader, targetUserId, targetRole, req = null) {
+  let actorIsSystem = false;
+  let actorIsTenantAdmin = false;
+  let callerTenantId = tenantIdHeader;
+
+  if (req?.iamAdminScope) {
+    if (req.iamAdminScope.type === 'platform') {
+      actorIsSystem = true;
+    } else {
+      actorIsTenantAdmin = true;
+      callerTenantId = req.iamAdminScope.tenantId;
+    }
+  } else {
+    const actorRoles = await prisma.role.findMany({
+      where: { id: { in: actorRoleIds }, isActive: true },
+    });
+    actorIsSystem = actorRoles.some((r) => isReservedAdminRole(r));
+    actorIsTenantAdmin = actorRoles.some((r) => r.name === 'tenant_admin' || r.slug === 'tenant-admin');
+  }
 
   if (!actorIsSystem && !actorIsTenantAdmin) {
     throw new ForbiddenError('Only tenant administrators or system administrators may manage roles');
@@ -28,7 +41,7 @@ async function assertMayManageRoles(actorRoleIds, tenantIdHeader, targetUserId, 
   if (!targetUser) throw new NotFoundError('User');
 
   if (!actorIsSystem) {
-    if (!tenantIdHeader || targetUser.tenantId !== tenantIdHeader) {
+    if (!callerTenantId || targetUser.tenantId !== callerTenantId) {
       throw new ForbiddenError('Cannot manage roles for users outside your tenant');
     }
   }
@@ -40,7 +53,7 @@ async function assertMayManageRoles(actorRoleIds, tenantIdHeader, targetUserId, 
 
 async function actorRoleIdsFromRequest(req) {
   let ids = parseRoleIdsHeader(req.headers);
-  const actorUserId = req.headers['x-user-id'];
+  const actorUserId = req.headers['x-user-id'] || req.user?.id;
   if ((!ids || !ids.length) && actorUserId) {
     ids = await loadUserRoleIdsForUser(prisma, actorUserId);
   }
@@ -49,7 +62,7 @@ async function actorRoleIdsFromRequest(req) {
 
 export async function assignRole(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
+    const tenantId = req.iamAdminScope?.tenantId || req.user?.tenantId || req.headers['x-tenant-id'];
     const actorRoleIds = await actorRoleIdsFromRequest(req);
     const { userId, roleId, assignedBy, expiresAt } = req.body;
 
@@ -60,13 +73,13 @@ export async function assignRole(req, res, next) {
     const role = await prisma.role.findUnique({ where: { id: roleId } });
     if (!role) throw new NotFoundError('Role');
 
-    await assertMayManageRoles(actorRoleIds, tenantId, userId, role);
+    await assertMayManageRoles(actorRoleIds, tenantId, userId, role, req);
 
     const userRole = await prisma.userRole.create({
       data: {
         userId,
         roleId,
-        assignedBy: assignedBy || req.headers['x-user-id'],
+        assignedBy: assignedBy || req.headers['x-user-id'] || req.user?.id || 'admin',
         expiresAt,
       },
       include: { role: true },
@@ -79,7 +92,7 @@ export async function assignRole(req, res, next) {
 
 export async function revokeRole(req, res, next) {
   try {
-    const tenantId = req.headers['x-tenant-id'];
+    const tenantId = req.iamAdminScope?.tenantId || req.user?.tenantId || req.headers['x-tenant-id'];
     const actorRoleIds = await actorRoleIdsFromRequest(req);
     const { userId, roleId } = req.body;
 
@@ -90,7 +103,7 @@ export async function revokeRole(req, res, next) {
     const role = await prisma.role.findUnique({ where: { id: roleId } });
     if (!role) throw new NotFoundError('Role');
 
-    await assertMayManageRoles(actorRoleIds, tenantId, userId, role);
+    await assertMayManageRoles(actorRoleIds, tenantId, userId, role, req);
 
     await prisma.userRole.deleteMany({
       where: { userId, roleId },

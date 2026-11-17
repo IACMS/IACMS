@@ -6,24 +6,51 @@ import { isPlatformAdminRequest } from '../utils/internalToken.js';
 const membershipStatuses = new Set(['active', 'inactive', 'pending', 'suspended']);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export async function assertPlatformAdmin(req) {
-  if (isPlatformAdminRequest(req)) return;
+export async function assertAdminScope(req) {
+  if (req.iamAdminAuthorized && req.iamAdminScope) {
+    return req.iamAdminScope;
+  }
+  if (isPlatformAdminRequest(req)) {
+    return { type: 'platform', organizationId: null, tenantId: null };
+  }
 
   const roleIds = Array.isArray(req.user?.roles) ? req.user.roles.map(String) : [];
   if (roleIds.length) {
     const roles = await prisma.role.findMany({
       where: { id: { in: roleIds }, isActive: true },
-      select: { name: true },
+      select: { name: true, slug: true },
     });
-    if (roles.some(({ name }) => name === 'system_admin')) return;
+    if (roles.some(({ name, slug }) => name === 'system_admin' || slug === 'system-admin' || slug === 'iam-admin')) {
+      return { type: 'platform', organizationId: null, tenantId: null };
+    }
+    if (roles.some(({ name, slug }) => name === 'tenant_admin' || slug === 'tenant-admin')) {
+      const tenantId = req.user?.tenantId || req.headers['x-tenant-id'] || null;
+      let org = null;
+      if (tenantId) {
+        org = await prisma.iamOrganization.findFirst({
+          where: { externalId: tenantId, isActive: true },
+          select: { id: true },
+        });
+      }
+      return { type: 'organization', organizationId: org?.id || null, tenantId };
+    }
   }
   throw new ForbiddenError('Only platform administrators may manage IAM organizations');
 }
 
+export async function assertPlatformAdmin(req) {
+  const scope = await assertAdminScope(req);
+  if (scope.type !== 'platform') {
+    throw new ForbiddenError('Only platform administrators may manage IAM organizations');
+  }
+}
+
 export async function listIamOrganizations(req, res, next) {
   try {
-    await assertPlatformAdmin(req);
+    const scope = await assertAdminScope(req);
+    const where = scope.type === 'organization' ? { id: scope.organizationId } : undefined;
     const organizations = await prisma.iamOrganization.findMany({
+      ...(where ? { where } : {}),
       select: {
         id: true, name: true, slug: true, externalSystem: true, externalId: true,
         isActive: true, metadata: true, createdAt: true, updatedAt: true,
@@ -37,7 +64,10 @@ export async function listIamOrganizations(req, res, next) {
 
 export async function createIamOrganization(req, res, next) {
   try {
-    await assertPlatformAdmin(req);
+    const scope = await assertAdminScope(req);
+    if (scope.type !== 'platform') {
+      throw new ForbiddenError('Only platform administrators may create IAM organizations');
+    }
     const { name, slug, externalSystem = null, externalId = null, metadata = null } = req.body ?? {};
     if (typeof name !== 'string' || !name.trim() || name.trim().length > 200) {
       throw new ValidationError('name must contain 1 to 200 characters');
@@ -65,8 +95,17 @@ export async function createIamOrganization(req, res, next) {
 
 export async function updateIamOrganization(req, res, next) {
   try {
-    await assertPlatformAdmin(req);
+    const scope = await assertAdminScope(req);
     const id = req.params.organizationId || req.params.id;
+    if (scope.type === 'organization') {
+      if (scope.organizationId !== id) {
+        throw new ForbiddenError('You can only update your own IAM organization');
+      }
+      const { isActive, slug } = req.body ?? {};
+      if (isActive !== undefined || slug !== undefined) {
+        throw new ForbiddenError('Client administrators cannot modify organization status or slug');
+      }
+    }
     const { name, slug, isActive, metadata } = req.body ?? {};
     const existing = await prisma.iamOrganization.findUnique({
       where: { id },
@@ -114,8 +153,11 @@ export async function updateIamOrganization(req, res, next) {
 
 export async function addIamOrganizationMember(req, res, next) {
   try {
-    await assertPlatformAdmin(req);
+    const scope = await assertAdminScope(req);
     const { organizationId } = req.params;
+    if (scope.type === 'organization' && scope.organizationId !== organizationId) {
+      throw new ForbiddenError('You can only manage members in your own IAM organization');
+    }
     const { subjectId, status = 'active' } = req.body ?? {};
     if (!UUID_PATTERN.test(organizationId)) throw new ValidationError('organizationId must be a UUID');
     if (typeof subjectId !== 'string' || !UUID_PATTERN.test(subjectId)) throw new ValidationError('subjectId must be a UUID');
@@ -146,8 +188,11 @@ export async function addIamOrganizationMember(req, res, next) {
 
 export async function updateIamOrganizationMember(req, res, next) {
   try {
-    await assertPlatformAdmin(req);
+    const scope = await assertAdminScope(req);
     const { organizationId, subjectId } = req.params;
+    if (scope.type === 'organization' && scope.organizationId !== organizationId) {
+      throw new ForbiddenError('You can only manage members in your own IAM organization');
+    }
     const { status } = req.body ?? {};
     if (!UUID_PATTERN.test(organizationId) || !UUID_PATTERN.test(subjectId)) throw new ValidationError('organizationId and subjectId must be UUIDs');
     if (!membershipStatuses.has(status)) throw new ValidationError('Unsupported membership status');
@@ -176,8 +221,11 @@ export async function updateIamOrganizationMember(req, res, next) {
 
 export async function listIamOrganizationMembers(req, res, next) {
   try {
-    await assertPlatformAdmin(req);
+    const scope = await assertAdminScope(req);
     const { organizationId } = req.params;
+    if (scope.type === 'organization' && scope.organizationId !== organizationId) {
+      throw new ForbiddenError('You can only view members in your own IAM organization');
+    }
     if (!UUID_PATTERN.test(organizationId)) throw new ValidationError('organizationId must be a UUID');
     const organization = await prisma.iamOrganization.findUnique({ where: { id: organizationId }, select: { id: true } });
     if (!organization) throw new NotFoundError('IAM organization');

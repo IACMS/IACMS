@@ -218,7 +218,9 @@ export async function assignRole(req, res, next) {
       // Only an existing system_admin may grant this role (no self-serve promotion from org admins).
       const callerRoleIds = Array.isArray(req.user.roles) ? req.user.roles : [];
       const callerRoles = await prisma.role.findMany({ where: { id: { in: callerRoleIds } } });
-      const callerIsAdmin = callerRoles.some((r) => isReservedAdminRole(r)) || req.iamAdminAuthorized === true;
+      const callerIsAdmin = req.iamAdminScope
+        ? req.iamAdminScope.type === 'platform'
+        : callerRoles.some((r) => isReservedAdminRole(r));
       if (!callerIsAdmin) {
         throw new ForbiddenError('Only system administrators may assign reserved administrator roles');
       }

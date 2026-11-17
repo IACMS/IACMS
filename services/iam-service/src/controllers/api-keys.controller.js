@@ -14,8 +14,8 @@ import { TOPICS } from '#iam/iamEventBus.js';
 const logger = new Logger('iam-api-keys');
 
 function getCallerContext(req) {
-  const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
-  const userId = req.user?.id || req.headers['x-user-id'];
+  const tenantId = req.iamAdminScope?.tenantId || req.user?.tenantId || req.headers['x-tenant-id'];
+  const userId = req.user?.id || req.headers['x-user-id'] || (req.iamAdminScope ? 'iam-admin' : null);
 
   if (!tenantId) {
     throw new ForbiddenError('Tenant context required to manage API keys');

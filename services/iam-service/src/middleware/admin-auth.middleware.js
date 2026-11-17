@@ -7,9 +7,14 @@ import { getRedisClient } from '../config/redis.config.js';
 import { resolveGatewayIdentity } from '#iam/iamGatewayIdentity.js';
 import { loadJwks } from '../oauth/jwks.js';
 
-let localJwks;
+let cachedJwksJson = null;
+let localJwks = null;
 function getLocalJwks() {
-  if (!localJwks) localJwks = createLocalJWKSet(loadJwks());
+  const current = process.env.OIDC_JWKS_JSON;
+  if (!localJwks || cachedJwksJson !== current) {
+    cachedJwksJson = current;
+    localJwks = createLocalJWKSet(loadJwks());
+  }
   return localJwks;
 }
 
@@ -41,6 +46,10 @@ async function authorizeGatewayAdmin(req) {
     );
   }
   if (!directAdminPermission && !hasAdminRole) throw new ForbiddenError('IAM administrator access is required');
+  const isPlatform = hasAdminRole || permissions.includes('iam:admin') || permissions.includes('*');
+  req.iamAdminScope = isPlatform
+    ? { type: 'platform', organizationId: null, tenantId: identity.tenantId || null }
+    : { type: 'organization', organizationId: null, tenantId: identity.tenantId || null };
   req.user = identity;
   req.iamAdminAuthorized = true;
   req.iamAdminAuthType = 'gateway';
@@ -73,42 +82,91 @@ async function authorizeOidcAdmin(req) {
   if (!clientId) throw new UnauthorizedError('The access token is missing its OAuth client identity');
   const client = await prisma.oAuthClient.findFirst({
     where: { clientId, isActive: true, targetAudience: audience },
-    select: { id: true, iamOrganizationId: true },
+    select: { id: true, iamOrganizationId: true, tenantId: true },
   });
   if (!client) throw new ForbiddenError('The OAuth client is not registered for IAM administration');
 
-  const [user, assignment] = await Promise.all([
-    prisma.user.findFirst({ where: { id: payload.sub, isActive: true }, select: { id: true } }),
-    prisma.userApplicationRole.findFirst({
-      where: {
-        userId: payload.sub,
-        oauthClientId: client.id,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-        role: { isActive: true, slug: { in: ['system-admin', 'iam-admin'] } },
-      },
-      select: { id: true },
-    }),
-  ]);
-  if (!user || !assignment) throw new ForbiddenError('An active IAM administrator role assignment is required');
+  const user = await prisma.user.findFirst({
+    where: { id: payload.sub, isActive: true },
+    select: { id: true, tenantId: true, tenant: { select: { id: true, code: true, isActive: true } } },
+  });
+  if (!user) throw new ForbiddenError('An active IAM administrator account is required');
 
-  if (client.iamOrganizationId) {
-    const membership = await prisma.iamMembership.findFirst({
-      where: {
-        subjectId: payload.sub,
-        organizationId: client.iamOrganizationId,
-        status: 'active',
-        organization: { is: { isActive: true } },
-      },
-      select: { id: true },
-    });
-    if (!membership) throw new ForbiddenError('An active IAM administrator organization membership is required');
+  const assignments = await prisma.userApplicationRole.findMany({
+    where: {
+      userId: payload.sub,
+      oauthClientId: client.id,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      role: { isActive: true },
+    },
+    include: { role: { select: { slug: true, name: true } } },
+  });
+
+  const appRoleSlugs = assignments.map((a) => a.role?.slug || a.role?.name);
+  const isPlatformAdmin = appRoleSlugs.some((slug) =>
+    ['system-admin', 'iam-admin', 'system_admin'].includes(slug),
+  );
+  const isClientAdmin = appRoleSlugs.some((slug) =>
+    ['tenant-admin', 'tenant_admin'].includes(slug),
+  );
+
+  if (!isPlatformAdmin && !isClientAdmin) {
+    throw new ForbiddenError('An active IAM administrator role assignment is required');
+  }
+
+  let adminScope;
+  if (isPlatformAdmin) {
+    adminScope = {
+      type: 'platform',
+      organizationId: null,
+      tenantId: user.tenantId || null,
+    };
+  } else {
+    // Client admin (tenant-admin / tenant_admin): derive organization scope
+    let membership = null;
+    if (client.iamOrganizationId) {
+      membership = await prisma.iamMembership.findFirst({
+        where: {
+          subjectId: payload.sub,
+          organizationId: client.iamOrganizationId,
+          status: 'active',
+          organization: { is: { isActive: true } },
+        },
+        include: { organization: true },
+      });
+      if (!membership) throw new ForbiddenError('An active IAM administrator organization membership is required');
+    } else {
+      membership = await prisma.iamMembership.findFirst({
+        where: {
+          subjectId: payload.sub,
+          status: 'active',
+          organization: { is: { isActive: true } },
+        },
+        include: { organization: true },
+      });
+    }
+
+    const organizationId = client.iamOrganizationId || membership?.organizationId || null;
+    const tenantId = membership?.organization?.externalId || user.tenantId || null;
+
+    if (!organizationId && !tenantId) {
+      throw new ForbiddenError('Client administrator must be associated with an active organization or tenant');
+    }
+
+    adminScope = {
+      type: 'organization',
+      organizationId,
+      tenantId,
+    };
   }
 
   req.user = {
     id: user.id,
+    tenantId: adminScope.tenantId,
     roles: Array.isArray(payload.roles) ? payload.roles : [],
     permissions: ['iam:admin'],
   };
+  req.iamAdminScope = adminScope;
   req.iamAdminAuthorized = true;
   req.iamAdminAuthType = 'oidc';
 }
@@ -189,6 +247,12 @@ async function authorizeBearerAdmin(req) {
         }
 
         const roleSlugs = activeAdminRoles.map((ur) => ur.role?.slug || ur.role?.name);
+        const isPlatform = activeAdminRoles.some((ur) =>
+          ['system_admin', 'system-admin', 'iam-admin'].includes(ur.role?.slug || ur.role?.name),
+        );
+        req.iamAdminScope = isPlatform
+          ? { type: 'platform', organizationId: null, tenantId: user.tenantId }
+          : { type: 'organization', organizationId: null, tenantId: user.tenantId };
         req.user = {
           id: user.id,
           tenantId: user.tenantId,

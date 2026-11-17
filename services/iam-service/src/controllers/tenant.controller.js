@@ -30,6 +30,10 @@ function parseRoleIdsFromHeaders(req) {
  * or JWT payload via optional Bearer middleware).
  */
 async function assertPlatformAdminRegistrar(req) {
+  if (req.iamAdminScope?.type === 'platform') {
+    return req.user?.id || 'platform-admin';
+  }
+
   const registrarId =
     (req.headers['x-user-id'] && String(req.headers['x-user-id'])) || req.user?.id || null;
   if (!registrarId) {
@@ -60,6 +64,17 @@ async function assertPlatformAdminRegistrar(req) {
 }
 
 export async function resolveActorContext(req) {
+  if (req.iamAdminScope) {
+    const actorUserId = req.user?.id || 'admin-user';
+    const isSystemAdmin = req.iamAdminScope.type === 'platform';
+    const isTenantAdmin = true;
+    const actorTenantId = req.iamAdminScope.tenantId || (isSystemAdmin ? 'admin' : null);
+    if (!actorTenantId) {
+      throw new UnauthorizedError('Authentication required');
+    }
+    return { actorUserId, actorTenantId, roleIds: [], isSystemAdmin, isTenantAdmin };
+  }
+
   const actorUserId = req.user?.id ? String(req.user.id) : (req.headers['x-user-id'] ? String(req.headers['x-user-id']) : null);
   const actorTenantId = req.user?.tenantId ? String(req.user.tenantId) : (req.headers['x-tenant-id'] ? String(req.headers['x-tenant-id']) : null);
   let roleIds = parseRoleIdsFromHeaders(req);

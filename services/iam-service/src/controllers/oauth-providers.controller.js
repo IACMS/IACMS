@@ -13,29 +13,49 @@ const logger = new Logger('iam-oauth-providers');
 
 import { isPlatformAdminRequest } from '../utils/internalToken.js';
 
-export async function assertPlatformAdmin(req) {
-  if (isPlatformAdminRequest(req)) return;
+export async function assertAdminScope(req) {
+  if (req.iamAdminScope) return req.iamAdminScope;
+  if (isPlatformAdminRequest(req)) return { type: 'platform' };
 
   const roleIds = Array.isArray(req.user?.roles) ? req.user.roles.map(String) : [];
   if (roleIds.length) {
     const roles = await prisma.role.findMany({
       where: { id: { in: roleIds }, isActive: true },
-      select: { name: true },
+      select: { name: true, slug: true },
     });
-    if (roles.some((r) => r.name === 'system_admin')) {
-      return;
+    if (roles.some((r) => r.name === 'system_admin' || r.slug === 'system-admin' || r.slug === 'iam-admin')) {
+      return { type: 'platform' };
+    }
+    if (roles.some((r) => r.name === 'tenant_admin' || r.slug === 'tenant-admin')) {
+      return {
+        type: 'organization',
+        organizationId: req.user?.organizationId || null,
+        tenantId: req.user?.tenantId || null,
+      };
     }
   }
   throw new ForbiddenError('Only platform administrators may manage OAuth providers');
+}
+
+export async function assertPlatformAdmin(req) {
+  const scope = await assertAdminScope(req);
+  if (scope.type !== 'platform') {
+    throw new ForbiddenError('Only platform administrators may modify OAuth providers');
+  }
 }
 
 // ── GET /oauth/providers ──────────────────────────────────────────────────────
 
 export async function listProviders(req, res, next) {
   try {
-    await assertPlatformAdmin(req);
+    const adminScope = await assertAdminScope(req);
+    let where = {};
+    if (adminScope.type === 'organization' && adminScope.tenantId) {
+      where = { OR: [{ tenantId: null }, { tenantId: adminScope.tenantId }] };
+    }
 
     const providers = await prisma.oAuthProvider.findMany({
+      where,
       select: {
         id: true,
         tenantId: true,
@@ -120,7 +140,7 @@ export async function createProvider(req, res, next) {
 
 export async function getProvider(req, res, next) {
   try {
-    await assertPlatformAdmin(req);
+    const adminScope = await assertAdminScope(req);
 
     const provider = await prisma.oAuthProvider.findUnique({
       where: { id: req.params.id },
@@ -138,6 +158,9 @@ export async function getProvider(req, res, next) {
     });
 
     if (!provider) throw new NotFoundError('OAuth provider');
+    if (adminScope.type === 'organization' && provider.tenantId !== null && provider.tenantId !== adminScope.tenantId) {
+      throw new NotFoundError('OAuth provider');
+    }
     res.json({ provider });
   } catch (err) {
     next(err);
