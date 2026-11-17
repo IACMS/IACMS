@@ -1,14 +1,33 @@
 import jwt from 'jsonwebtoken';
+import { createLocalJWKSet, jwtVerify } from 'jose';
 import { UnauthorizedError, ForbiddenError } from '#iam/iamErrors.js';
 import { getRedisClient } from '../config/redis.config.js';
 import prisma from '../config/database.js';
 import { resolveGatewayIdentity } from '#iam/iamGatewayIdentity.js';
+import { loadJwks } from '../oauth/jwks.js';
 
 if (!process.env.JWT_SECRET) {
   throw new Error('[iam-auth-middleware] JWT_SECRET environment variable is required. Generate with: openssl rand -base64 64');
 }
 const JWT_SECRET = process.env.JWT_SECRET;
+function getJwtSecret() {
+  return process.env.JWT_SECRET || JWT_SECRET;
+}
 
+let cachedJwksJson = null;
+let localJwks = null;
+function getLocalJwks() {
+  const current = process.env.OIDC_JWKS_JSON;
+  if (!localJwks || cachedJwksJson !== current) {
+    cachedJwksJson = current;
+    try {
+      localJwks = createLocalJWKSet(loadJwks());
+    } catch {
+      localJwks = null;
+    }
+  }
+  return localJwks;
+}
 
 /** When false, only JWT Bearer is accepted (stricter — use if auth-service is reachable without the gateway). */
 function trustGatewayForwardedHeaders() {
@@ -33,7 +52,8 @@ async function attachUserFromGatewayForwardedIdentity(req, res, next) {
 }
 
 /**
- * Authenticate JWT Bearer, or — when forwarded by the API gateway — `x-user-id` + `x-tenant-id`.
+ * Authenticate JWT Bearer (HS256 session token OR RS256 OIDC token),
+ * or — when forwarded by the API gateway — `x-user-id` + `x-tenant-id`.
  * JWT path also checks the Redis blacklist for logout/revocation.
  */
 export async function authenticateToken(req, res, next) {
@@ -53,45 +73,99 @@ export async function authenticateToken(req, res, next) {
     return next(new UnauthorizedError('Token required'));
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+  let decoded = null;
+  let isOidc = false;
 
+  try {
+    decoded = jwt.verify(token, getJwtSecret());
     if (decoded.type === 'refresh' || (decoded.type && decoded.type !== 'access')) {
       return next(new UnauthorizedError('Invalid token type'));
     }
-
-    // Check blacklist (non-fatal if Redis is down — fail open)
-    if (decoded.jti) {
-      try {
-        const redis = getRedisClient();
-        if (redis) {
-          const isBlacklisted = await redis.get(`auth:blacklist:${decoded.jti}`);
-          if (isBlacklisted) {
-            return next(new UnauthorizedError('Token has been revoked. Please log in again.'));
-          }
+  } catch (hmacErr) {
+    // If HMAC verification fails, check if this is an RS256 OIDC Access Token
+    try {
+      const jwks = getLocalJwks();
+      if (jwks) {
+        const issuer = process.env.OIDC_ISSUER || 'http://localhost:3001';
+        const { payload } = await jwtVerify(token, jwks, {
+          issuer,
+          algorithms: ['RS256'],
+        });
+        if (payload && payload.sub) {
+          decoded = {
+            id: payload.sub,
+            tenantId: payload.tenant_id || payload.organization_id || null,
+            roles: Array.isArray(payload.roles) ? payload.roles : [],
+            scope: payload.scope || '',
+            iam_admin: payload.iam_admin === true,
+            email: payload.email || null,
+          };
+          isOidc = true;
         }
-      } catch {
-        // Redis unavailable — allow request through (fail open)
       }
-    }
-
-    /**
-     * Gateway reconciles mustChangePassword with the DB; JWT may stay stale until refresh.
-     * Downstream middleware (requirePasswordChange) must see the DB value, same as forwarded identity.
-     */
-    const pwdRow = await prisma.user.findFirst({
-      where: { id: String(decoded.id), isActive: true },
-      select: { mustChangePassword: true },
-    });
-    if (!pwdRow) {
+    } catch (oidcErr) {
       return next(new UnauthorizedError('Invalid or expired token'));
     }
-
-    req.user = { ...decoded, mustChangePassword: pwdRow.mustChangePassword ?? false };
-    next();
-  } catch (error) {
-    next(new UnauthorizedError('Invalid or expired token'));
   }
+
+  if (!decoded) {
+    return next(new UnauthorizedError('Invalid or expired token'));
+  }
+
+  // Check blacklist (non-fatal if Redis is down — fail open)
+  if (decoded.jti) {
+    try {
+      const redis = getRedisClient();
+      if (redis) {
+        const isBlacklisted = await redis.get(`auth:blacklist:${decoded.jti}`);
+        if (isBlacklisted) {
+          return next(new UnauthorizedError('Token has been revoked. Please log in again.'));
+        }
+      }
+    } catch {
+      // Redis unavailable — allow request through (fail open)
+    }
+  }
+
+  /**
+   * Gateway reconciles mustChangePassword with the DB; JWT may stay stale until refresh.
+   * Downstream middleware (requirePasswordChange) must see the DB value, same as forwarded identity.
+   */
+  const pwdRow = await prisma.user.findFirst({
+    where: { id: String(decoded.id), isActive: true },
+    select: {
+      id: true,
+      tenantId: true,
+      mustChangePassword: true,
+      userRoles: {
+        select: { role: { select: { name: true, slug: true } } },
+      },
+    },
+  });
+  if (!pwdRow) {
+    return next(new UnauthorizedError('Invalid or expired token'));
+  }
+
+  const roleSlugs = (pwdRow.userRoles || []).map((ur) => ur.role?.slug || ur.role?.name).filter(Boolean);
+  const allRoles = [...new Set([...(decoded.roles || []), ...roleSlugs])];
+  const isPlatformAdmin =
+    decoded.iam_admin === true ||
+    allRoles.some((r) => ['system_admin', 'system-admin', 'iam-admin'].includes(r));
+  const isOrgAdmin = allRoles.some((r) => ['tenant_admin', 'tenant-admin'].includes(r));
+
+  if (isPlatformAdmin) {
+    req.iamAdminScope = { type: 'platform', organizationId: null, tenantId: decoded.tenantId || pwdRow.tenantId };
+  } else if (isOrgAdmin) {
+    req.iamAdminScope = { type: 'organization', organizationId: null, tenantId: decoded.tenantId || pwdRow.tenantId };
+  }
+
+  req.user = {
+    ...decoded,
+    tenantId: decoded.tenantId || pwdRow.tenantId,
+    roles: allRoles,
+    mustChangePassword: pwdRow.mustChangePassword ?? false,
+  };
+  next();
 }
 
 /**
@@ -106,32 +180,57 @@ export async function authenticateTokenOptional(req, res, next) {
     return next();
   }
 
+  let decoded = null;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-
+    decoded = jwt.verify(token, getJwtSecret());
     if (decoded.type === 'refresh' || (decoded.type && decoded.type !== 'access')) {
       return next(new UnauthorizedError('Invalid token type'));
     }
-
-    if (decoded.jti) {
-      try {
-        const redis = getRedisClient();
-        if (redis) {
-          const isBlacklisted = await redis.get(`auth:blacklist:${decoded.jti}`);
-          if (isBlacklisted) {
-            return next(new UnauthorizedError('Token has been revoked. Please log in again.'));
-          }
+  } catch (hmacErr) {
+    try {
+      const jwks = getLocalJwks();
+      if (jwks) {
+        const issuer = process.env.OIDC_ISSUER || 'http://localhost:3001';
+        const { payload } = await jwtVerify(token, jwks, {
+          issuer,
+          algorithms: ['RS256'],
+        });
+        if (payload && payload.sub) {
+          decoded = {
+            id: payload.sub,
+            tenantId: payload.tenant_id || payload.organization_id || null,
+            roles: Array.isArray(payload.roles) ? payload.roles : [],
+            scope: payload.scope || '',
+            iam_admin: payload.iam_admin === true,
+            email: payload.email || null,
+          };
         }
-      } catch {
-        /* no-op */
       }
+    } catch {
+      return next(new UnauthorizedError('Invalid or expired token'));
     }
-
-    req.user = decoded;
-    next();
-  } catch (error) {
-    next(new UnauthorizedError('Invalid or expired token'));
   }
+
+  if (!decoded) {
+    return next(new UnauthorizedError('Invalid or expired token'));
+  }
+
+  if (decoded.jti) {
+    try {
+      const redis = getRedisClient();
+      if (redis) {
+        const isBlacklisted = await redis.get(`auth:blacklist:${decoded.jti}`);
+        if (isBlacklisted) {
+          return next(new UnauthorizedError('Token has been revoked. Please log in again.'));
+        }
+      }
+    } catch {
+      /* no-op */
+    }
+  }
+
+  req.user = decoded;
+  next();
 }
 
 /**

@@ -79,6 +79,43 @@ services:
 
   # ── Services ──────────────────────────────────────────────────────────────
 
+  # IAM Service — Auth + OIDC / OAuth 2.0 Provider
+  iam-service:
+    build:
+      context: ../services/iam-service
+      dockerfile: Dockerfile
+    container_name: iacms-iam-service
+    ports:
+      - '127.0.0.1:3001:3001'
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      REDIS_URL: redis://redis:6379
+      KAFKA_BROKERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_DEFAULT_RESOURCE: ${OIDC_DEFAULT_RESOURCE:-https://api.iacms.local}
+      OIDC_SUPPORTED_SCOPES: ${OIDC_SUPPORTED_SCOPES:-openid offline_access profile email roles api_key iam:admin files:read files:upload files:delete chat:read chat:write chat:admin audit:read audit:write notifications:send cases:read cases:create cases:update}
+      OIDC_RESOURCE_SCOPES: ${OIDC_RESOURCE_SCOPES:-openid profile email roles api_key iam:admin files:read files:upload files:delete chat:read chat:write chat:admin audit:read audit:write notifications:send cases:read cases:create cases:update}
+      OIDC_COOKIE_SECRET: ${OIDC_COOKIE_SECRET}
+      CLIENT_SECRET_KEY: ${CLIENT_SECRET_KEY}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
+      IAM_ADMIN_AUDIENCE: ${IAM_ADMIN_AUDIENCE:-https://api.iacms.local}
+      IAM_IDENTITY_OUTBOX_ENABLED: ${IAM_IDENTITY_OUTBOX_ENABLED:-false}
+      IAM_ORG_MEMBERSHIPS_ENABLED: ${IAM_ORG_MEMBERSHIPS_ENABLED:-true}
+      IAM_GLOBAL_IDENTITIES_ENABLED: ${IAM_GLOBAL_IDENTITIES_ENABLED:-true}
+      IAM_LEGACY_ORGANIZATION_SYSTEM: ${IAM_LEGACY_ORGANIZATION_SYSTEM:-iacms}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
   # API Gateway — the only service that uses Redis (caching + rate limiting)
   api-gateway:
     build:
@@ -111,12 +148,16 @@ services:
       RATE_LIMIT_MAX_REQUESTS: 100
       RATE_LIMIT_WINDOW_SECONDS: 60
       AUTH_RATE_LIMIT_MAX: 10
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
       OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
+      SERVICE_AUDIENCE: ${SERVICE_AUDIENCE:-https://api.iacms.local}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      iam-service:
+        condition: service_started
       case-engine-service:
         condition: service_started
       kafka:
@@ -140,6 +181,10 @@ services:
       PORT: 3003
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
+      SERVICE_AUDIENCE: ${CASE_ENGINE_AUDIENCE:-https://cases.iacms.gov/api}
     depends_on:
       postgres:
         condition: service_healthy
@@ -161,6 +206,9 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
+      SERVICE_AUDIENCE: ${AUDIT_AUDIENCE:-https://audit.iacms.gov/api}
     depends_on:
       postgres:
         condition: service_healthy
@@ -207,6 +255,9 @@ services:
       REDIS_URL: redis://redis:6379
       APP_URL: ${APP_URL:-http://localhost:5173}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
+      SERVICE_AUDIENCE: ${NOTIFICATION_AUDIENCE:-https://notifications.iacms.gov/api}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:support@iacms.gov}
@@ -234,6 +285,9 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       IAM_SERVICE_URL: ${IAM_SERVICE_URL:-http://iam-service:3001}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
+      SERVICE_AUDIENCE: ${CHAT_AUDIENCE:-https://api.iacms.local}
       FILE_SERVICE_URL: http://file-service:3009
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
     depends_on:
@@ -259,6 +313,9 @@ services:
       REDIS_URL: redis://redis:6379
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      IAM_SERVICE_URL: ${IAM_SERVICE_URL:-http://iam-service:3001}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
     depends_on:
       postgres:
         condition: service_healthy
@@ -336,7 +393,11 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       AUTH_SERVICE_URL: ${IAM_SERVICE_URL:-http://iam-service:3001}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
+      SERVICE_AUDIENCE: ${FILE_AUDIENCE:-https://files.iacms.gov/api}
       REDIS_URL: redis://redis:6379
       STORAGE_PROVIDER: minio
       MINIO_ENDPOINT: minio
@@ -380,7 +441,10 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       AUTH_SERVICE_URL: ${IAM_SERVICE_URL:-http://iam-service:3001}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:3001}
+      OIDC_JWKS_JSON: ${OIDC_JWKS_JSON}
       REDIS_URL: redis://redis:6379
       STORAGE_PROVIDER: minio
       MINIO_ENDPOINT: minio

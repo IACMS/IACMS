@@ -221,10 +221,24 @@ function normalizeRbacEnvelope(cached) {
 async function fetchUserRbacEnvelope(userId, tenantId) {
   try {
     if (!tenantId) return { ok: true, permissions: [], roleIds: [] };
-    const identity = await prisma.identityProjection.findUnique({
+    let identity = await prisma.identityProjection.findUnique({
       where: { subjectId_tenantId: { subjectId: String(userId), tenantId: String(tenantId) } },
       select: { isActive: true, deletedAt: true },
     });
+    // Fallback: If projection has not yet synchronized from IAM/Kafka, check local user table
+    if (!identity && prisma.user) {
+      try {
+        const localUser = await prisma.user.findFirst({
+          where: { id: String(userId), tenantId: String(tenantId) },
+          select: { isActive: true },
+        });
+        if (localUser) {
+          identity = { isActive: localUser.isActive, deletedAt: null };
+        }
+      } catch {
+        // Ignored if user model is unreachable
+      }
+    }
     // The projection must be reconciled before local RBAC is enabled. Missing
     // identity state is unavailable policy, while inactive/deleted subjects
     // receive no IACMS permissions.

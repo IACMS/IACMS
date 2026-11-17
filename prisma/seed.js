@@ -217,6 +217,7 @@ async function clearDatabase() {
     prisma.caseSequence.deleteMany(),
     prisma.userRole.deleteMany(),
     prisma.rolePermission.deleteMany(),
+    prisma.identityProjection.deleteMany(),
     prisma.user.deleteMany(),
     prisma.department.deleteMany(),
     prisma.role.deleteMany(),
@@ -379,12 +380,23 @@ async function main() {
       lastName: 'Administrator',
       isActive: true,
       isEmailVerified: true,
-      mustChangePassword: true,
+      mustChangePassword: process.env.SEED_ADMIN_MUST_CHANGE_PASSWORD === 'true',
       lastLogin: daysAgo(1),
     },
   });
   await prisma.userRole.create({
     data: { userId: platformUser.id, roleId: ROLE_SYSTEM_ADMIN_ID, assignedBy: platformUser.id },
+  });
+  await prisma.identityProjection.create({
+    data: {
+      subjectId: platformUser.id,
+      tenantId: platformUser.tenantId,
+      email: platformUser.email,
+      firstName: platformUser.firstName,
+      lastName: platformUser.lastName,
+      isActive: true,
+      iamVersion: 1,
+    },
   });
   console.log('✅ Platform tenant (ADMIN) created\n');
 
@@ -455,7 +467,7 @@ async function main() {
           lastName: s.last,
           isActive: true,
           isEmailVerified: true,
-          mustChangePassword: true,
+          mustChangePassword: process.env.SEED_ADMIN_MUST_CHANGE_PASSWORD === 'true',
           lastLogin: hoursAgo(Math.floor(Math.random() * 5) + 1),
         },
       });
@@ -464,6 +476,18 @@ async function main() {
           data: { userId: user.id, roleId, assignedBy: platformUser.id },
         });
       }
+      await prisma.identityProjection.create({
+        data: {
+          subjectId: user.id,
+          tenantId: user.tenantId,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          departmentId: user.departmentId ?? null,
+          isActive: true,
+          iamVersion: 1,
+        },
+      });
       tenantUsers.push(user);
       seededUsers.push({ tenantCode: tenant.code, email, password: 'password123', roles: s.roles });
     }

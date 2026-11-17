@@ -25,15 +25,19 @@ const PLATFORM_TENANT_CODE = 'ADMIN';
  */
 export async function listUsers(req, res, next) {
   try {
-    const { tenantId } = req.user;
+    const isPlatform = req.iamAdminScope?.type === 'platform';
+    const filterTenantId = req.query?.tenantId ? String(req.query.tenantId) : null;
+    const where = isPlatform
+      ? (filterTenantId ? { tenantId: filterTenantId } : {})
+      : { tenantId: req.user?.tenantId };
     const page = Math.max(1, parseInt(req.query?.page, 10) || 1);
     const limit = Math.max(1, Math.min(100, parseInt(req.query?.limit, 10) || 50));
     const skip = (page - 1) * limit;
 
     const [total, users] = await Promise.all([
-      prisma.user.count({ where: { tenantId } }),
+      prisma.user.count({ where }),
       prisma.user.findMany({
-        where: { tenantId },
+        where,
         take: limit,
         skip,
         select: {
@@ -79,15 +83,17 @@ export async function listUsers(req, res, next) {
 
 /**
  * GET /auth/users/:id
- * Get a single user (must belong to the admin's tenant).
+ * Get a single user (must belong to the admin's tenant, or any if platform admin).
  */
 export async function getUser(req, res, next) {
   try {
-    const { tenantId } = req.user;
+    const isPlatform = req.iamAdminScope?.type === 'platform';
+    const { tenantId } = req.user || {};
     const { id } = req.params;
+    const where = isPlatform ? { id } : { id, tenantId };
 
     const user = await prisma.user.findFirst({
-      where: { id, tenantId },
+      where,
       select: {
         id: true,
         email: true,

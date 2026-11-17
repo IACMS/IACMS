@@ -75,7 +75,7 @@ IACMS/
 
 ```powershell
 cd infrastructure
-docker compose up -d postgres redis zookeeper kafka
+docker compose up -d postgres redis kafka
 ```
 
 Verify containers are healthy:

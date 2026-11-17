@@ -21,7 +21,7 @@
     "services/*"
   ],
   "scripts": {
-    "docker:up": "cd infrastructure && docker compose up -d postgres redis kafka zookeeper",
+    "docker:up": "cd infrastructure && docker compose up -d postgres redis kafka",
     "docker:down": "cd infrastructure && docker compose down",
     "docker:all": "cd infrastructure && docker compose up -d",
     "network:env": "bash infrastructure/setup-network-env.sh",

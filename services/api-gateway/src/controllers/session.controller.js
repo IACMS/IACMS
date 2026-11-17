@@ -28,9 +28,14 @@ export async function sessionLogin(req, res, next) {
     // Forward credentials to auth service
     const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
     
+    const authHeaders = { 'Content-Type': 'application/json' };
+    if (process.env.INTERNAL_SERVICE_TOKEN) {
+      authHeaders['x-internal-service-token'] = process.env.INTERNAL_SERVICE_TOKEN;
+    }
+
     const authResponse = await fetch(`${authServiceUrl}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({ email, password, tenantCode }),
     });
 

@@ -46,12 +46,32 @@ app.use(helmet({
   frameguard: { action: 'sameorigin' },   // Allow OIDC interaction page to be framed by same-origin portals
 }));
 
-// ── Public OIDC Discovery & JWKS CORS (RFC 7517) ────────────────────────────
-app.use(['/oauth/jwks', '/.well-known/openid-configuration'], (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
+// ── CORS & Preflight middleware ──────────────────────────────────────────────
+const ALLOWED_CORS_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const isAllowed = ALLOWED_CORS_ORIGINS.includes('*') || (origin && ALLOWED_CORS_ORIGINS.includes(origin));
+
+  if (isAllowed && origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else if (req.path.startsWith('/.well-known') || req.path === '/oauth/jwks') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, x-internal-service-token, x-tenant-id, x-user-id, x-user-roles, Accept, Origin'
+  );
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
   next();
 });
 
