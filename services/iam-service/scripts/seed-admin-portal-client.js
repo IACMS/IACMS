@@ -108,13 +108,13 @@ export async function seedAdminPortalClient() {
 
   // 4. Register or update the Admin Console public OAuth client
   const adminAudience = process.env.IAM_ADMIN_AUDIENCE || 'http://localhost:3001/admin-api';
-  const redirectUris = [
-    'http://localhost:5174/auth/callback',
-    'http://127.0.0.1:5174/auth/callback',
+  const defaultRedirectUris = [
     'http://localhost:5173/auth/callback',
     'http://127.0.0.1:5173/auth/callback',
-    'http://localhost:3000/auth/callback',
   ];
+  const redirectUris = process.env.IAM_ADMIN_PORTAL_REDIRECT_URIS
+    ? process.env.IAM_ADMIN_PORTAL_REDIRECT_URIS.split(',').map((s) => s.trim()).filter(Boolean)
+    : defaultRedirectUris;
 
   const adminClient = await prisma.oAuthClient.upsert({
     where: { clientId: 'iam_admin_portal' },
@@ -124,7 +124,7 @@ export async function seedAdminPortalClient() {
       redirectUris,
       grantTypes: ['authorization_code', 'refresh_token'],
       responseTypes: ['code'],
-      scope: 'openid profile email iam:admin',
+      scope: 'openid profile email roles iam:admin offline_access',
       tokenEndpointAuthMethod: 'none',
       targetAudience: adminAudience,
       isActive: true,
@@ -134,7 +134,7 @@ export async function seedAdminPortalClient() {
       redirectUris,
       grantTypes: ['authorization_code', 'refresh_token'],
       responseTypes: ['code'],
-      scope: 'openid profile email iam:admin',
+      scope: 'openid profile email roles iam:admin offline_access',
       tokenEndpointAuthMethod: 'none',
       targetAudience: adminAudience,
       isActive: true,
