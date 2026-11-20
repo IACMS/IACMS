@@ -1,7 +1,12 @@
 # IACMS Technical Documentation
 
 > Complete technical reference for the Inter-Agency Case Management System.  
-> For quick-start and project overview, see [`README.md`](../README.md).
+> For quick-start and project overview, see [`README.md`](../README.md).  
+> For high-level PHASES deltas, see [`CHANGELOG.md`](CHANGELOG.md) and canonical fixtures in [`shared/contracts/`](../shared/contracts/).  
+> **Deferred backlog:** [`DEFERRED_WORK.md`](DEFERRED_WORK.md).  
+> **What is built (narrative):** [`SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md).  
+> **Phase checklist vs roadmap:** [`PHASE_STATUS.md`](PHASE_STATUS.md).  
+> **Tenant isolation ADR:** [`TENANT_ISOLATION.md`](TENANT_ISOLATION.md) (explicit tenant filters; Postgres RLS deferred).
 
 ---
 
@@ -16,6 +21,10 @@
 7. [API Reference](#7-api-reference)
 8. [Development Setup](#8-development-setup)
 9. [Troubleshooting](#9-troubleshooting)
+10. [Deferred roadmap follow-ups](DEFERRED_WORK.md)
+11. [System overview — built, how, why](SYSTEM_OVERVIEW.md)
+12. [Implementation status vs PHASES](PHASE_STATUS.md)
+13. [Tenant isolation ADR](TENANT_ISOLATION.md)
 
 ---
 
@@ -72,7 +81,7 @@
 
 | Container | Port | Purpose |
 |-----------|------|---------|
-| `iacms-postgres` | 5433 | Primary database (Prisma) |
+| `iacms-postgres` | 5434 | Primary database (Prisma) |
 | `iacms-redis` | 6379 | API Gateway: sessions, RBAC cache, rate limits |
 | `iacms-zookeeper` | 2181 | Kafka cluster management |
 | `iacms-kafka` | 9092 (host) / 29092 (internal) | Event message broker |
@@ -110,6 +119,7 @@ Handles all identity operations. Not called by users directly — always proxied
 - JWT token refresh
 - User profile management
 - Password change
+- Tenant department lookup and department-aware agency chat
 
 Key files:
 
@@ -144,6 +154,7 @@ Core business logic: case lifecycle management.
 State machine for cases.
 
 - Define workflow templates (states + transitions)
+- Optional department-scoped workflows with tenant-wide fallback
 - Execute state transitions
 - Track transition history in `workflow_states`
 
@@ -152,6 +163,7 @@ State machine for cases.
 Cross-organization case referrals.
 
 - Submit referrals between tenants
+- Route referrals between departments inside or across tenants
 - Accept / reject referrals
 - Track referral status
 
@@ -314,13 +326,9 @@ In short: **Auth Service proves identity**, **API Gateway enforces it**.
 
 ### Multi-Tenancy
 
-Every tenant-aware table has a `tenant_id` column. PostgreSQL Row Level Security (RLS) automatically filters all queries so users only ever see their own tenant's data.
+Every tenant-aware table has a `tenant_id` column. Request handlers enforce tenant isolation explicitly in Prisma queries and, for department-aware flows, may also filter on `department_id` or related department ownership fields.
 
-The tenant context is set before each request:
-
-```javascript
-await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`;
-```
+The API Gateway forwards the authenticated tenant and department context to downstream services. Services should scope reads and writes using those headers plus domain rules for referrals and tenant-wide fallbacks.
 
 ### Tables
 
@@ -337,12 +345,25 @@ await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`;
 | `is_active` | Boolean | |
 | `created_at`, `updated_at` | Timestamp | |
 
+**`departments`** — Organizational sub-units inside a tenant
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID PK | |
+| `tenant_id` | UUID FK → tenants | Owning tenant |
+| `code` | String | Unique per tenant |
+| `name` | String | Unique per tenant |
+| `description` | Text nullable | |
+| `is_active` | Boolean | |
+| `created_at`, `updated_at` | Timestamp | |
+
 **`users`** — User accounts
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | UUID PK | |
 | `tenant_id` | UUID FK → tenants | |
+| `department_id` | UUID FK → departments nullable | User's department within the tenant |
 | `email` | String UNIQUE (per tenant) | |
 | `username` | String UNIQUE (per tenant) | |
 | `password_hash` | String | bcrypt hash |
@@ -392,6 +413,8 @@ await prisma.$executeRaw`SET LOCAL app.current_tenant_id = ${tenantId}`;
 | `tenant_id` | UUID FK | Owning tenant |
 | `originating_tenant_id` | UUID FK nullable | Tenant that created the case |
 | `current_tenant_id` | UUID FK nullable | Tenant currently handling it |
+| `originating_department_id` | UUID FK nullable | Department that originated the case |
+| `current_department_id` | UUID FK nullable | Department currently handling the case |
 | `case_number` | String UNIQUE | Format: `ORG-YYYY-XXXXX` |
 | `title` | String | |
 | `type` | String | `criminal`, `civil`, etc. |
@@ -407,6 +430,8 @@ RLS: User can see a case if their tenant owns it, originated it, is currently ha
 
 **`workflows`** — Workflow templates per tenant
 
+`workflows.department_id` is nullable: `NULL` means tenant-wide, while a UUID means the workflow is scoped to one department and should be preferred for callers in that department.
+
 **`workflow_states`** — State transition history per case
 
 **`assignments`** — Case assignment history
@@ -419,7 +444,20 @@ RLS: User can see a case if their tenant owns it, originated it, is currently ha
 |--------|------|-------------|
 | `from_tenant_id` | UUID FK | Referring org |
 | `to_tenant_id` | UUID FK | Receiving org |
+| `from_department_id` | UUID FK nullable | Referring department |
+| `to_department_id` | UUID FK nullable | Receiving department |
 | `status` | String | `pending`, `accepted`, `rejected`, `completed`, `cancelled` |
+
+**`agency_chat_messages`** — Agency-wide, department-wide, and direct chat messages
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `tenant_id` | UUID FK | Owning tenant |
+| `sender_id` | UUID FK → users | Sender |
+| `recipient_id` | UUID FK → users nullable | Direct-message recipient |
+| `department_id` | UUID FK → departments nullable | Department broadcast scope |
+| `recipient_department_id` | UUID FK → departments nullable | DM recipient's department |
+| `body` | Text | Message body |
 
 #### Audit & Integration
 
@@ -489,10 +527,13 @@ kafka:
 | `case.created` | case-service | notification-service, audit-service |
 | `case.updated` | case-service | audit-service |
 | `case.assigned` | case-service | notification-service, audit-service |
+| `case.transitioned` | case-service | notification-service |
 | `workflow.created` | workflow-service | audit-service |
 | `workflow.updated` | workflow-service | audit-service |
-| `workflow.state.changed` | workflow-service | notification-service, audit-service |
+| `workflow.published` | workflow-service | — |
+| `workflow.archived` | workflow-service | — |
 | `referral.created` | referral-service | notification-service, audit-service |
+| `referral.completed` | referral-service | notification-service |
 | `referral.accepted` | referral-service | notification-service |
 | `referral.rejected` | referral-service | notification-service |
 | `integration.created` | integration-service | audit-service |
@@ -760,6 +801,7 @@ When a request is authenticated (session or JWT), the gateway adds these headers
 |--------|-------|
 | `x-user-id` | Authenticated user's UUID |
 | `x-tenant-id` | User's tenant UUID |
+| `x-department-id` | User's department UUID when assigned |
 | `x-user-email` | User's email |
 | `x-user-roles` | Comma-separated roles |
 
@@ -781,9 +823,9 @@ Services should read user identity from these headers, not re-validate tokens.
 
 **1. Start infrastructure containers:**
 
-```powershell
+```bash
 cd infrastructure
-docker-compose up -d postgres zookeeper kafka
+docker compose up -d postgres redis zookeeper kafka
 ```
 
 Wait ~30 seconds for Kafka to initialize, then verify:
@@ -846,7 +888,7 @@ npm start
 | Audit Service | 3006 |
 | Integration Service | 3007 |
 | Notification Service | 3008 |
-| PostgreSQL | 5433 |
+| PostgreSQL | 5434 |
 | Zookeeper | 2181 |
 | Kafka | 9092 |
 
@@ -858,7 +900,7 @@ Copy `.env.example` (if present) or create `.env` in each service directory.
 
 ```env
 PORT=3001
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms?schema=public
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/iacms?schema=public
 JWT_SECRET=iacms-dev-secret-key-change-in-production
 JWT_EXPIRES_IN=24h
 JWT_REFRESH_EXPIRES_IN=7d
@@ -878,7 +920,7 @@ REFERRAL_SERVICE_URL=http://localhost:3005
 AUDIT_SERVICE_URL=http://localhost:3006
 INTEGRATION_SERVICE_URL=http://localhost:3007
 NOTIFICATION_SERVICE_URL=http://localhost:3008
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/iacms
 SESSION_SECRET=iacms-session-secret-change-in-production
 SESSION_MAX_AGE=86400
 CORS_ORIGIN=http://localhost:5173
@@ -965,9 +1007,9 @@ If still occurring: `docker-compose down && docker-compose up -d zookeeper kafka
 ### Database Issues
 
 **Problem:** `Authentication failed against database server`  
-**Fix:** Ensure your `DATABASE_URL` uses port `5433` not `5432`:
+**Fix:** Ensure your `DATABASE_URL` uses port `5434` not `5432`:
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms?schema=public
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/iacms?schema=public
 ```
 
 **Problem:** `Prisma Client not found` or `P1001: Can't reach database`  

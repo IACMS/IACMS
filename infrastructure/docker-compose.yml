@@ -1,21 +1,21 @@
-version: '3.8'
-
 services:
   # ── Infrastructure ────────────────────────────────────────────────────────
 
   postgres:
     image: postgres:15-alpine
     container_name: iacms-postgres
+    networks:
+      - iacms-network
     environment:
       POSTGRES_DB: iacms
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5433:5432"
+      - '5434:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,53 +24,58 @@ services:
   redis:
     image: redis:7-alpine
     container_name: iacms-redis
+    networks:
+      - iacms-network
     ports:
-      - "6379:6379"
+      - '6379:6379'
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: iacms-zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=ruok,stat,mntr"
-    ports:
-      - "2181:2181"
-    healthcheck:
-      test: ["CMD-SHELL", "echo ruok | nc -w 2 localhost 2181 | grep imok"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 20s
-
+  # ── Kafka (KRaft mode — no Zookeeper required) ───────────────────────────
+  # KRaft combined mode: single container acts as both broker and controller.
+  # Supported for development/single-node use on Confluent Platform 7.5+.
+  # CLUSTER_ID must be a stable base64url-encoded UUID — do NOT change after
+  # first boot (Kafka stores it in the kafka_data volume).
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: iacms-kafka
-    depends_on:
-      zookeeper:
-        condition: service_healthy
     ports:
-      - "9092:9092"
+      - '9092:9092'
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      # Listener map — preserves the same names used by all downstream services:
+      #   PLAINTEXT_INTERNAL  → inter-service broker address (kafka:29092)
+      #   PLAINTEXT           → host/LAN client address    (LAN_HOST:9092)
+      #   CONTROLLER          → KRaft controller quorum    (kafka:29093, internal only)
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${LAN_HOST:-localhost}:9092,PLAINTEXT_INTERNAL://kafka:29092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT_INTERNAL'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_LOG_RETENTION_HOURS: 168
+      # Stable cluster ID — generated once. Change only if you wipe kafka_data volume.
+      CLUSTER_ID: 'YTLpC6THQDGbzV3TZQtVUw'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      # Use the internal listener — host-advertised PLAINTEXT address is not
+      # always reachable from inside the container when LAN_HOST is an external IP.
+      test: ['CMD-SHELL', 'kafka-topics --bootstrap-server localhost:29092 --list']
       interval: 15s
       timeout: 10s
       retries: 10
-      start_period: 30s
+      start_period: 40s
+    networks:
+      - iacms-network
 
   # ── Services ──────────────────────────────────────────────────────────────
 
@@ -81,46 +86,73 @@ services:
       dockerfile: services/api-gateway/Dockerfile
     container_name: iacms-api-gateway
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       PORT: 3000
-      AUTH_SERVICE_URL: http://auth-service:3001
-      RBAC_SERVICE_URL: http://rbac-service:3002
-      CASE_SERVICE_URL: http://case-service:3003
-      WORKFLOW_SERVICE_URL: http://workflow-service:3004
-      REFERRAL_SERVICE_URL: http://referral-service:3005
+      NODE_ENV: ${NODE_ENV:-development}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:5174}
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      SESSION_SECRET: ${SESSION_SECRET:-iacms-session-secret-change-in-production}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token}
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
+      IAM_SERVICE_URL: http://iam-service:3001
+      AUTH_SERVICE_URL: http://iam-service:3001
+      RBAC_SERVICE_URL: http://iam-service:3001
+      CASE_ENGINE_SERVICE_URL: http://case-engine-service:3003
+      CASE_SERVICE_URL: http://case-engine-service:3003
+      WORKFLOW_SERVICE_URL: http://case-engine-service:3003
+      REFERRAL_SERVICE_URL: http://case-engine-service:3003
       AUDIT_SERVICE_URL: http://audit-service:3006
       INTEGRATION_SERVICE_URL: http://integration-service:3007
       NOTIFICATION_SERVICE_URL: http://notification-service:3008
+      FILE_SERVICE_URL: http://file-service:3009
+      CHAT_SERVICE_URL: http://chat-service:3010
       REDIS_URL: redis://redis:6379
       RATE_LIMIT_MAX_REQUESTS: 100
       RATE_LIMIT_WINDOW_SECONDS: 60
       AUTH_RATE_LIMIT_MAX: 10
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      auth-service:
+      iam-service:
+        condition: service_started
+      case-engine-service:
         condition: service_started
       kafka:
         condition: service_healthy
+      file-service:
+        condition: service_started
+      chat-service:
+        condition: service_started
     networks:
       - iacms-network
 
-  # Auth Service — PostgreSQL + Kafka only
-  auth-service:
+  # IAM Service — Auth + RBAC (PostgreSQL + Kafka)
+  iam-service:
     build:
       context: ..
-      dockerfile: services/auth-service/Dockerfile
-    container_name: iacms-auth-service
+      dockerfile: services/iam-service/Dockerfile
+    container_name: iacms-iam-service
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       PORT: 3001
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
-      JWT_SECRET: change-this-secret-key
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token}
       JWT_EXPIRES_IN: 24h
       JWT_REFRESH_EXPIRES_IN: 7d
+      IAM_SERVICE_URL: http://iam-service:3001
+      CASE_ENGINE_SERVICE_URL: http://case-engine-service:3003
+      AUDIT_SERVICE_URL: http://audit-service:3006
+      INTEGRATION_SERVICE_URL: http://integration-service:3007
+      NOTIFICATION_SERVICE_URL: http://notification-service:3008
+      FILE_SERVICE_URL: http://file-service:3009
+      CHAT_SERVICE_URL: http://chat-service:3010
     depends_on:
       postgres:
         condition: service_healthy
@@ -129,77 +161,17 @@ services:
     networks:
       - iacms-network
 
-  # RBAC Service — PostgreSQL + Kafka only
-  rbac-service:
+  # Case Engine Service — Case + Workflow + Referral (PostgreSQL + Kafka)
+  case-engine-service:
     build:
       context: ..
-      dockerfile: services/rbac-service/Dockerfile
-    container_name: iacms-rbac-service
+      dockerfile: services/case-engine-service/Dockerfile
+    container_name: iacms-case-engine-service
     ports:
-      - "3002:3002"
-    environment:
-      PORT: 3002
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      KAFKA_BROKERS: kafka:29092
-    depends_on:
-      postgres:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - iacms-network
-
-  # Case Service — PostgreSQL + Kafka only
-  case-service:
-    build:
-      context: ..
-      dockerfile: services/case-service/Dockerfile
-    container_name: iacms-case-service
-    ports:
-      - "3003:3003"
+      - '3003:3003'
     environment:
       PORT: 3003
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      KAFKA_BROKERS: kafka:29092
-    depends_on:
-      postgres:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - iacms-network
-
-  # Workflow Service — PostgreSQL + Kafka only
-  workflow-service:
-    build:
-      context: ..
-      dockerfile: services/workflow-service/Dockerfile
-    container_name: iacms-workflow-service
-    ports:
-      - "3004:3004"
-    environment:
-      PORT: 3004
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
-      KAFKA_BROKERS: kafka:29092
-    depends_on:
-      postgres:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - iacms-network
-
-  # Referral Service — PostgreSQL + Kafka only
-  referral-service:
-    build:
-      context: ..
-      dockerfile: services/referral-service/Dockerfile
-    container_name: iacms-referral-service
-    ports:
-      - "3005:3005"
-    environment:
-      PORT: 3005
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
     depends_on:
       postgres:
@@ -216,11 +188,12 @@ services:
       dockerfile: services/audit-service/Dockerfile
     container_name: iacms-audit-service
     ports:
-      - "3006:3006"
+      - '3006:3006'
     environment:
       PORT: 3006
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token}
     depends_on:
       postgres:
         condition: service_healthy
@@ -236,11 +209,12 @@ services:
       dockerfile: services/integration-service/Dockerfile
     container_name: iacms-integration-service
     ports:
-      - "3007:3007"
+      - '3007:3007'
     environment:
       PORT: 3007
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iacms?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
       KAFKA_BROKERS: kafka:29092
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token}
     depends_on:
       postgres:
         condition: service_healthy
@@ -256,12 +230,216 @@ services:
       dockerfile: services/notification-service/Dockerfile
     container_name: iacms-notification-service
     ports:
-      - "3008:3008"
+      - '3008:3008'
+    env_file:
+      - ../services/notification-service/.env
     environment:
       PORT: 3008
       KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+      APP_URL: ${APP_URL:-http://localhost:5173}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:support@iacms.gov}
     depends_on:
       kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Chat & Messaging Service (HTTP + WebSocket)
+  chat-service:
+    build:
+      context: ..
+      dockerfile: services/chat-service/Dockerfile
+    container_name: iacms-chat-service
+    ports:
+      - '3010:3010'
+    environment:
+      PORT: 3010
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token}
+      IAM_SERVICE_URL: http://iam-service:3001
+      FILE_SERVICE_URL: http://file-service:3009
+      NOTIFICATION_SERVICE_URL: http://notification-service:3008
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # Chat Service background workers (outbox publisher, cleanup)
+  chat-service-worker:
+    build:
+      context: ..
+      dockerfile: services/chat-service/Dockerfile
+    container_name: iacms-chat-service-worker
+    command: ['node', 'src/worker.js']
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+      NOTIFICATION_SERVICE_URL: http://notification-service:3008
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # MinIO — S3-compatible object storage (data-network only, never exposed to clients)
+  minio:
+    image: minio/minio:latest
+    container_name: iacms-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - iacms-network
+
+  # MinIO init — creates the iacms-files bucket on first boot
+  minio-init:
+    image: minio/mc:latest
+    container_name: iacms-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 minioadmin minioadmin;
+        mc mb --ignore-existing local/iacms-files;
+        mc anonymous set none local/iacms-files;
+        exit 0;
+      "
+    networks:
+      - iacms-network
+
+  # ClamAV — virus scanning sidecar (disabled by default via VIRUS_SCAN_ENABLED=false)
+  clamav:
+    image: clamav/clamav:stable
+    container_name: iacms-clamav
+    volumes:
+      - clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ['CMD', 'clamdcheck.sh']
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 120s
+    networks:
+      - iacms-network
+
+  # File Management Service (HTTP)
+  file-service:
+    build:
+      context: ..
+      dockerfile: services/file-service/Dockerfile
+      target: http
+    container_name: iacms-file-service
+    ports:
+      - '3009:3009'
+    environment:
+      PORT: 3009
+      NODE_ENV: development
+      WORKER_MODE: embedded
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token}
+      AUTH_SERVICE_URL: http://iam-service:3001
+      REDIS_URL: redis://redis:6379
+      STORAGE_PROVIDER: minio
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: iacms-files
+      MINIO_USE_SSL: 'false'
+      VIRUS_SCAN_ENABLED: 'false'
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: '3310'
+      THUMBNAIL_ENABLED: 'true'
+      COMPRESSION_IMAGE_ENABLED: 'true'
+      COMPRESSION_VIDEO_ENABLED: 'false'
+      DEDUPLICATION_ENABLED: 'false'
+      DEFAULT_SOFT_DELETE_DAYS: '30'
+      MAX_UPLOAD_SIZE_MB: '2048'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - iacms-network
+
+  # File Management Service workers (virus scan, compress, thumbs, cleanup)
+  # Uses the `workers` stage from the shared Dockerfile (ffmpeg + same deps layer).
+  file-service-workers:
+    build:
+      context: ..
+      dockerfile: services/file-service/Dockerfile
+      target: workers
+    container_name: iacms-file-service-workers
+    environment:
+      NODE_ENV: development
+      WORKER_MODE: standalone
+      DATABASE_URL: postgresql://postgres:postgres@iacms-postgres:5432/iacms?schema=public
+      KAFKA_BROKERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_SERVICE_URL: http://iam-service:3001
+      REDIS_URL: redis://redis:6379
+      STORAGE_PROVIDER: minio
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: iacms-files
+      MINIO_USE_SSL: 'false'
+      VIRUS_SCAN_ENABLED: 'false'
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: '3310'
+      THUMBNAIL_ENABLED: 'true'
+      COMPRESSION_IMAGE_ENABLED: 'true'
+      COMPRESSION_VIDEO_ENABLED: 'false'
+      DEFAULT_SOFT_DELETE_DAYS: '30'
+      MAX_UPLOAD_SIZE_MB: '2048'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     networks:
       - iacms-network
@@ -269,6 +447,8 @@ services:
 volumes:
   postgres_data:
   kafka_data:
+  minio_data:
+  clamav_data:
 
 networks:
   iacms-network:

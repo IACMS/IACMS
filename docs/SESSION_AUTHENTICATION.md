@@ -861,7 +861,7 @@ SESSION_MAX_AGE=86400
 **Effect:** After this time without activity, the session expires.
 
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/iacms
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/iacms
 ```
 **Purpose:** (obsolete for sessions) Gateway sessions use `REDIS_URL` only, not `DATABASE_URL`.
 **Format:** `postgresql://user:password@host:port/database`
@@ -1269,7 +1269,7 @@ curl -X POST http://localhost:3000/api/v1/session/logout \
 | Session not persisting | CORS blocking cookies | Ensure `credentials: true` in CORS config and correct `CORS_ORIGIN` |
 | `CORS error` in browser | Origin mismatch | Set `CORS_ORIGIN` to your frontend URL |
 | Redis unavailable / session login fails | Wrong `REDIS_URL` or Redis down | Ensure `iacms-redis` is healthy; gateway requires Redis for session storage |
-| Database auth failed (Prisma) | Wrong connection string | For services using Postgres: check `DATABASE_URL` (often port 5433) and credentials |
+| Database auth failed (Prisma) | Wrong connection string | For services using Postgres: check `DATABASE_URL` (often port 5434) and credentials |
 | Session expires too fast | `maxAge` too low | Increase `SESSION_MAX_AGE` in .env |
 | Can't logout | Cookie path mismatch | Ensure `clearCookie` uses same path as session cookie |
 

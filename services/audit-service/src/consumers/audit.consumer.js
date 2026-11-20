@@ -1,41 +1,49 @@
 /**
- * Audit Log Consumer
- *
- * Handles audit.log Kafka events and persists them to the AuditLog table.
- * Payload shape (produced by auth-service controllers):
- *   { tenantId, entityType, entityId, action, userId, metadata }
+ * Audit consumer handles audit.log Kafka events and persists them to the AuditLog table.
+ * Drops malformed payloads without crashing the consumer loop.
  */
 
 import prisma from '../config/database.js';
 import Logger from '../../../../shared/common/logger.js';
+import { validateAuditKafkaPayload } from '../utils/event-validator.js';
 
 const logger = new Logger('audit-service');
 
-/**
- * Persist an audit event to the database.
- *
- * Unknown tenantId / userId references are tolerated — the audit-service uses
- * shadow Tenant/User models that only carry the PK, so any valid UUID that
- * exists in the shared DB will resolve the FK without issue. If a FK violation
- * occurs (e.g. tenant not yet replicated) we log a warning instead of crashing.
- */
 export async function handleAuditLog(data) {
-  const { tenantId, entityType, entityId, action, userId, metadata } = data || {};
-
-  if (!tenantId || !entityType || !entityId || !action) {
-    logger.warn('Ignoring malformed audit event', { data });
+  const check = validateAuditKafkaPayload(data);
+  if (check !== true) {
+    logger.warn('Ignoring malformed audit event', { reason: check, data });
     return;
   }
+
+  const {
+    tenantId,
+    relatedTenantId,
+    entityType,
+    entityId,
+    action,
+    userId,
+    oldValues,
+    newValues,
+    metadata,
+    ipAddress,
+    userAgent,
+  } = data || {};
 
   try {
     await prisma.auditLog.create({
       data: {
         tenantId,
+        relatedTenantId: relatedTenantId || null,
         entityType,
         entityId,
         action,
         userId: userId || null,
+        oldValues: oldValues ?? null,
+        newValues: newValues ?? null,
         metadata: metadata || {},
+        ipAddress: ipAddress || null,
+        userAgent: userAgent || null,
       },
     });
 

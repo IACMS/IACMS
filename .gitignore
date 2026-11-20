@@ -1,11 +1,11 @@
 # Dependencies
 node_modules/
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
 # Environment variables
 .env
+.env.prod
 .env.local
 .env.*.local
 
@@ -98,6 +98,17 @@ Thumbs.db
 build/
 dist/
 
-# Auth service: Prisma client (generated; run `npx prisma generate` in services/auth-service)
-services/auth-service/src/generated/
+# Per-service Prisma clients (generated; run `npx prisma generate` from repo root)
+services/*/src/generated/
 
+
+# Prisma generated client (regenerated at build time)
+src/generated/prisma/
+
+# Prisma binary query engines (generated inside Docker, platform-specific)
+*.so.node
+libquery_engine-*.node
+
+# Service upload temp directories
+services/file-service/uploads/tmp/
+services/file-service/uploads/test/

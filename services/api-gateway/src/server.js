@@ -1,22 +1,35 @@
 /**
  * IACMS API Gateway
  * Single entry point for all microservices
- * Handles authentication (session + JWT), RBAC, and request routing
+ * Handles authentication (session + JWT + API key), RBAC, and request routing
  */
 
 import express from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { authenticate } from './middleware/auth.middleware.js';
+import { enforcePasswordChanged } from './middleware/passwordChangeGate.middleware.js';
 import { createRbacMiddleware } from './middleware/rbac.middleware.js';
-import { apiRateLimiter, authRateLimiter } from './middleware/rateLimit.middleware.js';
+import { apiRateLimiter, authRateLimiter, partnerApiRateLimiter } from './middleware/rateLimit.middleware.js';
 import { createSessionMiddleware, closeSessionStore } from './config/session.config.js';
-import { closeRedisClient } from './config/redis.config.js';
+import { getRedisClient, closeRedisClient } from './config/redis.config.js';
+import jwt from 'jsonwebtoken';
 import sessionRoutes from './routes/session.routes.js';
+import apiKeyRoutes from './routes/apiKey.routes.js';
+import webhookRoutes from './routes/webhook.routes.js';
+
+import { createGraphQLMiddleware } from './graphql/server.js';
+import { startOutboxPublisher, stopOutboxPublisher } from './workers/outboxPublisher.js';
+import { startWebhookDispatcher, stopWebhookDispatcher } from './workers/webhookDispatcher.js';
+import { setupSwagger } from '../../../shared/swagger.js';
+import Logger from '../../../shared/common/logger.js';
+import { assertProductionSecrets } from '../../../shared/utils/validateProductionSecrets.js';
+import { forwardProxyIdentity, attachDownstreamHeaders } from './utils/downstreamHeaders.js';
 
 // Load .env from service directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,28 +37,89 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const logger = new Logger('api-gateway');
 
 // Service URLs
+
 const services = {
-  auth: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
-  rbac: process.env.RBAC_SERVICE_URL || 'http://localhost:3002',
-  case: process.env.CASE_SERVICE_URL || 'http://localhost:3003',
-  workflow: process.env.WORKFLOW_SERVICE_URL || 'http://localhost:3004',
-  referral: process.env.REFERRAL_SERVICE_URL || 'http://localhost:3005',
+  iam: process.env.IAM_SERVICE_URL || process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
+  auth: process.env.AUTH_SERVICE_URL || process.env.IAM_SERVICE_URL || 'http://localhost:3001',
+  rbac: process.env.RBAC_SERVICE_URL || process.env.IAM_SERVICE_URL || 'http://localhost:3001',
+  caseEngine: process.env.CASE_ENGINE_SERVICE_URL || process.env.CASE_SERVICE_URL || 'http://localhost:3003',
+  case: process.env.CASE_SERVICE_URL || process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
+  workflow: process.env.WORKFLOW_SERVICE_URL || process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
+  referral: process.env.REFERRAL_SERVICE_URL || process.env.CASE_ENGINE_SERVICE_URL || 'http://localhost:3003',
   audit: process.env.AUDIT_SERVICE_URL || 'http://localhost:3006',
   integration: process.env.INTEGRATION_SERVICE_URL || 'http://localhost:3007',
   notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3008',
+  file: process.env.FILE_SERVICE_URL || 'http://localhost:3009',
+  chat: process.env.CHAT_SERVICE_URL || 'http://localhost:3010',
 };
+
+/** Fail hung/slow downstreams before the browser's client timeout (~30s). */
+const PROXY_TIMEOUT_MS = Number(process.env.PROXY_TIMEOUT_MS || 120_000);
+
+function proxyOnError(label) {
+  return (err, req, res) => {
+    console.error(`Proxy error (${label}):`, err.message);
+    if (res.headersSent) return;
+    const timedOut = err.code === 'ECONNRESET' || /timeout/i.test(err.message || '');
+    res.status(timedOut ? 504 : 503).json({
+      error: {
+        code: timedOut ? 'GATEWAY_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+        message: timedOut
+          ? `${label} did not respond in time. Check that the service is running and not blocked.`
+          : `${label} unavailable`,
+      },
+    });
+  };
+}
+
+function serviceProxy({ target, pathRewrite, label, onProxyReq, onProxyRes }) {
+  return createProxyMiddleware({
+    target,
+    changeOrigin: true,
+    pathRewrite,
+    timeout: PROXY_TIMEOUT_MS,
+    proxyTimeout: PROXY_TIMEOUT_MS,
+    on: {
+      proxyReq: (proxyReq, req, res) => {
+        if (onProxyReq) onProxyReq(proxyReq, req, res);
+      },
+      proxyRes: (proxyRes, req, res) => {
+        if (onProxyRes) onProxyRes(proxyRes, req, res);
+      },
+      error: proxyOnError(label),
+    },
+  });
+}
 
 /**
  * Initialize and start the server
  */
 async function startServer() {
-  // CORS with credentials for session cookies
+  assertProductionSecrets([
+    { name: 'JWT_SECRET', value: process.env.JWT_SECRET },
+    { name: 'SESSION_SECRET', value: process.env.SESSION_SECRET },
+    { name: 'INTERNAL_SERVICE_TOKEN', value: process.env.INTERNAL_SERVICE_TOKEN },
+  ]);
+
+  app.use(helmet({ contentSecurityPolicy: false }));
+
+  // CORS with credentials for session cookies (comma-separated origins in dev, e.g. Vite 5173 and 5174)
+  const corsOriginEnv = process.env.CORS_ORIGIN || 'http://localhost:5173';
+  const corsOrigins = corsOriginEnv.split(',').map((o) => o.trim()).filter(Boolean);
+  const corsOriginOption =
+    corsOrigins.length === 0
+      ? 'http://localhost:5173'
+      : corsOrigins.length === 1
+        ? corsOrigins[0]
+        : corsOrigins;
+
   app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: corsOriginOption,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'X-API-Key'],
     credentials: true,
   }));
 
@@ -58,10 +132,13 @@ async function startServer() {
     res.on('finish', () => {
       const duration = Date.now() - start;
       const sessionInfo = req.session?.user ? `[Session: ${req.session.user.email}]` : '[No Session]';
-      console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms ${sessionInfo}`);
+      logger.info(`${req.method} ${req.path} ${res.statusCode} ${duration}ms ${sessionInfo}`);
     });
     next();
   });
+
+  // Setup Swagger OpenAPI Documentation
+  setupSwagger(app, 'API Gateway', PORT);
 
   // Health check (before session middleware)
   app.get('/health', (req, res) => {
@@ -69,7 +146,7 @@ async function startServer() {
       status: 'ok',
       service: 'api-gateway',
       timestamp: new Date().toISOString(),
-      features: { sessionAuth: true, jwtAuth: true },
+      features: { sessionAuth: true, jwtAuth: true, apiKeyAuth: true, partnerQueryApi: true },
     });
   });
 
@@ -89,147 +166,228 @@ async function startServer() {
   // Authentication middleware
   app.use('/api/v1', authenticate);
 
-  // RBAC middleware
+  // Until first-login password change completes, block APIs (browser session exposes status / logout separately).
+  app.use('/api/v1', enforcePasswordChanged);
+
+  // RBAC middleware (skip for API key routes — they use scope-based auth)
   const rbacMiddleware = createRbacMiddleware(services.rbac);
-  app.use('/api/v1', rbacMiddleware);
+  app.use('/api/v1', (req, res, next) => {
+    // Skip RBAC for API key authenticated requests (they use scope-based auth)
+    if (req.apiKeyContext) return next();
+    return rbacMiddleware(req, res, next);
+  });
+
+  // ─── Partner API: GraphQL Endpoint ──────────────────────────────────────
+  // Standard GraphQL interface for partner agency integrations.
+  // Authentication: X-API-Key header (validated by auth.middleware above).
+  const graphqlMiddleware = await createGraphQLMiddleware();
+  app.use(
+    '/api/v1/graphql',
+    express.json({ limit: '1mb' }),
+    partnerApiRateLimiter,
+    graphqlMiddleware,
+  );
+
+
+
+  // ─── API Key Management (admin-only, session/JWT auth) ─────────────────
+  app.use('/api/v1/api-keys', express.json(), apiKeyRoutes);
+
+  // ─── Webhook Management (admin-only, session/JWT auth) ──────────────────
+  app.use('/api/v1/webhooks', express.json(), webhookRoutes);
+
+  /** Platform operators: reachability of downstream services (HTTP /health), not user RBAC. */
+  async function probeDownstreamHealth(url) {
+    const target = url.replace(/\/$/, '');
+    try {
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 5000);
+      const res = await fetch(`${target}/health`, { signal: ac.signal });
+      clearTimeout(timer);
+      return { ok: res.ok, status: res.status, error: null };
+    } catch (e) {
+      const msg = e?.name === 'AbortError' ? 'Request timed out' : String(e?.message || e);
+      return { ok: false, status: 0, error: msg };
+    }
+  }
+
+  app.get('/api/v1/platform/service-probes', async (req, res) => {
+    const definitions = [
+      { key: 'iam', label: 'IAM service (Auth + RBAC)', baseUrl: services.iam },
+      { key: 'case-engine', label: 'Case Engine service (Cases + Workflows + Referrals)', baseUrl: services.caseEngine },
+      { key: 'audit', label: 'Audit service', baseUrl: services.audit },
+      { key: 'integration', label: 'Integration service', baseUrl: services.integration },
+      { key: 'notification', label: 'Notification service', baseUrl: services.notification },
+      { key: 'file', label: 'File service', baseUrl: services.file },
+      { key: 'chat', label: 'Chat service (Messaging + Rooms + WS)', baseUrl: services.chat },
+    ];
+    const probes = await Promise.all(
+      definitions.map(async (d) => {
+        const r = await probeDownstreamHealth(d.baseUrl);
+        const healthUrl = `${d.baseUrl.replace(/\/$/, '')}/health`;
+        return {
+          key: d.key,
+          label: d.label,
+          target: healthUrl,
+          ok: r.ok,
+          status: r.status,
+          error: r.error,
+        };
+      }),
+    );
+    res.json({
+      at: new Date().toISOString(),
+      gateway: { ok: true, service: 'api-gateway' },
+      probes,
+    });
+  });
 
   // Proxy routes
-  app.use('/api/v1/auth', createProxyMiddleware({
+  app.use('/api/v1/auth', serviceProxy({
     target: services.auth,
-    changeOrigin: true,
     pathRewrite: (path) => '/auth' + path,
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
+    label: 'Auth service',
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+    onProxyRes: (proxyRes, req) => {
+      if (req.method !== 'POST' || proxyRes.statusCode !== 200) return;
+      const norm = [
+        typeof req.originalUrl === 'string' ? req.originalUrl.split('?')[0] : '',
+        typeof req.path === 'string' ? req.path : '',
+        typeof req.url === 'string' ? req.url.split('?')[0] : '',
+      ];
+      if (!norm.some((p) => p.endsWith('/change-password'))) return;
+      if (req.session?.user) {
+        req.session.user.mustChangePassword = false;
+        req.session.save((err) => {
+          if (err)
+            console.warn('[Gateway] session save after password change failed:', err.message);
+        });
       }
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (auth):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Auth service unavailable' } });
     },
   }));
 
-  app.use('/api/v1/tenants', createProxyMiddleware({
+  // ── Chat Service (new standalone service) ─────────────────────────────
+
+
+  // New chat service — conversations, messages, participants, presence
+  app.use('/api/v1/chat/conversations', serviceProxy({
+    target: services.chat,
+    pathRewrite: (path) => '/conversations' + path,
+    label: 'Chat service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
+  app.use('/api/v1/chat/presence', serviceProxy({
+    target: services.chat,
+    pathRewrite: () => '/presence',
+    label: 'Chat service (presence)',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
+  app.use('/api/v1/users', serviceProxy({
     target: services.auth,
-    changeOrigin: true,
+    pathRewrite: (path) => '/auth/users' + path,
+    label: 'Auth service (users)',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
+  app.use('/api/v1/tenants', serviceProxy({
+    target: services.auth,
     pathRewrite: (path) => '/tenants' + path,
-    onError: (err, req, res) => {
-      console.error('Proxy error (tenants):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Auth service unavailable' } });
-    },
+    label: 'Auth service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/rbac', createProxyMiddleware({
+  app.use('/api/v1/rbac', serviceProxy({
     target: services.rbac,
-    changeOrigin: true,
     pathRewrite: (path) => path,
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (rbac):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'RBAC service unavailable' } });
-    },
+    label: 'RBAC service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/cases', createProxyMiddleware({
+  app.use('/api/v1/dashboard', serviceProxy({
     target: services.case,
-    changeOrigin: true,
+    pathRewrite: (path) => '/dashboard' + path,
+    label: 'Case service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
+  app.use('/api/v1/cases', serviceProxy({
+    target: services.case,
     pathRewrite: (path) => '/cases' + path,
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (cases):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Case service unavailable' } });
-    },
+    label: 'Case service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/workflows', createProxyMiddleware({
+  app.use('/api/v1/assignments', serviceProxy({
+    target: services.case,
+    pathRewrite: (path) => '/assignments' + path,
+    label: 'Case service',
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+  }));
+
+  app.use('/api/v1/attachments', serviceProxy({
+    target: services.case,
+    pathRewrite: (path) => '/attachments' + path,
+    label: 'Case service',
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+  }));
+
+  app.use('/api/v1/workflows', serviceProxy({
     target: services.workflow,
-    changeOrigin: true,
     pathRewrite: (path) => '/workflows' + path,
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (workflows):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Workflow service unavailable' } });
-    },
+    label: 'Workflow service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/referrals', createProxyMiddleware({
+  app.use('/api/v1/referrals', serviceProxy({
     target: services.referral,
-    changeOrigin: true,
     pathRewrite: (path) => '/referrals' + path,
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (referrals):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Referral service unavailable' } });
-    },
+    label: 'Referral service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/audit', createProxyMiddleware({
+  app.use('/api/v1/audit', serviceProxy({
     target: services.audit,
-    changeOrigin: true,
     pathRewrite: (path) => '/audit' + path,
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (audit):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Audit service unavailable' } });
-    },
+    label: 'Audit service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/integrations', createProxyMiddleware({
+  app.use('/api/v1/integrations', serviceProxy({
     target: services.integration,
-    changeOrigin: true,
     pathRewrite: (path) => '/integrations' + path,
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (integrations):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Integration service unavailable' } });
-    },
+    label: 'Integration service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
-  app.use('/api/v1/notifications', createProxyMiddleware({
+  app.use('/api/v1/notifications', serviceProxy({
     target: services.notification,
-    changeOrigin: true,
     pathRewrite: (path) => '/notifications' + path,
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-user-id', req.user.id);
-        proxyReq.setHeader('x-tenant-id', req.user.tenantId);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error('Proxy error (notifications):', err.message);
-      res.status(503).json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Notification service unavailable' } });
-    },
+    label: 'Notification service',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
+  }));
+
+  app.use('/api/v1/files', serviceProxy({
+    target: services.file,
+    pathRewrite: (path) => '/files' + path,
+    label: 'File service',
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+  }));
+
+  app.use('/api/v1/uploads', serviceProxy({
+    target: services.file,
+    pathRewrite: (path) => '/uploads' + path,
+    label: 'File service',
+    onProxyReq: (proxyReq, req) => forwardProxyIdentity(proxyReq, req),
+  }));
+
+  // Platform admin routes (system_admin only — enforced in auth-service controller)
+  app.use('/api/v1/platform', serviceProxy({
+    target: services.auth,
+    pathRewrite: (path) => '/platform' + path,
+    label: 'Auth service (platform admin)',
+    onProxyReq: (proxyReq, req) => attachDownstreamHeaders(proxyReq, req),
   }));
 
   // 404 handler
@@ -241,31 +399,92 @@ async function startServer() {
 
   // Error handler
   app.use((err, req, res, next) => {
-    console.error('Gateway error:', err);
+    logger.error('Gateway error', { message: err.message, path: req.path });
     res.status(err.status || 500).json({
       error: { code: err.code || 'INTERNAL_ERROR', message: err.message || 'Internal server error' },
     });
   });
 
+  // Start background workers
+  startOutboxPublisher();
+  startWebhookDispatcher();
+
   // Start server
-  app.listen(PORT, () => {
-    console.log(`\nAPI Gateway running on port ${PORT}`);
-    console.log('='.repeat(50));
-    console.log('Authentication : Session (Redis) + JWT');
-    console.log('Caching        : Redis (RBAC permissions)');
-    console.log('Rate Limiting  : Redis (per-user / per-IP)');
-    console.log('Events         : Kafka');
-    console.log('='.repeat(50));
-    console.log('Session Routes:');
-    console.log('  POST /api/v1/session/login');
-    console.log('  POST /api/v1/session/logout');
-    console.log('  GET  /api/v1/session/status');
-    console.log('='.repeat(50));
+  const httpServer = app.listen(PORT, () => {
+    logger.info(`API Gateway running on port ${PORT}`, {
+      features: ['sessionAuth', 'jwtAuth', 'apiKeyAuth', 'partnerQueryApi', 'chatWebSocket'],
+    });
+  });
+
+  // WebSocket upgrade — proxy /ws connections to chat-service
+  const chatWsProxy = createProxyMiddleware({
+    target: services.chat,
+    ws: true,
+    changeOrigin: true,
+    on: {
+      error: (err, req, socket) => {
+        console.error('[gateway] WebSocket proxy error:', err.message);
+        if (socket && !socket.destroyed) {
+          socket.destroy();
+        }
+      },
+    },
+  });
+
+  httpServer.on('upgrade', async (req, socket, head) => {
+    // Only proxy WebSocket upgrades for the /ws path
+    if (req.url?.startsWith('/ws')) {
+      try {
+        const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        let token = parsedUrl.searchParams.get('token');
+
+        // If no token in query param or token is 'null'/'undefined', resolve from session cookie
+        if ((!token || token === 'null' || token === 'undefined') && req.headers.cookie) {
+          const sidMatch = req.headers.cookie.match(/(?:^|;\s*)iacms\.sid=s%3A([^;]+)/);
+          if (sidMatch) {
+            const rawSid = decodeURIComponent(sidMatch[1]).split('.')[0];
+            const redis = getRedisClient();
+            if (redis) {
+              const sessionRaw = await redis.get(`sess:${rawSid}`);
+              if (sessionRaw) {
+                const sess = JSON.parse(sessionRaw);
+                if (sess?.user?.id && process.env.JWT_SECRET) {
+                  token = jwt.sign(
+                    {
+                      id: sess.user.id,
+                      tenantId: sess.user.tenantId,
+                      departmentId: sess.user.departmentId || null,
+                      email: sess.user.email,
+                      firstName: sess.user.firstName,
+                      lastName: sess.user.lastName,
+                    },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '8h' }
+                  );
+                  parsedUrl.searchParams.set('token', token);
+                  req.url = `${parsedUrl.pathname}?${parsedUrl.searchParams.toString()}`;
+                }
+              }
+            }
+          }
+        }
+
+        chatWsProxy.upgrade(req, socket, head);
+      } catch (err) {
+        console.error('[gateway] Upgrade error:', err.message);
+        chatWsProxy.upgrade(req, socket, head);
+      }
+    } else {
+      socket.destroy();
+    }
   });
 
   // Graceful shutdown
   process.on('SIGTERM', async () => {
-    console.log('[Gateway] SIGTERM received — shutting down gracefully');
+    logger.info('SIGTERM received — shutting down gracefully');
+    stopOutboxPublisher();
+    stopWebhookDispatcher();
+    if (typeof graphqlMiddleware.stop === 'function') await graphqlMiddleware.stop();
     await closeSessionStore();
     await closeRedisClient();
     process.exit(0);
@@ -273,7 +492,7 @@ async function startServer() {
 }
 
 startServer().catch((err) => {
-  console.error('Failed to start API Gateway:', err);
+  logger.error('Failed to start API Gateway', { message: err.message });
   process.exit(1);
 });
 

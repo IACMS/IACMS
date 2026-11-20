@@ -24,7 +24,14 @@ const KEY_PREFIX = 'ratelimit:';
  *  - authenticated users  → their user ID
  *  - unauthenticated      → their IP address
  */
+/**
+ * Returns a unique identifier for the requester:
+ *  - API key users       → their API key ID
+ *  - authenticated users → their user ID
+ *  - unauthenticated     → their IP address
+ */
 function getIdentifier(req) {
+  if (req.apiKeyContext?.keyId) return `apikey:${req.apiKeyContext.keyId}`;
   if (req.user?.id) return `user:${req.user.id}`;
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
   return `ip:${ip}`;
@@ -43,8 +50,16 @@ export function createRateLimitMiddleware(options = {}) {
   return async function rateLimitMiddleware(req, res, next) {
     const redis = getRedisClient();
 
-    // If Redis is not available, skip rate limiting gracefully.
+    // If Redis is not available: fail closed in production, skip in development.
     if (!redis || redis.status !== 'ready') {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(503).json({
+          error: {
+            code: 'RATE_LIMIT_UNAVAILABLE',
+            message: 'Rate limiting is temporarily unavailable. Please try again later.',
+          },
+        });
+      }
       return next();
     }
 
@@ -78,7 +93,14 @@ export function createRateLimitMiddleware(options = {}) {
 
       next();
     } catch (err) {
-      // Redis error — fail open (don't block the request)
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(503).json({
+          error: {
+            code: 'RATE_LIMIT_UNAVAILABLE',
+            message: 'Rate limiting is temporarily unavailable. Please try again later.',
+          },
+        });
+      }
       console.warn('[RateLimit] Redis error, skipping rate limit:', err.message);
       next();
     }
@@ -99,5 +121,14 @@ export const authRateLimiter = createRateLimitMiddleware({
  * Default: 100 requests per minute.
  */
 export const apiRateLimiter = createRateLimitMiddleware();
+
+/**
+ * Partner API rate limiter — higher limits for API key authenticated partners.
+ * Default: 200 requests per minute.
+ */
+export const partnerApiRateLimiter = createRateLimitMiddleware({
+  windowSeconds: 60,
+  maxRequests: parseInt(process.env.PARTNER_API_RATE_LIMIT_MAX || '200', 10),
+});
 
 export default createRateLimitMiddleware;

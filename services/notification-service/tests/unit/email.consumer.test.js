@@ -38,7 +38,27 @@ describe('handleUserCreated', () => {
       to: adminPayload.email,
       firstName: adminPayload.firstName,
       tenantName: adminPayload.tenantName,
+      tenantCode: adminPayload.tenantCode,
       temporaryPassword: adminPayload.temporaryPassword,
+    });
+  });
+
+  it('sends welcome email when source is tenant_register and temporaryPassword is present', async () => {
+    await handleUserCreated({
+      ...adminPayload,
+      source: 'tenant_register',
+      tenantName: 'New Agency LLC',
+      tenantCode: 'NEW-ORG',
+      temporaryPassword: 'Temp!',
+    });
+
+    expect(sendWelcomeEmail).toHaveBeenCalledOnce();
+    expect(sendWelcomeEmail).toHaveBeenCalledWith({
+      to: adminPayload.email,
+      firstName: adminPayload.firstName,
+      tenantName: 'New Agency LLC',
+      tenantCode: 'NEW-ORG',
+      temporaryPassword: 'Temp!',
     });
   });
 

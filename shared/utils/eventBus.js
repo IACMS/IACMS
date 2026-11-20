@@ -11,6 +11,11 @@
 
 import { Kafka, logLevel } from 'kafkajs';
 
+// Quiet the KafkaJS v2 default-partitioner migration warning in local logs
+if (!process.env.KAFKAJS_NO_PARTITIONER_WARNING) {
+  process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
+}
+
 // All event topics used across services
 export const TOPICS = {
   USER_CREATED: 'user.created',
@@ -18,12 +23,18 @@ export const TOPICS = {
   CASE_CREATED: 'case.created',
   CASE_UPDATED: 'case.updated',
   CASE_ASSIGNED: 'case.assigned',
+  CASE_TRANSITIONED: 'case.transitioned',
+  TENANT_APPROVED: 'tenant.approved',
   WORKFLOW_CREATED: 'workflow.created',
   WORKFLOW_UPDATED: 'workflow.updated',
   WORKFLOW_STATE_CHANGED: 'workflow.state.changed',
+  WORKFLOW_PUBLISHED: 'workflow.published',
+  WORKFLOW_ARCHIVED: 'workflow.archived',
+  CASE_TRANSITIONED: 'case.transitioned',
   REFERRAL_CREATED: 'referral.created',
   REFERRAL_ACCEPTED: 'referral.accepted',
   REFERRAL_REJECTED: 'referral.rejected',
+  REFERRAL_COMPLETED: 'referral.completed',
   INTEGRATION_CREATED: 'integration.created',
   INTEGRATION_UPDATED: 'integration.updated',
   INTEGRATION_SYNC: 'integration.sync',
@@ -35,6 +46,12 @@ export const TOPICS = {
   EMAIL_VERIFICATION_REQUESTED: 'email.verification.requested',
   PASSWORD_RESET_REQUESTED: 'password.reset.requested',
   PASSWORD_CHANGED: 'password.changed',
+  CASE_DELETED: 'case.deleted',
+  FILE_UPLOADED: 'file.uploaded',
+  FILE_DELETED: 'file.deleted',
+  FILE_PROCESSED: 'file.processed',
+  FILE_VIRUS_FOUND: 'file.virus.found',
+  FILE_PERMANENTLY_DELETED: 'file.permanently.deleted',
 };
 
 class EventBus {
@@ -66,6 +83,42 @@ class EventBus {
     this.handlers = new Map();
     this.connected = false;
     this.consumerConnected = false;
+    this._consumerRetryDelayMs = 5000;
+    this._consumerRetryTimer = null;
+    this._consumerStartInFlight = null;
+  }
+
+  /** Recreate the consumer instance after a failed connect or crash. */
+  _recreateConsumer() {
+    this.consumer = this.kafka.consumer({ groupId: this.serviceId });
+  }
+
+  _resetConsumerRetryBackoff() {
+    this._consumerRetryDelayMs = 5000;
+    if (this._consumerRetryTimer) {
+      clearTimeout(this._consumerRetryTimer);
+      this._consumerRetryTimer = null;
+    }
+  }
+
+  /** Retry consumer.connect() when Kafka was not ready at service startup. */
+  _scheduleConsumerRetry() {
+    if (this._consumerRetryTimer) return;
+
+    const delay = this._consumerRetryDelayMs;
+    this._consumerRetryTimer = setTimeout(() => {
+      this._consumerRetryTimer = null;
+      this._consumerRetryDelayMs = Math.min(delay * 2, 60_000);
+      this._connectingPromise = null;
+      this._consumerStartInFlight = null;
+      this._recreateConsumer();
+      void this._startConsumer();
+    }, delay);
+
+    // Log at most once per backoff step to avoid flooding when the broker is down
+    console.warn(
+      `[EventBus] Scheduling consumer reconnect for "${this.serviceId}" in ${delay}ms`,
+    );
   }
 
   /**
@@ -154,39 +207,60 @@ class EventBus {
    */
   async _startConsumer() {
     if (this.consumerConnected) return;
-    try {
-      await this.consumer.connect();
-      this.consumerConnected = true;
+    if (this._consumerStartInFlight) return this._consumerStartInFlight;
 
-      // Absorb internal KafkaJS crashes so they don't become unhandled rejections
-      this.consumer.on(this.consumer.events.CRASH, ({ payload }) => {
-        console.warn('[EventBus] Consumer crash event:', payload?.error?.message);
+    this._consumerStartInFlight = (async () => {
+      try {
+        await this.consumer.connect();
+        this.consumerConnected = true;
+        this._resetConsumerRetryBackoff();
+
+        // Absorb internal KafkaJS crashes so they don't become unhandled rejections
+        this.consumer.on(this.consumer.events.CRASH, ({ payload }) => {
+          console.warn('[EventBus] Consumer crash event:', payload?.error?.message);
+          this.consumerConnected = false;
+          this._connectingPromise = null;
+          this._consumerStartInFlight = null;
+          this.consumer.disconnect().catch(() => {});
+          this._recreateConsumer();
+          this._scheduleConsumerRetry();
+        });
+
+        for (const topic of this.handlers.keys()) {
+          await this.consumer.subscribe({ topic, fromBeginning: false });
+        }
+
+        await this.consumer.run({
+          // EventBus owns reconnect/backoff — disable KafkaJS auto-restart to avoid a double loop.
+          restartOnFailure: async () => false,
+          eachMessage: async ({ topic, partition, message }) => {
+            try {
+              const event = JSON.parse(message.value.toString());
+              const handlers = this.handlers.get(topic) || [];
+              for (const handler of handlers) {
+                await handler(event.data);
+              }
+            } catch (error) {
+              console.error(
+                `[EventBus] Error processing message from topic "${topic}":`,
+                error.message,
+              );
+            }
+          },
+        });
+
+        console.info(`[EventBus] Consumer connected for "${this.serviceId}"`);
+      } catch (error) {
+        console.warn('[EventBus] Consumer connection failed:', error.message);
         this.consumerConnected = false;
         this._connectingPromise = null;
-      });
-
-      for (const topic of this.handlers.keys()) {
-        await this.consumer.subscribe({ topic, fromBeginning: false });
+        this._scheduleConsumerRetry();
+      } finally {
+        this._consumerStartInFlight = null;
       }
+    })();
 
-      await this.consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-          try {
-            const event = JSON.parse(message.value.toString());
-            const handlers = this.handlers.get(topic) || [];
-            for (const handler of handlers) {
-              await handler(event.data);
-            }
-          } catch (error) {
-            console.error(`[EventBus] Error processing message from topic "${topic}":`, error.message);
-          }
-        },
-      });
-    } catch (error) {
-      console.warn('[EventBus] Consumer connection failed:', error.message);
-      this.consumerConnected = false;
-      this._connectingPromise = null; // allow retry on next subscribe call
-    }
+    return this._consumerStartInFlight;
   }
 
   /**

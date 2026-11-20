@@ -11,6 +11,7 @@ import {
   passwordResetTemplate,
   passwordChangedTemplate,
   emailVerificationTemplate,
+  agencyApprovedTemplate,
 } from './email.templates.js';
 import Logger from '../../../../shared/common/logger.js';
 
@@ -60,11 +61,11 @@ async function sendEmail({ to, subject, html }) {
  * Send welcome email with temporary password to a newly created user.
  * Called by the admin createUser flow.
  */
-export async function sendWelcomeEmail({ to, firstName, tenantName, temporaryPassword }) {
+export async function sendWelcomeEmail({ to, firstName, tenantName, tenantCode, temporaryPassword }) {
   return sendEmail({
     to,
     subject: `Welcome to IACMS — ${tenantName}`,
-    html: welcomeEmailTemplate({ firstName, tenantName, email: to, temporaryPassword }),
+    html: welcomeEmailTemplate({ firstName, tenantName, tenantCode, email: to, temporaryPassword }),
   });
 }
 
@@ -100,5 +101,16 @@ export async function sendPasswordChangedEmail({ to, firstName }) {
     to,
     subject: 'IACMS — Your Password Has Been Changed',
     html: passwordChangedTemplate({ firstName }),
+  });
+}
+
+/**
+ * Send welcome logic when agency is approved by platform admins.
+ */
+export async function sendAgencyApprovedEmail({ to, firstName, tenantName, tenantCode }) {
+  return sendEmail({
+    to,
+    subject: 'Your IACMS Agency has been approved!',
+    html: agencyApprovedTemplate({ firstName, tenantName, tenantCode }),
   });
 }

@@ -12,7 +12,10 @@ const defaultRedis = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 let redisUp = false;
 
 async function pingRedis(url) {
-  const c = createClient({ url });
+  const c = createClient({
+    url,
+    socket: { connectTimeout: 2500 },
+  });
   try {
     await c.connect();
     await c.ping();
@@ -29,7 +32,12 @@ async function pingRedis(url) {
 }
 
 beforeAll(async () => {
-  redisUp = await pingRedis(defaultRedis);
+  redisUp = await Promise.race([
+    pingRedis(defaultRedis),
+    new Promise((resolve) => {
+      setTimeout(() => resolve(false), 2000);
+    }),
+  ]);
 });
 
 afterAll(() => {

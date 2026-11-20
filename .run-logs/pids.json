@@ -1,0 +1,11 @@
+{
+  "rbac": 19228,
+  "auth": 19229,
+  "workflow": 19230,
+  "case": 74957,
+  "referral": 53530,
+  "audit": 19292,
+  "integration": 19293,
+  "notification": 19294,
+  "gateway": 53534
+}

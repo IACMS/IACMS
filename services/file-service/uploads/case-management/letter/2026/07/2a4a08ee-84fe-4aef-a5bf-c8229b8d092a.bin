@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Letter — DCS-01-2026-00101</title>
+<style>
+  @page { margin: 2cm; }
+  body { font-family: Georgia, "Times New Roman", serif; font-size: 12pt; color: #1e293b; line-height: 1.55; max-width: 700px; margin: 0 auto; }
+  .letterhead { border-bottom: 3px solid #115e59; padding-bottom: 12px; margin-bottom: 20px; display: flex; gap: 16px; align-items: flex-start; }
+  .logo { max-height: 56px; max-width: 160px; object-fit: contain; }
+  .org-line { font-weight: 700; font-size: 13pt; color: #115e59; }
+  .muted { font-size: 10pt; color: #64748b; margin-top: 4px; }
+  .meta { font-size: 10pt; color: #475569; margin-bottom: 20px; }
+  .meta div { margin: 2px 0; }
+  .salutation { margin: 16px 0 12px; }
+  .salutation p { margin: 0; }
+  .body { margin: 0 0 24px; text-align: justify; }
+  .body p { margin: 0 0 12px; }
+  .body ul, .body ol { margin: 0 0 12px 1.5em; }
+  .closing { margin-top: 24px; }
+  .sig { margin-top: 8px; font-weight: 600; }
+  .footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #cbd5e1; font-size: 9pt; color: #64748b; }
+  .footer-line { margin: 2px 0; }
+</style>
+</head>
+<body>
+  <header class="letterhead">
+    
+    <div>
+      <div class="org-line">Department of Children Services — District 01</div>
+      
+    </div>
+  </header>
+  <div class="meta">
+    <div><strong>Date:</strong> July 20, 2026</div>
+    <div><strong>Re:</strong> Case DCS-01-2026-00101 — Case 1</div>
+    <div><strong>Action:</strong> submit_intake → Assessment</div>
+    <div><strong>Subject:</strong> Case DCS-01-2026-00101: submit_intake — advancing to “Assessment”</div>
+  </div>
+  <div class="salutation">To Whom It May Concern:</div>
+  <div class="body">This letter documents the workflow action “submit_intake” on case DCS-01-2026-00101 (Case 1).</div>
+  <div class="closing">
+    <div>Respectfully,</div>
+    <p class="sig">Dana Reed</p>
+    <p class="sig">Department of Children Services — District 01</p>
+  </div>
+  
+  <!-- plain-text fallback:Department of Children Services — District 01
+
+July 20, 2026
+Re: Case DCS-01-202… -->
+</body>
+</html>

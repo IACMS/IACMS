@@ -3,6 +3,7 @@
  */
 
 import { Router } from 'express';
+import { optionalAuth } from '../middleware/auth.middleware.js';
 import {
   sessionLogin,
   sessionLogout,
@@ -14,7 +15,7 @@ const router = Router();
 
 router.post('/login', sessionLogin);
 router.post('/logout', sessionLogout);
-router.get('/status', sessionStatus);
+router.get('/status', optionalAuth, sessionStatus);
 router.post('/refresh', sessionRefresh);
 
 export default router;

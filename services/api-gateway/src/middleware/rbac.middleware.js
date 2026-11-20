@@ -1,65 +1,184 @@
 /**
  * RBAC Middleware for API Gateway
  *
- * Checks user permissions before allowing access to protected resources.
- * Permission results are cached in Redis (5-minute TTL) to avoid calling
- * the RBAC service on every single request.
- *
- * Cache key format: rbac:perms:{userId}:{tenantId}
+ * For every authenticated request, loads permissions + role IDs from RBAC (Redis cache).
+ * Downstream proxies read `req.rbacEnvelope` to forward `x-user-roles`.
  */
 
 import { getRedisClient } from '../config/redis.config.js';
 
-const CACHE_TTL_SECONDS = 5 * 60; // 5 minutes
+const CACHE_TTL_SECONDS = 5 * 60;
 const CACHE_KEY_PREFIX = 'rbac:perms:';
 
 /**
  * Route → required permission mapping.
- * HTTP method + path pattern → permission string.
+ * HTTP method + path pattern → permission string, or **array of strings** (user needs one of them).
  */
+// Paths match Express req.path when middleware is mounted at /api/v1 (no /api/v1 prefix).
 const ROUTE_PERMISSIONS = {
-  // Cases
-  'GET:/api/v1/cases': 'cases:read',
-  'POST:/api/v1/cases': 'cases:create',
-  'GET:/api/v1/cases/:id': 'cases:read',
-  'PUT:/api/v1/cases/:id': 'cases:update',
-  'PATCH:/api/v1/cases/:id': 'cases:update',
-  'DELETE:/api/v1/cases/:id': 'cases:delete',
-  'POST:/api/v1/cases/:id/assign': 'cases:assign',
-  'POST:/api/v1/cases/:id/close': 'cases:close',
+  // Platform — operational visibility (connectivity from gateway → microservices)
+  'GET:/platform/service-probes': 'platform:manage_tenants',
+  
+  // Platform Admin (auth-service)
 
-  // Assignments
-  'GET:/api/v1/cases/:id/assignments': 'cases:read',
-  'POST:/api/v1/cases/:id/assignments': 'cases:assign',
+  'GET:/platform/settings': 'platform:manage_tenants',
+  'PATCH:/platform/settings': 'platform:manage_tenants',
+  'GET:/platform/feature-flags': 'platform:manage_tenants',
+  'POST:/platform/feature-flags': 'platform:manage_tenants',
+  'GET:/platform/announcements': 'platform:manage_tenants',
+  'POST:/platform/announcements': 'platform:manage_tenants',
+  'DELETE:/platform/announcements/:id': 'platform:manage_tenants',
+  'GET:/platform/support-tickets': 'platform:manage_tenants',
+  'POST:/platform/support-tickets': 'platform:manage_tenants',
+  'PATCH:/platform/support-tickets/:id': 'platform:manage_tenants',
+  'GET:/platform/quotas': 'platform:manage_tenants',
+  'GET:/platform/tenants/:tenantId/quota': 'platform:manage_tenants',
+  'PATCH:/platform/tenants/:tenantId/quota': 'platform:manage_tenants',
+  
+  'GET:/platform/agencies/pending': 'platform:manage_tenants',
+  'POST:/platform/agencies/:id/approve': 'platform:manage_tenants',
+  'POST:/platform/agencies/:id/decline': 'platform:manage_tenants',
+
+
+  // Cases
+  'GET:/cases': 'cases:read',
+  'POST:/cases': 'cases:create',
+  'GET:/cases/:id': 'cases:read',
+  'PUT:/cases/:id': 'cases:update',
+  'PATCH:/cases/:id': 'cases:update',
+  'DELETE:/cases/:id': 'cases:delete',
+  'GET:/cases/:id/state': 'cases:read',
+  'GET:/cases/:id/history': 'cases:read',
+  'POST:/cases/:id/transitions/:transitionId/execute': 'cases:update',
+
+  // Dashboard (case-service)
+  'GET:/dashboard/tasks': 'cases:read',
+  'GET:/dashboard/reports': 'cases:read',
+
+  // Agency chat (auth-service)
+  'GET:/chat/colleagues': 'cases:read',
+  'GET:/chat/messages': 'cases:read',
+  'POST:/chat/messages': 'cases:read',
+
+  // Assignments (case-service mounts /assignments)
+  'GET:/assignments': 'cases:read',
+  'POST:/assignments': 'cases:assign',
+  'POST:/assignments/:id/unassign': 'cases:assign',
+
+  // Attachments
+  'GET:/attachments/case/:caseId': 'cases:read',
+  'POST:/attachments': 'cases:update',
+  'DELETE:/attachments/:id': 'cases:update',
 
   // Workflows
-  'GET:/api/v1/workflows': 'workflows:read',
-  'POST:/api/v1/workflows': 'workflows:create',
-  'GET:/api/v1/workflows/:id': 'workflows:read',
-  'PUT:/api/v1/workflows/:id': 'workflows:update',
-  'DELETE:/api/v1/workflows/:id': 'workflows:delete',
+  'GET:/workflows': 'workflows:read',
+  'POST:/workflows': 'workflows:create',
+  'GET:/workflows/published': 'workflows:read',
+  'GET:/workflows/:id': 'workflows:read',
+  'GET:/workflows/:id/full': 'workflows:read',
+  'PUT:/workflows/:id': 'workflows:update',
+  'DELETE:/workflows/:id': 'workflows:delete',
+  'POST:/workflows/:id/new-version': 'workflows:update',
+  'POST:/workflows/:id/steps': 'workflows:update',
+  'PUT:/workflows/:id/steps/:stepId': 'workflows:update',
+  'DELETE:/workflows/:id/steps/:stepId': 'workflows:update',
+  'POST:/workflows/:id/transitions': 'workflows:update',
+  'PUT:/workflows/:id/transitions/:transitionId': 'workflows:update',
+  'DELETE:/workflows/:id/transitions/:transitionId': 'workflows:update',
+  'POST:/workflows/:id/publish': 'workflows:update',
+
+  // Users
+  'GET:/users': 'users:read',
 
   // Users (via RBAC service)
-  'GET:/api/v1/rbac/users': 'users:read',
-  'GET:/api/v1/rbac/users/:id': 'users:read',
+  'GET:/rbac/users': 'users:read',
+  'GET:/rbac/users/:id': 'users:read',
 
-  // Roles
-  'GET:/api/v1/rbac/roles': 'roles:read',
-  'POST:/api/v1/rbac/roles': 'roles:create',
-  'PUT:/api/v1/rbac/roles/:id': 'roles:update',
-  'DELETE:/api/v1/rbac/roles/:id': 'roles:delete',
-  'POST:/api/v1/rbac/user-roles/assign': 'roles:assign',
+  // User admin (auth-service, proxied as /api/v1/auth → /auth)
+  'POST:/auth/users/create': 'users:create',
+  'GET:/auth/users': 'users:read',
+  'GET:/auth/users/:id': 'users:read',
+  'PATCH:/auth/users/:id': 'users:update',
+  'PATCH:/auth/users/:id/role': 'roles:assign',
+  'PATCH:/auth/users/:id/deactivate': 'users:update',
+  'PATCH:/auth/users/:id/reactivate': 'users:update',
+  'DELETE:/auth/users/:id': 'users:delete',
+
+  // Roles (RBAC service) — listing roles is required for workflow/case UIs to show friendly role names.
+  // Allow anyone who can read workflows or users (or formally manage roles) to avoid spurious 403 + global banner.
+  'GET:/rbac/roles': ['users:read', 'workflows:read', 'roles:read'],
+  'POST:/rbac/roles': 'roles:create',
+  'PUT:/rbac/roles/:id': 'roles:update',
+  'DELETE:/rbac/roles/:id': 'roles:delete',
+  'POST:/rbac/user-roles/assign': 'roles:assign',
+  'POST:/rbac/user-roles/revoke': 'roles:assign',
 
   // Audit
-  'GET:/api/v1/audit': 'audit:read',
-  'GET:/api/v1/audit/:id': 'audit:read',
+  'GET:/audit': 'audit:read',
+  'GET:/audit/:id': 'audit:read',
 
-  // Tenants
-  'GET:/api/v1/tenants': 'tenants:read',
-  'PUT:/api/v1/tenants/:id': 'tenants:update',
+  // Tenants — register orgs is platform-admin only (`platform:manage_tenants`)
+  'POST:/tenants/register': 'platform:manage_tenants',
+  'GET:/tenants': 'tenants:read',
+  'PUT:/tenants/:id': 'tenants:update',
+  'PATCH:/tenants/:id/config': 'tenants:update',
+  'POST:/tenants/:id/logo': 'tenants:update',
+
+  // Referrals (cross-agency — explicit permissions)
+  'GET:/referrals': 'referrals:read',
+  'GET:/referrals/:id': 'referrals:read',
+  'POST:/referrals': 'referrals:create',
+  'POST:/referrals/:id/accept': 'referrals:update',
+  'POST:/referrals/:id/assign': 'referrals:update',
+  'POST:/referrals/:id/reject': 'referrals:update',
+  
+  // Additional case operations
+'POST:/cases/:id/assign': 'cases:assign',
+'POST:/cases/:id/close': 'cases:close',
+'GET:/cases/:id/assignments': 'cases:read',
+'POST:/cases/:id/assignments': 'cases:assign',
+
+// Workflow archive
+'POST:/workflows/:id/archive': 'workflows:update',
+
+// Referral completion
+'POST:/referrals/:id/complete': 'referrals:update',
+
+// Extra audit routes
+'GET:/audit/cases/:caseId': 'audit:read',
+'GET:/audit/users/:userId/actions': 'audit:read',
+'GET:/audit/compliance/:tenantId': 'audit:read',
+
+  // API Key Management (tenant admin only)
+  'GET:/api-keys/scopes': 'apiKeys:read',
+  'POST:/api-keys': 'apiKeys:create',
+  'GET:/api-keys': 'apiKeys:read',
+  'DELETE:/api-keys/:id': 'apiKeys:revoke',
+  'POST:/api-keys/:id/rotate': 'apiKeys:rotate',
+
+  // Webhook Management (tenant admin only)
+  'POST:/webhooks': 'apiKeys:create',
+  'GET:/webhooks': 'apiKeys:read',
+  'GET:/webhooks/events': 'apiKeys:read',
+  'GET:/webhooks/:id': 'apiKeys:read',
+  'PATCH:/webhooks/:id': 'apiKeys:create',
+  'DELETE:/webhooks/:id': 'apiKeys:revoke',
+
+  // File Management Service
+  'POST:/files': 'file:upload',
+  'POST:/files/batch': 'file:upload',
+  'GET:/files': 'file:read',
+  'GET:/files/:id': 'file:read',
+  'GET:/files/:id/download': 'file:read',
+  'GET:/files/:id/view': 'file:read',
+  'GET:/files/:id/stream': 'file:read',
+  'GET:/files/:id/signed-url': 'file:read',
+  'DELETE:/files/:id': 'file:delete',
+  'POST:/uploads/init': 'file:upload',
+  'PUT:/uploads/:id/chunks/:number': 'file:upload',
+  'POST:/uploads/:id/complete': 'file:upload',
+  'GET:/uploads/:id/status': 'file:read',
 };
-
-// ─── Path matching ───────────────────────────────────────────────────────────
 
 function matchPath(pattern, actualPath) {
   const patternParts = pattern.split('/');
@@ -68,77 +187,138 @@ function matchPath(pattern, actualPath) {
   return patternParts.every((part, i) => part.startsWith(':') || part === actualParts[i]);
 }
 
+/** Strip trailing slash so `/files/` matches `POST:/files` (except bare `/`). */
+function normalizeRoutePath(path) {
+  if (!path || path === '/') return path || '/';
+  return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
+}
+
 function getRequiredPermission(method, path) {
-  const exactKey = `${method}:${path}`;
+  const normalized = normalizeRoutePath(path);
+  const exactKey = `${method}:${normalized}`;
   if (ROUTE_PERMISSIONS[exactKey]) return ROUTE_PERMISSIONS[exactKey];
 
   for (const [routeKey, permission] of Object.entries(ROUTE_PERMISSIONS)) {
-    const [routeMethod, routePath] = routeKey.split(':');
-    if (routeMethod === method && matchPath(routePath, path)) return permission;
+    const sep = routeKey.indexOf(':');
+    if (sep === -1) continue;
+    const routeMethod = routeKey.slice(0, sep);
+    const routePath = routeKey.slice(sep + 1);
+    if (routeMethod === method && matchPath(routePath, normalized)) return permission;
   }
   return null;
 }
 
-// ─── Permission fetching ──────────────────────────────────────────────────────
+function normalizeRbacEnvelope(cached) {
+  if (!cached) return { permissions: [], roleIds: [] };
+  if (Array.isArray(cached)) return { permissions: cached, roleIds: [] };
+  return {
+    permissions: cached.permissions || [],
+    roleIds: cached.roleIds || [],
+  };
+}
 
-async function fetchUserPermissions(userId, tenantId, rbacServiceUrl) {
+async function fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl) {
   try {
+    const headers = { 'x-user-id': userId, 'x-tenant-id': tenantId };
+    if (process.env.INTERNAL_SERVICE_TOKEN) {
+      headers['x-internal-service-token'] = process.env.INTERNAL_SERVICE_TOKEN;
+    }
     const response = await fetch(`${rbacServiceUrl}/permissions/user/${userId}`, {
-      headers: { 'x-user-id': userId, 'x-tenant-id': tenantId },
+      headers,
     });
     if (!response.ok) {
       console.error('[RBAC] Failed to fetch permissions:', response.status);
-      return [];
+      return { ok: false, permissions: [], roleIds: [] };
     }
+
     const data = await response.json();
-    return data.permissions || [];
+
+    const permissions = data.permissions || [];
+
+    const roleIds =
+      data.roleIds?.length
+        ? data.roleIds
+        : Array.from(
+            new Set((data.roles || []).map(r => r.id).filter(Boolean))
+          );
+
+    return {
+      ok: true,
+      permissions,
+      roleIds,
+    };
   } catch (error) {
     console.error('[RBAC] Error fetching permissions:', error.message);
-    return [];
+
+    return {
+      ok: false,
+      permissions: [],
+      roleIds: [],
+    };
   }
 }
 
-// ─── Redis-backed cache ───────────────────────────────────────────────────────
-
-async function getUserPermissions(userId, tenantId, rbacServiceUrl) {
+/**
+ * Resolve permissions from cache or live RBAC.
+ * On live fetch failure, do NOT cache empty permissions.
+ */
+async function resolvePermissions(userId, tenantId, rbacServiceUrl) {
   const cacheKey = `${CACHE_KEY_PREFIX}${userId}:${tenantId}`;
   const redis = getRedisClient();
 
-  // Try Redis first
   if (redis && redis.status === 'ready') {
     try {
       const cached = await redis.get(cacheKey);
-      if (cached) {
-        return JSON.parse(cached);
+      if (cached !== null) {
+        return { ...normalizeRbacEnvelope(JSON.parse(cached)), rbacAvailable: true };
       }
     } catch (err) {
       console.warn('[RBAC] Redis read error, falling back to live fetch:', err.message);
     }
   }
 
-  // Cache miss (or Redis unavailable) — fetch from RBAC service
-  const permissions = await fetchUserPermissions(userId, tenantId, rbacServiceUrl);
+  const result = await fetchUserRbacEnvelope(userId, tenantId, rbacServiceUrl);
+  if (!result.ok) {
+    return { permissions: [], roleIds: [], rbacAvailable: false };
+  }
 
-  // Store in Redis if available
   if (redis && redis.status === 'ready') {
     try {
-      await redis.set(cacheKey, JSON.stringify(permissions), 'EX', CACHE_TTL_SECONDS);
+      await redis.set(cacheKey, JSON.stringify({ permissions: result.permissions, roleIds: result.roleIds }), 'EX', CACHE_TTL_SECONDS);
     } catch (err) {
       console.warn('[RBAC] Redis write error:', err.message);
     }
   }
 
+  return { permissions: result.permissions, roleIds: result.roleIds, rbacAvailable: true };
+}
+
+// ─── Redis-backed cache (via resolvePermissions) ─────────────────────────────
+
+export async function getUserPermissions(userId, tenantId, rbacServiceUrl) {
+  const { permissions } = await resolvePermissions(userId, tenantId, rbacServiceUrl);
   return permissions;
+}
+
+/** Same resolution as getUserPermissions; includes rbacAvailable for session APIs. */
+export async function getUserPermissionsWithAvailability(userId, tenantId, rbacServiceUrl) {
+  return resolvePermissions(userId, tenantId, rbacServiceUrl);
 }
 
 // ─── Permission check ─────────────────────────────────────────────────────────
 
-function hasPermission(userPermissions, requiredPermission) {
+export function hasPermission(userPermissions, requiredPermission) {
   if (userPermissions.includes('*') || userPermissions.includes('admin:*')) return true;
   if (userPermissions.includes(requiredPermission)) return true;
   const [resource] = requiredPermission.split(':');
   if (userPermissions.includes(`${resource}:*`)) return true;
   return false;
+}
+
+/** True if the user satisfies at least one permission in the list (OR semantics). */
+export function hasAnyPermission(userPermissions, requiredList) {
+  if (!requiredList?.length) return true;
+  return requiredList.some((p) => hasPermission(userPermissions, p));
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -148,16 +328,48 @@ export function createRbacMiddleware(rbacServiceUrl) {
     if (!req.user) return next();
 
     const requiredPermission = getRequiredPermission(req.method, req.path);
-    if (!requiredPermission) return next();
+    const requiredList = requiredPermission
+      ? (Array.isArray(requiredPermission) ? requiredPermission : [requiredPermission])
+      : null;
 
     try {
-      const userPermissions = await getUserPermissions(req.user.id, req.user.tenantId, rbacServiceUrl);
+      // Always resolve permissions so proxies can forward `x-user-permissions`
+      // to services that enforce scopes themselves (e.g. file-service).
+      const { permissions: userPermissions, roleIds, rbacAvailable } = await getUserPermissionsWithAvailability(
+        req.user.id,
+        req.user.tenantId,
+        rbacServiceUrl,
+      );
 
-      if (!hasPermission(userPermissions, requiredPermission)) {
+      req.rbacEnvelope = { permissions: userPermissions, roleIds: roleIds || [], rbacAvailable };
+
+      // Also stamp req.headers so http-proxy forwards them even if onProxyReq
+      // only re-applies a subset (file-service reads these for requireScope).
+      if (userPermissions.length) {
+        req.headers['x-user-permissions'] = userPermissions.join(',');
+      }
+      if (roleIds?.length) {
+        req.headers['x-user-roles'] = roleIds.join(',');
+      }
+
+      if (!requiredList) return next();
+
+      if (!rbacAvailable) {
+        return res.status(503).json({
+          error: {
+            code: 'POLICY_UNAVAILABLE',
+            message: 'Authorization checks are temporarily unavailable. Please try again later.',
+          },
+        });
+      }
+
+      if (!hasAnyPermission(userPermissions, requiredList)) {
+        const reqLabel =
+          requiredList.length === 1 ? requiredList[0] : `one of: ${requiredList.join(', ')}`;
         return res.status(403).json({
           error: {
             code: 'FORBIDDEN',
-            message: `You don't have permission to perform this action. Required: ${requiredPermission}`,
+            message: `You don't have permission to perform this action. Required: ${reqLabel}`,
           },
         });
       }
@@ -165,17 +377,16 @@ export function createRbacMiddleware(rbacServiceUrl) {
       next();
     } catch (error) {
       console.error('[RBAC] Middleware error:', error);
-      next(); // fail open
+      return res.status(503).json({
+        error: {
+          code: 'POLICY_UNAVAILABLE',
+          message: 'Authorization checks are temporarily unavailable. Please try again later.',
+        },
+      });
     }
   };
 }
 
-// ─── Cache invalidation helpers ───────────────────────────────────────────────
-
-/**
- * Invalidate cached permissions for a specific user.
- * Call this whenever a user's roles change.
- */
 export async function clearPermissionCache(userId, tenantId) {
   const redis = getRedisClient();
   if (redis && redis.status === 'ready') {
@@ -183,9 +394,6 @@ export async function clearPermissionCache(userId, tenantId) {
   }
 }
 
-/**
- * Invalidate all cached permissions (e.g., after a bulk role change).
- */
 export async function clearAllPermissionCache() {
   const redis = getRedisClient();
   if (redis && redis.status === 'ready') {

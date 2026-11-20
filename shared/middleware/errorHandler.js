@@ -34,6 +34,17 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // Column/table out of sync with Prisma schema (migrations not applied)
+  if (err.code === 'P2022') {
+    return res.status(503).json({
+      error: {
+        code: 'SCHEMA_MISMATCH',
+        message:
+          'Database schema is out of date (missing column or table). From the IACMS repo run: npx prisma migrate deploy',
+      },
+    });
+  }
+
   // Handle validation errors
   if (err.name === 'ValidationError') {
     return res.status(400).json({

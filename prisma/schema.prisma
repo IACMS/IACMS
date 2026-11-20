@@ -1,8 +1,47 @@
 // Prisma Schema for IACMS
 // Inter-Agency Case Management Platform
+// Consolidated workflow engine schema (Sprint 0 multi_tenant_workflow_engine).
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+/// Per-service clients (outputs relative to this `prisma/` directory). Run `npx prisma generate` from repo root.
+generator clientIam {
+  provider      = "prisma-client-js"
+  output        = "../services/iam-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+generator clientCaseEngine {
+  provider      = "prisma-client-js"
+  output        = "../services/case-engine-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+generator clientAudit {
+  provider      = "prisma-client-js"
+  output        = "../services/audit-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+generator clientIntegration {
+  provider      = "prisma-client-js"
+  output        = "../services/integration-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+generator clientFile {
+  provider      = "prisma-client-js"
+  output        = "../services/file-service/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+generator clientGateway {
+  provider      = "prisma-client-js"
+  output        = "../services/api-gateway/src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -10,33 +49,85 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// Core Tables
-// ============================================
+enum WorkflowStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
 
-model Tenant {
+enum FileStatus {
+  PENDING
+  SCANNING
+  PROCESSING
+  AVAILABLE
+  FAILED
+  DELETED
+}
+
+enum ChunkUploadStatus {
+  IN_PROGRESS
+  MERGING
+  COMPLETE
+  FAILED
+  EXPIRED
+}
+
+model Department {
   id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  code        String
   name        String
-  code        String   @unique
   description String?  @db.Text
-  config      Json?
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users  User[]
+  casesOriginating Case[] @relation("CaseOriginatingDepartment")
+  casesCurrent     Case[] @relation("CaseCurrentDepartment")
+  referralsFrom    CaseReferral[] @relation("ReferralFromDepartment")
+  referralsTo      CaseReferral[] @relation("ReferralToDepartment")
+  workflows        Workflow[]
+
+  @@unique([tenantId, code])
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("departments")
+}
+
+model Tenant {
+  id                   String   @id @default(uuid()) @db.Uuid
+  name                 String
+  code                 String   @unique
+  description          String?  @db.Text
+  config               Json?
+  isActive             Boolean  @default(true) @map("is_active")
+  /** First user who registered this tenant — tenant administrator bootstrap. */
+  registeredByUserId   String?  @map("registered_by_user_id") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
   // Relations
-  users           User[]
-  roles           Role[]
-  workflows       Workflow[]
-  cases           Case[]           @relation("CaseTenant")
-  casesOriginated Case[]           @relation("CaseOriginatingTenant")
-  casesCurrent    Case[]           @relation("CaseCurrentTenant")
-  referralsFrom   CaseReferral[]   @relation("ReferralFrom")
-  referralsTo     CaseReferral[]   @relation("ReferralTo")
-  attachments     CaseAttachment[]
-  auditLogs       AuditLog[]
-  webhooks        Webhook[]
-  integrations    Integration[]
+  registeredBy     User?            @relation("TenantRegistrar", fields: [registeredByUserId], references: [id], onDelete: SetNull)
+  users            User[]
+  departments      Department[]
+  roles            Role[]
+  workflows        Workflow[]
+  cases            Case[]           @relation("CaseTenant")
+  casesOriginated  Case[]           @relation("CaseOriginatingTenant")
+  casesCurrent     Case[]           @relation("CaseCurrentTenant")
+  referralsFrom    CaseReferral[]   @relation("ReferralFrom")
+  referralsTo      CaseReferral[]   @relation("ReferralTo")
+  attachments      CaseAttachment[]
+  auditLogs        AuditLog[]
+  relatedAuditLogs AuditLog[]       @relation("AuditRelatedTenant")
+  webhooks         Webhook[]
+  integrations     Integration[]
+  caseSequences    CaseSequence[]
+  apiKeys          ApiKey[]
+  chatConversations ChatConversation[]
 
   @@index([code])
   @@index([isActive])
@@ -44,33 +135,34 @@ model Tenant {
 }
 
 model User {
-  id              String    @id @default(uuid()) @db.Uuid
-  tenantId        String    @map("tenant_id") @db.Uuid
-  email           String
-  username        String
-  passwordHash    String    @map("password_hash")
-  firstName       String    @map("first_name")
-  lastName        String    @map("last_name")
-  phone           String?
-  nationalId      String?   @map("national_id")
-  isActive             Boolean   @default(true) @map("is_active")
-  isEmailVerified      Boolean   @default(false) @map("is_email_verified")
-  mustChangePassword   Boolean   @default(false) @map("must_change_password")
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @map("tenant_id") @db.Uuid
+  departmentId             String?   @map("department_id") @db.Uuid
+  email                    String
+  username                 String
+  passwordHash             String    @map("password_hash")
+  firstName                String    @map("first_name")
+  lastName                 String    @map("last_name")
+  phone                    String?
+  nationalId               String?   @map("national_id")
+  isActive                 Boolean   @default(true) @map("is_active")
+  isEmailVerified          Boolean   @default(false) @map("is_email_verified")
+  mustChangePassword       Boolean   @default(false) @map("must_change_password")
   resetPasswordToken       String?   @map("reset_password_token")
   resetPasswordExpires     DateTime? @map("reset_password_expires")
   emailVerificationToken   String?   @map("email_verification_token")
   emailVerificationExpires DateTime? @map("email_verification_expires")
-  lastLogin            DateTime? @map("last_login")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
+  lastLogin                DateTime? @map("last_login")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
 
-  // Relations
   tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department            Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   casesCreated          Case[]           @relation("CaseCreator")
   casesAssigned         Case[]           @relation("CaseAssignee")
   assignmentsAssignedTo Assignment[]     @relation("AssignmentAssignedTo")
   assignmentsAssignedBy Assignment[]     @relation("AssignmentAssignedBy")
-  workflowStates        WorkflowState[]
+  caseHistoryAsActor    CaseHistory[]
   referralsMade         CaseReferral[]   @relation("ReferralMadeBy")
   referralsAccepted     CaseReferral[]   @relation("ReferralAcceptedBy")
   referralsRejected     CaseReferral[]   @relation("ReferralRejectedBy")
@@ -82,18 +174,20 @@ model User {
   webhooksCreated       Webhook[]
   integrationsCreated   Integration[]
   userRolesAssigned     UserRole[]       @relation("RoleAssigner")
+  tenantsRegistered     Tenant[]         @relation("TenantRegistrar")
+  apiKeysCreated        ApiKey[]         @relation("ApiKeyCreator")
+  apiKeysRevoked        ApiKey[]         @relation("ApiKeyRevoker")
+  chatParticipants      ChatParticipant[] @relation("ChatParticipantUser")
+  chatMessagesSender    ChatMessage[]     @relation("ChatMessageSender")
 
   @@unique([tenantId, email])
   @@unique([tenantId, username])
   @@index([tenantId])
+  @@index([tenantId, departmentId])
   @@index([email])
   @@index([username])
   @@map("users")
 }
-
-// ============================================
-// RBAC Tables
-// ============================================
 
 model Role {
   id           String   @id @default(uuid()) @db.Uuid
@@ -105,7 +199,6 @@ model Role {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  // Relations
   tenant          Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   rolePermissions RolePermission[]
   userRoles       UserRole[]
@@ -125,7 +218,6 @@ model Permission {
   description String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
 
-  // Relations
   rolePermissions RolePermission[]
 
   @@unique([resource, action])
@@ -139,7 +231,6 @@ model RolePermission {
   permissionId String   @map("permission_id") @db.Uuid
   createdAt    DateTime @default(now()) @map("created_at")
 
-  // Relations
   role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
@@ -157,7 +248,6 @@ model UserRole {
   assignedAt DateTime  @default(now()) @map("assigned_at")
   expiresAt  DateTime? @map("expires_at")
 
-  // Relations
   user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   role     Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
   assigner User? @relation("RoleAssigner", fields: [assignedBy], references: [id])
@@ -168,33 +258,87 @@ model UserRole {
   @@map("user_roles")
 }
 
-// ============================================
-// Case Management Tables
-// ============================================
-
 model Workflow {
-  id          String   @id @default(uuid()) @db.Uuid
-  tenantId    String   @map("tenant_id") @db.Uuid
+  id          String         @id @default(uuid()) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  departmentId String?       @map("department_id") @db.Uuid
+  key         String
   name        String
-  description String?  @db.Text
-  definition  Json
-  version     Int      @default(1)
-  isActive    Boolean  @default(true) @map("is_active")
-  isDefault   Boolean  @default(false) @map("is_default")
-  createdBy   String?  @map("created_by") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  description String?        @db.Text
+  definition  Json?
+  version     Int            @default(1)
+  status      WorkflowStatus @default(DRAFT)
+  publishedAt DateTime?      @map("published_at")
+  isActive    Boolean        @default(true) @map("is_active")
+  isDefault   Boolean        @default(false) @map("is_default")
+  createdBy   String?        @map("created_by") @db.Uuid
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  creator        User?           @relation(fields: [createdBy], references: [id])
-  cases          Case[]
-  workflowStates WorkflowState[]
+  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department  Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  creator     User?                @relation(fields: [createdBy], references: [id])
+  cases       Case[]
+  steps       WorkflowStep[]
+  transitions WorkflowTransition[]
 
+  @@unique([tenantId, key, version])
   @@index([tenantId])
+  @@index([tenantId, departmentId])
+  @@index([tenantId, key, status])
   @@index([tenantId, isActive])
-  @@index([tenantId, isDefault])
   @@map("workflows")
+}
+
+model WorkflowStep {
+  id             String   @id @default(uuid()) @db.Uuid
+  workflowId     String   @map("workflow_id") @db.Uuid
+  key            String
+  name           String
+  description    String?  @db.Text
+  isInitial      Boolean  @default(false) @map("is_initial")
+  isFinal        Boolean  @default(false) @map("is_final")
+  position       Int      @default(0)
+  allowedRoleIds String[] @default([]) @map("allowed_role_ids") @db.Uuid
+  /// Step-level gate (legacy); transitions may also set requiresAttachment.
+  requiresAttachment Boolean  @default(false) @map("requires_attachment")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  workflow  Workflow             @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  outgoing  WorkflowTransition[] @relation("TransitionFromStep")
+  incoming  WorkflowTransition[] @relation("TransitionToStep")
+  casesHere Case[]               @relation("CaseCurrentWorkflowStep")
+  attachments CaseAttachment[]   @relation("WorkflowStepAttachments")
+
+  @@unique([workflowId, key])
+  @@map("workflow_steps")
+}
+
+model WorkflowTransition {
+  id                 String   @id @default(uuid()) @db.Uuid
+  workflowId         String   @map("workflow_id") @db.Uuid
+  fromStepId         String   @map("from_step_id") @db.Uuid
+  toStepId           String   @map("to_step_id") @db.Uuid
+  name               String
+  description        String?  @db.Text
+  allowedRoleIds     String[] @default([]) @map("allowed_role_ids") @db.Uuid
+  requiresComment    Boolean  @default(false) @map("requires_comment")
+  requiresAttachment Boolean  @default(false) @map("requires_attachment")
+  timeLimitType      String   @default("NONE") @map("time_limit_type")
+  timeLimitAmount    Int?     @map("time_limit_amount")
+  timeLimitUnit      String?  @map("time_limit_unit")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  workflow Workflow      @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  fromStep WorkflowStep  @relation("TransitionFromStep", fields: [fromStepId], references: [id])
+  toStep   WorkflowStep  @relation("TransitionToStep", fields: [toStepId], references: [id])
+  history  CaseHistory[]
+
+  @@unique([workflowId, fromStepId, name])
+  @@map("workflow_transitions")
 }
 
 model Case {
@@ -202,14 +346,20 @@ model Case {
   tenantId            String    @map("tenant_id") @db.Uuid
   originatingTenantId String?   @map("originating_tenant_id") @db.Uuid
   currentTenantId     String?   @map("current_tenant_id") @db.Uuid
+  originatingDepartmentId String? @map("originating_department_id") @db.Uuid
+  currentDepartmentId     String? @map("current_department_id") @db.Uuid
   referralStatus      String    @default("none") @map("referral_status")
-  caseNumber          String    @unique @map("case_number")
+  workflowId          String    @map("workflow_id") @db.Uuid
+  workflowVersion     Int       @default(1) @map("workflow_version")
+  caseNumber          String    @map("case_number")
+  currentStepId       String?   @map("current_step_id") @db.Uuid
+  closedAt            DateTime? @map("closed_at")
   title               String
   description         String?   @db.Text
   type                String
   priority            String    @default("normal")
   status              String    @default("open")
-  workflowId          String?   @map("workflow_id") @db.Uuid
+  data                Json?
   assignedTo          String?   @map("assigned_to") @db.Uuid
   createdBy           String    @map("created_by") @db.Uuid
   metadata            Json?
@@ -219,20 +369,26 @@ model Case {
   updatedAt           DateTime  @updatedAt @map("updated_at")
   deletedAt           DateTime? @map("deleted_at")
 
-  // Relations
   tenant            Tenant           @relation("CaseTenant", fields: [tenantId], references: [id], onDelete: Cascade)
   originatingTenant Tenant?          @relation("CaseOriginatingTenant", fields: [originatingTenantId], references: [id])
   currentTenant     Tenant?          @relation("CaseCurrentTenant", fields: [currentTenantId], references: [id])
-  workflow          Workflow?        @relation(fields: [workflowId], references: [id])
+  originatingDepartment Department?  @relation("CaseOriginatingDepartment", fields: [originatingDepartmentId], references: [id])
+  currentDepartment     Department?  @relation("CaseCurrentDepartment", fields: [currentDepartmentId], references: [id])
+  workflow          Workflow         @relation(fields: [workflowId], references: [id])
+  currentStep       WorkflowStep?    @relation("CaseCurrentWorkflowStep", fields: [currentStepId], references: [id])
   assignee          User?            @relation("CaseAssignee", fields: [assignedTo], references: [id])
   creator           User             @relation("CaseCreator", fields: [createdBy], references: [id])
-  workflowStates    WorkflowState[]
+  history           CaseHistory[]
   assignments       Assignment[]
   referrals         CaseReferral[]
   attachments       CaseAttachment[]
 
-  @@index([tenantId])
-  @@index([caseNumber])
+  @@unique([tenantId, caseNumber])
+  @@index([tenantId, currentStepId])
+  @@index([tenantId, workflowId, closedAt])
+  @@index([currentTenantId, referralStatus])
+  @@index([originatingTenantId, referralStatus])
+  @@index([currentTenantId, currentDepartmentId, referralStatus])
   @@index([tenantId, status])
   @@index([tenantId, type])
   @@index([tenantId, assignedTo])
@@ -241,31 +397,38 @@ model Case {
   @@index([originatingTenantId])
   @@index([currentTenantId])
   @@index([referralStatus])
-  @@index([currentTenantId, referralStatus])
   @@map("cases")
 }
 
-model WorkflowState {
-  id              String   @id @default(uuid()) @db.Uuid
-  caseId          String   @map("case_id") @db.Uuid
-  workflowId      String   @map("workflow_id") @db.Uuid
-  currentState    String   @map("current_state")
-  previousState   String?  @map("previous_state")
-  transitionedBy  String?  @map("transitioned_by") @db.Uuid
-  transitionNotes String?  @map("transition_notes") @db.Text
-  stateData       Json?    @map("state_data")
-  transitionedAt  DateTime @default(now()) @map("transitioned_at")
+model CaseHistory {
+  id             String   @id @default(uuid()) @db.Uuid
+  caseId         String   @map("case_id") @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  transitionId   String?  @map("transition_id") @db.Uuid
+  fromStepId     String?  @map("from_step_id") @db.Uuid
+  toStepId       String   @map("to_step_id") @db.Uuid
+  actorId        String   @map("actor_id") @db.Uuid
+  comment        String?  @db.Text
+  transitionedAt DateTime @default(now()) @map("transitioned_at")
 
-  // Relations
-  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  transitioner User?    @relation(fields: [transitionedBy], references: [id])
+  case       Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  transition WorkflowTransition? @relation(fields: [transitionId], references: [id])
+  actor      User                @relation(fields: [actorId], references: [id])
 
-  @@index([caseId])
-  @@index([workflowId])
-  @@index([currentState])
-  @@index([transitionedAt])
-  @@map("workflow_states")
+  @@index([caseId, transitionedAt])
+  @@map("case_history")
+}
+
+model CaseSequence {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  year      Int
+  lastSeq   Int      @default(0) @map("last_seq")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, year])
+  @@map("case_sequences")
 }
 
 model Assignment {
@@ -279,7 +442,6 @@ model Assignment {
   unassignedAt   DateTime? @map("unassigned_at")
   isActive       Boolean   @default(true) @map("is_active")
 
-  // Relations
   case     Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
   assignee User @relation("AssignmentAssignedTo", fields: [assignedTo], references: [id])
   assigner User @relation("AssignmentAssignedBy", fields: [assignedBy], references: [id])
@@ -296,6 +458,8 @@ model CaseReferral {
   caseId         String    @map("case_id") @db.Uuid
   fromTenantId   String    @map("from_tenant_id") @db.Uuid
   toTenantId     String    @map("to_tenant_id") @db.Uuid
+  fromDepartmentId String? @map("from_department_id") @db.Uuid
+  toDepartmentId   String? @map("to_department_id") @db.Uuid
   referralReason String?   @map("referral_reason") @db.Text
   notes          String?   @db.Text
   status         String    @default("pending")
@@ -308,10 +472,11 @@ model CaseReferral {
   completedAt    DateTime? @map("completed_at")
   metadata       Json?
 
-  // Relations
   case       Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
   fromTenant Tenant @relation("ReferralFrom", fields: [fromTenantId], references: [id])
   toTenant   Tenant @relation("ReferralTo", fields: [toTenantId], references: [id])
+  fromDepartment Department? @relation("ReferralFromDepartment", fields: [fromDepartmentId], references: [id])
+  toDepartment   Department? @relation("ReferralToDepartment", fields: [toDepartmentId], references: [id])
   referrer   User   @relation("ReferralMadeBy", fields: [referredBy], references: [id])
   accepter   User?  @relation("ReferralAcceptedBy", fields: [acceptedBy], references: [id])
   rejecter   User?  @relation("ReferralRejectedBy", fields: [rejectedBy], references: [id])
@@ -320,9 +485,11 @@ model CaseReferral {
   @@index([fromTenantId])
   @@index([toTenantId])
   @@index([status])
-  @@index([fromTenantId, status])
-  @@index([toTenantId, status])
+  @@index([fromTenantId, status, referredAt(sort: Desc)])
+  @@index([toTenantId, status, referredAt(sort: Desc)])
+  @@index([toTenantId, toDepartmentId, status, referredAt(sort: Desc)])
   @@index([referredAt])
+  @@index([caseId, status])
   @@map("case_referrals")
 }
 
@@ -339,46 +506,50 @@ model CaseAttachment {
   uploadedBy       String    @map("uploaded_by") @db.Uuid
   uploadedAt       DateTime  @default(now()) @map("uploaded_at")
   deletedAt        DateTime? @map("deleted_at")
+  workflowStepId   String?   @map("workflow_step_id") @db.Uuid
 
   // Relations
-  case     Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case         Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  workflowStep WorkflowStep? @relation("WorkflowStepAttachments", fields: [workflowStepId], references: [id], onDelete: SetNull)
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   uploader User   @relation(fields: [uploadedBy], references: [id])
 
   @@index([caseId])
   @@index([tenantId])
   @@index([uploadedBy])
+  @@index([workflowStepId])
   @@map("case_attachments")
 }
 
-// ============================================
-// Audit & Integration Tables
-// ============================================
-
 model AuditLog {
-  id         String   @id @default(uuid()) @db.Uuid
-  tenantId   String   @map("tenant_id") @db.Uuid
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id") @db.Uuid
-  action     String
-  userId     String?  @map("user_id") @db.Uuid
-  oldValues  Json?    @map("old_values")
-  newValues  Json?    @map("new_values")
-  metadata   Json?
-  ipAddress  String?  @map("ip_address")
-  userAgent  String?  @map("user_agent")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  relatedTenantId String?  @map("related_tenant_id") @db.Uuid
+  entityType      String   @map("entity_type")
+  entityId        String   @map("entity_id") @db.Uuid
+  action          String
+  userId          String?  @map("user_id") @db.Uuid
+  oldValues       Json?    @map("old_values")
+  newValues       Json?    @map("new_values")
+  metadata        Json?
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  createdAt       DateTime @default(now()) @map("created_at")
 
-  // Relations
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user   User?  @relation(fields: [userId], references: [id])
+  tenant        Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  relatedTenant Tenant? @relation("AuditRelatedTenant", fields: [relatedTenantId], references: [id])
+  user          User?   @relation(fields: [userId], references: [id])
 
   @@index([tenantId])
+  @@index([relatedTenantId])
   @@index([entityType, entityId])
   @@index([userId])
   @@index([action])
   @@index([createdAt])
   @@index([tenantId, createdAt])
+  @@index([tenantId, entityType, entityId, createdAt])
+  @@index([relatedTenantId, entityType, entityId, createdAt])
+  @@index([tenantId, userId, createdAt])
   @@map("audit_logs")
 }
 
@@ -396,10 +567,10 @@ model Webhook {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  // Relations
   tenant  Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   creator User?   @relation(fields: [createdBy], references: [id])
 
+  @@unique([tenantId, url])
   @@index([tenantId])
   @@index([isActive])
   @@map("webhooks")
@@ -421,7 +592,6 @@ model Integration {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  // Relations
   tenant  Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   creator User?   @relation(fields: [createdBy], references: [id])
 
@@ -430,3 +600,297 @@ model Integration {
   @@index([isActive])
   @@map("integrations")
 }
+
+/** In-agency chat: agency-wide channel (recipientId null) or direct messages between colleagues. */
+
+
+// ─── File Management Service ──────────────────────────────────────────────────
+
+model File {
+  id                String     @id @default(uuid()) @db.Uuid
+  service           String
+  module            String
+  ownerId           String     @map("owner_id")
+  referenceId       String?    @map("reference_id")
+  originalName      String     @map("original_name")
+  storedName        String     @map("stored_name")
+  mimeType          String     @map("mime_type")
+  size              BigInt
+  checksum          String
+  storagePath       String     @map("storage_path") @db.Text
+  storageProvider   String     @default("minio") @map("storage_provider")
+  compressed        Boolean    @default(false)
+  compressionType   String?    @map("compression_type")
+  compressRequested Boolean    @default(false) @map("compress_requested")
+  thumbnails        Json?
+  metadata          Json?
+  retentionDays     Int?       @map("retention_days")
+  scheduledDeleteAt DateTime?  @map("scheduled_delete_at")
+  status            FileStatus @default(PENDING)
+  retryCount        Int        @default(0) @map("retry_count")
+  retryAt           DateTime?  @map("retry_at")
+  versionOf         String?    @map("version_of") @db.Uuid
+  deleted           Boolean    @default(false)
+  deletedAt         DateTime?  @map("deleted_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  parentVersion File?  @relation("FileVersions", fields: [versionOf], references: [id], onDelete: SetNull)
+  versions      File[] @relation("FileVersions")
+
+  @@index([service, module])
+  @@index([ownerId])
+  @@index([referenceId])
+  @@index([checksum])
+  @@index([status])
+  @@index([status, retryAt])
+  @@index([deleted, scheduledDeleteAt])
+  @@index([versionOf])
+  @@map("files")
+}
+
+model ChunkUpload {
+  id             String            @id @default(uuid()) @db.Uuid
+  service        String
+  module         String
+  ownerId        String            @map("owner_id")
+  referenceId    String?           @map("reference_id")
+  originalName   String            @map("original_name")
+  mimeType       String            @map("mime_type")
+  totalSize      BigInt            @map("total_size")
+  totalChunks    Int               @map("total_chunks")
+  receivedChunks Int               @default(0) @map("received_chunks")
+  chunkSize      Int               @map("chunk_size")
+  status         ChunkUploadStatus @default(IN_PROGRESS)
+  tempPath       String            @map("temp_path") @db.Text
+  expiresAt      DateTime          @map("expires_at")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  chunks Chunk[]
+
+  @@index([status])
+  @@index([expiresAt])
+  @@map("chunk_uploads")
+}
+
+model Chunk {
+  id          String      @id @default(uuid()) @db.Uuid
+  uploadId    String      @map("upload_id") @db.Uuid
+  chunkNumber Int         @map("chunk_number")
+  size        Int
+  checksum    String
+  storedPath  String      @map("stored_path") @db.Text
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  upload ChunkUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@unique([uploadId, chunkNumber])
+  @@index([uploadId])
+  @@map("chunks")
+}
+
+model ServiceRetentionPolicy {
+  id            String   @id @default(uuid()) @db.Uuid
+  service       String   @unique
+  retentionDays Int?     @map("retention_days")
+  description   String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("service_retention_policies")
+}
+
+// ─── Partner API Key Management ───────────────────────────────────────────────
+
+model ApiKey {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  name        String                                    /// Human label ("Police Desk Integration")
+  keyPrefix   String    @map("key_prefix")              /// First 20 chars of raw key for identification
+  keyHash     String    @unique @map("key_hash")        /// SHA-256 of the full raw key
+  scopes      String[]  @default([])                    /// ["cases:read", "referrals:read", ...]
+  isActive    Boolean   @default(true) @map("is_active")
+  expiresAt   DateTime? @map("expires_at")
+  lastUsedAt  DateTime? @map("last_used_at")
+  lastUsedIp  String?   @map("last_used_ip")
+  createdBy   String    @map("created_by") @db.Uuid
+  revokedAt   DateTime? @map("revoked_at")
+  revokedBy   String?   @map("revoked_by") @db.Uuid
+  metadata    Json?                                     /// Optional partner metadata
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator  User   @relation("ApiKeyCreator", fields: [createdBy], references: [id])
+  revoker  User?  @relation("ApiKeyRevoker", fields: [revokedBy], references: [id])
+
+  @@index([tenantId])
+  @@index([keyHash])
+  @@index([isActive, expiresAt])
+  @@map("api_keys")
+}
+
+model AuditOutbox {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
+  payload              Json                                      /// Full audit event payload
+  published            Boolean   @default(false)
+  publishedAt          DateTime? @map("published_at")
+  webhookDispatched    Boolean   @default(false) @map("webhook_dispatched")
+  webhookDispatchedAt  DateTime? @map("webhook_dispatched_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  @@index([published, createdAt])
+  @@index([webhookDispatched, published, createdAt])
+  @@map("audit_outbox")
+}
+
+// ─── Chat & Messaging Service (New standalone models) ──────────────────────────
+
+model ChatConversation {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  type            ChatConversationType @default(DIRECT)
+  title           String?   @db.VarChar(255)         // null for DIRECT
+  description     String?   @db.Text                  // GROUP only
+  avatarFileId    String?   @map("avatar_file_id") @db.Uuid
+  createdBy       String    @map("created_by") @db.Uuid
+  lastMessageId   String?   @map("last_message_id") @db.Uuid
+  lastMessageAt   DateTime? @map("last_message_at")
+  isArchived      Boolean   @default(false) @map("is_archived")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  participants  ChatParticipant[]
+  messages      ChatMessage[]
+
+  @@index([tenantId, lastMessageAt(sort: Desc)])
+  @@index([tenantId, type])
+  @@map("chat_conversations")
+}
+
+enum ChatConversationType {
+  DIRECT
+  GROUP
+}
+
+model ChatParticipant {
+  id                 String    @id @default(uuid()) @db.Uuid
+  conversationId     String    @map("conversation_id") @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  role               ChatParticipantRole @default(MEMBER)
+  joinedAt           DateTime  @default(now()) @map("joined_at")
+  leftAt             DateTime? @map("left_at")                    // null = active
+  lastReadMessageId  String?   @map("last_read_message_id") @db.Uuid
+  lastReadAt         DateTime? @map("last_read_at")
+  isMuted            Boolean   @default(false) @map("is_muted")
+  isArchived         Boolean   @default(false) @map("is_archived")
+
+  conversation  ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user          User             @relation("ChatParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])                              // one row per user per conversation
+  @@index([userId, conversationId])
+  @@index([conversationId, userId])
+  @@map("chat_participants")
+}
+
+enum ChatParticipantRole {
+  MEMBER
+  ADMIN
+  OWNER
+}
+
+model ChatMessage {
+  id               String    @id @default(uuid()) @db.Uuid
+  conversationId   String    @map("conversation_id") @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  senderId         String    @map("sender_id") @db.Uuid
+  clientMessageId  String    @map("client_message_id")           // client-generated idempotency key
+  messageType      ChatMessageType @default(TEXT)
+  content          String?   @db.Text                            // null for FILE/IMAGE/etc.
+  replyToId        String?   @map("reply_to_id") @db.Uuid
+  editedAt         DateTime? @map("edited_at")
+  deletedAt        DateTime? @map("deleted_at")                  // soft delete
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  conversation  ChatConversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender        User               @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo       ChatMessage?       @relation("ChatMessageReply", fields: [replyToId], references: [id])
+  replies       ChatMessage[]      @relation("ChatMessageReply")
+  attachments   ChatAttachment[]
+  reactions     ChatReaction[]
+  outboxEvents  ChatOutboxEvent[]
+
+  @@unique([conversationId, clientMessageId])                    // idempotency: prevent duplicate sends
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@index([senderId, createdAt(sort: Desc)])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("chat_messages")
+}
+
+enum ChatMessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  FILE
+  SYSTEM                                                         // group join/leave events
+}
+
+model ChatAttachment {
+  id          String   @id @default(uuid()) @db.Uuid
+  messageId   String   @map("message_id") @db.Uuid
+  fileId      String   @map("file_id") @db.Uuid                 // references File table (file-service)
+  fileName    String   @map("file_name")
+  mimeType    String   @map("mime_type")
+  sizeBytes   Int      @map("size_bytes")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  message  ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("chat_attachments")
+}
+
+model ChatReaction {
+  id         String   @id @default(uuid()) @db.Uuid
+  messageId  String   @map("message_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  emoji      String   @db.VarChar(8)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  message  ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@map("chat_reactions")
+}
+
+// Transactional outbox — guarantees Kafka events are published exactly once
+model ChatOutboxEvent {
+  id            String    @id @default(uuid()) @db.Uuid
+  messageId     String?   @map("message_id") @db.Uuid
+  eventType     String    @map("event_type")                     // e.g. "CHAT_MESSAGE_CREATED"
+  payload       Json
+  status        ChatOutboxStatus @default(PENDING)
+  retryCount    Int       @default(0) @map("retry_count")
+  lastErrorAt   DateTime? @map("last_error_at")
+  publishedAt   DateTime? @map("published_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  message  ChatMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("chat_outbox_events")
+}
+
+enum ChatOutboxStatus {
+  PENDING
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+

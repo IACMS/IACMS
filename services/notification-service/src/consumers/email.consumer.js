@@ -11,6 +11,7 @@ import {
   sendPasswordResetEmail,
   sendPasswordChangedEmail,
   sendVerificationEmail,
+  sendAgencyApprovedEmail,
 } from '../utils/email.js';
 import Logger from '../../../../shared/common/logger.js';
 
@@ -19,16 +20,22 @@ const logger = new Logger('notification:email');
 /**
  * Handle user.created events.
  *
- * Only sends a welcome email when the user was created by an admin
- * (source === 'admin'). Self-registered users do not receive this email.
+ * Sends a welcome email with a temporary password when:
+ * - a tenant user was created by an org admin (`source === 'admin'`), or
+ * - platform registered a new org and its first administrator (`source === 'tenant_register'`).
+ *
+ * Self-service registration (`source === 'register'`) does not send this email here.
  *
  * Expected payload:
  *   { userId, email, firstName, tenantName, tenantCode, temporaryPassword, source }
  */
 export async function handleUserCreated(data) {
-  if (data.source !== 'admin' || !data.temporaryPassword) {
-    return;
-  }
+  const welcomeEligible =
+    (data.source === 'admin' || data.source === 'tenant_register') &&
+    typeof data.temporaryPassword === 'string' &&
+    data.temporaryPassword.length > 0;
+
+  if (!welcomeEligible) return;
 
   logger.info('Sending welcome email', { userId: data.userId, email: data.email });
 
@@ -36,6 +43,7 @@ export async function handleUserCreated(data) {
     to: data.email,
     firstName: data.firstName,
     tenantName: data.tenantName,
+    tenantCode: data.tenantCode,
     temporaryPassword: data.temporaryPassword,
   });
 }
@@ -87,6 +95,24 @@ export async function handleEmailVerificationRequested(data) {
     to: data.email,
     firstName: data.firstName,
     verificationToken: data.verificationToken,
+    tenantCode: data.tenantCode,
+  });
+}
+
+/**
+ * Handle tenant.approved events.
+ * Sent when a platform admin approves a self-registered agency.
+ *
+ * Expected payload:
+ *   { tenantId, tenantName, tenantCode, email, firstName }
+ */
+export async function handleTenantApproved(data) {
+  logger.info('Sending agency approval email', { tenantId: data.tenantId, email: data.email });
+
+  await sendAgencyApprovedEmail({
+    to: data.email,
+    firstName: data.firstName,
+    tenantName: data.tenantName,
     tenantCode: data.tenantCode,
   });
 }

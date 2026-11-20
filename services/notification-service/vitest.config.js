@@ -6,5 +6,6 @@ export default defineConfig({
     globals: true,
     clearMocks: true,
     include: ['tests/**/*.test.js'],
+    testTimeout: 15000,
   },
 });

@@ -1,0 +1,115 @@
+{
+  "info": {
+    "name": "IACMS File Management Service",
+    "description": "FMS API collection — upload, download, chunked upload, lifecycle",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api/v1" },
+    { "key": "token", "value": "" },
+    { "key": "fileId", "value": "" },
+    { "key": "uploadId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "http://localhost:3009/health"
+      }
+    },
+    {
+      "name": "Upload file",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "service", "value": "case-management", "type": "text" },
+            { "key": "module", "value": "evidence", "type": "text" },
+            { "key": "referenceId", "value": "CASE-123", "type": "text" },
+            { "key": "compress", "value": "false", "type": "text" },
+            { "key": "file", "type": "file", "src": [] }
+          ]
+        },
+        "url": "{{baseUrl}}/files"
+      }
+    },
+    {
+      "name": "Get file metadata",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/files/{{fileId}}"
+      }
+    },
+    {
+      "name": "Download file",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/files/{{fileId}}/download"
+      }
+    },
+    {
+      "name": "List files",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/files?service=case-management&page=1&limit=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["files"],
+          "query": [
+            { "key": "service", "value": "case-management" },
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "20" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete file",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/files/{{fileId}}"
+      }
+    },
+    {
+      "name": "Init chunked upload",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"service\": \"case-management\",\n  \"module\": \"evidence\",\n  \"originalName\": \"large.bin\",\n  \"mimeType\": \"application/octet-stream\",\n  \"totalSize\": 10485760,\n  \"totalChunks\": 2,\n  \"chunkSize\": 5242880\n}"
+        },
+        "url": "{{baseUrl}}/uploads/init"
+      }
+    },
+    {
+      "name": "Metrics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "http://localhost:3009/metrics"
+      }
+    }
+  ]
+}

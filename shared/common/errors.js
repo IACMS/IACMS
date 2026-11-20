@@ -44,3 +44,53 @@ export class ConflictError extends AppError {
   }
 }
 
+export class InvalidTransitionError extends AppError {
+  constructor(message = 'Invalid transition for current case state') {
+    super(message, 400, 'INVALID_TRANSITION');
+  }
+}
+
+export class WorkflowClosedError extends AppError {
+  constructor(message = 'Workflow is locked (not editable in current status)') {
+    super(message, 409, 'WORKFLOW_CLOSED');
+  }
+}
+
+export class WorkflowNotPublishedError extends AppError {
+  constructor(message = 'No published workflow matches the request') {
+    super(message, 409, 'WORKFLOW_NOT_PUBLISHED');
+  }
+}
+
+export class TenantMismatchError extends AppError {
+  constructor(message = 'Tenant mismatch detected') {
+    super(message, 403, 'TENANT_MISMATCH');
+  }
+}
+
+export class InvalidReferralStateError extends AppError {
+  constructor(message = 'Referral cannot be transitioned from this state') {
+    super(message, 409, 'INVALID_REFERRAL_STATE');
+  }
+}
+
+export class InvalidQueryError extends AppError {
+  constructor(message = 'Malformed query payload', errors = []) {
+    super(message, 400, 'INVALID_QUERY');
+    this.errors = errors;
+  }
+}
+
+export class BusinessRuleViolationError extends AppError {
+  constructor(message = 'Mutation rejected by business rules') {
+    super(message, 422, 'BUSINESS_RULE_VIOLATION');
+  }
+}
+
+export class RateLimitedError extends AppError {
+  constructor(retryAfter = 60) {
+    super('Rate limit exceeded. Please try again later.', 429, 'RATE_LIMITED');
+    this.retryAfter = retryAfter;
+  }
+}
+

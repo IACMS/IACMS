@@ -99,7 +99,15 @@ function layout(content) {
  * Welcome email sent to new users created by an admin.
  * Contains their email, temporary password, and instructions.
  */
-export function welcomeEmailTemplate({ firstName, tenantName, email, temporaryPassword }) {
+export function welcomeEmailTemplate({ firstName, tenantName, tenantCode, email, temporaryPassword }) {
+  const orgCodeHint = tenantCode
+    ? `
+    <tr>
+      <td style="padding: 8px 12px; border-top: 2px solid #fff; background: #f4f6f9; font-weight: 600; color: #555;">Organization code</td>
+      <td style="padding: 8px 12px; border-top: 2px solid #fff; background: #f4f6f9; color: #333;">${tenantCode}</td>
+    </tr>
+    `
+    : '';
   return layout(`
     <h2 style="color: #1a3c5e; margin-top: 0;">Welcome, ${firstName}!</h2>
     <p>
@@ -113,6 +121,7 @@ export function welcomeEmailTemplate({ firstName, tenantName, email, temporaryPa
         <td style="padding: 8px 12px; background: #f4f6f9; border-radius: 4px 0 0 0; font-weight: 600; color: #555; width: 120px;">Email</td>
         <td style="padding: 8px 12px; background: #f4f6f9; border-radius: 0 4px 0 0; color: #333;">${email}</td>
       </tr>
+      ${orgCodeHint}
       <tr>
         <td style="padding: 8px 12px; border-top: 2px solid #fff; background: #f4f6f9; border-radius: 0 0 0 4px; font-weight: 600; color: #555;">Password</td>
         <td style="padding: 8px 12px; border-top: 2px solid #fff; background: #f4f6f9; border-radius: 0 0 4px 0;">
@@ -233,6 +242,37 @@ export function passwordChangedTemplate({ firstName }) {
     <p style="color: #666; font-size: 14px;">
       If you did not make this change, contact your system administrator immediately or use
       the <strong>Forgot Password</strong> option to regain access.
+    </p>
+  `);
+}
+
+/**
+ * Agency Approved email sent to a newly approved organization's admin.
+ */
+export function agencyApprovedTemplate({ firstName, tenantName, tenantCode }) {
+  return layout(`
+    <h2 style="color: #1a3c5e; margin-top: 0;">Welcome, ${firstName}!</h2>
+    <p>
+      Good news! Your registration request for the <strong>${tenantName}</strong> workspace
+      has been reviewed and <strong>approved</strong> by the platform administrators.
+    </p>
+    
+    <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; border-radius: 0 6px 6px 0; margin: 24px 0;">
+      <strong style="color: #166534;">Your workspace is now fully active.</strong>
+    </div>
+
+    <p>
+      You can now log in using the email and password you provided during registration.
+      <br><br>
+      <strong>Organization Code:</strong> <span style="font-family: 'Courier New', monospace; font-weight: bold;">${tenantCode}</span>
+    </p>
+
+    <div style="text-align: center;">
+      <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="${buttonStyle}">Open IACMS Dashboard</a>
+    </div>
+
+    <p style="color: #666; font-size: 14px;">
+      If you did not expect this email, please ignore it or contact support.
     </p>
   `);
 }
