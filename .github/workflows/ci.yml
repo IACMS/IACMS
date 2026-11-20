@@ -38,9 +38,9 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5434/iacms?schema=public
       REDIS_URL: redis://localhost:6379
-      JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}
-      SESSION_SECRET: ${{ secrets.CI_SESSION_SECRET }}
-      INTERNAL_SERVICE_TOKEN: ${{ secrets.CI_INTERNAL_SERVICE_TOKEN }}
+      JWT_SECRET: ${{ secrets.CI_JWT_SECRET || 'ci-test-jwt-secret-at-least-32-chars-long-iacms' }}
+      SESSION_SECRET: ${{ secrets.CI_SESSION_SECRET || 'ci-test-session-secret-at-least-32-chars-iacms' }}
+      INTERNAL_SERVICE_TOKEN: ${{ secrets.CI_INTERNAL_SERVICE_TOKEN || 'ci-test-internal-token-at-least-32-chars-iacms' }}
       KAFKA_BROKERS: localhost:9092
 
     steps:
